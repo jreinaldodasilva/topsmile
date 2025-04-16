@@ -1,38 +1,33 @@
 .testimonials {
-    padding: 60px 0;
-    background-color: #fff;
-    text-align: center;
-  }
-  
-  .testimonials blockquote {
-    font-size: 1.2rem;
-    font-style: italic;
-    margin-bottom: 10px;
-  }
-  
-  .testimonials cite {
-    color: #555;
-  }
-  
-  /* ... estilos existentes ... */
+  padding: 60px 20px;
+  background-color: #fff;
+  text-align: center;
+}
+
+.testimonial-slide {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+blockquote {
+  font-size: 1.3rem;
+  font-style: italic;
+  margin-bottom: 10px;
+}
+
+cite {
+  display: block;
+  color: #777;
+  font-size: 1rem;
+}
 
 @media (max-width: 768px) {
-    .container {
-      flex-direction: column;
-      text-align: center;
-    }
-  
-    .hero-content, .hero-image {
-      width: 100%;
-    }
-  
-    .hero-buttons {
-      flex-direction: column;
-    }
-  
-    .hero-buttons .btn-primary,
-    .hero-buttons .btn-secondary {
-      margin-bottom: 10px;
-    }
+  blockquote {
+    font-size: 1.1rem;
   }
-  
+
+  cite {
+    font-size: 0.95rem;
+  }
+}

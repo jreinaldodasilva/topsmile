@@ -13,25 +13,5 @@ body {
     opacity: 0.8;
   }
   
-  /* ... estilos existentes ... */
 
-@media (max-width: 768px) {
-    .container {
-      flex-direction: column;
-      text-align: center;
-    }
-  
-    .hero-content, .hero-image {
-      width: 100%;
-    }
-  
-    .hero-buttons {
-      flex-direction: column;
-    }
-  
-    .hero-buttons .btn-primary,
-    .hero-buttons .btn-secondary {
-      margin-bottom: 10px;
-    }
-  }
   
