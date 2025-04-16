@@ -1,0 +1,36 @@
+.features {
+    padding: 60px 0;
+    background-color: #ffffff;
+  }
+  
+  .features h3 {
+    text-align: center;
+    margin-bottom: 40px;
+    font-size: 2rem;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+  
+  .feature-item {
+    text-align: center;
+    padding: 20px;
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+  }
+  
+  .feature-item img {
+    width: 80px;
+    height: auto;
+    margin-bottom: 15px;
+  }
+  
+  .feature-item h4 {
+    margin-bottom: 10px;
+    font-size: 1.2rem;
+  }
+  
