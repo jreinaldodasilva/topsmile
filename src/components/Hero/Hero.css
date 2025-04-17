@@ -1,54 +1,77 @@
 .hero {
-  background-color: var(--color-secondary);
-  padding: 100px 20px 80px;
+  background-color: #f9fbfd;
+  padding: 4rem 2rem;
+  display: flex;
+  justify-content: center;
 }
 
-.hero-container {
+.hero-content {
+  max-width: 1200px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 40px;
+  gap: 4rem;
   flex-wrap: wrap;
 }
 
 .hero-text {
-  flex: 1 1 500px;
-  max-width: 600px;
+  flex: 1;
+  min-width: 280px;
 }
 
 .hero-text h1 {
-  font-size: 2.7rem;
-  line-height: 1.2;
-  margin-bottom: 20px;
-  color: var(--color-dark);
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 1rem;
+  font-family: 'Inter', sans-serif;
 }
 
 .hero-text p {
-  font-size: 1.2rem;
+  font-size: 1.125rem;
+  color: #475569;
+  margin-bottom: 2rem;
   line-height: 1.6;
-  color: #555;
-  margin-bottom: 30px;
 }
 
-.hero-buttons {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
+.hero-button {
+  background-color: #0ea5e9;
+  color: #fff;
+  padding: 0.9rem 2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.3s ease;
+}
+
+.hero-button:hover {
+  background-color: #0284c7;
 }
 
 .hero-image {
-  flex: 1 1 400px;
-  text-align: center;
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.hero-image img {
-  max-width: 100%;
-  height: auto;
+.image-placeholder {
+  width: 100%;
+  max-width: 400px;
+  height: 400px;
+  background-color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  font-size: 1rem;
+  color: #64748b;
 }
 
+/* Responsivo */
 @media (max-width: 768px) {
-  .hero-container {
-    flex-direction: column-reverse;
+  .hero-content {
+    flex-direction: column;
     text-align: center;
   }
 
@@ -56,11 +79,8 @@
     font-size: 2rem;
   }
 
-  .hero-text p {
-    font-size: 1rem;
-  }
-
-  .hero-buttons {
-    justify-content: center;
+  .hero-button {
+    width: 100%;
+    display: inline-block;
   }
 }

@@ -1,37 +1,67 @@
 import React from 'react';
 import './Features.css';
+import { FaUserMd, FaMobileAlt, FaShieldAlt, FaWallet } from 'react-icons/fa';
+import type { IconType } from 'react-icons';
+import { motion } from 'framer-motion';
 
-const features = [
+type Feature = {
+  icon: any;
+  title: string;
+  description: string;
+};
+
+const featuresData: Feature[] = [
   {
-    title: 'Agendamento Rápido',
-    description: 'Marque sua consulta em poucos cliques, direto do seu celular ou computador.',
-    icon: '/assets/icon-agendamento.svg',
+    icon: FaUserMd,
+    title: 'Consultas com médicos qualificados',
+    description: 'Profissionais prontos para atender você com excelência e empatia.',
   },
   {
-    title: 'Médicos Qualificados',
-    description: 'Profissionais experientes e especializados prontos para te atender.',
-    icon: '/assets/icon-medico.svg',
+    icon: FaMobileAlt,
+    title: 'Atendimento 100% online',
+    description: 'Realize consultas de qualquer lugar com seu celular ou computador.',
   },
   {
-    title: 'Atendimento Online',
-    description: 'Receba atendimento médico no conforto da sua casa, com total segurança.',
-    icon: '/assets/icon-online.svg',
+    icon: FaShieldAlt,
+    title: 'Segurança e privacidade',
+    description: 'Seus dados protegidos com tecnologia de ponta.',
+  },
+  {
+    icon: FaWallet,
+    title: 'Preço acessível',
+    description: 'Serviços de saúde com valores que cabem no seu bolso.',
   },
 ];
 
 const Features: React.FC = () => {
   return (
-    <section id="features" className="features">
-      <div className="container">
-        <h2 className="features-title">Por que escolher o onDoctor?</h2>
-        <div className="features-list">
-          {features.map((feature, index) => (
-            <div className="feature-card" key={index}>
-              <img src={feature.icon} alt={feature.title} className="feature-icon" />
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </div>
-          ))}
+    <section className="features" id="features">
+      <div className="features-container">
+        <motion.h2 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.6 }}
+        >
+          Benefícios para você
+        </motion.h2>
+
+        <div className="features-grid">
+          {featuresData.map((feature, index) => {
+            const Icon = feature.icon;
+            return (
+              <motion.div
+                className="feature-card"
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.2 }}
+              >
+                <div className="icon"><Icon /></div>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

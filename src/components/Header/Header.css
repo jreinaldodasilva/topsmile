@@ -1,82 +1,67 @@
 .header {
+  background-color: #f0f9ff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  background-color: #fff;
-  border-bottom: 1px solid #eaeaea;
-  z-index: 1000;
+  z-index: 100;
 }
 
-.header-container {
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  height: 80px;
+  justify-content: space-between;
 }
 
-.logo span {
+.logo {
   font-size: 1.8rem;
-  font-weight: bold;
-  color: var(--color-primary);
+  font-weight: 700;
+  color: #0ea5e9;
+  font-family: 'Inter', sans-serif;
 }
 
 .nav ul {
-  list-style: none;
   display: flex;
-  gap: 30px;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .nav a {
-  font-size: 1rem;
+  text-decoration: none;
+  color: #1e293b;
   font-weight: 500;
-  color: #333;
-  transition: color 0.3s;
+  transition: color 0.3s ease;
 }
 
 .nav a:hover {
-  color: var(--color-primary);
+  color: #0ea5e9;
 }
 
-.nav-buttons {
-  display: flex;
-  gap: 15px;
+.cta-button {
+  background-color: #0ea5e9;
+  color: white;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.3s ease;
 }
 
-.btn-outline,
-.btn-filled {
-  padding: 10px 20px;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: 0.3s ease;
+.cta-button:hover {
+  background-color: #0284c7;
 }
 
-.btn-outline {
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  background: transparent;
-}
-
-.btn-outline:hover {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.btn-filled {
-  background-color: var(--color-primary);
-  color: #fff;
-  border: none;
-}
-
-.btn-filled:hover {
-  background-color: #004bb5;
-}
-
+/* Responsivo */
 @media (max-width: 768px) {
-  .nav {
-    display: none; /* Menu hamburguer entraria aqui futuramente */
+  .nav ul {
+    display: none; /* para futura navegação mobile */
   }
-
-  .nav-buttons {
-    display: none;
+  .cta-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
   }
 }
