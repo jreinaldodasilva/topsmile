@@ -1,34 +1,45 @@
 import React from 'react';
 import './Footer.css';
+import { FaFacebookF, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 
 const Footer: React.FC = () => {
+
+  const Icon1 = FaFacebookF as any;
+  const Icon2 = FaInstagram as any;
+  const Icon3 = FaLinkedinIn as any;    
+
   return (
-    <footer className="footer">
-      <div className="container footer-content">
+    <footer className="footer" id="footer">
+      <div className="footer-container">
         <div className="footer-brand">
-          <h3>onDoctor</h3>
-          <p>Simplificando o acesso à saúde de qualidade, onde você estiver.</p>
+          <h2>OnDoctor</h2>
+          <p>Conectando você à saúde de forma simples, rápida e segura.</p>
         </div>
 
         <div className="footer-links">
-          <h4>Links</h4>
-          <ul>
-            <li><a href="#hero">Início</a></li>
-            <li><a href="#features">Benefícios</a></li>
-            <li><a href="#specialties">Especialidades</a></li>
-            <li><a href="#testimonials">Depoimentos</a></li>
-          </ul>
+          <a href="#home">Início</a>
+          <a href="#features">Recursos</a>
+          <a href="#specialties">Especialidades</a>
+          <a href="#testimonials">Depoimentos</a>
         </div>
 
-        <div className="footer-contact">
-          <h4>Contato</h4>
-          <p>Email: contato@ondoctor.app</p>
-          <p>Tel: (11) 99999-9999</p>
-        </div>
+        <div className="footer-social">
+          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
+            <Icon1 />
+          </a>
+          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
+            <Icon2 />
+          </a>
+          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer">
+            <Icon3 />
+          </a>
+
+
+      </div>
       </div>
 
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} onDoctor. Todos os direitos reservados.</p>
+        <p>© {new Date().getFullYear()} OnDoctor. Todos os direitos reservados.</p>
       </div>
     </footer>
   );
