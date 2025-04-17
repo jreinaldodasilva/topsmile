@@ -4,18 +4,23 @@ import './Header.css';
 const Header: React.FC = () => {
   return (
     <header className="header">
-      <div className="container">
-        <h1>OnDoctor</h1>
-        <nav>
-          <ul className="nav-links">
-            <li><a href="#home">Home</a></li>
-            <li><a href="#preco">Preço</a></li>
-            <li><a href="#recursos">Recursos</a></li>
-            <li><a href="#blog">Blog</a></li>
-            <li><a href="#contato">Contato</a></li>
+      <div className="container header-container">
+        <div className="logo">
+          {/* <img src="/assets/logo.svg" alt="OnDoctor Logo" className="logo-img" /> */}
+          <span>onDoctor</span>
+        </div>
+        <nav className="nav">
+          <ul>
+            <li><a href="#hero">Início</a></li>
+            <li><a href="#features">Recursos</a></li>
+            <li><a href="#specialties">Especialidades</a></li>
+            <li><a href="#testimonials">Depoimentos</a></li>
           </ul>
         </nav>
-        <a href="#login" className="login-button">Sou Cliente (Entrar)</a>
+        <div className="nav-buttons">
+          <a href="#demo" className="btn-outline">Ver Demonstração</a>
+          <a href="#signup" className="btn-filled">Criar Conta</a>
+        </div>
       </div>
     </header>
   );

@@ -1,33 +1,37 @@
 import React from 'react';
 import './Features.css';
 
+const features = [
+  {
+    title: 'Agendamento Rápido',
+    description: 'Marque sua consulta em poucos cliques, direto do seu celular ou computador.',
+    icon: '/assets/icon-agendamento.svg',
+  },
+  {
+    title: 'Médicos Qualificados',
+    description: 'Profissionais experientes e especializados prontos para te atender.',
+    icon: '/assets/icon-medico.svg',
+  },
+  {
+    title: 'Atendimento Online',
+    description: 'Receba atendimento médico no conforto da sua casa, com total segurança.',
+    icon: '/assets/icon-online.svg',
+  },
+];
+
 const Features: React.FC = () => {
   return (
-    <section className="features" id="recursos">
+    <section id="features" className="features">
       <div className="container">
-        <h3>Recursos do OnDoctor</h3>
-        <div className="features-grid">
-          <div className="feature-item">
-            <img src="path_to_image.jpg" alt="Agenda Online" />
-            <h4>Agenda Online</h4>
-            <p>
-              Com a agenda online do OnDoctor, sua equipe gerencia os agendamentos, diminui as faltas por meio do envio de lembretes automáticos via SMS e WhatsApp e ganha tempo para realizar o que realmente importa: o atendimento ao paciente.
-            </p>
-          </div>
-          <div className="feature-item">
-            <img src="path_to_image.jpg" alt="Prontuário Eletrônico" />
-            <h4>Prontuário Eletrônico</h4>
-            <p>
-              Registre todas as informações dos atendimentos com facilidade e segurança, com modelos personalizáveis, anexo de imagens e documentos, e acesso rápido ao histórico do paciente.
-            </p>
-          </div>
-          <div className="feature-item">
-            <img src="path_to_image.jpg" alt="Telemedicina" />
-            <h4>Telemedicina</h4>
-            <p>
-              Realize atendimentos online com segurança, diretamente pelo OnDoctor. Emita receitas e atestados com assinatura digital, de forma simples e prática.
-            </p>
-          </div>
+        <h2 className="features-title">Por que escolher o onDoctor?</h2>
+        <div className="features-list">
+          {features.map((feature, index) => (
+            <div className="feature-card" key={index}>
+              <img src={feature.icon} alt={feature.title} className="feature-icon" />
+              <h3>{feature.title}</h3>
+              <p>{feature.description}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

@@ -1,45 +1,56 @@
 import React from 'react';
-import Slider from 'react-slick';
 import './Testimonials.css';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import 'swiper/css';
+import 'swiper/css/pagination';
+
+import { Pagination, Autoplay } from 'swiper/modules';
+
+const testimonials = [
+  {
+    name: 'Ana Costa',
+    role: 'Paciente',
+    text: 'O atendimento foi excelente! Consegui falar com o médico sem sair de casa.',
+    image: '/assets/user1.jpg',
+  },
+  {
+    name: 'Carlos Silva',
+    role: 'Paciente',
+    text: 'Muito prático. Agendei em minutos e fui atendido com pontualidade.',
+    image: '/assets/user2.jpg',
+  },
+  {
+    name: 'Juliana Rocha',
+    role: 'Paciente',
+    text: 'Me senti segura e acolhida. Recomendo muito o serviço!',
+    image: '/assets/user3.jpg',
+  },
+];
 
 const Testimonials: React.FC = () => {
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 5000,
-  };
-
-  const testimonials = [
-    {
-      quote: "O OnDoctor transformou a maneira como gerenciamos nossa clínica. Simples e completo!",
-      author: "Dr. João Silva",
-    },
-    {
-      quote: "Excelente suporte e uma plataforma muito intuitiva.",
-      author: "Dra. Mariana Lopes",
-    },
-    {
-      quote: "Com o OnDoctor, organizamos melhor os atendimentos e a equipe ganhou produtividade.",
-      author: "Clínica Vida",
-    },
-  ];
-
   return (
-    <section className="testimonials">
+    <section id="testimonials" className="testimonials">
       <div className="container">
-        <h3>O que dizem nossos clientes</h3>
-        <Slider {...settings}>
+        <h2 className="testimonials-title">Depoimentos de quem usa</h2>
+        <Swiper
+          modules={[Pagination, Autoplay]}
+          spaceBetween={30}
+          slidesPerView={1}
+          pagination={{ clickable: true }}
+          autoplay={{ delay: 5000 }}
+          loop={true}
+        >
           {testimonials.map((t, index) => (
-            <div key={index} className="testimonial-slide">
-              <blockquote>“{t.quote}”</blockquote>
-              <cite>— {t.author}</cite>
-            </div>
+            <SwiperSlide key={index}>
+              <div className="testimonial-card">
+                <img src={t.image} alt={t.name} className="testimonial-img" />
+                <p className="testimonial-text">"{t.text}"</p>
+                <h4>{t.name}</h4>
+                <span>{t.role}</span>
+              </div>
+            </SwiperSlide>
           ))}
-        </Slider>
+        </Swiper>
       </div>
     </section>
   );
