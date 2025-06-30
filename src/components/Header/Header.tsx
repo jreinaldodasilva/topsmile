@@ -1,11 +1,15 @@
 import React from 'react';
 import './Header.css';
+import logo from '../../assets/images/icon-192x192.png';
 
 const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="container">
-        <div className="logo">onDoctor</div>
+        <div className="logo">
+          <img src={logo} alt="onDoctor Logo" width={48} height={48} className="logo-img" />
+          onDoctor
+        </div>
         <nav className="nav">
           <ul>
             <li><a href="#hero">Início</a></li>
