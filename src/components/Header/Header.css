@@ -16,10 +16,21 @@
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.8rem;
   font-weight: 700;
   color: #0ea5e9;
   font-family: 'Inter', sans-serif;
+}
+
+.logo-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fff;
+  object-fit: cover;
 }
 
 .nav ul {
@@ -35,6 +46,7 @@
   color: #1e293b;
   font-weight: 500;
   transition: color 0.3s ease;
+  font-size: 1rem;
 }
 
 .nav a:hover {
@@ -49,6 +61,7 @@
   font-weight: 600;
   text-decoration: none;
   transition: background 0.3s ease;
+  font-size: 1rem;
 }
 
 .cta-button:hover {
@@ -57,6 +70,11 @@
 
 /* Responsivo */
 @media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
   .nav ul {
     display: none; /* para futura navegação mobile */
   }

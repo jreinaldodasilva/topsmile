@@ -1,0 +1,44 @@
+.pricing-card {
+  padding: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s;
+  text-align: center;
+}
+.pricing-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+.pricing-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #0f172a;
+}
+.pricing-price {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0ea5e9;
+  margin-bottom: 1rem;
+}
+.pricing-features {
+  list-style: disc inside;
+  margin-bottom: 1.5rem;
+  color: #475569;
+  text-align: left;
+}
+.pricing-btn {
+  background: #0ea5e9;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.pricing-btn:hover {
+  background: #0284c7;
+}
