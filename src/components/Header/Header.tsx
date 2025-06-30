@@ -3,11 +3,10 @@ import './Header.css';
 import logo from '../../assets/images/icon-192x192.png';
 
 const navLinks = [
-  { label: 'Início', href: '#hero' },
+  { label: 'Home', href: '/' },
   { label: 'Benefícios', href: '#features' },
-  { label: 'Especialidades', href: '#specialties' },
-  { label: 'Depoimentos', href: '#testimonials' },
   { label: 'Preços', href: '#pricing' },
+  { label: 'Depoimentos', href: '#testimonials' },  
   { label: 'Contato', href: '#contact' },
 ];
 
