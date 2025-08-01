@@ -4,7 +4,8 @@ import Hero from '../components/Hero/Hero';
 import FeaturesSection from '../components/Features/FeaturesSection/FeaturesSection';
 import PricingSection from '../components/Pricing/PricingSection/PricingSection';
 import ContactForm from '../components/ContactForm/ContactForm';
-import Testimonials from '../components/Testimonials/Testimonials';
+import TestimonialSection from '../components/Testimonials/TestimonialSection/TestimonialSection';
+
 import Footer from '../components/Footer/Footer';
 
 const Home: React.FC = () => (
@@ -14,7 +15,7 @@ const Home: React.FC = () => (
     <FeaturesSection />
     <PricingSection />
     <ContactForm />
-    <Testimonials />
+    <TestimonialSection />
     <Footer />
   </div>
 );
