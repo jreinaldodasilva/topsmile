@@ -6,7 +6,6 @@ const navLinks = [
   { label: 'Home', href: '/' },
   { label: 'Benefícios', href: '#features' },
   { label: 'Preços', href: '#pricing' },
-  { label: 'Depoimentos', href: '#testimonials' },  
   { label: 'Contato', href: '#contact' },
 ];
 
@@ -14,7 +13,7 @@ const Header: React.FC = () => (
   <header className="header">
     <div className="container">
       <div className="logo">
-        <img src={logo} alt="TopSmile Logo" width={48} height={48} className="logo-img" />
+        <img src={logo} alt="TopSmile Logo" className="logo-img" />
         <span>TopSmile</span>
       </div>
       <nav className="nav">
