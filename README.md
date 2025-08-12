@@ -13,31 +13,6 @@ TopSmile is a modern React web application designed for clinic management, featu
 - Modular CSS for component styling
 - Web app manifest and favicons for PWA support
 
-## Project Structure
-
-```
-src/
-  components/
-    Header/
-    Hero/
-    Features/
-    Pricing/
-    ContactForm/
-    Testimonials/
-    Footer/
-  pages/
-    Home.tsx
-  styles/
-    global.css
-    variables.css
-  App.tsx
-  index.tsx
-public/
-  index.html
-  manifest.json
-  favicon.ico
-```
-
 ## Getting Started
 
 1. **Install dependencies:**
