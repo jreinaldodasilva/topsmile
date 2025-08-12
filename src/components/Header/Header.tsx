@@ -1,12 +1,13 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './Header.css';
 import logo from '../../assets/images/icon-192x192.png';
 
 const navLinks = [
-  { label: 'Home', href: '/' },
-  { label: 'Benefícios', href: '#features' },
-  { label: 'Preços', href: '#pricing' },
-  { label: 'Contato', href: '#contact' },
+  { label: 'Home', to: '/' },
+  { label: 'Benefícios', to: '/features' },
+  { label: 'Preços', to: '/pricing' },
+  { label: 'Contato', to: '/contact' },
 ];
 
 const Header: React.FC = () => (
@@ -20,7 +21,7 @@ const Header: React.FC = () => (
         <ul>
           {navLinks.map(link => (
             <li key={link.label}>
-              <a href={link.href}>{link.label}</a>
+              <Link to={link.to}>{link.label}</Link>
             </li>
           ))}
         </ul>
