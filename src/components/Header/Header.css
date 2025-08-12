@@ -18,16 +18,16 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 2.0rem;
+  gap: 0.0rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  color: #1b7eac;
+  color: #0ea5e9;
   font-family: 'Inter', sans-serif;
 }
 
 .logo-img {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 12px;
   object-fit: cover;
 }
