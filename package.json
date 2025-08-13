@@ -24,6 +24,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "dev": "concurrently \"npm run server\" \"npm run start\"",
+    "server": "cd ./backend && npm run dev",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -48,6 +50,7 @@
   },
   "devDependencies": {
     "@types/dompurify": "^3.2.0",
-    "@types/react-slick": "^0.23.13"
+    "@types/react-slick": "^0.23.13",
+    "concurrently": "^9.2.0"
   }
 }

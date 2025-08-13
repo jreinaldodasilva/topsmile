@@ -1,3 +1,4 @@
+// src/components/ContactForm/ContactForm.tsx
 import React, { useState, FormEvent } from 'react';
 import DOMPurify from 'dompurify';
 import './ContactForm.css';
@@ -19,6 +20,14 @@ interface FormErrors {
   general?: string;
 }
 
+interface ApiResponse {
+  success: boolean;
+  message: string;
+  errors?: Array<{ msg: string; param: string }>;
+}
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
     name: '',
@@ -30,6 +39,7 @@ const ContactForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState('');
 
   // Sanitize input function
   const sanitizeInput = (input: string): string => {
@@ -44,8 +54,8 @@ const ContactForm: React.FC = () => {
 
   const validatePhone = (phone: string): boolean => {
     // Remove spaces, dashes, and parentheses for validation
-    const phoneRegex = /^[+]?[\d]{1,16}$/;
-    return phoneRegex.test(phone.replace(/[\s\-()]/g, ''));
+    const phoneRegex = /^[+]?[\d\s\-()]{10,20}$/;
+    return phoneRegex.test(phone);
   };
 
   const validateForm = (data: ContactFormData): FormErrors => {
@@ -80,9 +90,7 @@ const ContactForm: React.FC = () => {
     return newErrors;
   };
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const sanitizedValue = sanitizeInput(value);
 
@@ -91,11 +99,33 @@ const ContactForm: React.FC = () => {
       [name]: sanitizedValue
     }));
 
+    // Clear error when user starts typing
     if (errors[name as keyof FormErrors]) {
       setErrors(prev => ({
         ...prev,
         [name]: undefined
       }));
+    }
+  };
+
+  const submitToAPI = async (data: ContactFormData): Promise<ApiResponse> => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('API request failed:', error);
+      return {
+        success: false,
+        message: 'Erro de conexão. Verifique sua internet e tente novamente.'
+      };
     }
   };
 
@@ -113,9 +143,8 @@ const ContactForm: React.FC = () => {
       phone: sanitizeInput(formData.phone)
     };
 
-    // Validate form
+    // Client-side validation
     const formErrors = validateForm(sanitizedData);
-
     if (Object.keys(formErrors).length > 0) {
       setErrors(formErrors);
       setIsSubmitting(false);
@@ -123,16 +152,46 @@ const ContactForm: React.FC = () => {
     }
 
     try {
-      // TODO: Replace with actual API call
-      console.log('Contact form submitted:', sanitizedData);
+      // Submit to API
+      const response = await submitToAPI(sanitizedData);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (response.success) {
+        setIsSubmitted(true);
+        setSubmitMessage(response.message);
+        setFormData({ name: '', email: '', clinic: '', specialty: '', phone: '' });
+        
+        // Track successful submission (for analytics)
+        if (window.gtag) {
+          window.gtag('event', 'form_submit', {
+            event_category: 'Contact',
+            event_label: 'Success'
+          });
+        }
+      } else {
+        // Handle API validation errors
+        if (response.errors && response.errors.length > 0) {
+          const apiErrors: FormErrors = {};
+          response.errors.forEach(error => {
+            apiErrors[error.param as keyof FormErrors] = error.msg;
+          });
+          setErrors(apiErrors);
+        } else {
+          setErrors({ general: response.message });
+        }
 
-      setIsSubmitted(true);
-      setFormData({ name: '', email: '', clinic: '', specialty: '', phone: '' });
+        // Track failed submission
+        if (window.gtag) {
+          window.gtag('event', 'form_submit', {
+            event_category: 'Contact',
+            event_label: 'Error'
+          });
+        }
+      }
     } catch (error) {
-      setErrors({ general: 'Falha ao enviar mensagem. Tente novamente.' });
+      console.error('Form submission error:', error);
+      setErrors({ 
+        general: 'Erro inesperado. Tente novamente ou entre em contato por telefone.' 
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -140,15 +199,24 @@ const ContactForm: React.FC = () => {
 
   if (isSubmitted) {
     return (
-      <div className="contact-form__success">
-        <h3>Obrigado pelo contato!</h3>
-        <p>Retornaremos em até 24 horas.</p>
-        <button
-          onClick={() => setIsSubmitted(false)}
-          className="contact-form__reset-btn"
-        >
-          Enviar outra mensagem
-        </button>
+      <div className="contact-form-section">
+        <div className="contact-form__success">
+          <div className="contact-form__success-icon">✅</div>
+          <h3>Mensagem Enviada com Sucesso!</h3>
+          <p>{submitMessage}</p>
+          <p className="contact-form__success-note">
+            Você também receberá um e-mail de confirmação em breve.
+          </p>
+          <button
+            onClick={() => {
+              setIsSubmitted(false);
+              setSubmitMessage('');
+            }}
+            className="contact-form__reset-btn"
+          >
+            Enviar outra mensagem
+          </button>
+        </div>
       </div>
     );
   }
@@ -168,30 +236,37 @@ const ContactForm: React.FC = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            placeholder="Nome"
+            placeholder="Nome completo"
             className={errors.name ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
             required
+            aria-describedby={errors.name ? 'name-error' : undefined}
           />
           {errors.name && (
-            <span className="contact-form__error">{errors.name}</span>
+            <span id="name-error" className="contact-form__error" role="alert">
+              {errors.name}
+            </span>
           )}
         </div>
 
         <div className="contact-form__field">
           <input
             name="email"
+            type="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="E-mail"
+            placeholder="E-mail profissional"
             className={errors.email ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={255}
             required
+            aria-describedby={errors.email ? 'email-error' : undefined}
           />
           {errors.email && (
-            <span className="contact-form__error">{errors.email}</span>
+            <span id="email-error" className="contact-form__error" role="alert">
+              {errors.email}
+            </span>
           )}
         </div>
 
@@ -200,14 +275,17 @@ const ContactForm: React.FC = () => {
             name="clinic"
             value={formData.clinic}
             onChange={handleInputChange}
-            placeholder="Clínica"
+            placeholder="Nome da clínica"
             className={errors.clinic ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
             required
+            aria-describedby={errors.clinic ? 'clinic-error' : undefined}
           />
           {errors.clinic && (
-            <span className="contact-form__error">{errors.clinic}</span>
+            <span id="clinic-error" className="contact-form__error" role="alert">
+              {errors.clinic}
+            </span>
           )}
         </div>
 
@@ -216,30 +294,37 @@ const ContactForm: React.FC = () => {
             name="specialty"
             value={formData.specialty}
             onChange={handleInputChange}
-            placeholder="Especialidade"
+            placeholder="Especialidade (ex: Ortodontia, Implantodontia)"
             className={errors.specialty ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
             required
+            aria-describedby={errors.specialty ? 'specialty-error' : undefined}
           />
           {errors.specialty && (
-            <span className="contact-form__error">{errors.specialty}</span>
+            <span id="specialty-error" className="contact-form__error" role="alert">
+              {errors.specialty}
+            </span>
           )}
         </div>
 
         <div className="contact-form__field">
           <input
             name="phone"
+            type="tel"
             value={formData.phone}
             onChange={handleInputChange}
-            placeholder="Telefone"
+            placeholder="Telefone com WhatsApp (ex: 11999999999)"
             className={errors.phone ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={20}
             required
+            aria-describedby={errors.phone ? 'phone-error' : undefined}
           />
           {errors.phone && (
-            <span className="contact-form__error">{errors.phone}</span>
+            <span id="phone-error" className="contact-form__error" role="alert">
+              {errors.phone}
+            </span>
           )}
         </div>
 
@@ -247,12 +332,31 @@ const ContactForm: React.FC = () => {
           type="submit"
           disabled={isSubmitting}
           className="contact-btn"
+          aria-describedby="submit-help"
         >
-          {isSubmitting ? 'Enviando...' : 'Enviar'}
+          {isSubmitting ? (
+            <>
+              <span className="contact-btn__spinner">⏳</span>
+              Enviando...
+            </>
+          ) : (
+            'Quero conhecer o TopSmile'
+          )}
         </button>
+        
+        <p id="submit-help" className="contact-form__help">
+          Retornaremos em até 24 horas úteis
+        </p>
       </form>
     </section>
   );
 };
+
+// Extend Window interface for gtag
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+  }
+}
 
 export default ContactForm;
