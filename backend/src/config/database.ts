@@ -9,11 +9,9 @@ const getDatabaseConfig = (): DatabaseConfig => {
   const uri = process.env.DATABASE_URL || 'mongodb://localhost:27017/topsmile';
   
   const options: mongoose.ConnectOptions = {
-  serverSelectionTimeoutMS: 50000,
-  socketTimeoutMS: 45000,
-  maxPoolSize: 10,
-  retryWrites: true
-};
+    // Remove deprecated options that are now default
+    // useNewUrlParser and useUnifiedTopology are default in Mongoose 6+
+  };
 
   return { uri, options };
 };

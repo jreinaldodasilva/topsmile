@@ -24,17 +24,8 @@ connectToDatabase();
 
 // Security middleware
 app.use(helmet());
-app.set('trust proxy', 1);
-const allowedOrigins = [
-  process.env.FRONTEND_URL || 'http://localhost:3000'
-];
 app.use(cors({
-  origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error('Not allowed by CORS'));
-  },
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
 
@@ -89,12 +80,28 @@ const createTransporter = () => {
 
 // Contact form validation rules
 const contactValidation = [
-  body('name').isString().isLength({ min: 2, max: 100 }).withMessage('Nome inválido'),
-  body('email').isEmail().withMessage('E-mail inválido'),
-  body('clinic').optional().isString().isLength({ max: 100 }),
-  body('specialty').optional().isString().isLength({ max: 100 }),
-  body('phone').isString().isLength({ min: 8, max: 20 }).withMessage('Telefone inválido'),
-  body('notes').optional().isString().isLength({ max: 1000 })
+  body('name')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Nome deve ter entre 2 e 100 caracteres')
+    .matches(/^[a-zA-ZÀ-ÿ\s]*$/)
+    .withMessage('Nome deve conter apenas letras e espaços'),
+  
+  body('email')
+    .isEmail()
+    .withMessage('Digite um e-mail válido')
+    .normalizeEmail(),
+  
+  body('clinic')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres'),
+  
+  body('specialty')
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Especialidade deve ter entre 2 e 100 caracteres'),
+  
+  body('phone')
+    .matches(/^[\d\s\-\(\)\+]{10,20}$/)
+    .withMessage('Digite um telefone válido')
 ];
 
 // Interface for contact form data
@@ -123,7 +130,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+        res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -259,7 +266,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
 
   } catch (error) {
     console.error('Error processing contact form:', error);
-
+    
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor. Tente novamente mais tarde.'
@@ -317,11 +324,11 @@ app.get('/api/contacts/stats', async (req, res) => {
   }
 });
 
-app.get('/api/contacts/:id', async (req: Request, res: Response) => {
+app.get('/api/contacts/:id', async (req, res) => {
   try {
     const contact = await contactService.getContactById(req.params.id);
     if (!contact) {
-      res.status(404).json({
+        res.status(404).json({
         success: false,
         message: 'Contato não encontrado'
       });
@@ -340,19 +347,19 @@ app.get('/api/contacts/:id', async (req: Request, res: Response) => {
   }
 });
 
-app.patch('/api/contacts/:id', async (req: Request, res: Response) => {
+app.patch('/api/contacts/:id', async (req, res) => {
   try {
     const updates = req.body;
     const contact = await contactService.updateContact(req.params.id, updates);
-
+    
     if (!contact) {
-      res.status(404).json({
+        res.status(404).json({
         success: false,
         message: 'Contato não encontrado'
       });
       return;
     }
-
+    
     res.json({
       success: true,
       data: contact
@@ -369,7 +376,7 @@ app.patch('/api/contacts/:id', async (req: Request, res: Response) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   const dbStatus = require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected';
-
+  
   res.status(200).json({
     success: true,
     message: 'TopSmile API is running',
@@ -380,7 +387,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Database health endpoint
-app.get('/api/health/database', async (req: Request, res: Response) => {
+app.get('/api/health/database', async (req, res) => {
   try {
     const mongoose = require('mongoose');
     const dbState = mongoose.connection.readyState;
@@ -395,7 +402,7 @@ app.get('/api/health/database', async (req: Request, res: Response) => {
       // Test database with a simple query
       const Contact = require('./models/Contact').Contact;
       const count = await Contact.countDocuments();
-
+      
       res.json({
         success: true,
         database: {
@@ -432,7 +439,7 @@ app.use(handleValidationError);
 
 app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Unhandled error:', error);
-
+  
   res.status(500).json({
     success: false,
     message: 'Erro interno do servidor',
@@ -441,13 +448,12 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
 });
 
 // 404 handler
-// 404 handler
-app.use((_req, res) => {
-  return res.status(404).json({ success: false, message: 'Not Found' });
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Endpoint não encontrado'
+  });
 });
-
-// Error handler (must be last)
-app.use(handleValidationError);
 
 // Start server
 app.listen(PORT, () => {
