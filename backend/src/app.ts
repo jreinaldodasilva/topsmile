@@ -24,8 +24,17 @@ connectToDatabase();
 
 // Security middleware
 app.use(helmet());
+app.set('trust proxy', 1);
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000'
+];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true
 }));
 
@@ -80,28 +89,12 @@ const createTransporter = () => {
 
 // Contact form validation rules
 const contactValidation = [
-  body('name')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome deve ter entre 2 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ\s]*$/)
-    .withMessage('Nome deve conter apenas letras e espaços'),
-
-  body('email')
-    .isEmail()
-    .withMessage('Digite um e-mail válido')
-    .normalizeEmail(),
-
-  body('clinic')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres'),
-
-  body('specialty')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Especialidade deve ter entre 2 e 100 caracteres'),
-
-  body('phone')
-    .matches(/^[\d\s\-\(\)\+]{10,20}$/)
-    .withMessage('Digite um telefone válido')
+  body('name').isString().isLength({ min: 2, max: 100 }).withMessage('Nome inválido'),
+  body('email').isEmail().withMessage('E-mail inválido'),
+  body('clinic').optional().isString().isLength({ max: 100 }),
+  body('specialty').optional().isString().isLength({ max: 100 }),
+  body('phone').isString().isLength({ min: 8, max: 20 }).withMessage('Telefone inválido'),
+  body('notes').optional().isString().isLength({ max: 1000 })
 ];
 
 // Interface for contact form data
@@ -448,12 +441,13 @@ app.use((error: Error, req: express.Request, res: express.Response, next: expres
 });
 
 // 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: 'Endpoint não encontrado'
-  });
+// 404 handler
+app.use((_req, res) => {
+  return res.status(404).json({ success: false, message: 'Not Found' });
 });
+
+// Error handler (must be last)
+app.use(handleValidationError);
 
 // Start server
 app.listen(PORT, () => {
