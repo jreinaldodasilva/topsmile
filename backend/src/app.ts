@@ -7,12 +7,16 @@ import { body, validationResult } from 'express-validator';
 import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import DOMPurify from 'isomorphic-dompurify';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 
 // Database imports
 import { connectToDatabase } from './config/database';
 import { contactService } from './services/contactService';
 import { checkDatabaseConnection, handleValidationError } from './middleware/database';
+
+// Authentication imports
+import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
+import authRoutes from './routes/auth';
 
 dotenv.config();
 
@@ -29,7 +33,7 @@ app.use(cors({
   credentials: true
 }));
 
-// Database connection check middleware
+// Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);
 
 // Rate limiting
@@ -55,6 +59,9 @@ app.use('/api', apiLimiter);
 // Body parser middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Mount authentication routes
+app.use('/api/auth', authRoutes);
 
 // Email transporter configuration
 const createTransporter = () => {
@@ -85,20 +92,20 @@ const contactValidation = [
     .withMessage('Nome deve ter entre 2 e 100 caracteres')
     .matches(/^[a-zA-ZÀ-ÿ\s]*$/)
     .withMessage('Nome deve conter apenas letras e espaços'),
-  
+
   body('email')
     .isEmail()
     .withMessage('Digite um e-mail válido')
     .normalizeEmail(),
-  
+
   body('clinic')
     .isLength({ min: 2, max: 100 })
     .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres'),
-  
+
   body('specialty')
     .isLength({ min: 2, max: 100 })
     .withMessage('Especialidade deve ter entre 2 e 100 caracteres'),
-  
+
   body('phone')
     .matches(/^[\d\s\-\(\)\+]{10,20}$/)
     .withMessage('Digite um telefone válido')
@@ -124,13 +131,15 @@ const sanitizeContactData = (data: ContactFormData): ContactFormData => {
   };
 };
 
-// Contact form endpoint
+// PUBLIC ENDPOINTS (No authentication required)
+
+// Contact form endpoint (public)
 app.post('/api/contact', contactLimiter, contactValidation, async (req: Request, res: Response) => {
   try {
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -266,7 +275,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
 
   } catch (error) {
     console.error('Error processing contact form:', error);
-    
+
     res.status(500).json({
       success: false,
       message: 'Erro interno do servidor. Tente novamente mais tarde.'
@@ -274,119 +283,20 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
   }
 });
 
-// Contact management endpoints (for future admin dashboard)
-app.get('/api/contacts', async (req, res) => {
-  try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const status = req.query.status as string;
-    const search = req.query.search as string;
-    const sortBy = req.query.sortBy as string || 'createdAt';
-    const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
-
-    const filters: any = {};
-    if (status) filters.status = status;
-    if (search) filters.search = search;
-
-    const result = await contactService.getContacts(filters, {
-      page,
-      limit,
-      sortBy,
-      sortOrder
-    });
-
-    res.json({
-      success: true,
-      data: result
-    });
-  } catch (error) {
-    console.error('Error fetching contacts:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao buscar contatos'
-    });
-  }
-});
-
-app.get('/api/contacts/stats', async (req, res) => {
-  try {
-    const stats = await contactService.getContactStats();
-    res.json({
-      success: true,
-      data: stats
-    });
-  } catch (error) {
-    console.error('Error fetching contact stats:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao buscar estatísticas'
-    });
-  }
-});
-
-app.get('/api/contacts/:id', async (req, res) => {
-  try {
-    const contact = await contactService.getContactById(req.params.id);
-    if (!contact) {
-        res.status(404).json({
-        success: false,
-        message: 'Contato não encontrado'
-      });
-      return;
-    }
-    res.json({
-      success: true,
-      data: contact
-    });
-  } catch (error) {
-    console.error('Error fetching contact:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao buscar contato'
-    });
-  }
-});
-
-app.patch('/api/contacts/:id', async (req, res) => {
-  try {
-    const updates = req.body;
-    const contact = await contactService.updateContact(req.params.id, updates);
-    
-    if (!contact) {
-        res.status(404).json({
-        success: false,
-        message: 'Contato não encontrado'
-      });
-      return;
-    }
-    
-    res.json({
-      success: true,
-      data: contact
-    });
-  } catch (error) {
-    console.error('Error updating contact:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Erro ao atualizar contato'
-    });
-  }
-});
-
-// Health check endpoint
+// Health check endpoint (public)
 app.get('/api/health', (req, res) => {
   const dbStatus = require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected';
-  
+
   res.status(200).json({
     success: true,
     message: 'TopSmile API is running',
     timestamp: new Date().toISOString(),
     database: dbStatus,
-    version: '1.0.0'
+    version: '1.1.0'
   });
 });
 
-// Database health endpoint
+// Database health endpoint (public for monitoring)
 app.get('/api/health/database', async (req, res) => {
   try {
     const mongoose = require('mongoose');
@@ -402,7 +312,7 @@ app.get('/api/health/database', async (req, res) => {
       // Test database with a simple query
       const Contact = require('./models/Contact').Contact;
       const count = await Contact.countDocuments();
-      
+
       res.json({
         success: true,
         database: {
@@ -434,12 +344,207 @@ app.get('/api/health/database', async (req, res) => {
   }
 });
 
+// PROTECTED ENDPOINTS (Authentication required)
+
+// Contact management endpoints - Admin only
+app.get('/api/admin/contacts',
+  authenticate,
+  authorize('super_admin', 'admin', 'manager'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const status = req.query.status as string;
+      const search = req.query.search as string;
+      const sortBy = req.query.sortBy as string || 'createdAt';
+      const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
+
+      const filters: any = {};
+      if (status) filters.status = status;
+      if (search) filters.search = search;
+
+      const result = await contactService.getContacts(filters, {
+        page,
+        limit,
+        sortBy,
+        sortOrder
+      });
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('Error fetching contacts:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar contatos'
+      });
+    }
+  }
+);
+
+app.get('/api/admin/contacts/stats',
+  authenticate,
+  authorize('super_admin', 'admin', 'manager'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const stats = await contactService.getContactStats();
+      res.json({
+        success: true,
+        data: stats
+      });
+    } catch (error) {
+      console.error('Error fetching contact stats:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar estatísticas'
+      });
+    }
+  }
+);
+
+app.get('/api/admin/contacts/:id',
+  authenticate,
+  authorize('super_admin', 'admin', 'manager'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const contact = await contactService.getContactById(req.params.id);
+      if (!contact) {
+        res.status(404).json({
+          success: false,
+          message: 'Contato não encontrado'
+        });
+        return;
+      }
+      res.json({
+        success: true,
+        data: contact
+      });
+    } catch (error) {
+      console.error('Error fetching contact:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar contato'
+      });
+    }
+  }
+);
+
+app.patch('/api/admin/contacts/:id',
+  authenticate,
+  authorize('super_admin', 'admin', 'manager'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const updates = req.body;
+
+      // Add assignedTo if updating status and user is not super_admin
+      if (updates.status && req.user && req.user.role !== 'super_admin') {
+        updates.assignedTo = req.user.id;
+      }
+
+      const contact = await contactService.updateContact(req.params.id, updates);
+
+      if (!contact) {
+        res.status(404).json({
+          success: false,
+          message: 'Contato não encontrado'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        data: contact
+      });
+    } catch (error) {
+      console.error('Error updating contact:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao atualizar contato'
+      });
+    }
+  }
+);
+
+app.delete('/api/admin/contacts/:id',
+  authenticate,
+  authorize('super_admin', 'admin'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const deleted = await contactService.deleteContact(req.params.id);
+
+      if (!deleted) {
+        res.status(404).json({
+          success: false,
+          message: 'Contato não encontrado'
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        message: 'Contato excluído com sucesso'
+      });
+    } catch (error) {
+      console.error('Error deleting contact:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao excluir contato'
+      });
+    }
+  }
+);
+
+// Dashboard stats endpoint
+app.get('/api/admin/dashboard',
+  authenticate,
+  authorize('super_admin', 'admin', 'manager'),
+  async (req: AuthenticatedRequest, res) => {
+    try {
+      const [contactStats] = await Promise.all([
+        contactService.getContactStats()
+      ]);
+
+      // Calculate additional metrics
+      const today = new Date();
+      const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+      res.json({
+        success: true,
+        data: {
+          contacts: contactStats,
+          summary: {
+            totalContacts: contactStats.total,
+            newThisWeek: contactStats.recentCount,
+            // Add more metrics as your system grows
+            activeUsers: req.user?.role === 'super_admin' ? 'Available in full version' : 'N/A',
+            revenue: 'Coming soon'
+          },
+          user: {
+            name: req.user?.email,
+            role: req.user?.role,
+            clinicId: req.user?.clinicId
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Erro ao buscar dados do dashboard'
+      });
+    }
+  }
+);
+
 // Error handling middleware
 app.use(handleValidationError);
 
-app.use((error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error:', error);
-  
+
   res.status(500).json({
     success: false,
     message: 'Erro interno do servidor',
@@ -460,6 +565,7 @@ app.listen(PORT, () => {
   console.log(`🚀 TopSmile API running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log(`🔐 JWT Secret configured: ${process.env.JWT_SECRET ? 'Yes' : 'No'}`);
 });
 
 export default app;

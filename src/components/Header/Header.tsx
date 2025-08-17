@@ -26,7 +26,9 @@ const Header: React.FC = () => (
           ))}
         </ul>
       </nav>
-      <a href="#cta" className="cta-button">Sou Cliente (Entrar)</a>
+      <Link to="/login" className="cta-button">
+        Área do Cliente
+      </Link>
     </div>
   </header>
 );

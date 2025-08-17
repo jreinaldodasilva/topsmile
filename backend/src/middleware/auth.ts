@@ -48,7 +48,7 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
 
         return next();
     } catch (error) {
-        res.status(401).json({
+            res.status(401).json({
             success: false,
             message: 'Token inválido'
         });

@@ -1,4 +1,4 @@
-// backend/src/routes/auth.ts
+//backend/src/routes/auth.ts
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
@@ -157,7 +157,7 @@ router.post('/login', authLimiter, loginValidation, async (req: AuthenticatedReq
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+        res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -187,7 +187,7 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
     const user = await authService.getUserById(req.user!.id);
     
     if (!user) {
-      res.status(404).json({
+        res.status(404).json({
         success: false,
         message: 'Usuário não encontrado'
       });
@@ -236,7 +236,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
 });
 
 // Refresh token
-router.post('/refresh', async (req: AuthenticatedRequest, res) => {
+router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
     
