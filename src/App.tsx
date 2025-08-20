@@ -1,3 +1,4 @@
+// src/App.tsx - Updated with Contact Management Routes
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -13,6 +14,7 @@ import LoginPage from './pages/Login/LoginPage';
 
 // Admin pages
 import AdminPage from './pages/Login/AdminPage';
+import ContactManagement from './pages/Admin/ContactManagement';
 
 import './styles/global.css';
 
@@ -34,6 +36,61 @@ const App: React.FC = () => (
             element={
               <ProtectedRoute roles={['super_admin', 'admin', 'manager']}>
                 <AdminPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/contacts" 
+            element={
+              <ProtectedRoute roles={['super_admin', 'admin', 'manager']}>
+                <ContactManagement />
+              </ProtectedRoute>
+            } 
+          />
+          
+          {/* Future admin routes can be added here */}
+          <Route 
+            path="/admin/patients" 
+            element={
+              <ProtectedRoute roles={['super_admin', 'admin', 'manager', 'dentist']}>
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                  <h1>Gestão de Pacientes</h1>
+                  <p>Em desenvolvimento...</p>
+                  <button onClick={() => window.location.href = '/admin'}>
+                    ← Voltar ao Dashboard
+                  </button>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/appointments" 
+            element={
+              <ProtectedRoute roles={['super_admin', 'admin', 'manager', 'dentist', 'assistant']}>
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                  <h1>Agendamentos</h1>
+                  <p>Em desenvolvimento...</p>
+                  <button onClick={() => window.location.href = '/admin'}>
+                    ← Voltar ao Dashboard
+                  </button>
+                </div>
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/billing" 
+            element={
+              <ProtectedRoute roles={['super_admin', 'admin', 'manager']}>
+                <div style={{ padding: '2rem', textAlign: 'center' }}>
+                  <h1>Financeiro</h1>
+                  <p>Em desenvolvimento...</p>
+                  <button onClick={() => window.location.href = '/admin'}>
+                    ← Voltar ao Dashboard
+                  </button>
+                </div>
               </ProtectedRoute>
             } 
           />
