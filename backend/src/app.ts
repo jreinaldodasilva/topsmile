@@ -8,6 +8,7 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
+import bodyParser from "body-parser";
 
 // Database imports
 import { connectToDatabase } from './config/database';
@@ -17,6 +18,9 @@ import { checkDatabaseConnection, handleValidationError } from './middleware/dat
 // Authentication imports
 import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
 import authRoutes from './routes/auth';
+
+import calendarRoutes from "./routes/calendar";
+import formRoutes from "./routes/forms";
 
 dotenv.config();
 
@@ -32,6 +36,13 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
+
+// Parse JSON bodies
+app.use(bodyParser.json());
+
+
+app.use("/api/calendar", calendarRoutes);
+app.use("/api/forms", formRoutes);
 
 // Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);

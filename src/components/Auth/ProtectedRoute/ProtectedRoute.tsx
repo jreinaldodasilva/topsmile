@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children: JSX.Element;
   roles?: string[];
 }
 
@@ -11,31 +11,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles = [] })
   const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 
-  // Show loading state while checking authentication
   if (isLoading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner">Carregando...</div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated || !user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check role permissions if roles are specified
-  if (roles.length > 0 && !roles.includes(user.role)) {
-    return (
-      <div className="access-denied">
-        <h2>Acesso Negado</h2>
-        <p>Você não tem permissão para acessar esta página.</p>
-      </div>
-    );
+  // role check (if roles provided)
+  if (roles.length && user && (user.role && !roles.includes(user.role))) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  return <>{children}</>;
+  return children;
 };
 
 export default ProtectedRoute;

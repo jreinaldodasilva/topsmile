@@ -1,207 +1,109 @@
 // src/services/apiService.ts
-interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  message?: string;
-  errors?: Array<{ msg: string; param: string }>;
+import { request } from './http';
+import type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User } from '../types/api';
+
+export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User };
+
+async function login(email: string, password: string): Promise<ApiResult<{ token: string }>> {
+  const res = await request<{ token: string }>('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password })
+  }, false);
+  return { success: true, data: res.data, message: res.message };
 }
 
-interface DashboardStats {
+async function register(payload: { name: string; email: string; password: string }): Promise<ApiResult> {
+  const res = await request('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }, false);
+  return { success: true, data: res.data, message: res.message } as ApiResult;
+}
+
+async function me(): Promise<ApiResult<User>> {
+  const res = await request('/auth/me');
+  return { success: true, data: res.data, message: res.message } as ApiResult<User>;
+}
+
+async function getContacts(query?: Record<string, any>): Promise<ApiResult<Contact[] | ContactListResponse>> {
+  const qs = query
+    ? '?' +
+      Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+  const res = await request<Contact[] | ContactListResponse>(`/contacts${qs}`, { method: 'GET' });
+  return { success: true, data: res.data, message: res.message } as ApiResult<Contact[] | ContactListResponse>;
+}
+
+async function getContact(id: string): Promise<ApiResult<Contact>> {
+  const res = await request<Contact>(`/contacts/${encodeURIComponent(id)}`, { method: 'GET' });
+  return { success: true, data: res.data, message: res.message } as ApiResult<Contact>;
+}
+
+async function createContact(payload: Partial<Contact>): Promise<ApiResult<Contact>> {
+  const res = await request('/contacts', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: true, data: res.data, message: res.message } as ApiResult<Contact>;
+}
+
+async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
+  const res = await request(`/contacts/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  return { success: true, data: res.data, message: res.message } as ApiResult<Contact>;
+}
+
+async function deleteContact(id: string): Promise<ApiResult<void>> {
+  const res = await request(`/contacts/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return { success: true, data: res.data, message: res.message } as ApiResult<void>;
+}
+
+async function getDashboardStats(): Promise<ApiResult<DashboardStats>> {
+  const res = await request<DashboardStats>('/dashboard/stats', { method: 'GET' });
+  return { success: true, data: res.data, message: res.message } as ApiResult<DashboardStats>;
+}
+
+async function sendContactForm(payload: { name: string; email: string; message: string }): Promise<ApiResult> {
+  const res = await request('/public/contact', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  }, false);
+  return { success: true, data: res.data, message: res.message } as ApiResult;
+}
+
+/**
+ * Expose both a nested `apiService` object (for existing callers expecting .contacts/.dashboard)
+ * and a default flat instance for backward compatibility.
+ */
+export const apiService = {
+  auth: { login, register, me },
   contacts: {
-    total: number;
-    byStatus: Array<{ _id: string; count: number }>;
-    bySource: Array<{ _id: string; count: number }>;
-    recentCount: number;
-  };
-  summary: {
-    totalContacts: number;
-    newThisWeek: number;
-    activeUsers: string;
-    revenue: string;
-  };
-  user: {
-    name: string;
-    role: string;
-    clinicId?: string;
-  };
-}
+    getAll: getContacts,
+    getOne: getContact,
+    create: createContact,
+    update: updateContact,
+    delete: deleteContact
+  },
+  dashboard: { getStats: getDashboardStats },
+  public: { sendContactForm },
 
-interface Contact {
-  id: string;
-  name: string;
-  email: string;
-  clinic: string;
-  specialty: string;
-  phone: string;
-  status: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed';
-  source: string;
-  notes?: string;
-  assignedTo?: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  followUpDate?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface ContactListResponse {
-  contacts: Contact[];
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
-}
-
-interface ContactFilters {
-  status?: string;
-  source?: string;
-  search?: string;
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
-}
-
-class ApiService {
-  private readonly baseURL: string;
-
-  constructor() {
-    this.baseURL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const token = localStorage.getItem('topsmile_token');
-    
-    const config: RequestInit = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, config);
-      
-      // Handle different response types
-      const contentType = response.headers.get('content-type');
-      let data: any;
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = await response.text();
-      }
-
-      if (!response.ok) {
-        // Handle authentication errors
-        if (response.status === 401) {
-          localStorage.removeItem('topsmile_token');
-          window.location.href = '/login';
-          throw new Error('Sessão expirada. Faça login novamente.');
-        }
-
-        // Handle other API errors
-        const errorMessage = data?.message || `Erro ${response.status}: ${response.statusText}`;
-        throw new Error(errorMessage);
-      }
-
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro de conexão. Verifique sua internet e tente novamente.');
-    }
-  }
-
-  // Dashboard APIs
-  dashboard = {
-    getStats: (): Promise<ApiResponse<DashboardStats>> => {
-      return this.request<DashboardStats>('/api/admin/dashboard');
-    }
-  };
-
-  // Contact APIs
-  contacts = {
-    getAll: (filters: ContactFilters = {}): Promise<ApiResponse<ContactListResponse>> => {
-      const queryParams = new URLSearchParams();
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          queryParams.append(key, value.toString());
-        }
-      });
-
-      const queryString = queryParams.toString();
-      const endpoint = `/api/admin/contacts${queryString ? `?${queryString}` : ''}`;
-      
-      return this.request<ContactListResponse>(endpoint);
-    },
-
-    getById: (id: string): Promise<ApiResponse<Contact>> => {
-      return this.request<Contact>(`/api/admin/contacts/${id}`);
-    },
-
-    update: (id: string, updates: Partial<Contact>): Promise<ApiResponse<Contact>> => {
-      return this.request<Contact>(`/api/admin/contacts/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updates)
-      });
-    },
-
-    delete: (id: string): Promise<ApiResponse<void>> => {
-      return this.request<void>(`/api/admin/contacts/${id}`, {
-        method: 'DELETE'
-      });
-    },
-
-    getStats: (): Promise<ApiResponse<{
-      total: number;
-      byStatus: Array<{ _id: string; count: number }>;
-      bySource: Array<{ _id: string; count: number }>;
-      recentCount: number;
-    }>> => {
-      return this.request('/api/admin/contacts/stats');
-    }
-  };
-
-  // Health check
-  health = {
-    check: (): Promise<ApiResponse<{
-      message: string;
-      timestamp: string;
-      database: string;
-      version: string;
-    }>> => {
-      return this.request('/api/health');
-    },
-
-    database: (): Promise<ApiResponse<{
-      database: {
-        status: string;
-        name?: string;
-        host?: string;
-        port?: number;
-        totalContacts?: number;
-      };
-    }>> => {
-      return this.request('/api/health/database');
-    }
-  };
-}
-
-// Create singleton instance
-export const apiService = new ApiService();
-
-// Export types for use in components
-export type {
-  ApiResponse,
-  DashboardStats,
-  Contact,
-  ContactListResponse,
-  ContactFilters
+  // flat exports for compatibility
+  login,
+  register,
+  me,
+  getContacts,
+  getContact,
+  createContact,
+  updateContact,
+  deleteContact,
+  getDashboardStats,
+  sendContactForm
 };
+
+export default apiService;

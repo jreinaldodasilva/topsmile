@@ -1,5 +1,5 @@
 // frontend/src/components/Auth/LoginForm/LoginForm.tsx
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import './LoginForm.css';
 
@@ -11,26 +11,18 @@ const LoginForm: React.FC = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  useEffect(() => {
+    return () => {
+      clearError();
+    };
+  }, [clearError]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    clearError();
-    
     try {
       await login(formData.email, formData.password);
-    } catch (error) {
-      // Error is handled by the context
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-    
-    if (error) {
-      clearError();
+    } catch {
+      // error state is handled by context
     }
   };
 
@@ -56,7 +48,7 @@ const LoginForm: React.FC = () => {
               id="email"
               name="email"
               value={formData.email}
-              onChange={handleInputChange}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               required
               disabled={isLoading}
               placeholder="seu@email.com"
@@ -71,7 +63,7 @@ const LoginForm: React.FC = () => {
                 id="password"
                 name="password"
                 value={formData.password}
-                onChange={handleInputChange}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={isLoading}
                 placeholder="Sua senha"
