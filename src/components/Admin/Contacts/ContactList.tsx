@@ -1,5 +1,5 @@
 // src/components/Admin/Contacts/ContactList.tsx
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useContacts } from '../../../hooks/useApiState';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import './ContactList.css';
@@ -32,14 +32,16 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const handleStatusFilter = (status: string) => {
     setFilters(prev => ({
       ...(prev ?? {}),
-      status: status === 'all' ? undefined : status,
+      status: status === 'all' ? undefined : (status as Contact['status']), // Type assertion to prevent type error
       page: 1
     }));
   };
 
-  const handleStatusUpdate = async (contactId: string, newStatus: string) => {
+  const handleStatusUpdate = async (contactId: string, newStatus: Contact['status']) => {
     try {
-      await updateContact(contactId, { status: newStatus });
+      if (newStatus) {
+        await updateContact(contactId, { status: newStatus });
+      }
     } catch (error) {
       console.error('Failed to update contact status:', error);
     }
@@ -97,9 +99,16 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
               <td>{c.name}</td>
               <td>{c.email}</td>
               <td>{c.message}</td>
-              <td>{c.status ?? '—'}</td>
               <td>
-                <button onClick={() => handleStatusUpdate(c._id ?? (c as any).id, 'read')}>Marcar como lido</button>
+                <select value={c.status ?? 'new'} onChange={e => handleStatusUpdate(c._id ?? (c as any).id, e.target.value as Contact['status'])}>
+                  <option value="new">Novo</option>
+                  <option value="contacted">Contatado</option>
+                  <option value="qualified">Qualificado</option>
+                  <option value="converted">Convertido</option>
+                  <option value="closed">Fechado</option>
+                </select>
+              </td>
+              <td>
                 <button onClick={() => deleteContact(c._id ?? (c as any).id)}>Excluir</button>
               </td>
             </tr>

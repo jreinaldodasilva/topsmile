@@ -32,12 +32,14 @@ async function getContacts(query?: Record<string, any>): Promise<ApiResult<Conta
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join('&')
     : '';
-  const res = await request<Contact[] | ContactListResponse>(`/contacts${qs}`, { method: 'GET' });
+  // changed endpoint to backend admin route
+  const res = await request<Contact[] | ContactListResponse>(`/api/admin/contacts${qs}`, { method: 'GET' });
   return { success: true, data: res.data, message: res.message } as ApiResult<Contact[] | ContactListResponse>;
 }
 
 async function getContact(id: string): Promise<ApiResult<Contact>> {
-  const res = await request<Contact>(`/contacts/${encodeURIComponent(id)}`, { method: 'GET' });
+  // changed endpoint to backend admin route
+  const res = await request<Contact>(`/api/admin/contacts/${encodeURIComponent(id)}`, { method: 'GET' });
   return { success: true, data: res.data, message: res.message } as ApiResult<Contact>;
 }
 
@@ -51,7 +53,7 @@ async function createContact(payload: Partial<Contact>): Promise<ApiResult<Conta
 
 async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
   const res = await request(`/contacts/${encodeURIComponent(id)}`, {
-    method: 'PUT',
+    method: 'PATCH',
     body: JSON.stringify(payload)
   });
   return { success: true, data: res.data, message: res.message } as ApiResult<Contact>;
@@ -65,7 +67,8 @@ async function deleteContact(id: string): Promise<ApiResult<void>> {
 }
 
 async function getDashboardStats(): Promise<ApiResult<DashboardStats>> {
-  const res = await request<DashboardStats>('/dashboard/stats', { method: 'GET' });
+  // changed endpoint to backend admin dashboard route
+  const res = await request<DashboardStats>('/api/admin/dashboard', { method: 'GET' });
   return { success: true, data: res.data, message: res.message } as ApiResult<DashboardStats>;
 }
 

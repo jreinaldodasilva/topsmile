@@ -12,7 +12,17 @@ router.post('/templates', body('title').notEmpty(), body('questions').isArray(),
   return res.json(tpl);
 });
 
-router.get('/templates', async (req, res) => res.json(await FormTemplate.find().sort({ createdAt: -1 })));
+router.get('/templates/:id', async (req, res) => {
+  try {
+    const template = await FormTemplate.findById(req.params.id);
+    if (!template) {
+      return res.status(404).json({ error: 'Template not found' });
+    }
+    return res.json(template);
+  } catch (error) {
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
 
 router.post('/responses', body('templateId').isMongoId(), body('patientId').isMongoId(), body('answers').isObject(), async (req, res) => {
   const errs = validationResult(req); if (!errs.isEmpty()) return res.status(400).json({ errors: errs.array() });

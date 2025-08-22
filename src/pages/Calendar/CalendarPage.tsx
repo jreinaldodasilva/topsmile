@@ -1,7 +1,8 @@
 // frontend/src/pages/Calendar.tsx
 import React, { useEffect, useState } from 'react';
 import api from '../../types/api';
-import DayPicker from 'react-calendar'; // or any calendar
+import Calendar from 'react-calendar';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface Appointment {
   _id: string;
@@ -10,14 +11,42 @@ interface Appointment {
 }
 
 const CalendarPage: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   useEffect(() => {
-    api.get('/appointments').then(res => setAppointments(res.data));
-  }, []);
-  return <DayPicker tileContent={({ date }) => {
-    return appointments.some(a => new Date(a.scheduledAt).toDateString() === date.toDateString())
-      ? <span>•</span> : null;
-  }} />;
+    let mounted = true;
+    if (!isAuthenticated) {
+      setAppointments([]);
+      return;
+    }
+
+    // typed request so res.data has correct shape
+    api
+      .get<Appointment[]>('/api/appointments')
+      .then(res => {
+        if (!mounted) return;
+        setAppointments(res.data ?? []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setAppointments([]);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthenticated]);
+
+  return (
+    <Calendar
+      tileContent={({ date /*, view */ }) => {
+        return appointments.some(a => new Date(a.scheduledAt).toDateString() === date.toDateString())
+          ? <span>•</span>
+          : null;
+      }}
+    />
+  );
 };
 
 export default CalendarPage;
