@@ -5,7 +5,7 @@ import type { ApiResult, Contact, ContactFilters, ContactListResponse, Dashboard
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User };
 
 async function login(email: string, password: string): Promise<ApiResult<{ token: string }>> {
-  const res = await request<{ token: string }>('/auth/login', {
+  const res = await request<{ token: string }>('/api/admin/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password })
   }, false);
@@ -13,7 +13,7 @@ async function login(email: string, password: string): Promise<ApiResult<{ token
 }
 
 async function register(payload: { name: string; email: string; password: string }): Promise<ApiResult> {
-  const res = await request('/auth/register', {
+  const res = await request('/api/admin/auth/register', {
     method: 'POST',
     body: JSON.stringify(payload)
   }, false);
@@ -21,7 +21,7 @@ async function register(payload: { name: string; email: string; password: string
 }
 
 async function me(): Promise<ApiResult<User>> {
-  const res = await request('/auth/me');
+  const res = await request('/api/admin/auth/me');
   return { success: true, data: res.data, message: res.message } as ApiResult<User>;
 }
 
@@ -73,7 +73,7 @@ async function getDashboardStats(): Promise<ApiResult<DashboardStats>> {
 }
 
 async function sendContactForm(payload: { name: string; email: string; message: string }): Promise<ApiResult> {
-  const res = await request('/public/contact', {
+  const res = await request('/api/contact', {
     method: 'POST',
     body: JSON.stringify(payload)
   }, false);
