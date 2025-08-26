@@ -1,6 +1,7 @@
 // frontend/src/components/FormRenderer.tsx
 import React, { useState, useEffect } from 'react';
-import api from '../../types/api';
+import axios from 'axios';
+const api = axios.create({ baseURL: process.env.REACT_APP_API_URL || '' });
 
 const FormRendererPage: React.FC<{ templateId: string }> = ({ templateId }) => {
   const [template, setTemplate] = useState<any>(null);

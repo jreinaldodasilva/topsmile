@@ -1,8 +1,9 @@
 // frontend/src/pages/Calendar.tsx
 import React, { useEffect, useState } from 'react';
-import api from '../../types/api';
 import Calendar from 'react-calendar';
 import { useAuth } from '../../contexts/AuthContext';
+import axios from 'axios';
+const api = axios.create({ baseURL: process.env.REACT_APP_API_URL || '' });
 
 interface Appointment {
   _id: string;

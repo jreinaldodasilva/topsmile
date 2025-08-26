@@ -1,8 +1,4 @@
 // frontend/src/services/api.ts
-import axios from 'axios';
-const api = axios.create({ baseURL: process.env.REACT_APP_API_URL || '' });
-export default api;
-
 export type ApiResult<T = any> = {
   success: boolean;
   data?: T;
@@ -21,7 +17,7 @@ export type User = {
   _id?: string;
   name?: string;
   email?: string;
-  role?: 'admin' | 'user' | 'staff' | string;
+  role?: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
   clinic?: string | Clinic;
   createdAt?: string | Date;
   updatedAt?: string | Date;

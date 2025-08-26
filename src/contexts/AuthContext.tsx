@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
       try {
-        const res = await request('/auth/me', { method: 'GET' }, true, controller.signal);
+        const res = await request('/api/auth/me', { method: 'GET' }, true, controller.signal);
         if (mounted) setUser(res.data ?? null);
       } catch (err: any) {
         // If token invalid, remove it
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(true);
     setError(null);
     try {
-      const res = await request<{ token: string }>('/auth/login', {
+      const res = await request<{ token: string }>('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password })
       }, false);
@@ -69,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       localStorage.setItem(TOKEN_KEY, token);
 
       // fetch profile
-      const profile = await request('/auth/me', { method: 'GET' }, true);
+      const profile = await request('/api/auth/me', { method: 'GET' }, true);
       setUser(profile.data ?? null);
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -85,7 +85,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null);
     try {
       // registration often returns token; handle both cases
-      const res = await request('/auth/register', {
+      const res = await request('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(payload)
       }, false);
@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // attempt to fetch profile if token present or server returned user
       if (token) {
-        const profile = await request('/auth/me', { method: 'GET' }, true);
+        const profile = await request('/api/auth/me', { method: 'GET' }, true);
         setUser(profile.data ?? null);
       } else if (res.data && (res.data as any).user) {
         setUser((res.data as any).user);
@@ -115,7 +115,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUser = async () => {
     try {
-      const res = await request('/auth/me', { method: 'GET' }, true);
+      const res = await request('/api/auth/me', { method: 'GET' }, true);
       setUser(res.data ?? null);
     } catch {
       setUser(null);

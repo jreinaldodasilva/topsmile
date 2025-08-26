@@ -44,7 +44,7 @@ async function getContact(id: string): Promise<ApiResult<Contact>> {
 }
 
 async function createContact(payload: Partial<Contact>): Promise<ApiResult<Contact>> {
-  const res = await request('/contacts', {
+  const res = await request('/api/admin/contacts', {
     method: 'POST',
     body: JSON.stringify(payload)
   });
@@ -52,7 +52,7 @@ async function createContact(payload: Partial<Contact>): Promise<ApiResult<Conta
 }
 
 async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
-  const res = await request(`/contacts/${encodeURIComponent(id)}`, {
+  const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
   });
@@ -60,7 +60,7 @@ async function updateContact(id: string, payload: Partial<Contact>): Promise<Api
 }
 
 async function deleteContact(id: string): Promise<ApiResult<void>> {
-  const res = await request(`/contacts/${encodeURIComponent(id)}`, {
+  const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'DELETE'
   });
   return { success: true, data: res.data, message: res.message } as ApiResult<void>;
