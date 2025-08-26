@@ -37,12 +37,12 @@ const registerValidation = [
     .withMessage('Nome deve ter entre 2 e 100 caracteres')
     .matches(/^[a-zA-ZÀ-ÿ\s]*$/)
     .withMessage('Nome deve conter apenas letras e espaços'),
-  
+
   body('email')
     .isEmail()
     .withMessage('Digite um e-mail válido')
     .normalizeEmail(),
-  
+
   body('password')
     .isLength({ min: 6 })
     .withMessage('Senha deve ter pelo menos 6 caracteres')
@@ -54,7 +54,7 @@ const registerValidation = [
     .optional()
     .isLength({ min: 2, max: 100 })
     .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres'),
-  
+
   body('clinic.phone')
     .optional()
     .matches(/^[\d\s\-\(\)\+]{10,20}$/)
@@ -86,7 +86,7 @@ const loginValidation = [
     .isEmail()
     .withMessage('Digite um e-mail válido')
     .normalizeEmail(),
-  
+
   body('password')
     .isLength({ min: 1 })
     .withMessage('Senha é obrigatória')
@@ -96,7 +96,7 @@ const changePasswordValidation = [
   body('currentPassword')
     .isLength({ min: 1 })
     .withMessage('Senha atual é obrigatória'),
-  
+
   body('newPassword')
     .isLength({ min: 6 })
     .withMessage('Nova senha deve ter pelo menos 6 caracteres')
@@ -107,7 +107,7 @@ const changePasswordValidation = [
 // Sanitize input data
 const sanitizeAuthData = (data: any) => {
   const sanitized: any = {};
-  
+
   for (const key in data) {
     if (typeof data[key] === 'string') {
       sanitized[key] = DOMPurify.sanitize(data[key].trim());
@@ -117,7 +117,7 @@ const sanitizeAuthData = (data: any) => {
       sanitized[key] = data[key];
     }
   }
-  
+
   return sanitized;
 };
 
@@ -127,7 +127,7 @@ router.post('/register', registerLimiter, registerValidation, async (req: Authen
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -139,11 +139,11 @@ router.post('/register', registerLimiter, registerValidation, async (req: Authen
     const sanitizedData = sanitizeAuthData(req.body);
 
     const result = await authService.register(sanitizedData);
-    
+
     res.status(201).json(result);
   } catch (error) {
     console.error('Register error:', error);
-    
+
     res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao criar usuário'
@@ -157,7 +157,7 @@ router.post('/login', authLimiter, loginValidation, async (req: AuthenticatedReq
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -169,11 +169,11 @@ router.post('/login', authLimiter, loginValidation, async (req: AuthenticatedReq
     const sanitizedData = sanitizeAuthData(req.body);
 
     const result = await authService.login(sanitizedData);
-    
+
     res.json(result);
   } catch (error) {
     console.error('Login error:', error);
-    
+
     res.status(401).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao fazer login'
@@ -185,9 +185,9 @@ router.post('/login', authLimiter, loginValidation, async (req: AuthenticatedReq
 router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = await authService.getUserById(req.user!.id);
-    
+
     if (!user) {
-        res.status(404).json({
+      res.status(404).json({
         success: false,
         message: 'Usuário não encontrado'
       });
@@ -211,7 +211,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        res.status(400).json({
+      res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
@@ -222,7 +222,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
     const { currentPassword, newPassword } = req.body;
 
     await authService.changePassword(req.user!.id, currentPassword, newPassword);
-    
+
     res.json({
       success: true,
       message: 'Senha alterada com sucesso'
@@ -239,9 +239,9 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
 router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
-        res.status(401).json({
+      res.status(401).json({
         success: false,
         message: 'Token obrigatório'
       });
@@ -249,7 +249,7 @@ router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
     }
 
     const newToken = await authService.refreshToken(token);
-    
+
     res.json({
       success: true,
       data: {
@@ -270,11 +270,71 @@ router.post('/logout', authenticate, (req: AuthenticatedRequest, res) => {
   // JWT tokens are stateless, so logout is handled client-side
   // This endpoint is mainly for logging purposes
   console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
-  
+
   res.json({
     success: true,
     message: 'Logout realizado com sucesso'
   });
 });
+
+// Appended handlers for refresh/logout (add these inside backend/src/routes/auth.ts before `export default router;`)
+
+/**
+ * Refresh access token using refresh token rotation
+ * POST /api/auth/refresh
+ * body: { refreshToken }
+ * returns: { success: true, data: { accessToken, refreshToken, expiresIn } }
+ */
+router.post('/refresh', async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      res.status(401).json({ success: false, message: 'Token de atualização obrigatório' });
+      return;
+    }
+
+    const tokens = await authService.refreshAccessToken(refreshToken);
+
+    res.json({ success: true, data: tokens });
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Erro ao renovar token'
+    });
+  }
+});
+
+/**
+ * Revoke a specific refresh token (logout from a device)
+ * POST /api/auth/logout-revoke
+ * body: { refreshToken }
+ * Auth required.
+ */
+router.post('/logout-revoke', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
+    if (refreshToken) {
+      await authService.logout(refreshToken);
+    }
+    res.json({ success: true, message: 'Logout realizado com sucesso' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erro ao fazer logout' });
+  }
+});
+
+/**
+ * Revoke all refresh tokens for the current user (logout from all devices)
+ * POST /api/auth/logout-all
+ * Auth required.
+ */
+router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    await authService.logoutAllDevices(req.user!.id);
+    res.json({ success: true, message: 'Logout realizado em todos os dispositivos' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Erro ao fazer logout' });
+  }
+});
+
 
 export default router;

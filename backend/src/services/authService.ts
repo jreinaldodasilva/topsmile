@@ -1,5 +1,7 @@
 // backend/src/services/authService.ts
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
+import { RefreshToken } from '../models/RefreshToken';
 import { SignOptions } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User, IUser } from '../models/User';
@@ -14,11 +16,10 @@ export interface RegisterData {
         phone: string;
         address: {
             street: string;
-            number: string;
-            neighborhood: string;
-            city: string;
-            state: string;
-            zipCode: string;
+            number?: string;
+            city?: string;
+            state?: string;
+            zip?: string;
         };
     };
 }
@@ -63,11 +64,7 @@ class AuthService {
             audience: 'topsmile-client'
         };
 
-        return jwt.sign(
-            cleanPayload,
-            this.JWT_SECRET as string, // ✅ Ensure it's typed as string
-            options
-        );
+        return jwt.sign(cleanPayload as any, this.JWT_SECRET as string, options);
     }
 
     // Verify JWT token
@@ -82,18 +79,107 @@ class AuthService {
         }
     }
 
+    private readonly ACCESS_TOKEN_EXPIRES = '15m';
+    private readonly REFRESH_TOKEN_EXPIRES_DAYS = 7;
+    private readonly MAX_REFRESH_TOKENS_PER_USER = 5;
+
+    // Generate short-lived access token
+    private generateAccessToken(payload: TokenPayload): string {
+        return jwt.sign(payload, this.JWT_SECRET as string, {
+            expiresIn: this.ACCESS_TOKEN_EXPIRES,
+            issuer: 'topsmile-api',
+            audience: 'topsmile-client'
+        } as jwt.SignOptions);
+    }
+
+    // Generate secure random refresh token string
+    private generateRefreshTokenString(): string {
+        return crypto.randomBytes(48).toString('hex');
+    }
+
+    // Create refresh token document in DB and cleanup old tokens
+    private async createRefreshToken(userId: string, deviceInfo?: any) {
+        const tokenStr = this.generateRefreshTokenString();
+        const expiresAt = new Date();
+        expiresAt.setDate(expiresAt.getDate() + this.REFRESH_TOKEN_EXPIRES_DAYS);
+
+        await this.cleanupOldRefreshTokens(userId);
+
+        const refreshToken = new RefreshToken({
+            token: tokenStr,
+            userId,
+            expiresAt,
+            deviceInfo
+        });
+
+        return await refreshToken.save();
+    }
+
+    // Rotate and refresh access token using a refresh token string
+    async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
+        const stored = await RefreshToken.findOne({
+            token: refreshTokenString,
+            isRevoked: false,
+            expiresAt: { $gt: new Date() }
+        }).populate('userId');
+
+        if (!stored) {
+            throw new Error('Token de atualização inválido ou expirado');
+        }
+
+        const user = (stored.userId as any);
+        if (!user || !user.isActive) {
+            throw new Error('Usuário inválido ou inativo');
+        }
+
+        // Revoke used refresh token (rotation)
+        stored.isRevoked = true;
+        await stored.save();
+
+        const payload: TokenPayload = {
+            userId: user._id.toString(),
+            email: user.email,
+            role: user.role,
+            ...(user.clinic ? { clinicId: (user.clinic as any)._id?.toString?.() ?? user.clinic?.toString?.() } : {})
+        };
+
+        const accessToken = this.generateAccessToken(payload);
+        const newRefreshDoc = await this.createRefreshToken(user._id.toString(), stored.deviceInfo);
+
+        return { accessToken, refreshToken: newRefreshDoc.token, expiresIn: this.ACCESS_TOKEN_EXPIRES };
+    }
+
+    // Logout (revoke a refresh token)
+    async logout(refreshTokenString: string): Promise<void> {
+        if (!refreshTokenString) return;
+        await RefreshToken.findOneAndUpdate({ token: refreshTokenString }, { isRevoked: true });
+    }
+
+    // Logout all devices for a user
+    async logoutAllDevices(userId: string): Promise<void> {
+        await RefreshToken.updateMany({ userId, isRevoked: false }, { isRevoked: true });
+    }
+
+    // Keep only most recent MAX_REFRESH_TOKENS_PER_USER refresh tokens; revoke older ones
+    private async cleanupOldRefreshTokens(userId: string): Promise<void> {
+        const tokens = await RefreshToken.find({ userId, isRevoked: false }).sort({ createdAt: -1 });
+        if (tokens.length > this.MAX_REFRESH_TOKENS_PER_USER) {
+            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER);
+            const ids = toRevoke.map(t => t._id);
+            await RefreshToken.updateMany({ _id: { $in: ids } }, { isRevoked: true });
+        }
+    }
+
     // Register new user with clinic
     async register(data: RegisterData): Promise<AuthResponse> {
         try {
             // Check if user already exists
             const existingUser = await User.findOne({ email: data.email });
             if (existingUser) {
-                throw new Error('E-mail já está em uso');
+                throw new Error('Usuário já existe');
             }
 
             let clinicId;
-
-            // Create clinic if provided
             if (data.clinic) {
                 const clinic = new Clinic({
                     name: data.clinic.name,
@@ -125,89 +211,84 @@ class AuthService {
                 clinicId = savedClinic._id;
             }
 
-            // Create user
             const user = new User({
                 name: data.name,
                 email: data.email,
                 password: data.password,
-                role: clinicId ? 'admin' : 'super_admin', // First user is admin of their clinic
-                clinic: clinicId,
-                isActive: true
+                clinic: clinicId
             });
 
             const savedUser = await user.save();
 
             // Generate token
-            const token = this.generateToken({
-                userId: (savedUser as any)._id.toString(),
-                email: savedUser.email,
-                role: savedUser.role,
-                clinicId: clinicId?.toString()
-            });
-
-            // Update last login
-            savedUser.lastLogin = new Date();
-            await savedUser.save();
-
-            return {
-                success: true,
-                data: {
-                    user: savedUser,
-                    token,
-                    expiresIn: this.JWT_EXPIRES_IN
-                }
-            };
-        } catch (error) {
-            if (error instanceof Error) {
-                throw error;
-            }
-            throw new Error('Erro ao criar usuário');
-        }
-    }
-
-    // Login user
-    async login(data: LoginData): Promise<AuthResponse> {
-        try {
-            // Find user with password field included
-            const user = await User.findOne({ email: data.email })
-                .select('+password')
-                .populate('clinic', 'name subscription');
-
-            if (!user) {
-                throw new Error('E-mail ou senha inválidos');
-            }
-
-            if (!user.isActive) {
-                throw new Error('Usuário desativado. Entre em contato com o suporte');
-            }
-
-            // Check password
-            const isPasswordValid = await user.comparePassword(data.password);
-            if (!isPasswordValid) {
-                throw new Error('E-mail ou senha inválidos');
-            }
-
-            // Generate token
-            const token = this.generateToken({
-                userId: (user as any)._id.toString(),
+            const tokenPayload = {
+                userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                clinicId: user.clinic?._id.toString()
-            });
+                clinicId: user.clinic?._id?.toString()
+            };
+
+            const accessToken = this.generateAccessToken(tokenPayload);
+            const refreshDoc = await this.createRefreshToken((user._id as any).toString());
 
             // Update last login
             user.lastLogin = new Date();
             await user.save();
 
-            // Remove password from response
-            const userResponse = user.toJSON();
+            return {
+                success: true,
+                data: {
+                    user: savedUser as any,
+                    token: accessToken,
+                    expiresIn: this.ACCESS_TOKEN_EXPIRES
+                }
+            } as any;
+        } catch (error) {
+            if (error instanceof Error) {
+                throw error;
+            }
+            throw new Error('Erro ao registrar usuário');
+        }
+    }
+
+    // Login user and return access + refresh tokens
+    async login(data: LoginData, deviceInfo?: any): Promise<any> {
+        try {
+            const user = await User.findOne({ email: data.email }).populate('clinic');
+            if (!user) {
+                throw new Error('E-mail ou senha inválidos');
+            }
+
+            const isMatch = await bcrypt.compare(data.password, user.password);
+            if (!isMatch) {
+                throw new Error('E-mail ou senha inválidos');
+            }
+
+            if (!user || !user.isActive) {
+                throw new Error('Usuário inválido');
+            }
+
+            const tokenPayload = {
+                userId: (user._id as any).toString(),
+                email: user.email,
+                role: user.role,
+                clinicId: user.clinic?._id?.toString()
+            };
+
+            const accessToken = this.generateAccessToken(tokenPayload);
+            const refreshDoc = await this.createRefreshToken((user._id as any).toString(), deviceInfo);
+
+            // Update last login
+            user.lastLogin = new Date();
+            await user.save();
 
             return {
                 success: true,
                 data: {
-                    user: userResponse as IUser,
-                    token,
-                    expiresIn: this.JWT_EXPIRES_IN
+                    user: user.toJSON(),
+                    accessToken,
+                    refreshToken: refreshDoc.token,
+                    expiresIn: this.ACCESS_TOKEN_EXPIRES
                 }
             };
         } catch (error) {
@@ -274,7 +355,7 @@ class AuthService {
         }
     }
 
-    // Refresh token
+    // Existing convenience method (kept to preserve other code paths)
     async refreshToken(oldToken: string): Promise<string> {
         try {
             const decoded = this.verifyToken(oldToken);

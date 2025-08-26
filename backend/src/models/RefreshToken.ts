@@ -1,14 +1,15 @@
+// backend/src/models/RefreshToken.ts
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IRefreshToken extends Document {
     token: string;
-    userId: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId | any;
     expiresAt: Date;
     isRevoked: boolean;
     deviceInfo?: {
-        userAgent: string;
-        ipAddress: string;
-        deviceId: string;
+        userAgent?: string;
+        ipAddress?: string;
+        deviceId?: string;
     };
     createdAt: Date;
     updatedAt: Date;
