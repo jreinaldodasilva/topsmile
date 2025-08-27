@@ -1,50 +1,66 @@
 // backend/src/routes/appointments.ts
-import { Router } from 'express';
-import { Appointment } from '../models/Appointment';
-import { body, validationResult } from 'express-validator';
-import { Request, Response } from 'express';
+import express from "express";
+import { generateAvailability } from "../services/availabilityService";
+import { bookAppointmentAtomic } from "../services/schedulingService";
+import { AppointmentType, Provider, Appointment } from "../models/schedulingModels";
 
-const router = Router();
+const router = express.Router();
 
-interface AppointmentBookingBody {
-    patientId: string;
-    practitionerId: string;
-    scheduledAt: string; // ISO 8601 string
-    [key: string]: any;
-}
+router.get("/providers/:providerId/availability", async (req, res) => {
+  try {
+    const providerId = req.params.providerId;
+    const { from, to, typeId, granularity } = req.query;
+    if (!from || !to || !typeId) return res.status(400).json({ error: "from,to,typeId required" });
 
-router.post(
-    '/book',
-    [
-        body('patientId').isMongoId(),
-        body('practitionerId').isMongoId(),
-        body('scheduledAt').isISO8601()
-    ],
-    async (
-        req: Request<{}, unknown, AppointmentBookingBody>,
-        res: Response,
-        next: (err?: any) => void
-    ): Promise<void> => {
-        const errs = validationResult(req);
-        if (!errs.isEmpty()) {
-            res.status(400).json({ errors: errs.array() });
-            return;
-        }
-        const appt = new Appointment(req.body);
-        await appt.save();
-        res.json(appt);
+    const slots = await generateAvailability({
+      providerId,
+      appointmentTypeId: typeId as string,
+      fromIso: from as string,
+      toIso: to as string,
+      granularityMin: granularity ? Number(granularity) : 15,
+    });
+
+    return res.json({ ok: true, slots });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+});
+
+router.post("/book", async (req, res) => {
+  /**
+   * body:
+   * {
+   *   patientId,
+   *   providerIds: [..],
+   *   typeId,
+   *   startUtc: "2025-09-01T12:00:00Z",
+   *   endUtc: "2025-09-01T12:30:00Z",
+   *   requiredResourceIds: []
+   * }
+   */
+  try {
+    const body = req.body;
+    if (!body.patientId || !body.providerIds || !body.typeId || !body.startUtc || !body.endUtc) {
+      return res.status(400).json({ error: "missing fields" });
     }
-);
 
-router.get('/', async (req, res) => {
-    const { practitionerId, from, to } = req.query;
-    const query: Record<string, any> = {};
-    if (practitionerId) query['practitionerId'] = practitionerId;
-    if (from || to) query['scheduledAt'] = {};
-    if (from) query['scheduledAt'].$gte = new Date(String(from));
-    if (to) query['scheduledAt'].$lte = new Date(String(to));
-    const list = await Appointment.find(query).sort('scheduledAt');
-    res.json(list);
+    const appt = await bookAppointmentAtomic({
+      patientId: body.patientId,
+      providerIds: body.providerIds,
+      typeId: body.typeId,
+      startUtc: new Date(body.startUtc),
+      endUtc: new Date(body.endUtc),
+      requiredResourceIds: body.requiredResourceIds || [],
+      createdBy: undefined,
+      tentative: !!body.tentative,
+    });
+
+    return res.json({ ok: true, appointment: appt });
+  } catch (err: any) {
+    console.error("Booking error:", err);
+    return res.status(400).json({ ok: false, error: err.message });
+  }
 });
 
 export default router;
