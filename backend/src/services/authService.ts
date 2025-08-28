@@ -2,7 +2,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
-import { SignOptions } from 'jsonwebtoken';
+import { SignOptions, JwtPayload } from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User, IUser } from '../models/User';
 import { Clinic } from '../models/Clinic';
@@ -149,6 +149,11 @@ class AuthService {
         return { accessToken, refreshToken: newRefreshDoc.token, expiresIn: this.ACCESS_TOKEN_EXPIRES };
     }
 
+    verifyAccessToken(token: string): JwtPayload | string {
+        // throws if invalid/expired
+        return jwt.verify(token, this.JWT_SECRET);
+    }
+
     // Logout (revoke a refresh token)
     async logout(refreshTokenString: string): Promise<void> {
         if (!refreshTokenString) return;
@@ -252,66 +257,66 @@ class AuthService {
     }
 
     // Login user and return access + refresh tokens
-// backend/src/services/authService.ts - Standardized login method
+    // backend/src/services/authService.ts - Standardized login method
 
-async login(data: LoginData, deviceInfo?: any): Promise<{
-  success: true;
-  data: {
-    user: IUser;
-    accessToken: string;
-    refreshToken: string;
-    expiresIn: string;
-  };
-}> {
-  try {
-    const user = await User.findOne({ email: data.email })
-      .select('+password')
-      .populate('clinic');
-    
-    if (!user) {
-      throw new Error('E-mail ou senha inválidos');
+    async login(data: LoginData, deviceInfo?: any): Promise<{
+        success: true;
+        data: {
+            user: IUser;
+            accessToken: string;
+            refreshToken: string;
+            expiresIn: string;
+        };
+    }> {
+        try {
+            const user = await User.findOne({ email: data.email })
+                .select('+password')
+                .populate('clinic');
+
+            if (!user) {
+                throw new Error('E-mail ou senha inválidos');
+            }
+
+            const isMatch = await user.comparePassword(data.password);
+            if (!isMatch) {
+                throw new Error('E-mail ou senha inválidos');
+            }
+
+            if (!user.isActive) {
+                throw new Error('Usuário inativo');
+            }
+
+            const tokenPayload: TokenPayload = {
+                userId: (user._id as any).toString(),
+                email: user.email,
+                role: user.role,
+                clinicId: user.clinic?._id?.toString()
+            };
+
+            const accessToken = this.generateAccessToken(tokenPayload);
+            const refreshDoc = await this.createRefreshToken(
+                (user._id as any).toString(),
+                deviceInfo
+            );
+
+            // Update last login
+            user.lastLogin = new Date();
+            await user.save();
+
+            // Return consistent format
+            return {
+                success: true,
+                data: {
+                    user: user.toJSON(),
+                    accessToken,
+                    refreshToken: refreshDoc.token,
+                    expiresIn: this.ACCESS_TOKEN_EXPIRES
+                }
+            };
+        } catch (error) {
+            throw error instanceof Error ? error : new Error('Erro ao fazer login');
+        }
     }
-
-    const isMatch = await user.comparePassword(data.password);
-    if (!isMatch) {
-      throw new Error('E-mail ou senha inválidos');
-    }
-
-    if (!user.isActive) {
-      throw new Error('Usuário inativo');
-    }
-
-    const tokenPayload: TokenPayload = {
-      userId: (user._id as any).toString(),
-      email: user.email,
-      role: user.role,
-      clinicId: user.clinic?._id?.toString()
-    };
-
-    const accessToken = this.generateAccessToken(tokenPayload);
-    const refreshDoc = await this.createRefreshToken(
-      (user._id as any).toString(), 
-      deviceInfo
-    );
-
-    // Update last login
-    user.lastLogin = new Date();
-    await user.save();
-
-    // Return consistent format
-    return {
-      success: true,
-      data: {
-        user: user.toJSON(),
-        accessToken,
-        refreshToken: refreshDoc.token,
-        expiresIn: this.ACCESS_TOKEN_EXPIRES
-      }
-    };
-  } catch (error) {
-    throw error instanceof Error ? error : new Error('Erro ao fazer login');
-  }
-}
     // Get user by ID with clinic info
     async getUserById(userId: string): Promise<IUser | null> {
         try {

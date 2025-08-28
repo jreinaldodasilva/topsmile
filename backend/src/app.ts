@@ -20,7 +20,6 @@ import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } fro
 import authRoutes from './routes/auth';
 
 import calendarRoutes from "./routes/calendar";
-import formRoutes from "./routes/forms";
 
 dotenv.config();
 
@@ -42,7 +41,6 @@ app.use(bodyParser.json());
 
 
 app.use("/api/calendar", calendarRoutes);
-app.use("/api/forms", formRoutes);
 
 // Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);
