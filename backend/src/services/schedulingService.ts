@@ -16,7 +16,7 @@ export interface TimeSlot {
 }
 
 export interface AvailabilityQuery {
-    clinicId: string;
+    clinicId?: string;
     providerId?: string; // If not specified, check all providers
     appointmentTypeId: string;
     date: Date; // Target date
@@ -31,7 +31,7 @@ export interface CreateAppointmentData {
     scheduledStart: Date;
     notes?: string;
     priority?: 'routine' | 'urgent' | 'emergency';
-    createdBy: string;
+    createdBy?: string;
 }
 
 class SchedulingService {

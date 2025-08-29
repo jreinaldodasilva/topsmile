@@ -8,7 +8,6 @@ import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
-import bodyParser from "body-parser";
 
 // Database imports
 import { connectToDatabase } from './config/database';
@@ -18,7 +17,6 @@ import { checkDatabaseConnection, handleValidationError } from './middleware/dat
 // Authentication imports
 import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
 import authRoutes from './routes/auth';
-
 import calendarRoutes from "./routes/calendar";
 
 dotenv.config();
@@ -35,15 +33,6 @@ app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   credentials: true
 }));
-
-// Parse JSON bodies
-app.use(bodyParser.json());
-
-
-app.use("/api/calendar", calendarRoutes);
-
-// Database connection check middleware for API routes
-app.use('/api', checkDatabaseConnection);
 
 // Rate limiting
 const contactLimiter = rateLimit({
@@ -65,12 +54,16 @@ const apiLimiter = rateLimit({
 
 app.use('/api', apiLimiter);
 
-// Body parser middleware
+// Body parser middleware (use only express.json, remove body-parser)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Mount authentication routes
+// Database connection check middleware for API routes
+app.use('/api', checkDatabaseConnection);
+
+// Mount routes
 app.use('/api/auth', authRoutes);
+app.use("/api/calendar", calendarRoutes);
 
 // Email transporter configuration
 const createTransporter = () => {
@@ -148,12 +141,11 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
       });
-      return;
     }
 
     // Sanitize input data
@@ -273,7 +265,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Mensagem enviada com sucesso! Retornaremos em até 24 horas.',
       data: {
@@ -285,7 +277,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
   } catch (error) {
     console.error('Error processing contact form:', error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Erro interno do servidor. Tente novamente mais tarde.'
     });
@@ -296,7 +288,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
 app.get('/api/health', (req, res) => {
   const dbStatus = require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected';
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: 'TopSmile API is running',
     timestamp: new Date().toISOString(),
@@ -322,7 +314,7 @@ app.get('/api/health/database', async (req, res) => {
       const Contact = require('./models/Contact').Contact;
       const count = await Contact.countDocuments();
 
-      res.json({
+      return res.json({
         success: true,
         database: {
           status: states[dbState as keyof typeof states],
@@ -333,7 +325,7 @@ app.get('/api/health/database', async (req, res) => {
         }
       });
     } else {
-      res.status(503).json({
+      return res.status(503).json({
         success: false,
         database: {
           status: states[dbState as keyof typeof states]
@@ -345,7 +337,7 @@ app.get('/api/health/database', async (req, res) => {
     if (error instanceof Error) {
       errorMessage = error.message;
     }
-    res.status(503).json({
+    return res.status(503).json({
       success: false,
       message: 'Database health check failed',
       error: process.env.NODE_ENV === 'development' ? errorMessage : undefined
@@ -379,13 +371,13 @@ app.get('/api/admin/contacts',
         sortOrder
       });
 
-      res.json({
+      return res.json({
         success: true,
         data: result
       });
     } catch (error) {
       console.error('Error fetching contacts:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao buscar contatos'
       });
@@ -399,13 +391,13 @@ app.get('/api/admin/contacts/stats',
   async (req: AuthenticatedRequest, res) => {
     try {
       const stats = await contactService.getContactStats();
-      res.json({
+      return res.json({
         success: true,
         data: stats
       });
     } catch (error) {
       console.error('Error fetching contact stats:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao buscar estatísticas'
       });
@@ -420,19 +412,18 @@ app.get('/api/admin/contacts/:id',
     try {
       const contact = await contactService.getContactById(req.params.id);
       if (!contact) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           message: 'Contato não encontrado'
         });
-        return;
       }
-      res.json({
+      return res.json({
         success: true,
         data: contact
       });
     } catch (error) {
       console.error('Error fetching contact:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao buscar contato'
       });
@@ -455,20 +446,19 @@ app.patch('/api/admin/contacts/:id',
       const contact = await contactService.updateContact(req.params.id, updates);
 
       if (!contact) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           message: 'Contato não encontrado'
         });
-        return;
       }
 
-      res.json({
+      return res.json({
         success: true,
         data: contact
       });
     } catch (error) {
       console.error('Error updating contact:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao atualizar contato'
       });
@@ -484,20 +474,19 @@ app.delete('/api/admin/contacts/:id',
       const deleted = await contactService.deleteContact(req.params.id);
 
       if (!deleted) {
-        res.status(404).json({
+        return res.status(404).json({
           success: false,
           message: 'Contato não encontrado'
         });
-        return;
       }
 
-      res.json({
+      return res.json({
         success: true,
         message: 'Contato excluído com sucesso'
       });
     } catch (error) {
       console.error('Error deleting contact:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao excluir contato'
       });
@@ -520,7 +509,7 @@ app.get('/api/admin/dashboard',
       const thisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
 
-      res.json({
+      return res.json({
         success: true,
         data: {
           contacts: contactStats,
@@ -540,7 +529,7 @@ app.get('/api/admin/dashboard',
       });
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: 'Erro ao buscar dados do dashboard'
       });
@@ -554,7 +543,7 @@ app.use(handleValidationError);
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error:', error);
 
-  res.status(500).json({
+  return res.status(500).json({
     success: false,
     message: 'Erro interno do servidor',
     ...(process.env.NODE_ENV === 'development' && { error: error.message })
@@ -563,7 +552,7 @@ app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({
+  return res.status(404).json({
     success: false,
     message: 'Endpoint não encontrado'
   });
