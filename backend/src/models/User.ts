@@ -65,7 +65,7 @@ const UserSchema = new Schema<IUser>({
             ret.id = ret._id;
             delete ret._id;
             delete (ret as any).__v;
-            delete (ret as any).password; // Apply the same fix here
+            delete (ret as any).password; // Remove password from JSON output
             return ret;
         }
     }
@@ -88,5 +88,6 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
 // Indexes
 UserSchema.index({ role: 1 });
 UserSchema.index({ clinic: 1 });
+UserSchema.index({ email: 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

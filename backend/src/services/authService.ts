@@ -19,7 +19,7 @@ export interface RegisterData {
             number?: string;
             city?: string;
             state?: string;
-            zip?: string;
+            zipCode?: string;
         };
     };
 }
@@ -33,7 +33,8 @@ export interface AuthResponse {
     success: true;
     data: {
         user: IUser;
-        token: string;
+        accessToken: string;
+        refreshToken: string;
         expiresIn: string;
     };
 }
@@ -47,10 +48,12 @@ export interface TokenPayload {
 
 class AuthService {
     private readonly JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-    private readonly JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+    private readonly ACCESS_TOKEN_EXPIRES = '15m';
+    private readonly REFRESH_TOKEN_EXPIRES_DAYS = 7;
+    private readonly MAX_REFRESH_TOKENS_PER_USER = 5;
 
-    // Generate JWT token
-    private generateToken(payload: TokenPayload): string {
+    // Generate short-lived access token
+    private generateAccessToken(payload: TokenPayload): string {
         const cleanPayload: TokenPayload = {
             userId: payload.userId,
             email: payload.email,
@@ -59,37 +62,12 @@ class AuthService {
         };
 
         const options: SignOptions = {
-            expiresIn: this.JWT_EXPIRES_IN as SignOptions['expiresIn'],
+            expiresIn: this.ACCESS_TOKEN_EXPIRES,
             issuer: 'topsmile-api',
             audience: 'topsmile-client'
         };
 
-        return jwt.sign(cleanPayload as any, this.JWT_SECRET as string, options);
-    }
-
-    // Verify JWT token
-    verifyToken(token: string): TokenPayload {
-        try {
-            return jwt.verify(token, this.JWT_SECRET, {
-                issuer: 'topsmile-api',
-                audience: 'topsmile-client'
-            }) as TokenPayload;
-        } catch (error) {
-            throw new Error('Token inválido');
-        }
-    }
-
-    private readonly ACCESS_TOKEN_EXPIRES = '15m';
-    private readonly REFRESH_TOKEN_EXPIRES_DAYS = 7;
-    private readonly MAX_REFRESH_TOKENS_PER_USER = 5;
-
-    // Generate short-lived access token
-    private generateAccessToken(payload: TokenPayload): string {
-        return jwt.sign(payload, this.JWT_SECRET as string, {
-            expiresIn: this.ACCESS_TOKEN_EXPIRES,
-            issuer: 'topsmile-api',
-            audience: 'topsmile-client'
-        } as jwt.SignOptions);
+        return jwt.sign(cleanPayload, this.JWT_SECRET, options);
     }
 
     // Generate secure random refresh token string
@@ -115,6 +93,28 @@ class AuthService {
         return await refreshToken.save();
     }
 
+    // Keep only most recent MAX_REFRESH_TOKENS_PER_USER refresh tokens; revoke older ones
+    private async cleanupOldRefreshTokens(userId: string): Promise<void> {
+        const tokens = await RefreshToken.find({ userId, isRevoked: false }).sort({ createdAt: -1 });
+        if (tokens.length >= this.MAX_REFRESH_TOKENS_PER_USER) {
+            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER - 1);
+            const ids = toRevoke.map(t => t._id);
+            await RefreshToken.updateMany({ _id: { $in: ids } }, { isRevoked: true });
+        }
+    }
+
+    // Verify access token
+    verifyAccessToken(token: string): JwtPayload {
+        try {
+            return jwt.verify(token, this.JWT_SECRET, {
+                issuer: 'topsmile-api',
+                audience: 'topsmile-client'
+            }) as JwtPayload;
+        } catch (error) {
+            throw new Error('Token inválido ou expirado');
+        }
+    }
+
     // Rotate and refresh access token using a refresh token string
     async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
         const stored = await RefreshToken.findOne({
@@ -127,7 +127,7 @@ class AuthService {
             throw new Error('Token de atualização inválido ou expirado');
         }
 
-        const user = (stored.userId as any);
+        const user = stored.userId as any;
         if (!user || !user.isActive) {
             throw new Error('Usuário inválido ou inativo');
         }
@@ -140,18 +140,13 @@ class AuthService {
             userId: user._id.toString(),
             email: user.email,
             role: user.role,
-            ...(user.clinic ? { clinicId: (user.clinic as any)._id?.toString?.() ?? user.clinic?.toString?.() } : {})
+            ...(user.clinic ? { clinicId: user.clinic.toString() } : {})
         };
 
         const accessToken = this.generateAccessToken(payload);
         const newRefreshDoc = await this.createRefreshToken(user._id.toString(), stored.deviceInfo);
 
         return { accessToken, refreshToken: newRefreshDoc.token, expiresIn: this.ACCESS_TOKEN_EXPIRES };
-    }
-
-    verifyAccessToken(token: string): JwtPayload | string {
-        // throws if invalid/expired
-        return jwt.verify(token, this.JWT_SECRET);
     }
 
     // Logout (revoke a refresh token)
@@ -163,16 +158,6 @@ class AuthService {
     // Logout all devices for a user
     async logoutAllDevices(userId: string): Promise<void> {
         await RefreshToken.updateMany({ userId, isRevoked: false }, { isRevoked: true });
-    }
-
-    // Keep only most recent MAX_REFRESH_TOKENS_PER_USER refresh tokens; revoke older ones
-    private async cleanupOldRefreshTokens(userId: string): Promise<void> {
-        const tokens = await RefreshToken.find({ userId, isRevoked: false }).sort({ createdAt: -1 });
-        if (tokens.length > this.MAX_REFRESH_TOKENS_PER_USER) {
-            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER);
-            const ids = toRevoke.map(t => t._id);
-            await RefreshToken.updateMany({ _id: { $in: ids } }, { isRevoked: true });
-        }
     }
 
     // Register new user with clinic
@@ -225,29 +210,30 @@ class AuthService {
 
             const savedUser = await user.save();
 
-            // Generate token
-            const tokenPayload = {
-                userId: (user._id as any).toString(),
-                email: user.email,
-                role: user.role,
-                clinicId: user.clinic?._id?.toString()
+            // Generate tokens
+            const tokenPayload: TokenPayload = {
+                userId: (savedUser._id as any).toString(),
+                email: savedUser.email,
+                role: savedUser.role,
+                ...(savedUser.clinic ? { clinicId: savedUser.clinic.toString() } : {})
             };
 
             const accessToken = this.generateAccessToken(tokenPayload);
-            const refreshDoc = await this.createRefreshToken((user._id as any).toString());
+            const refreshDoc = await this.createRefreshToken((savedUser._id as any).toString());
 
             // Update last login
-            user.lastLogin = new Date();
-            await user.save();
+            savedUser.lastLogin = new Date();
+            await savedUser.save();
 
             return {
                 success: true,
                 data: {
-                    user: savedUser as any,
-                    token: accessToken,
+                    user: savedUser.toJSON(),
+                    accessToken,
+                    refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES
                 }
-            } as any;
+            };
         } catch (error) {
             if (error instanceof Error) {
                 throw error;
@@ -257,17 +243,7 @@ class AuthService {
     }
 
     // Login user and return access + refresh tokens
-    // backend/src/services/authService.ts - Standardized login method
-
-    async login(data: LoginData, deviceInfo?: any): Promise<{
-        success: true;
-        data: {
-            user: IUser;
-            accessToken: string;
-            refreshToken: string;
-            expiresIn: string;
-        };
-    }> {
+    async login(data: LoginData, deviceInfo?: any): Promise<AuthResponse> {
         try {
             const user = await User.findOne({ email: data.email })
                 .select('+password')
@@ -290,7 +266,7 @@ class AuthService {
                 userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                clinicId: user.clinic?._id?.toString()
+                ...(user.clinic ? { clinicId: user.clinic._id?.toString() || user.clinic.toString() } : {})
             };
 
             const accessToken = this.generateAccessToken(tokenPayload);
@@ -303,7 +279,6 @@ class AuthService {
             user.lastLogin = new Date();
             await user.save();
 
-            // Return consistent format
             return {
                 success: true,
                 data: {
@@ -317,6 +292,7 @@ class AuthService {
             throw error instanceof Error ? error : new Error('Erro ao fazer login');
         }
     }
+
     // Get user by ID with clinic info
     async getUserById(userId: string): Promise<IUser | null> {
         try {
@@ -373,21 +349,21 @@ class AuthService {
         }
     }
 
-    // Existing convenience method (kept to preserve other code paths)
+    // Legacy method for backward compatibility
     async refreshToken(oldToken: string): Promise<string> {
         try {
-            const decoded = this.verifyToken(oldToken);
-            const user = await this.getUserById(decoded.userId);
+            const decoded = this.verifyAccessToken(oldToken);
+            const user = await this.getUserById((decoded as any).userId);
 
             if (!user || !user.isActive) {
                 throw new Error('Usuário inválido');
             }
 
-            return this.generateToken({
-                userId: (user as any)._id.toString(),
+            return this.generateAccessToken({
+                userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                clinicId: user.clinic?._id.toString()
+                ...(user.clinic ? { clinicId: user.clinic._id?.toString() || user.clinic.toString() } : {})
             });
         } catch (error) {
             throw new Error('Erro ao renovar token');

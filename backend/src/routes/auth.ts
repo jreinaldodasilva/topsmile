@@ -122,17 +122,16 @@ const sanitizeAuthData = (data: any) => {
 };
 
 // Register endpoint
-router.post('/register', registerLimiter, registerValidation, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/register', registerLimiter, registerValidation, async (req: Request, res: Response) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
       });
-      return;
     }
 
     // Sanitize input
@@ -140,11 +139,11 @@ router.post('/register', registerLimiter, registerValidation, async (req: Authen
 
     const result = await authService.register(sanitizedData);
 
-    res.status(201).json(result);
+    return res.status(201).json(result);
   } catch (error) {
     console.error('Register error:', error);
 
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao criar usuário'
     });
@@ -152,29 +151,35 @@ router.post('/register', registerLimiter, registerValidation, async (req: Authen
 });
 
 // Login endpoint
-router.post('/login', authLimiter, loginValidation, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/login', authLimiter, loginValidation, async (req: Request, res: Response) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
       });
-      return;
     }
 
     // Sanitize input
     const sanitizedData = sanitizeAuthData(req.body);
 
-    const result = await authService.login(sanitizedData);
+    // Extract device info for refresh token
+    const deviceInfo = {
+      userAgent: req.headers['user-agent'],
+      ipAddress: req.ip || req.connection.remoteAddress,
+      deviceId: req.headers['x-device-id'] as string
+    };
 
-    res.json(result);
+    const result = await authService.login(sanitizedData, deviceInfo);
+
+    return res.json(result);
   } catch (error) {
     console.error('Login error:', error);
 
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao fazer login'
     });
@@ -187,19 +192,18 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
     const user = await authService.getUserById(req.user!.id);
 
     if (!user) {
-      res.status(404).json({
+      return res.status(404).json({
         success: false,
         message: 'Usuário não encontrado'
       });
-      return;
     }
 
-    res.json({
+    return res.json({
       success: true,
       data: user
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Erro ao buscar perfil do usuário'
     });
@@ -211,73 +215,28 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: 'Dados inválidos',
         errors: errors.array()
       });
-      return;
     }
 
     const { currentPassword, newPassword } = req.body;
 
     await authService.changePassword(req.user!.id, currentPassword, newPassword);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Senha alterada com sucesso'
     });
   } catch (error) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao alterar senha'
     });
   }
 });
-
-// Refresh token
-router.post('/refresh', async (req: AuthenticatedRequest, res: Response) => {
-  try {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-
-    if (!token) {
-      res.status(401).json({
-        success: false,
-        message: 'Token obrigatório'
-      });
-      return;
-    }
-
-    const newToken = await authService.refreshToken(token);
-
-    res.json({
-      success: true,
-      data: {
-        token: newToken,
-        expiresIn: process.env.JWT_EXPIRES_IN || '7d'
-      }
-    });
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: 'Erro ao renovar token'
-    });
-  }
-});
-
-// Logout (client-side only, but useful for logging)
-router.post('/logout', authenticate, (req: AuthenticatedRequest, res) => {
-  // JWT tokens are stateless, so logout is handled client-side
-  // This endpoint is mainly for logging purposes
-  console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
-
-  res.json({
-    success: true,
-    message: 'Logout realizado com sucesso'
-  });
-});
-
-// Appended handlers for refresh/logout (add these inside backend/src/routes/auth.ts before `export default router;`)
 
 /**
  * Refresh access token using refresh token rotation
@@ -289,15 +248,17 @@ router.post('/refresh', async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.body;
     if (!refreshToken) {
-      res.status(401).json({ success: false, message: 'Token de atualização obrigatório' });
-      return;
+      return res.status(401).json({ 
+        success: false, 
+        message: 'Token de atualização obrigatório' 
+      });
     }
 
     const tokens = await authService.refreshAccessToken(refreshToken);
 
-    res.json({ success: true, data: tokens });
+    return res.json({ success: true, data: tokens });
   } catch (error) {
-    res.status(401).json({
+    return res.status(401).json({
       success: false,
       message: error instanceof Error ? error.message : 'Erro ao renovar token'
     });
@@ -306,19 +267,29 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
 /**
  * Revoke a specific refresh token (logout from a device)
- * POST /api/auth/logout-revoke
+ * POST /api/auth/logout
  * body: { refreshToken }
  * Auth required.
  */
-router.post('/logout-revoke', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { refreshToken } = req.body;
     if (refreshToken) {
       await authService.logout(refreshToken);
     }
-    res.json({ success: true, message: 'Logout realizado com sucesso' });
+    
+    // Log for development
+    console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
+    
+    return res.json({ 
+      success: true, 
+      message: 'Logout realizado com sucesso' 
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Erro ao fazer logout' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao fazer logout' 
+    });
   }
 });
 
@@ -330,11 +301,16 @@ router.post('/logout-revoke', authenticate, async (req: AuthenticatedRequest, re
 router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     await authService.logoutAllDevices(req.user!.id);
-    res.json({ success: true, message: 'Logout realizado em todos os dispositivos' });
+    return res.json({ 
+      success: true, 
+      message: 'Logout realizado em todos os dispositivos' 
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Erro ao fazer logout' });
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Erro ao fazer logout' 
+    });
   }
 });
-
 
 export default router;
