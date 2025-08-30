@@ -1,5 +1,6 @@
 // backend/src/app.ts
 import express from 'express';
+import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -331,8 +332,7 @@ app.post('/api/contact', contactLimiter, contactValidation, async (req: Request,
 
 // Health check endpoint (public)
 app.get('/api/health', (req, res) => {
-  const dbStatus = require('mongoose').connection.readyState === 1 ? 'connected' : 'disconnected';
-
+  const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
   return res.status(200).json({
     success: true,
     message: 'TopSmile API is running',
@@ -345,7 +345,6 @@ app.get('/api/health', (req, res) => {
 // Database health endpoint (public for monitoring)
 app.get('/api/health/database', async (req, res) => {
   try {
-    const mongoose = require('mongoose');
     const dbState = mongoose.connection.readyState;
     const states = {
       0: 'disconnected',
