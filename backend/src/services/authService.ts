@@ -47,10 +47,31 @@ export interface TokenPayload {
 }
 
 class AuthService {
-    private readonly JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-    private readonly ACCESS_TOKEN_EXPIRES = '15m';
-    private readonly REFRESH_TOKEN_EXPIRES_DAYS = 7;
-    private readonly MAX_REFRESH_TOKENS_PER_USER = 5;
+    private readonly JWT_SECRET: string;
+    private readonly ACCESS_TOKEN_EXPIRES: string;
+    private readonly REFRESH_TOKEN_EXPIRES_DAYS: number;
+    private readonly MAX_REFRESH_TOKENS_PER_USER: number;
+
+    constructor() {
+        // Read configuration from environment with safe defaults for development.
+        // In production we require a real JWT secret and will exit if missing.
+        this.JWT_SECRET = process.env.JWT_SECRET || '';
+        if (!this.JWT_SECRET || this.JWT_SECRET === 'your-secret-key') {
+            if (process.env.NODE_ENV === 'production') {
+                console.error('FATAL: JWT_SECRET is not configured. Set JWT_SECRET env var before starting the app.');
+                // Exit to avoid running with an insecure default secret.
+                process.exit(1);
+            } else {
+                console.warn('Warning: JWT_SECRET not set. Using insecure fallback for development only.');
+                this.JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+            }
+        }
+
+        this.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || '15m';
+        this.REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
+        this.MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
+    }
+
 
     // Generate short-lived access token
     private generateAccessToken(payload: TokenPayload): string {
@@ -62,7 +83,7 @@ class AuthService {
         };
 
         const options: SignOptions = {
-            expiresIn: this.ACCESS_TOKEN_EXPIRES,
+            expiresIn: this.ACCESS_TOKEN_EXPIRES as any,
             issuer: 'topsmile-api',
             audience: 'topsmile-client'
         };
@@ -97,7 +118,7 @@ class AuthService {
     private async cleanupOldRefreshTokens(userId: string): Promise<void> {
         const tokens = await RefreshToken.find({ userId, isRevoked: false }).sort({ createdAt: -1 });
         if (tokens.length >= this.MAX_REFRESH_TOKENS_PER_USER) {
-            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER - 1);
+            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER);
             const ids = toRevoke.map(t => t._id);
             await RefreshToken.updateMany({ _id: { $in: ids } }, { isRevoked: true });
         }

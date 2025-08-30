@@ -18,11 +18,51 @@ import { checkDatabaseConnection, handleValidationError } from './middleware/dat
 import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
 import authRoutes from './routes/auth';
 import calendarRoutes from "./routes/calendar";
+import appointmentsRoutes from "./routes/appointments"; 
+
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+/**
+ * Validate critical environment variables on startup.
+ * In production we exit the process if required variables are missing.
+ */
+const validateEnv = () => {
+  const requiredInProd = [
+    { name: 'JWT_SECRET', message: 'JWT_SECRET is required in production' },
+    { name: 'DATABASE_URL', message: 'DATABASE_URL is required in production' }
+  ];
+
+  if (process.env.NODE_ENV === 'production') {
+    const missing = requiredInProd.filter(v => !process.env[v.name]);
+    if (missing.length > 0) {
+      console.error('Missing required environment variables:', missing.map(m => m.name).join(', '));
+      missing.forEach(m => console.error(m.message));
+      process.exit(1);
+    }
+  } else {
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'your-secret-key') {
+      console.warn('Warning: JWT_SECRET is not set or uses the insecure default. Set JWT_SECRET for production.');
+    }
+    if (!process.env.DATABASE_URL) {
+      console.warn('Warning: DATABASE_URL is not set. Using default local MongoDB may be intended for development only.');
+    }
+  }
+};
+
+validateEnv();
+
+// Trust proxy if behind a reverse proxy (required for secure cookies / rate limit IP detection)
+if (process.env.TRUST_PROXY === '1' || process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Use a slightly stricter helmet configuration
+app.use(helmet());
+
 
 // Connect to database
 connectToDatabase();
@@ -64,10 +104,15 @@ app.use('/api', checkDatabaseConnection);
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use("/api/calendar", calendarRoutes);
+app.use("/api/appointments", appointmentsRoutes); 
 
 // Email transporter configuration
 const createTransporter = () => {
   if (process.env.NODE_ENV === 'production') {
+    if (!process.env.SENDGRID_API_KEY) {
+      console.error('FATAL: SENDGRID_API_KEY is required in production for sending emails.');
+      process.exit(1);
+    }
     return nodemailer.createTransport({
       service: 'SendGrid',
       auth: {
@@ -559,6 +604,15 @@ app.use('*', (req, res) => {
 });
 
 // Start server
+
+// Global process handlers for robust logging
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // In production you might want to exit and let a process manager restart the process
+});
 app.listen(PORT, () => {
   console.log(`🚀 TopSmile API running on port ${PORT}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
