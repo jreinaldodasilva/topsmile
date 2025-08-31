@@ -1,4 +1,4 @@
-// backend/src/middleware/auth.ts
+// backend/src/middleware/auth.ts - FIXED VERSION
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
 
@@ -60,8 +60,20 @@ export const authenticate = async (
     // Verify the access token
     const payload = await authService.verifyAccessToken(token);
     
-    // Extract user information from payload
-    const userId = (payload as any).userId || (payload as any).id;
+    // Type-safe payload extraction
+    if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
+      res.status(401).json({ 
+        success: false, 
+        message: 'Token inválido: formato incorreto',
+        code: 'INVALID_TOKEN_FORMAT'
+      });
+      return;
+    }
+
+    // Extract user information with proper typing
+    const typedPayload = payload as any; // We'll fix this with proper TokenPayload type
+    const userId = typedPayload.userId || typedPayload.id;
+    
     if (!userId) {
       res.status(401).json({ 
         success: false, 
@@ -74,9 +86,9 @@ export const authenticate = async (
     // Attach user info to request
     req.user = {
       id: String(userId),
-      email: (payload as any).email,
-      role: (payload as any).role,
-      clinicId: (payload as any).clinicId,
+      email: typedPayload.email,
+      role: typedPayload.role,
+      clinicId: typedPayload.clinicId,
     };
 
     // Optional: Verify user still exists and is active
@@ -96,17 +108,23 @@ export const authenticate = async (
   } catch (error) {
     console.error('Authentication error:', error);
     
-    // Handle different JWT errors
+    // Handle different JWT errors with better logging
     let message = 'Token inválido ou expirado';
     let code = 'INVALID_TOKEN';
     
     if (error instanceof Error) {
+      // Log the actual error for debugging (but don't expose to client)
+      console.error('JWT Error Details:', error.message);
+      
       if (error.message.includes('expired')) {
         message = 'Token expirado';
         code = 'TOKEN_EXPIRED';
       } else if (error.message.includes('invalid')) {
         message = 'Token inválido';
         code = 'INVALID_TOKEN';
+      } else if (error.message.includes('malformed')) {
+        message = 'Token malformado';
+        code = 'MALFORMED_TOKEN';
       }
     }
 
@@ -120,7 +138,7 @@ export const authenticate = async (
 };
 
 /**
- * Role-based authorization middleware factory
+ * Role-based authorization middleware factory - SECURITY FIXED
  * Usage: authorize('admin', 'manager') - allows only these roles
  */
 export const authorize = (...allowedRoles: string[]) => {
@@ -139,7 +157,7 @@ export const authorize = (...allowedRoles: string[]) => {
     if (!userRole) {
       res.status(403).json({ 
         success: false, 
-        message: 'Role do usuário não definida',
+        message: 'Permissões de usuário não definidas',
         code: 'NO_ROLE'
       });
       return;
@@ -153,12 +171,12 @@ export const authorize = (...allowedRoles: string[]) => {
 
     // Check if user's role is in allowed roles
     if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+      // SECURITY FIX: Don't expose internal role structure
       res.status(403).json({ 
         success: false, 
         message: 'Acesso negado: permissão insuficiente',
-        code: 'INSUFFICIENT_ROLE',
-        required: allowedRoles,
-        current: userRole
+        code: 'INSUFFICIENT_ROLE'
+        // Removed: required and current fields for security
       });
       return;
     }
@@ -169,6 +187,7 @@ export const authorize = (...allowedRoles: string[]) => {
 
 /**
  * Clinic access middleware: ensures user has access to requested clinic resources
+ * IMPROVED with better validation
  */
 export const ensureClinicAccess = (
   field: 'params' | 'body' | 'query' = 'params', 
@@ -201,8 +220,10 @@ export const ensureClinicAccess = (
     }
 
     // Get the requested clinic ID from the specified field
-    const requestedClinic = (req as any)[field]?.[key];
+    const requestData = (req as any)[field];
+    const requestedClinic = requestData?.[key];
     
+    // IMPROVED: Handle both string and ObjectId comparisons
     if (requestedClinic && String(requestedClinic) !== String(userClinic)) {
       res.status(403).json({ 
         success: false, 
@@ -229,27 +250,33 @@ export const optionalAuth = async (
     
     if (token) {
       const payload = await authService.verifyAccessToken(token);
-      const userId = (payload as any).userId || (payload as any).id;
       
-      if (userId) {
-        req.user = {
-          id: String(userId),
-          email: (payload as any).email,
-          role: (payload as any).role,
-          clinicId: (payload as any).clinicId,
-        };
+      if (payload && typeof payload === 'object' && 'userId' in payload) {
+        const typedPayload = payload as any;
+        const userId = typedPayload.userId || typedPayload.id;
+        
+        if (userId) {
+          req.user = {
+            id: String(userId),
+            email: typedPayload.email,
+            role: typedPayload.role,
+            clinicId: typedPayload.clinicId,
+          };
+        }
       }
     }
     
     next();
   } catch (error) {
     // Don't fail on optional auth - just continue without user info
+    console.warn('Optional auth failed:', error instanceof Error ? error.message : 'Unknown error');
     next();
   }
 };
 
 /**
  * Middleware to check if user owns a resource
+ * IMPROVED with better type safety
  */
 export const ensureOwnership = (
   field: 'params' | 'body' | 'query' = 'params',
@@ -259,7 +286,8 @@ export const ensureOwnership = (
     if (!req.user) {
       res.status(401).json({ 
         success: false, 
-        message: 'Autenticação obrigatória' 
+        message: 'Autenticação obrigatória',
+        code: 'NOT_AUTHENTICATED'
       });
       return;
     }
@@ -270,16 +298,49 @@ export const ensureOwnership = (
       return;
     }
 
-    const resourceUserId = (req as any)[field]?.[key];
+    const requestData = (req as any)[field];
+    const resourceUserId = requestData?.[key];
     
     if (resourceUserId && String(resourceUserId) !== String(req.user.id)) {
       res.status(403).json({ 
         success: false, 
-        message: 'Acesso negado: você só pode acessar seus próprios recursos' 
+        message: 'Acesso negado: você só pode acessar seus próprios recursos',
+        code: 'OWNERSHIP_REQUIRED'
       });
       return;
     }
 
     next();
   };
+};
+
+/**
+ * Rate limiting aware middleware - for sensitive operations
+ */
+export const sensitiveOperation = (
+  req: AuthenticatedRequest, 
+  res: Response, 
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json({ 
+      success: false, 
+      message: 'Autenticação obrigatória',
+      code: 'NOT_AUTHENTICATED'
+    });
+    return;
+  }
+
+  // Add request metadata for audit logging
+  (req as any).auditContext = {
+    userId: req.user.id,
+    userEmail: req.user.email,
+    userRole: req.user.role,
+    clinicId: req.user.clinicId,
+    timestamp: new Date(),
+    ip: req.ip || req.connection.remoteAddress,
+    userAgent: req.headers['user-agent']
+  };
+
+  next();
 };

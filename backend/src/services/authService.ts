@@ -1,4 +1,4 @@
-// backend/src/services/authService.ts
+// backend/src/services/authService.ts - FIXED VERSION
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
@@ -39,11 +39,19 @@ export interface AuthResponse {
     };
 }
 
-export interface TokenPayload {
+// FIXED: Proper TypeScript interface for token payload
+export interface TokenPayload extends JwtPayload {
     userId: string;
     email: string;
     role: string;
     clinicId?: string;
+}
+
+// FIXED: Interface for device information
+export interface DeviceInfo {
+    userAgent?: string;
+    ipAddress?: string;
+    deviceId?: string;
 }
 
 class AuthService {
@@ -63,7 +71,7 @@ class AuthService {
                 process.exit(1);
             } else {
                 console.warn('Warning: JWT_SECRET not set. Using insecure fallback for development only.');
-                this.JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+                this.JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
             }
         }
 
@@ -72,20 +80,21 @@ class AuthService {
         this.MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
     }
 
-
-    // Generate short-lived access token
+    // FIXED: Generate short-lived access token with proper typing
     private generateAccessToken(payload: TokenPayload): string {
+        // Ensure payload is clean and properly typed
         const cleanPayload: TokenPayload = {
             userId: payload.userId,
             email: payload.email,
             role: payload.role,
-            ...(payload.clinicId ? { clinicId: payload.clinicId } : {})
+            ...(payload.clinicId && { clinicId: payload.clinicId })
         };
 
         const options: SignOptions = {
             expiresIn: this.ACCESS_TOKEN_EXPIRES as any,
             issuer: 'topsmile-api',
-            audience: 'topsmile-client'
+            audience: 'topsmile-client',
+            algorithm: 'HS256' // Explicit algorithm for security
         };
 
         return jwt.sign(cleanPayload, this.JWT_SECRET, options);
@@ -96,8 +105,8 @@ class AuthService {
         return crypto.randomBytes(48).toString('hex');
     }
 
-    // Create refresh token document in DB and cleanup old tokens
-    private async createRefreshToken(userId: string, deviceInfo?: any) {
+    // FIXED: Create refresh token document in DB with proper typing
+    private async createRefreshToken(userId: string, deviceInfo?: DeviceInfo) {
         const tokenStr = this.generateRefreshTokenString();
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + this.REFRESH_TOKEN_EXPIRES_DAYS);
@@ -108,7 +117,7 @@ class AuthService {
             token: tokenStr,
             userId,
             expiresAt,
-            deviceInfo
+            deviceInfo: deviceInfo || {}
         });
 
         return await refreshToken.save();
@@ -116,28 +125,67 @@ class AuthService {
 
     // Keep only most recent MAX_REFRESH_TOKENS_PER_USER refresh tokens; revoke older ones
     private async cleanupOldRefreshTokens(userId: string): Promise<void> {
-        const tokens = await RefreshToken.find({ userId, isRevoked: false }).sort({ createdAt: -1 });
-        if (tokens.length >= this.MAX_REFRESH_TOKENS_PER_USER) {
-            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER);
-            const ids = toRevoke.map(t => t._id);
-            await RefreshToken.updateMany({ _id: { $in: ids } }, { isRevoked: true });
-        }
-    }
-
-    // Verify access token
-    verifyAccessToken(token: string): JwtPayload {
         try {
-            return jwt.verify(token, this.JWT_SECRET, {
-                issuer: 'topsmile-api',
-                audience: 'topsmile-client'
-            }) as JwtPayload;
+            const tokens = await RefreshToken.find({ 
+                userId, 
+                isRevoked: false 
+            }).sort({ createdAt: -1 });
+            
+            if (tokens.length >= this.MAX_REFRESH_TOKENS_PER_USER) {
+                const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER - 1);
+                const ids = toRevoke.map(t => t._id);
+                await RefreshToken.updateMany({ 
+                    _id: { $in: ids } 
+                }, { 
+                    isRevoked: true 
+                });
+            }
         } catch (error) {
-            throw new Error('Token inválido ou expirado');
+            console.error('Error cleaning up old refresh tokens:', error);
+            // Don't throw - this is a maintenance operation
         }
     }
 
-    // Rotate and refresh access token using a refresh token string
+    // FIXED: Verify access token with proper error handling and typing
+    verifyAccessToken(token: string): TokenPayload {
+        try {
+            const payload = jwt.verify(token, this.JWT_SECRET, {
+                issuer: 'topsmile-api',
+                audience: 'topsmile-client',
+                algorithms: ['HS256'] // Explicit algorithm verification
+            });
+
+            // FIXED: Proper type checking instead of unsafe casting
+            if (typeof payload === 'string') {
+                throw new Error('Token payload deve ser um objeto');
+            }
+
+            const typedPayload = payload as TokenPayload;
+            
+            // Validate required fields
+            if (!typedPayload.userId || !typedPayload.email || !typedPayload.role) {
+                throw new Error('Token payload incompleto');
+            }
+
+            return typedPayload;
+        } catch (error) {
+            if (error instanceof jwt.JsonWebTokenError) {
+                throw new Error('Token inválido');
+            } else if (error instanceof jwt.TokenExpiredError) {
+                throw new Error('Token expirado');
+            } else if (error instanceof jwt.NotBeforeError) {
+                throw new Error('Token ainda não é válido');
+            }
+            throw error;
+        }
+    }
+
+    // FIXED: Rotate and refresh access token with better error handling
     async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
+        if (!refreshTokenString) {
+            throw new Error('Token de atualização é obrigatório');
+        }
+
         const stored = await RefreshToken.findOne({
             token: refreshTokenString,
             isRevoked: false,
@@ -150,42 +198,83 @@ class AuthService {
 
         const user = stored.userId as any;
         if (!user || !user.isActive) {
+            // Revoke the token if user is inactive
+            stored.isRevoked = true;
+            await stored.save();
             throw new Error('Usuário inválido ou inativo');
         }
 
-        // Revoke used refresh token (rotation)
+        // Revoke used refresh token (rotation for security)
         stored.isRevoked = true;
         await stored.save();
 
+        // FIXED: Proper payload construction with type safety
         const payload: TokenPayload = {
             userId: user._id.toString(),
             email: user.email,
             role: user.role,
-            ...(user.clinic ? { clinicId: user.clinic.toString() } : {})
+            ...(user.clinic && { clinicId: user.clinic.toString() })
         };
 
         const accessToken = this.generateAccessToken(payload);
-        const newRefreshDoc = await this.createRefreshToken(user._id.toString(), stored.deviceInfo);
+        const newRefreshDoc = await this.createRefreshToken(
+            user._id.toString(), 
+            stored.deviceInfo
+        );
 
-        return { accessToken, refreshToken: newRefreshDoc.token, expiresIn: this.ACCESS_TOKEN_EXPIRES };
+        return { 
+            accessToken, 
+            refreshToken: newRefreshDoc.token, 
+            expiresIn: this.ACCESS_TOKEN_EXPIRES 
+        };
     }
 
     // Logout (revoke a refresh token)
     async logout(refreshTokenString: string): Promise<void> {
         if (!refreshTokenString) return;
-        await RefreshToken.findOneAndUpdate({ token: refreshTokenString }, { isRevoked: true });
+        
+        try {
+            await RefreshToken.findOneAndUpdate(
+                { token: refreshTokenString }, 
+                { isRevoked: true }
+            );
+        } catch (error) {
+            console.error('Error during logout:', error);
+            // Don't throw - logout should be graceful
+        }
     }
 
     // Logout all devices for a user
     async logoutAllDevices(userId: string): Promise<void> {
-        await RefreshToken.updateMany({ userId, isRevoked: false }, { isRevoked: true });
+        if (!userId) {
+            throw new Error('ID do usuário é obrigatório');
+        }
+
+        try {
+            await RefreshToken.updateMany(
+                { userId, isRevoked: false }, 
+                { isRevoked: true }
+            );
+        } catch (error) {
+            console.error('Error during logout all devices:', error);
+            throw new Error('Erro ao fazer logout de todos os dispositivos');
+        }
     }
 
-    // Register new user with clinic
+    // FIXED: Register new user with better error handling and validation
     async register(data: RegisterData): Promise<AuthResponse> {
         try {
+            // Validate input data
+            if (!data.name || !data.email || !data.password) {
+                throw new Error('Dados obrigatórios não fornecidos');
+            }
+
+            if (data.password.length < 6) {
+                throw new Error('Senha deve ter pelo menos 6 caracteres');
+            }
+
             // Check if user already exists
-            const existingUser = await User.findOne({ email: data.email });
+            const existingUser = await User.findOne({ email: data.email.toLowerCase() });
             if (existingUser) {
                 throw new Error('Usuário já existe');
             }
@@ -194,7 +283,7 @@ class AuthService {
             if (data.clinic) {
                 const clinic = new Clinic({
                     name: data.clinic.name,
-                    email: data.email, // Use user email as clinic email
+                    email: data.email.toLowerCase(),
                     phone: data.clinic.phone,
                     address: data.clinic.address,
                     subscription: {
@@ -224,19 +313,19 @@ class AuthService {
 
             const user = new User({
                 name: data.name,
-                email: data.email,
+                email: data.email.toLowerCase(),
                 password: data.password,
                 clinic: clinicId
             });
 
             const savedUser = await user.save();
 
-            // Generate tokens
+            // FIXED: Generate tokens with proper typing
             const tokenPayload: TokenPayload = {
                 userId: (savedUser._id as any).toString(),
                 email: savedUser.email,
                 role: savedUser.role,
-                ...(savedUser.clinic ? { clinicId: savedUser.clinic.toString() } : {})
+                ...(savedUser.clinic && { clinicId: savedUser.clinic.toString() })
             };
 
             const accessToken = this.generateAccessToken(tokenPayload);
@@ -263,14 +352,20 @@ class AuthService {
         }
     }
 
-    // Login user and return access + refresh tokens
-    async login(data: LoginData, deviceInfo?: any): Promise<AuthResponse> {
+    // FIXED: Login user with better error handling and security
+    async login(data: LoginData, deviceInfo?: DeviceInfo): Promise<AuthResponse> {
         try {
-            const user = await User.findOne({ email: data.email })
+            // Validate input
+            if (!data.email || !data.password) {
+                throw new Error('E-mail e senha são obrigatórios');
+            }
+
+            const user = await User.findOne({ email: data.email.toLowerCase() })
                 .select('+password')
                 .populate('clinic');
 
             if (!user) {
+                // Use same message for both cases to prevent user enumeration
                 throw new Error('E-mail ou senha inválidos');
             }
 
@@ -283,11 +378,14 @@ class AuthService {
                 throw new Error('Usuário inativo');
             }
 
+            // FIXED: Proper payload construction
             const tokenPayload: TokenPayload = {
                 userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                ...(user.clinic ? { clinicId: user.clinic._id?.toString() || user.clinic.toString() } : {})
+                ...(user.clinic && { 
+                    clinicId: user.clinic._id?.toString() || user.clinic.toString() 
+                })
             };
 
             const accessToken = this.generateAccessToken(tokenPayload);
@@ -317,15 +415,32 @@ class AuthService {
     // Get user by ID with clinic info
     async getUserById(userId: string): Promise<IUser | null> {
         try {
+            if (!userId) {
+                throw new Error('ID do usuário é obrigatório');
+            }
+
             return await User.findById(userId).populate('clinic', 'name subscription settings');
         } catch (error) {
+            console.error('Error fetching user by ID:', error);
             throw new Error('Erro ao buscar usuário');
         }
     }
 
-    // Change password
+    // FIXED: Change password with better security
     async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<boolean> {
         try {
+            if (!userId || !currentPassword || !newPassword) {
+                throw new Error('Todos os campos são obrigatórios');
+            }
+
+            if (newPassword.length < 6) {
+                throw new Error('Nova senha deve ter pelo menos 6 caracteres');
+            }
+
+            if (currentPassword === newPassword) {
+                throw new Error('Nova senha deve ser diferente da atual');
+            }
+
             const user = await User.findById(userId).select('+password');
             if (!user) {
                 throw new Error('Usuário não encontrado');
@@ -339,6 +454,9 @@ class AuthService {
             user.password = newPassword;
             await user.save();
 
+            // Revoke all refresh tokens to force re-login
+            await this.logoutAllDevices(userId);
+
             return true;
         } catch (error) {
             if (error instanceof Error) {
@@ -348,18 +466,25 @@ class AuthService {
         }
     }
 
-    // Reset password (for forgot password feature)
+    // Reset password (for forgot password feature) - IMPROVED
     async resetPassword(email: string): Promise<string> {
         try {
-            const user = await User.findOne({ email });
+            if (!email) {
+                throw new Error('E-mail é obrigatório');
+            }
+
+            const user = await User.findOne({ email: email.toLowerCase() });
             if (!user) {
                 throw new Error('E-mail não encontrado');
             }
 
-            // Generate temporary password
-            const tempPassword = Math.random().toString(36).slice(-8);
+            // Generate more secure temporary password
+            const tempPassword = crypto.randomBytes(12).toString('base64').slice(0, 12);
             user.password = tempPassword;
             await user.save();
+
+            // Revoke all existing tokens
+            await this.logoutAllDevices((user._id as any).toString());
 
             return tempPassword;
         } catch (error) {
@@ -370,22 +495,27 @@ class AuthService {
         }
     }
 
-    // Legacy method for backward compatibility
+    // DEPRECATED: Legacy method for backward compatibility - will be removed
     async refreshToken(oldToken: string): Promise<string> {
+        console.warn('refreshToken method is deprecated. Use refreshAccessToken instead.');
         try {
             const decoded = this.verifyAccessToken(oldToken);
-            const user = await this.getUserById((decoded as any).userId);
+            const user = await this.getUserById(decoded.userId);
 
             if (!user || !user.isActive) {
                 throw new Error('Usuário inválido');
             }
 
-            return this.generateAccessToken({
+            const payload: TokenPayload = {
                 userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                ...(user.clinic ? { clinicId: user.clinic._id?.toString() || user.clinic.toString() } : {})
-            });
+                ...(user.clinic && { 
+                    clinicId: user.clinic._id?.toString() || user.clinic.toString() 
+                })
+            };
+
+            return this.generateAccessToken(payload);
         } catch (error) {
             throw new Error('Erro ao renovar token');
         }
