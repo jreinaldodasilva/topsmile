@@ -71,6 +71,56 @@ const UserSchema = new Schema<IUser>({
     }
 });
 
+// Password strength validation - runs before other validations
+UserSchema.pre('validate', function(next) {
+    if (this.isNew || this.isModified('password')) {
+        const password = this.password;
+        
+        // Check for minimum length (additional check beyond schema validation)
+        if (password.length < 8) {
+            this.invalidate('password', 'Senha deve ter pelo menos 8 caracteres');
+            return next();
+        }
+        
+        // Check for uppercase letter
+        if (!/(?=.*[A-Z])/.test(password)) {
+            this.invalidate('password', 'Senha deve conter pelo menos uma letra maiúscula');
+            return next();
+        }
+        
+        // Check for lowercase letter
+        if (!/(?=.*[a-z])/.test(password)) {
+            this.invalidate('password', 'Senha deve conter pelo menos uma letra minúscula');
+            return next();
+        }
+        
+        // Check for number
+        if (!/(?=.*\d)/.test(password)) {
+            this.invalidate('password', 'Senha deve conter pelo menos um número');
+            return next();
+        }
+        
+        // Optional: Check for special character (uncomment if desired)
+        // if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+        //     this.invalidate('password', 'Senha deve conter pelo menos um caractere especial');
+        //     return next();
+        // }
+        
+        // Check for common weak passwords
+        const commonWeakPasswords = [
+            '12345678', 'password', 'password123', 'admin123', 
+            'qwerty123', '123456789', 'abc123456'
+        ];
+        
+        if (commonWeakPasswords.includes(password.toLowerCase())) {
+            this.invalidate('password', 'Senha muito comum. Escolha uma senha mais segura');
+            return next();
+        }
+    }
+    
+    next();
+});
+
 // Hash password before saving
 UserSchema.pre('save', async function (next) {
     if (!this.isModified('password')) return next();

@@ -30,6 +30,40 @@ export interface IProvider extends Document {
     updatedAt: Date;
 }
 
+// Validation functions for working hours
+const validateTimeFormat = (time: string) => {
+    if (!time) return true; // Allow empty times
+    return /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time);
+};
+
+const validateWorkingHours = function(hours: any) {
+    // If working, both start and end times are required
+    if (hours.isWorking && (!hours.start || !hours.end)) {
+        return false;
+    }
+    
+    // If both times are provided, validate format and order
+    if (hours.start && hours.end) {
+        // Validate time format
+        if (!validateTimeFormat(hours.start) || !validateTimeFormat(hours.end)) {
+            return false;
+        }
+        
+        // Validate that start < end
+        const startMinutes = timeToMinutes(hours.start);
+        const endMinutes = timeToMinutes(hours.end);
+        return startMinutes < endMinutes;
+    }
+    
+    return true;
+};
+
+// Helper function to convert time string to minutes for comparison
+const timeToMinutes = (time: string): number => {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+};
+
 const ProviderSchema = new Schema<IProvider>({
     clinic: {
         type: Schema.Types.ObjectId,
@@ -81,13 +115,125 @@ const ProviderSchema = new Schema<IProvider>({
         default: true
     },
     workingHours: {
-        monday: { start: String, end: String, isWorking: { type: Boolean, default: true } },
-        tuesday: { start: String, end: String, isWorking: { type: Boolean, default: true } },
-        wednesday: { start: String, end: String, isWorking: { type: Boolean, default: true } },
-        thursday: { start: String, end: String, isWorking: { type: Boolean, default: true } },
-        friday: { start: String, end: String, isWorking: { type: Boolean, default: true } },
-        saturday: { start: String, end: String, isWorking: { type: Boolean, default: false } },
-        sunday: { start: String, end: String, isWorking: { type: Boolean, default: false } }
+        monday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: true }
+        },
+        tuesday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: true }
+        },
+        wednesday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: true }
+        },
+        thursday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: true }
+        },
+        friday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: true }
+        },
+        saturday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: false }
+        },
+        sunday: { 
+            start: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 09:00)'
+                }
+            },
+            end: { 
+                type: String, 
+                validate: {
+                    validator: validateTimeFormat,
+                    message: 'Formato de hora inválido. Use HH:MM (ex: 18:00)'
+                }
+            },
+            isWorking: { type: Boolean, default: false }
+        }
     },
     timeZone: {
         type: String,
@@ -119,6 +265,32 @@ const ProviderSchema = new Schema<IProvider>({
             return ret;
         }
     }
+});
+
+// Pre-save middleware to validate working hours logic
+ProviderSchema.pre('save', function(next) {
+    const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    
+    for (const day of days) {
+        const dayHours = this.workingHours[day as keyof typeof this.workingHours];
+        
+        if (!validateWorkingHours(dayHours)) {
+            if (dayHours.isWorking && (!dayHours.start || !dayHours.end)) {
+                return next(new Error(`Horário de trabalho para ${day}: horários de início e fim são obrigatórios quando está trabalhando`));
+            }
+            
+            if (dayHours.start && dayHours.end) {
+                const startMinutes = timeToMinutes(dayHours.start);
+                const endMinutes = timeToMinutes(dayHours.end);
+                
+                if (startMinutes >= endMinutes) {
+                    return next(new Error(`Horário de trabalho para ${day}: horário de início deve ser anterior ao horário de fim`));
+                }
+            }
+        }
+    }
+    
+    next();
 });
 
 // Indexes
