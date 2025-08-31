@@ -15,6 +15,7 @@ import { Request, Response, NextFunction } from 'express';
 import { connectToDatabase } from './config/database';
 import { contactService } from './services/contactService';
 import { checkDatabaseConnection, handleValidationError } from './middleware/database';
+import { Contact } from './models/Contact'; // FIXED: Replaced require with import
 
 // Authentication imports
 import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
@@ -299,7 +300,6 @@ app.use('/api/auth', authRoutes);
 app.use("/api/calendar", calendarRoutes);
 app.use("/api/appointments", appointmentsRoutes); 
 
-// IMPROVED: Email transporter with better error handling
 // IMPROVED: Email transporter with better error handling
 const createTransporter = (): nodemailer.Transporter<SMTPTransport.SentMessageInfo> => {
   if (process.env.NODE_ENV === "production") {
@@ -661,10 +661,9 @@ app.get('/api/health/database', async (req, res) => {
     if (dbState === 1) {
       // Test database with multiple collection checks
       const startTime = Date.now();
-      const Contact = require('./models/Contact').Contact;
       
       const [contactCount, dbStats] = await Promise.all([
-        Contact.countDocuments(),
+        Contact.countDocuments(), // FIXED: Uses imported Contact model
         (mongoose.connection.db as any).admin().serverStatus()
       ]);
       

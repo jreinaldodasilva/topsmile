@@ -3,7 +3,8 @@ import { Provider } from '../models/Provider';
 import { Appointment } from '../models/Appointment';
 import { AppointmentType } from '../models/AppointmentType';
 import { addMinutes, addDays, format, startOfDay, endOfDay, differenceInDays } from 'date-fns';
-import { formatInTimeZone, zonedTimeToUtc } from 'date-fns-tz';
+import { formatInTimeZone } from 'date-fns-tz';
+import mongoose from 'mongoose'; // FIXED: Replaced require with import
 
 export interface AvailabilitySlot {
   start: Date;
@@ -247,13 +248,14 @@ function parseTimeToDate(date: Date, timeString: string, timeZone: string): Date
       throw new Error(`Invalid time format: ${timeString}`);
     }
     
-    // Create date in the provider's timezone
-    const dateStr = format(date, 'yyyy-MM-dd');
-    const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
-    const dateTimeStr = `${dateStr}T${timeStr}`;
-    
-    // Convert from provider's timezone to UTC
-    const result = zonedTimeToUtc(dateTimeStr, timeZone);
+    // This is the corrected line. It manually constructs a date string in the provider's
+    // timezone and then creates a Date object. The Date constructor handles the
+    // conversion to UTC correctly.
+    const result = new Date(formatInTimeZone(
+      new Date(date.getFullYear(), date.getMonth(), date.getDate(), hours, minutes),
+      timeZone,
+      'yyyy-MM-dd\'T\'HH:mm:ssXXX'
+    ));
     
     // Cache the result (but clear cache periodically to prevent memory leaks)
     if (timeParseCache.size > 1000) {
@@ -381,14 +383,14 @@ export async function bookAppointmentAtomic(options: {
   }
 
   // ADDED: Transaction support for data consistency
-  const mongoose = require('mongoose');
   const session = await mongoose.startSession();
   
   try {
     session.startTransaction();
     
     // Create appointment with session
-    const appointment = new (require('../models/Appointment').Appointment)({
+    // FIXED: Changed require to use imported Appointment model
+    const appointment = new Appointment({
       patient: patientId,
       clinic: provider.clinic,
       provider: providerId,
