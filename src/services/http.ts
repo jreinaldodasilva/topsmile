@@ -1,4 +1,4 @@
-// src/services/http.ts
+// src/services/http.ts - Updated for Backend Integration
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 export interface HttpResponse<T = any> {
@@ -8,50 +8,45 @@ export interface HttpResponse<T = any> {
   message?: string;
 }
 
-/**
- * Frontend HTTP helper with automatic access token refresh.
- * - access token expected in localStorage under 'topsmile_access_token'
- * - refresh token expected in localStorage under 'topsmile_refresh_token'
- *
- * Behavior:
- * - Attaches Authorization: Bearer <accessToken> when `auth=true` (default).
- * - On 401 responses, attempts to call POST /api/auth/refresh with { refreshToken }
- * If refresh succeeds, stores new tokens and retries the original request once.
- * - Prevents multiple concurrent refresh calls via a single promise queue.
- * - Normalizes responses into HttpResponse<T> shape.
- */
-
 const ACCESS_KEY = 'topsmile_access_token';
 const REFRESH_KEY = 'topsmile_refresh_token';
 
 type RequestOptions = RequestInit & { auth?: boolean };
 
-/** Simple helper to parse fetch responses */
+/** Parse response to match backend format */
 async function parseResponse(res: Response): Promise<HttpResponse> {
   const text = await res.text();
   let payload: any = undefined;
+  
   if (text) {
     try {
       payload = JSON.parse(text);
     } catch (e) {
-      // not JSON — keep raw text
-      payload = text;
+      payload = { message: text };
     }
   }
 
-  const message = payload?.message || res.statusText;
-
+  // UPDATED: Handle backend response format
   if (!res.ok) {
-    return { ok: false, status: res.status, data: payload?.data, message };
+    return { 
+      ok: false, 
+      status: res.status, 
+      data: payload?.data, 
+      message: payload?.message || res.statusText 
+    };
   }
 
-  return { ok: true, status: res.status, data: payload?.data, message };
+  return { 
+    ok: true, 
+    status: res.status, 
+    data: payload?.data || payload, // Backend sometimes wraps data, sometimes not
+    message: payload?.message 
+  };
 }
 
-/** Single refresh promise to avoid concurrent refresh calls */
 let refreshingPromise: Promise<void> | null = null;
 
-/** Perform token refresh using refresh token from localStorage */
+/** UPDATED: Perform token refresh using backend endpoint */
 async function performRefresh(): Promise<void> {
   const refreshToken = localStorage.getItem(REFRESH_KEY);
   if (!refreshToken) throw new Error('No refresh token available');
@@ -60,15 +55,23 @@ async function performRefresh(): Promise<void> {
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken })
+    body: JSON.stringify({ refreshToken }) // Backend expects { refreshToken }
   });
 
-  // Reuse the existing helper to parse the response
   const parsedResponse = await parseResponse(res);
 
   if (!parsedResponse.ok) {
+    // Clear tokens on refresh failure
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
+    
+    // Trigger storage event to logout across tabs
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: ACCESS_KEY,
+      newValue: null,
+      oldValue: localStorage.getItem(ACCESS_KEY)
+    }));
+    
     throw new Error(parsedResponse.message || 'Failed to refresh token');
   }
 
@@ -77,65 +80,62 @@ async function performRefresh(): Promise<void> {
     throw new Error('Refresh response missing tokens');
   }
 
+  // Store new tokens
   localStorage.setItem(ACCESS_KEY, data.accessToken);
   localStorage.setItem(REFRESH_KEY, data.refreshToken);
 }
 
-/** Public request function */
+/** UPDATED: Enhanced request function with better error handling */
 export async function request<T = any>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<HttpResponse<T>> {
-  // Destructure 'auth' from options with a default value for a cleaner API
   const { auth = true, ...restOfOptions } = options;
 
-  const mergedHeaders: HeadersInit = {
-    'Content-Type': 'application/json',
-    ...(restOfOptions.headers || {})
-  };
-
   const makeRequest = async (token?: string | null) => {
-    // build headers fresh for each call to avoid mutation surprises
-
-    // Initialize a new Headers object
-    const headers = new Headers(mergedHeaders);
+    const headers = new Headers({
+      'Content-Type': 'application/json',
+      ...(restOfOptions.headers || {})
+    });
 
     if (auth && token) {
-      // Use the .set() method to add or update a header
       headers.set('Authorization', `Bearer ${token}`);
     }
 
     const config: RequestInit = {
       ...restOfOptions,
       headers,
-      // ensure GET requests don't accidentally send an empty body
       body: restOfOptions.body ?? undefined
     };
 
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-    const res = await fetch(url, config);
-    return res;
+    
+    try {
+      const res = await fetch(url, config);
+      return res;
+    } catch (networkError) {
+      // Handle network errors (no internet, server down, etc.)
+      throw new Error('Network error - please check your connection');
+    }
   };
 
   try {
     const accessToken = localStorage.getItem(ACCESS_KEY);
     const res = await makeRequest(accessToken);
+    
+    // If not 401, return the response
     if (res.status !== 401) {
-      // normal successful or other error — parse and return
       return (await parseResponse(res)) as HttpResponse<T>;
     }
 
-    // Got 401 — try refresh flow
-    // If a refresh is already in progress, await it instead of creating a new one
+    // Handle 401 - try refresh flow
     if (!refreshingPromise) {
       refreshingPromise = performRefresh()
         .catch((err) => {
-          // Ensure the promise is cleared on failure to allow future retries
           refreshingPromise = null;
-          throw err; // Re-throw to propagate the error
+          throw err;
         })
         .finally(() => {
-          // Clear the promise once it's settled (either resolved or rejected)
           refreshingPromise = null;
         });
     }
@@ -146,13 +146,62 @@ export async function request<T = any>(
     const newAccess = localStorage.getItem(ACCESS_KEY);
     const retryRes = await makeRequest(newAccess);
     return (await parseResponse(retryRes)) as HttpResponse<T>;
+    
   } catch (err: any) {
-    // Re-throw the original Error object to preserve specific error messages
+    // Handle specific error types
+    if (err instanceof TypeError && err.message.includes('fetch')) {
+      throw new Error('Unable to connect to server. Please check your internet connection.');
+    }
+    
     if (err instanceof Error) {
       throw err;
     }
 
-    // Fallback for non-Error exceptions
     throw new Error('An unknown network error occurred');
   }
+}
+
+/** UPDATED: Logout function to call backend endpoint */
+export async function logout(refreshToken?: string): Promise<void> {
+  const token = refreshToken || localStorage.getItem(REFRESH_KEY);
+  
+  // Clear local tokens first
+  localStorage.removeItem(ACCESS_KEY);
+  localStorage.removeItem(REFRESH_KEY);
+  
+  // Notify backend about logout (don't wait for response)
+  if (token) {
+    try {
+      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken: token })
+      });
+    } catch (error) {
+      // Ignore logout errors - tokens are already cleared locally
+      console.warn('Failed to notify backend about logout:', error);
+    }
+  }
+  
+  // Trigger storage event for cross-tab logout
+  window.dispatchEvent(new StorageEvent('storage', {
+    key: ACCESS_KEY,
+    newValue: null,
+    oldValue: null
+  }));
+}
+
+/** ADDED: Check if tokens exist */
+export function hasTokens(): boolean {
+  return !!(localStorage.getItem(ACCESS_KEY) && localStorage.getItem(REFRESH_KEY));
+}
+
+/** ADDED: Get current access token */
+export function getAccessToken(): string | null {
+  return localStorage.getItem(ACCESS_KEY);
+}
+
+/** ADDED: Get current refresh token */
+export function getRefreshToken(): string | null {
+  return localStorage.getItem(REFRESH_KEY);
 }

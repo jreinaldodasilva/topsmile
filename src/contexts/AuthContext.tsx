@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { request } from '../services/http';
@@ -5,17 +6,31 @@ import { request } from '../services/http';
 const ACCESS_KEY = 'topsmile_access_token';
 const REFRESH_KEY = 'topsmile_refresh_token';
 
+// Define a User interface for type safety
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  clinicId?: string;
+}
+
 interface AuthResult {
   success: boolean;
   message?: string;
 }
 
+
+// Updated AuthContextType to include all required properties
 interface AuthContextType {
   isAuthenticated: boolean;
   accessToken: string | null;
-  loading: boolean; // Expose loading state
+  user: User | null;
+  isLoading: boolean;
+  error: string | null;
   login: (email: string, password: string) => Promise<AuthResult>;
   logout: (reason?: string) => void;
+  clearError: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,60 +38,75 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
 
-  const isAuthenticated = !loading && !!accessToken;
+  const isAuthenticated = !isLoading && !!accessToken && !!user;
 
-  // Verify token on initial load
+  // Function to fetch user data based on token
+  const fetchUser = async (token: string) => {
+    try {
+      const res = await request('/api/auth/me', {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        // Corrected: Access the `data` property directly instead of calling `res.json()`
+        const userData = res.data;
+        setUser(userData);
+        setAccessToken(token);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     const verifyAuth = async () => {
       const token = localStorage.getItem(ACCESS_KEY);
-      if (!token) {
-        setLoading(false);
-        return;
+      if (token) {
+        await fetchUser(token);
       }
-      // Assuming a lightweight endpoint to validate the token
-      try {
-        const res = await request('/api/auth/me', { method: 'GET' });
-        if (res.ok) {
-          setAccessToken(token);
-        } else {
-          // This will trigger the refresh flow in http.ts, if it also fails,
-          // the storage event or a thrown error will handle the logout.
-          localStorage.removeItem(ACCESS_KEY);
-          localStorage.removeItem(REFRESH_KEY);
-        }
-      } catch (err) {
-        // If the refresh logic itself fails, tokens are cleared by http.ts
-        console.error('Initial auth check failed', err);
-      } finally {
-        setLoading(false);
-      }
+      setLoading(false);
     };
     verifyAuth();
   }, []);
 
   const login = async (email: string, password: string): Promise<AuthResult> => {
+    setError(null);
+    setLoading(true);
     try {
       const res = await request('/api/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email, password }),
-        auth: false, // Explicitly unauthenticated
       });
+      
+      // Corrected: Access the `data` property directly
+      const data = res.data;
 
-      if (res.ok && res.data) {
-        localStorage.setItem(ACCESS_KEY, res.data.accessToken);
-        localStorage.setItem(REFRESH_KEY, res.data.refreshToken);
-        setAccessToken(res.data.accessToken);
-        setLogoutReason(null);
+      if (res.ok) {
+        localStorage.setItem(ACCESS_KEY, data.accessToken);
+        localStorage.setItem(REFRESH_KEY, data.refreshToken);
+        await fetchUser(data.accessToken);
+        setLoading(false);
         navigate('/dashboard');
         return { success: true };
       } else {
-        return { success: false, message: res.message || 'An unknown error occurred' };
+        // Use the message from the response data if available
+        const errorMessage = data?.message || res.message || 'Login failed';
+        setError(errorMessage);
+        setLoading(false);
+        return { success: false, message: errorMessage };
       }
     } catch (err: any) {
-      return { success: false, message: err.message || 'Network error' };
+      const errorMessage = err.message || 'Network error';
+      setError(errorMessage);
+      setLoading(false);
+      return { success: false, message: errorMessage };
     }
   };
 
@@ -84,10 +114,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem(ACCESS_KEY);
     localStorage.removeItem(REFRESH_KEY);
     setAccessToken(null);
+    setUser(null);
     if (reason) {
       setLogoutReason(reason);
     }
     navigate('/login');
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   // Sync auth state across tabs
@@ -101,7 +136,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener('storage', onStorageChange);
   }, []);
 
-  // Show reason for logout after redirect
   useEffect(() => {
     if (logoutReason) {
       alert(logoutReason);
@@ -109,11 +143,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [logoutReason]);
 
-  const value = { isAuthenticated, accessToken, loading, login, logout };
+  const value = { isAuthenticated, accessToken, user, isLoading, error, login, logout, clearError };
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
