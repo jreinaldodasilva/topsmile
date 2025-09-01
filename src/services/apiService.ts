@@ -7,16 +7,18 @@ export type { ApiResult, Contact, ContactFilters, ContactListResponse, Dashboard
 async function login(email: string, password: string): Promise<ApiResult<{ token: string }>> {
   const res = await request<{ token: string }>('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify({ email, password })
-  }, false);
+    body: JSON.stringify({ email, password }),
+    auth: false  // ⬅️ moved here
+  });
   return { success: true, data: res.data, message: res.message };
 }
 
 async function register(payload: { name: string; email: string; password: string }): Promise<ApiResult> {
   const res = await request('/api/auth/register', {
     method: 'POST',
-    body: JSON.stringify(payload)
-  }, false);
+    body: JSON.stringify(payload),
+    auth: false
+  });
   return { success: true, data: res.data, message: res.message } as ApiResult;
 }
 
@@ -72,11 +74,12 @@ async function getDashboardStats(): Promise<ApiResult<DashboardStats>> {
   return { success: true, data: res.data, message: res.message } as ApiResult<DashboardStats>;
 }
 
-async function sendContactForm(payload: { name: string; email: string; message: string }): Promise<ApiResult> {
+async function sendContactForm(payload: { name: string; email: string; clinic?: string; specialty?: string; phone?: string }): Promise<ApiResult> {
   const res = await request('/api/contact', {
     method: 'POST',
-    body: JSON.stringify(payload)
-  }, false);
+    body: JSON.stringify(payload),
+    auth: false
+  });
   return { success: true, data: res.data, message: res.message } as ApiResult;
 }
 

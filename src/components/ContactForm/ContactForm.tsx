@@ -2,6 +2,7 @@
 import React, { useState, FormEvent } from 'react';
 import DOMPurify from 'dompurify';
 import './ContactForm.css';
+import apiService from '../../services/apiService';
 
 interface ContactFormData {
   name: string;
@@ -110,22 +111,20 @@ const ContactForm: React.FC = () => {
 
   const submitToAPI = async (data: ContactFormData): Promise<ApiResponse> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/contact`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data)
+      // Use centralized apiService which handles base URL and parsing
+      const res = await apiService.sendContactForm({
+        name: data.name,
+        email: data.email,
+        clinic: data.clinic,
+        specialty: data.specialty,
+        phone: data.phone
       });
-
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('API request failed:', error);
-      return {
-        success: false,
-        message: 'Erro de conexão. Verifique sua internet e tente novamente.'
-      };
+      if (!res.success) {
+        return { success: false, message: res.message || 'Erro ao enviar form' };
+      }
+      return { success: true, message: res.message || 'Contato enviado com sucesso' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Erro de rede' };
     }
   };
 
