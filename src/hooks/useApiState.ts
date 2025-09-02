@@ -74,7 +74,11 @@ export function useDashboard() {
     const svc = (mod as any).apiService ?? mod.default;
     return execute(async () => {
       const response = await svc.dashboard.getStats();
-      return response.data ?? null;
+      // UPDATED: Handle new backend response format
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Erro ao buscar dados do dashboard');
     });
   }, [execute]);
 
