@@ -5,6 +5,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
 import CalendarPage from "./pages/Calendar/CalendarPage";
 import FormRendererPage from "./pages/FormRenderer/FormRendererPage";
+import UnauthorizedPage from "./pages/Unauthorized/UnauthorizedPage";
 import './styles/global.css';
 
 // Simple Loading component
@@ -105,6 +106,7 @@ const App: React.FC = () => (
             />
 
             {/* Redirect unknown routes */}
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>

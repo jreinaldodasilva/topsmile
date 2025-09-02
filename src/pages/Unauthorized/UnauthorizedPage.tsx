@@ -1,13 +1,21 @@
-import React from 'react';
-import './UnauthorizedPage.css'; // Import the CSS file
+import React from "react";
+import { Link } from "react-router-dom";
 
-const UnauthorizedPage: React.FC = () => {
+export default function UnauthorizedPage() {
   return (
-    <div className="unauthorized-container">
-      <h1 className="unauthorized-title">Acesso Negado</h1>
-      <p className="unauthorized-message">Você não tem permissão para acessar esta página.</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
+      <h1 className="text-4xl font-bold text-red-600 mb-4">
+        Acesso negado
+      </h1>
+      <p className="text-lg text-gray-700 mb-6">
+        Você não tem permissão para acessar esta página.
+      </p>
+      <Link
+        to="/"
+        className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+      >
+        Voltar para a página inicial
+      </Link>
     </div>
   );
-};
-
-export default UnauthorizedPage;
+}
