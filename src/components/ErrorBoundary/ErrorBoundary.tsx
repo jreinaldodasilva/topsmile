@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import './ErrorBoundary.css';
+import logger from '../../utils/logger';
 
 interface Props {
   children: ReactNode;
@@ -47,10 +48,10 @@ class ErrorBoundary extends Component<Props, State> {
     };
 
     console.group(`🚨 ErrorBoundary caught error (${level})`);
-    console.error('Error:', error);
-    console.error('Error Info:', errorInfo);
-    console.log('Context:', context);
-    console.log('Enhanced Error:', enhancedError);
+    logger.error('Error:', error);
+    logger.error('Error Info:', errorInfo);
+    logger.debug('Context:', context);
+    logger.debug('Enhanced Error:', enhancedError);
     console.groupEnd();
 
     // Call custom error handler if provided
@@ -58,7 +59,7 @@ class ErrorBoundary extends Component<Props, State> {
       try {
         onError(error, errorInfo);
       } catch (handlerError) {
-        console.error('Error in custom error handler:', handlerError);
+        logger.error('Error in custom error handler:', handlerError);
       }
     }
 
@@ -83,7 +84,7 @@ class ErrorBoundary extends Component<Props, State> {
         body: JSON.stringify(errorData)
       });
     } catch (logError) {
-      console.error('Failed to log error to monitoring service:', logError);
+      logger.error('Failed to log error to monitoring service:', logError);
     }
   };
 
@@ -117,7 +118,7 @@ class ErrorBoundary extends Component<Props, State> {
       await navigator.clipboard.writeText(JSON.stringify(errorDetails, null, 2));
       alert('Detalhes do erro copiados para a área de transferência');
     } catch (err) {
-      console.error('Failed to copy error details:', err);
+      logger.error('Failed to copy error details:', err);
       alert('Não foi possível copiar os detalhes do erro');
     }
   };

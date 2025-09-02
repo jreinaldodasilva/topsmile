@@ -1,5 +1,6 @@
 // src/contexts/ErrorContext.tsx - Centralized Error Management
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import logger from '../utils/logger';
 
 export interface ErrorNotification {
   id: string;
@@ -102,10 +103,10 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     // Log to console in development
     if (process.env.NODE_ENV === 'development') {
       console.group(`🚨 Error logged: ${error.name}`);
-      console.error('Error:', error);
-      console.log('Context:', context);
-      console.log('Metadata:', metadata);
-      console.log('Full Error Data:', errorData);
+      logger.error('Error:', error);
+      logger.debug('Context:', context);
+      logger.debug('Metadata:', metadata);
+      logger.debug('Full Error Data:', errorData);
       console.groupEnd();
     }
 
@@ -119,10 +120,10 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(errorData)
         }).catch(logErr => {
-          console.error('Failed to log error to server:', logErr);
+          logger.error('Failed to log error to server:', logErr);
         });
       } catch (logError) {
-        console.error('Error logging failed:', logError);
+        logger.error('Error logging failed:', logError);
       }
     }
 
