@@ -1,9 +1,10 @@
-// src/components/ContactForm/ContactForm.tsx
+// src/components/ContactForm/ContactForm.tsx - Updated for Backend Integration
 import React, { useState, FormEvent } from 'react';
 import DOMPurify from 'dompurify';
+import { apiService } from '../../services/apiService';
 import './ContactForm.css';
-import apiService from '../../services/apiService';
 
+// UPDATED: Interface to match backend requirements
 interface ContactFormData {
   name: string;
   email: string;
@@ -21,13 +22,12 @@ interface FormErrors {
   general?: string;
 }
 
-interface ApiResponse {
-  success: boolean;
-  message: string;
-  errors?: Array<{ msg: string; param: string }>;
+// UPDATED: Response format to match backend
+interface SuccessResponse {
+  id: string;
+  protocol: string;
+  estimatedResponse: string;
 }
-
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -40,52 +40,69 @@ const ContactForm: React.FC = () => {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [submitMessage, setSubmitMessage] = useState('');
+  const [successData, setSuccessData] = useState<SuccessResponse | null>(null);
 
   // Sanitize input function
   const sanitizeInput = (input: string): string => {
     return DOMPurify.sanitize(input.trim(), { ALLOWED_TAGS: [] });
   };
 
-  // Validation functions
+  // UPDATED: Validation to match backend requirements
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
 
   const validatePhone = (phone: string): boolean => {
-    // Remove spaces, dashes, and parentheses for validation
-    const phoneRegex = /^[+]?[\d\s\-()]{10,20}$/;
+    // Backend accepts: /^[\d\s\-\(\)\+]{10,20}$/
+    const phoneRegex = /^[\d\s\-(]{10,20}$/;
     return phoneRegex.test(phone);
+  };
+
+  const validateName = (name: string): boolean => {
+    // Backend regex: /^[a-zA-ZÀ-ÿ\s\-'\.]*$/
+    const nameRegex = /^[a-zA-ZÀ-ÿ\s\-']*$/;
+    return nameRegex.test(name) && name.length >= 2 && name.length <= 100;
   };
 
   const validateForm = (data: ContactFormData): FormErrors => {
     const newErrors: FormErrors = {};
 
+    // Name validation
     if (!data.name) {
       newErrors.name = 'Nome é obrigatório';
-    } else if (data.name.length < 2) {
-      newErrors.name = 'Nome deve ter pelo menos 2 caracteres';
+    } else if (!validateName(data.name)) {
+      newErrors.name = 'Nome deve ter entre 2 e 100 caracteres e conter apenas letras, espaços, hífens, apostrofes e pontos';
     }
 
+    // Email validation
     if (!data.email) {
       newErrors.email = 'E-mail é obrigatório';
     } else if (!validateEmail(data.email)) {
       newErrors.email = 'Digite um e-mail válido';
+    } else if (data.email.length > 254) {
+      newErrors.email = 'E-mail muito longo';
     }
 
+    // Clinic validation
     if (!data.clinic) {
-      newErrors.clinic = 'Clínica é obrigatória';
+      newErrors.clinic = 'Nome da clínica é obrigatório';
+    } else if (data.clinic.length < 2 || data.clinic.length > 100) {
+      newErrors.clinic = 'Nome da clínica deve ter entre 2 e 100 caracteres';
     }
 
+    // Specialty validation
     if (!data.specialty) {
       newErrors.specialty = 'Especialidade é obrigatória';
+    } else if (data.specialty.length < 2 || data.specialty.length > 100) {
+      newErrors.specialty = 'Especialidade deve ter entre 2 e 100 caracteres';
     }
 
+    // Phone validation
     if (!data.phone) {
       newErrors.phone = 'Telefone é obrigatório';
     } else if (!validatePhone(data.phone)) {
-      newErrors.phone = 'Digite um telefone válido';
+      newErrors.phone = 'Digite um telefone válido (10-20 caracteres, apenas números, espaços, hífens, parênteses e +)';
     }
 
     return newErrors;
@@ -109,25 +126,7 @@ const ContactForm: React.FC = () => {
     }
   };
 
-  const submitToAPI = async (data: ContactFormData): Promise<ApiResponse> => {
-    try {
-      // Use centralized apiService which handles base URL and parsing
-      const res = await apiService.sendContactForm({
-        name: data.name,
-        email: data.email,
-        clinic: data.clinic,
-        specialty: data.specialty,
-        phone: data.phone
-      });
-      if (!res.success) {
-        return { success: false, message: res.message || 'Erro ao enviar form' };
-      }
-      return { success: true, message: res.message || 'Contato enviado com sucesso' };
-    } catch (err: any) {
-      return { success: false, message: err?.message || 'Erro de rede' };
-    }
-  };
-
+  // UPDATED: Submit function to use new API service
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -136,7 +135,7 @@ const ContactForm: React.FC = () => {
     // Sanitize all form data
     const sanitizedData: ContactFormData = {
       name: sanitizeInput(formData.name),
-      email: sanitizeInput(formData.email),
+      email: sanitizeInput(formData.email).toLowerCase(),
       clinic: sanitizeInput(formData.clinic),
       specialty: sanitizeInput(formData.specialty),
       phone: sanitizeInput(formData.phone)
@@ -151,15 +150,15 @@ const ContactForm: React.FC = () => {
     }
 
     try {
-      // Submit to API
-      const response = await submitToAPI(sanitizedData);
+      // UPDATED: Use new API service
+      const response = await apiService.public.sendContactForm(sanitizedData);
 
-      if (response.success) {
+      if (response.success && response.data) {
         setIsSubmitted(true);
-        setSubmitMessage(response.message);
+        setSuccessData(response.data);
         setFormData({ name: '', email: '', clinic: '', specialty: '', phone: '' });
         
-        // Track successful submission (for analytics)
+        // Track successful submission
         if (window.gtag) {
           window.gtag('event', 'form_submit', {
             event_category: 'Contact',
@@ -167,15 +166,18 @@ const ContactForm: React.FC = () => {
           });
         }
       } else {
-        // Handle API validation errors
-        if (response.errors && response.errors.length > 0) {
-          const apiErrors: FormErrors = {};
-          response.errors.forEach(error => {
-            apiErrors[error.param as keyof FormErrors] = error.msg;
-          });
-          setErrors(apiErrors);
+        // UPDATED: Handle backend validation errors
+        if (response.message) {
+          // Check if the error message contains field-specific information
+          if (response.message.includes('email')) {
+            setErrors({ email: response.message });
+          } else if (response.message.includes('nome')) {
+            setErrors({ name: response.message });
+          } else {
+            setErrors({ general: response.message });
+          }
         } else {
-          setErrors({ general: response.message });
+          setErrors({ general: 'Erro ao enviar mensagem. Tente novamente.' });
         }
 
         // Track failed submission
@@ -188,35 +190,54 @@ const ContactForm: React.FC = () => {
       }
     } catch (error) {
       console.error('Form submission error:', error);
-      setErrors({ 
-        general: 'Erro inesperado. Tente novamente ou entre em contato por telefone.' 
-      });
+      
+      // Handle different types of errors
+      let errorMessage = 'Erro inesperado. Tente novamente ou entre em contato por telefone.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Network')) {
+          errorMessage = 'Erro de conexão. Verifique sua internet e tente novamente.';
+        } else if (error.message.includes('rate limit')) {
+          errorMessage = 'Muitos formulários enviados. Aguarde alguns minutos antes de tentar novamente.';
+        }
+      }
+      
+      setErrors({ general: errorMessage });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (isSubmitted) {
+  // UPDATED: Success screen with backend data
+  if (isSubmitted && successData) {
     return (
-      <div className="contact-form-section">
+      <section className="contact-form-section">
         <div className="contact-form__success">
           <div className="contact-form__success-icon">✅</div>
           <h3>Mensagem Enviada com Sucesso!</h3>
-          <p>{submitMessage}</p>
-          <p className="contact-form__success-note">
-            Você também receberá um e-mail de confirmação em breve.
-          </p>
+          <p>Recebemos sua solicitação e nossa equipe retornará em até {successData.estimatedResponse}.</p>
+          
+          <div className="contact-form__success-note">
+            <strong>Protocolo de atendimento:</strong> #{successData.protocol}
+            <br />
+            <strong>ID de acompanhamento:</strong> {successData.id}
+            <br />
+            <small>Guarde estes números para referência futura.</small>
+          </div>
+          
+          <p>Você também receberá um e-mail de confirmação em breve.</p>
+          
           <button
             onClick={() => {
               setIsSubmitted(false);
-              setSubmitMessage('');
+              setSuccessData(null);
             }}
             className="contact-form__reset-btn"
           >
             Enviar outra mensagem
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
@@ -235,7 +256,7 @@ const ContactForm: React.FC = () => {
             name="name"
             value={formData.name}
             onChange={handleInputChange}
-            placeholder="Nome completo"
+            placeholder="Nome completo *"
             className={errors.name ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
@@ -255,10 +276,10 @@ const ContactForm: React.FC = () => {
             type="email"
             value={formData.email}
             onChange={handleInputChange}
-            placeholder="E-mail profissional"
+            placeholder="E-mail profissional *"
             className={errors.email ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
-            maxLength={255}
+            maxLength={254}
             required
             aria-describedby={errors.email ? 'email-error' : undefined}
           />
@@ -274,7 +295,7 @@ const ContactForm: React.FC = () => {
             name="clinic"
             value={formData.clinic}
             onChange={handleInputChange}
-            placeholder="Nome da clínica"
+            placeholder="Nome da clínica *"
             className={errors.clinic ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
@@ -293,7 +314,7 @@ const ContactForm: React.FC = () => {
             name="specialty"
             value={formData.specialty}
             onChange={handleInputChange}
-            placeholder="Especialidade (ex: Ortodontia, Implantodontia)"
+            placeholder="Especialidade (ex: Ortodontia, Implantodontia) *"
             className={errors.specialty ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={100}
@@ -313,7 +334,7 @@ const ContactForm: React.FC = () => {
             type="tel"
             value={formData.phone}
             onChange={handleInputChange}
-            placeholder="Telefone com WhatsApp (ex: 11999999999)"
+            placeholder="Telefone com WhatsApp (ex: 11999999999) *"
             className={errors.phone ? 'contact-input contact-form__input--error' : 'contact-input'}
             disabled={isSubmitting}
             maxLength={20}

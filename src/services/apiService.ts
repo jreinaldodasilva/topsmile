@@ -11,6 +11,33 @@ import type {
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User };
 
+// ADDED: New types for appointments and forms
+export interface Appointment {
+  _id: string;
+  scheduledAt: string;
+  patientId: string;
+  // Add other appointment fields as needed
+}
+
+export interface FormTemplate {
+  _id: string;
+  title: string;
+  questions: Array<{
+    id: string;
+    label: string;
+    type: string;
+    // Add other question fields as needed
+  }>;
+}
+
+export interface FormResponse {
+  _id: string;
+  templateId: string;
+  patientId: string;
+  answers: { [key: string]: string };
+  submittedAt: string;
+}
+
 // UPDATED: Authentication methods to match backend endpoints
 async function login(email: string, password: string): Promise<ApiResult<{ 
   user: User; 
@@ -197,6 +224,104 @@ async function mergeDuplicateContacts(
   return { success: res.ok, data: res.data, message: res.message };
 }
 
+// ADDED: Appointments API methods
+async function getAppointments(query?: Record<string, any>): Promise<ApiResult<Appointment[]>> {
+  const qs = query
+    ? '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+  
+  const res = await request<Appointment[]>(`/api/appointments${qs}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
+  const res = await request<Appointment>(`/api/appointments/${encodeURIComponent(id)}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createAppointment(payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
+  const res = await request('/api/appointments', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
+  const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function deleteAppointment(id: string): Promise<ApiResult<void>> {
+  const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+// ADDED: Form Templates API methods
+async function getFormTemplates(): Promise<ApiResult<FormTemplate[]>> {
+  const res = await request<FormTemplate[]>('/api/forms/templates');
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function getFormTemplate(id: string): Promise<ApiResult<FormTemplate>> {
+  const res = await request<FormTemplate>(`/api/forms/templates/${encodeURIComponent(id)}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createFormTemplate(payload: Partial<FormTemplate>): Promise<ApiResult<FormTemplate>> {
+  const res = await request('/api/forms/templates', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function updateFormTemplate(id: string, payload: Partial<FormTemplate>): Promise<ApiResult<FormTemplate>> {
+  const res = await request(`/api/forms/templates/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function deleteFormTemplate(id: string): Promise<ApiResult<void>> {
+  const res = await request(`/api/forms/templates/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+// ADDED: Form Responses API methods
+async function getFormResponses(query?: Record<string, any>): Promise<ApiResult<FormResponse[]>> {
+  const qs = query
+    ? '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+  
+  const res = await request<FormResponse[]>(`/api/forms/responses${qs}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createFormResponse(payload: {
+  templateId: string;
+  patientId: string;
+  answers: { [key: string]: string };
+}): Promise<ApiResult<FormResponse>> {
+  const res = await request('/api/forms/responses', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
 // ADDED: Health check endpoints
 async function getHealthStatus(): Promise<ApiResult<{
   timestamp: string;
@@ -233,6 +358,26 @@ export const apiService = {
     findDuplicates: findDuplicateContacts,
     mergeDuplicates: mergeDuplicateContacts
   },
+  appointments: {
+    getAll: getAppointments,
+    getOne: getAppointment,
+    create: createAppointment,
+    update: updateAppointment,
+    delete: deleteAppointment
+  },
+  forms: {
+    templates: {
+      getAll: getFormTemplates,
+      getOne: getFormTemplate,
+      create: createFormTemplate,
+      update: updateFormTemplate,
+      delete: deleteFormTemplate
+    },
+    responses: {
+      getAll: getFormResponses,
+      create: createFormResponse
+    }
+  },
   dashboard: { 
     getStats: getDashboardStats 
   },
@@ -260,6 +405,18 @@ export const apiService = {
   batchUpdateContacts,
   findDuplicateContacts,
   mergeDuplicateContacts,
+  getAppointments,
+  getAppointment,
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
+  getFormTemplates,
+  getFormTemplate,
+  createFormTemplate,
+  updateFormTemplate,
+  deleteFormTemplate,
+  getFormResponses,
+  createFormResponse,
   getHealthStatus
 };
 

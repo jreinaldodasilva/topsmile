@@ -4,7 +4,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import './LoginForm.css';
 
 const LoginForm: React.FC = () => {
-  const { login, isLoading, error, clearError } = useAuth();
+  const { login, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -50,7 +50,7 @@ const LoginForm: React.FC = () => {
               value={formData.email}
               onChange={e => setFormData({ ...formData, email: e.target.value })}
               required
-              disabled={isLoading}
+              disabled={loading}
               placeholder="seu@email.com"
             />
           </div>
@@ -65,14 +65,14 @@ const LoginForm: React.FC = () => {
                 value={formData.password}
                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                 required
-                disabled={isLoading}
+                disabled={loading}
                 placeholder="Sua senha"
               />
               <button
                 type="button"
                 className="password-toggle"
                 onClick={() => setShowPassword(!showPassword)}
-                disabled={isLoading}
+                disabled={loading}
               >
                 {showPassword ? '👁️' : '🙈'}
               </button>
@@ -82,9 +82,9 @@ const LoginForm: React.FC = () => {
           <button
             type="submit"
             className="login-button"
-            disabled={isLoading}
+            disabled={loading}
           >
-            {isLoading ? 'Entrando...' : 'Entrar'}
+            {loading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
