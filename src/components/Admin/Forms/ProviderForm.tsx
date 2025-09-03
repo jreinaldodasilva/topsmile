@@ -99,7 +99,8 @@ const ProviderForm: React.FC<ProviderFormProps> = ({
         phone: provider.phone || '',
         specialties: provider.specialties || [],
         license: provider.license || '',
-        workingHours: provider.workingHours || defaultWorkingHours,
+        // Safely merge provider hours with defaults to ensure all days are present
+        workingHours: { ...defaultWorkingHours, ...provider.workingHours },
         timeZone: provider.timeZone || 'America/Sao_Paulo',
         bufferTimeBefore: provider.bufferTimeBefore || 15,
         bufferTimeAfter: provider.bufferTimeAfter || 15,
@@ -159,16 +160,22 @@ const ProviderForm: React.FC<ProviderFormProps> = ({
     field: 'start' | 'end' | 'isWorking',
     value: string | boolean
   ) => {
-    setFormData(prev => ({
-      ...prev,
-      workingHours: {
-        ...prev.workingHours,
-        [day]: {
-          ...prev.workingHours[day],
-          [field]: value
-        }
-      }
-    }));
+    setFormData(prev => {
+      // Create a copy of the working hours. Its type is correctly preserved.
+      const newWorkingHours = { ...prev.workingHours };
+      
+      // Update the specific day's schedule on the copy
+      newWorkingHours[day] = {
+        ...newWorkingHours[day],
+        [field]: value
+      };
+
+      // Return the new state with the updated working hours
+      return {
+        ...prev,
+        workingHours: newWorkingHours
+      };
+    });
   };
 
   const validateForm = (): boolean => {
