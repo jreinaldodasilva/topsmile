@@ -32,184 +32,61 @@ const AppointmentCalendar: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Mock data for appointments
-      const mockAppointments: Appointment[] = [
-        {
-          _id: '1',
-          patient: {
-            _id: 'p1',
-            firstName: 'João',
-            lastName: 'Silva',
-            fullName: 'João Silva',
-            email: 'joao.silva@email.com',
-            phone: '(11) 99999-1111'
-          } as Patient,
-          clinic: user?.clinicId || 'clinic1',
-          provider: {
-            _id: 'pr1',
-            name: 'Dr. Ana Silva',
-            email: 'ana.silva@topsmile.com',
-            specialties: ['Ortodontia']
-          } as Provider,
-          appointmentType: {
-            _id: 'at1',
-            name: 'Consulta de Ortodontia',
-            duration: 60,
-            color: '#3b82f6'
-          },
-          scheduledStart: '2024-01-29T09:00:00Z',
-          scheduledEnd: '2024-01-29T10:00:00Z',
-          status: 'scheduled',
-          priority: 'routine',
-          notes: 'Primeira consulta de ortodontia',
-          createdAt: '2024-01-25T10:00:00Z',
-          updatedAt: '2024-01-25T10:00:00Z'
-        },
-        {
-          _id: '2',
-          patient: {
-            _id: 'p2',
-            firstName: 'Maria',
-            lastName: 'Santos',
-            fullName: 'Maria Santos',
-            email: 'maria.santos@email.com',
-            phone: '(11) 99999-2222'
-          } as Patient,
-          clinic: user?.clinicId || 'clinic1',
-          provider: {
-            _id: 'pr2',
-            name: 'Dr. Carlos Oliveira',
-            email: 'carlos.oliveira@topsmile.com',
-            specialties: ['Implantodontia']
-          } as Provider,
-          appointmentType: {
-            _id: 'at2',
-            name: 'Implante Dentário',
-            duration: 120,
-            color: '#10b981'
-          },
-          scheduledStart: '2024-01-29T14:00:00Z',
-          scheduledEnd: '2024-01-29T16:00:00Z',
-          status: 'confirmed',
-          priority: 'urgent',
-          notes: 'Implante no dente 36',
-          createdAt: '2024-01-20T14:30:00Z',
-          updatedAt: '2024-01-28T09:15:00Z'
-        },
-        {
-          _id: '3',
-          patient: {
-            _id: 'p3',
-            firstName: 'Carlos',
-            lastName: 'Oliveira',
-            fullName: 'Carlos Oliveira',
-            email: 'carlos.oliveira@email.com',
-            phone: '(11) 99999-3333'
-          } as Patient,
-          clinic: user?.clinicId || 'clinic1',
-          provider: {
-            _id: 'pr3',
-            name: 'Dra. Maria Santos',
-            email: 'maria.santos@topsmile.com',
-            specialties: ['Endodontia']
-          } as Provider,
-          appointmentType: {
-            _id: 'at3',
-            name: 'Tratamento de Canal',
-            duration: 90,
-            color: '#f59e0b'
-          },
-          scheduledStart: '2024-01-30T10:30:00Z',
-          scheduledEnd: '2024-01-30T12:00:00Z',
-          status: 'in_progress',
-          priority: 'urgent',
-          notes: 'Segunda sessão do tratamento de canal',
-          createdAt: '2024-01-15T11:00:00Z',
-          updatedAt: '2024-01-30T10:30:00Z'
-        },
-        {
-          _id: '4',
-          patient: {
-            _id: 'p1',
-            firstName: 'João',
-            lastName: 'Silva',
-            fullName: 'João Silva',
-            email: 'joao.silva@email.com',
-            phone: '(11) 99999-1111'
-          } as Patient,
-          clinic: user?.clinicId || 'clinic1',
-          provider: {
-            _id: 'pr1',
-            name: 'Dr. Ana Silva',
-            email: 'ana.silva@topsmile.com',
-            specialties: ['Ortodontia']
-          } as Provider,
-          appointmentType: {
-            _id: 'at4',
-            name: 'Limpeza Dental',
-            duration: 45,
-            color: '#8b5cf6'
-          },
-          scheduledStart: '2024-01-31T15:00:00Z',
-          scheduledEnd: '2024-01-31T15:45:00Z',
-          status: 'completed',
-          priority: 'routine',
-          notes: 'Limpeza de rotina',
-          actualStart: '2024-01-31T15:05:00Z',
-          actualEnd: '2024-01-31T15:50:00Z',
-          createdAt: '2024-01-28T16:20:00Z',
-          updatedAt: '2024-01-31T15:50:00Z'
-        }
-      ];
-
-      // Mock providers data
-      const mockProviders: Provider[] = [
-        {
-          _id: 'pr1',
-          name: 'Dr. Ana Silva',
-          email: 'ana.silva@topsmile.com',
-          specialties: ['Ortodontia', 'Clínica Geral'],
-          isActive: true
-        } as Provider,
-        {
-          _id: 'pr2',
-          name: 'Dr. Carlos Oliveira',
-          email: 'carlos.oliveira@topsmile.com',
-          specialties: ['Implantodontia', 'Cirurgia Oral'],
-          isActive: true
-        } as Provider,
-        {
-          _id: 'pr3',
-          name: 'Dra. Maria Santos',
-          email: 'maria.santos@topsmile.com',
-          specialties: ['Endodontia', 'Clínica Geral'],
-          isActive: true
-        } as Provider
-      ];
-
-      // Filter appointments based on current filters
-      let filteredAppointments = mockAppointments;
+      // Build query parameters for appointments
+      const appointmentParams: Record<string, any> = {};
       
       if (filters.providerId) {
-        filteredAppointments = filteredAppointments.filter(apt => 
-          (apt.provider as Provider)._id === filters.providerId
-        );
+        appointmentParams.providerId = filters.providerId;
       }
-
+      
       if (filters.status) {
-        filteredAppointments = filteredAppointments.filter(apt => apt.status === filters.status);
+        appointmentParams.status = filters.status;
       }
-
-      if (filters.date) {
-        const filterDate = new Date(filters.date);
-        filteredAppointments = filteredAppointments.filter(apt => {
-          const aptDate = new Date(apt.scheduledStart);
-          return aptDate.toDateString() === filterDate.toDateString();
-        });
+      
+      // Add date range based on current view and date
+      const startDate = new Date(currentDate);
+      const endDate = new Date(currentDate);
+      
+      switch (filters.view) {
+        case 'day':
+          // Same day
+          endDate.setDate(startDate.getDate() + 1);
+          break;
+        case 'week':
+          // Week range
+          startDate.setDate(currentDate.getDate() - currentDate.getDay());
+          endDate.setDate(startDate.getDate() + 7);
+          break;
+        case 'month':
+          // Month range
+          startDate.setDate(1);
+          endDate.setMonth(startDate.getMonth() + 1);
+          endDate.setDate(0);
+          break;
       }
+      
+      appointmentParams.start = startDate.toISOString();
+      appointmentParams.end = endDate.toISOString();
 
-      setAppointments(filteredAppointments);
-      setProviders(mockProviders);
+      // Fetch appointments and providers in parallel
+      const [appointmentsResult, providersResult] = await Promise.all([
+        apiService.appointments.getAll(appointmentParams),
+        apiService.providers.getAll({ isActive: true })
+      ]);
+      
+      if (appointmentsResult.success && appointmentsResult.data) {
+        setAppointments(appointmentsResult.data);
+      } else {
+        setError(appointmentsResult.message || 'Erro ao carregar agendamentos');
+        setAppointments([]);
+      }
+      
+      if (providersResult.success && providersResult.data) {
+        setProviders(providersResult.data);
+      } else {
+        // Don't set error for providers, just use empty array
+        setProviders([]);
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar agendamentos');
     } finally {

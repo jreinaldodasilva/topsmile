@@ -34,113 +34,41 @@ const ProviderManagement: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Note: This would need to be implemented in the backend
-      // For now, we'll create a mock implementation
-      const mockProviders: Provider[] = [
-        {
-          _id: '1',
-          name: 'Dr. Ana Silva',
-          email: 'ana.silva@topsmile.com',
-          phone: '(11) 99999-1111',
-          specialties: ['Ortodontia', 'Clínica Geral'],
-          license: 'CRO-SP 12345',
-          clinic: user?.clinicId || 'clinic1',
-          workingHours: {
-            monday: { start: '08:00', end: '18:00', isWorking: true },
-            tuesday: { start: '08:00', end: '18:00', isWorking: true },
-            wednesday: { start: '08:00', end: '18:00', isWorking: true },
-            thursday: { start: '08:00', end: '18:00', isWorking: true },
-            friday: { start: '08:00', end: '17:00', isWorking: true },
-            saturday: { start: '08:00', end: '12:00', isWorking: true },
-            sunday: { start: '00:00', end: '00:00', isWorking: false }
-          },
-          timeZone: 'America/Sao_Paulo',
-          bufferTimeBefore: 15,
-          bufferTimeAfter: 15,
-          appointmentTypes: ['consulta', 'limpeza', 'ortodontia'],
-          isActive: true,
-          createdAt: '2024-01-10T10:00:00Z',
-          updatedAt: '2024-01-25T14:30:00Z'
-        },
-        {
-          _id: '2',
-          name: 'Dr. Carlos Oliveira',
-          email: 'carlos.oliveira@topsmile.com',
-          phone: '(11) 99999-2222',
-          specialties: ['Implantodontia', 'Cirurgia Oral'],
-          license: 'CRO-SP 67890',
-          clinic: user?.clinicId || 'clinic1',
-          workingHours: {
-            monday: { start: '09:00', end: '19:00', isWorking: true },
-            tuesday: { start: '09:00', end: '19:00', isWorking: true },
-            wednesday: { start: '09:00', end: '19:00', isWorking: true },
-            thursday: { start: '09:00', end: '19:00', isWorking: true },
-            friday: { start: '09:00', end: '18:00', isWorking: true },
-            saturday: { start: '00:00', end: '00:00', isWorking: false },
-            sunday: { start: '00:00', end: '00:00', isWorking: false }
-          },
-          timeZone: 'America/Sao_Paulo',
-          bufferTimeBefore: 30,
-          bufferTimeAfter: 30,
-          appointmentTypes: ['implante', 'cirurgia', 'consulta'],
-          isActive: true,
-          createdAt: '2024-01-15T09:00:00Z',
-          updatedAt: '2024-01-20T16:45:00Z'
-        },
-        {
-          _id: '3',
-          name: 'Dra. Maria Santos',
-          email: 'maria.santos@topsmile.com',
-          phone: '(11) 99999-3333',
-          specialties: ['Endodontia', 'Clínica Geral'],
-          license: 'CRO-SP 11111',
-          clinic: user?.clinicId || 'clinic1',
-          workingHours: {
-            monday: { start: '07:00', end: '16:00', isWorking: true },
-            tuesday: { start: '07:00', end: '16:00', isWorking: true },
-            wednesday: { start: '07:00', end: '16:00', isWorking: true },
-            thursday: { start: '07:00', end: '16:00', isWorking: true },
-            friday: { start: '07:00', end: '15:00', isWorking: true },
-            saturday: { start: '07:00', end: '11:00', isWorking: true },
-            sunday: { start: '00:00', end: '00:00', isWorking: false }
-          },
-          timeZone: 'America/Sao_Paulo',
-          bufferTimeBefore: 10,
-          bufferTimeAfter: 10,
-          appointmentTypes: ['endodontia', 'consulta', 'emergencia'],
-          isActive: true,
-          createdAt: '2024-01-05T08:30:00Z',
-          updatedAt: '2024-01-22T11:15:00Z'
-        }
-      ];
 
-      // Filter providers based on search and specialty
-      let filteredProviders = mockProviders;
-      
+      // Build query parameters
+      const queryParams: Record<string, any> = {};
+
       if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredProviders = mockProviders.filter(provider => 
-          provider.name.toLowerCase().includes(searchLower) ||
-          provider.email.toLowerCase().includes(searchLower) ||
-          provider.phone?.includes(filters.search!) ||
-          provider.license?.toLowerCase().includes(searchLower) ||
-          provider.specialties.some(spec => spec.toLowerCase().includes(searchLower))
-        );
+        queryParams.search = filters.search;
       }
 
       if (filters.specialty) {
-        filteredProviders = filteredProviders.filter(provider => 
-          provider.specialties.some(spec => spec.toLowerCase().includes(filters.specialty!.toLowerCase()))
-        );
+        queryParams.specialty = filters.specialty;
       }
 
       if (filters.isActive !== undefined) {
-        filteredProviders = filteredProviders.filter(provider => provider.isActive === filters.isActive);
+        queryParams.isActive = filters.isActive;
       }
 
-      setProviders(filteredProviders);
-      setTotal(filteredProviders.length);
+      if (filters.page) {
+        queryParams.page = filters.page;
+      }
+
+      if (filters.limit) {
+        queryParams.limit = filters.limit;
+      }
+
+      // Call API service
+      const result = await apiService.providers.getAll(queryParams);
+
+      if (result.success && result.data) {
+        setProviders(result.data);
+        setTotal(result.data.length); // Note: Backend should return total count in pagination
+      } else {
+        setError(result.message || 'Erro ao carregar profissionais');
+        setProviders([]);
+        setTotal(0);
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar profissionais');
     } finally {
@@ -180,25 +108,25 @@ const ProviderManagement: React.FC = () => {
         };
         return `${dayNames[day]}: ${hours.start}-${hours.end}`;
       });
-    
+
     return workingDays.length > 0 ? workingDays.join(', ') : 'Não definido';
   };
 
   const getAvailabilityStatus = (provider: Provider) => {
     const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'lowercase' });
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const currentTime = now.toTimeString().slice(0, 5);
-    
+
     const todayHours = provider.workingHours[currentDay as keyof typeof provider.workingHours];
     
     if (!todayHours?.isWorking) {
       return { status: 'unavailable', label: 'Indisponível hoje' };
     }
-    
+
     if (currentTime >= todayHours.start && currentTime <= todayHours.end) {
       return { status: 'available', label: 'Disponível agora' };
     }
-    
+
     return { status: 'offline', label: 'Fora do horário' };
   };
 
@@ -221,7 +149,7 @@ const ProviderManagement: React.FC = () => {
           <p>Gerencie os profissionais da sua clínica</p>
         </div>
         <div className="header-actions">
-          <button 
+          <button
             className="btn btn-primary"
             onClick={() => setShowAddModal(true)}
           >
@@ -248,7 +176,7 @@ const ProviderManagement: React.FC = () => {
               className="search-input"
             />
           </div>
-          
+
           <div className="filter-group">
             <label>Especialidade:</label>
             <select
@@ -264,7 +192,7 @@ const ProviderManagement: React.FC = () => {
               <option value="clinica geral">Clínica Geral</option>
             </select>
           </div>
-          
+
           <div className="filter-group">
             <label>Status:</label>
             <select
@@ -331,7 +259,7 @@ const ProviderManagement: React.FC = () => {
                     </svg>
                     <span>{provider.email}</span>
                   </div>
-                  
+
                   <div className="detail-row">
                     <svg className="detail-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
@@ -366,7 +294,7 @@ const ProviderManagement: React.FC = () => {
                       {provider.isActive ? 'Ativo' : 'Inativo'}
                     </span>
                   </div>
-                  
+
                   <div className="provider-actions">
                     <button
                       className="btn btn-sm btn-outline"
@@ -380,7 +308,7 @@ const ProviderManagement: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
-                      onClick={() => {/* TODO: Edit provider */}}
+                      onClick={() => {/* TODO: Edit provider */ }}
                       title="Editar"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,7 +317,7 @@ const ProviderManagement: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
-                      onClick={() => {/* TODO: View schedule */}}
+                      onClick={() => {/* TODO: View schedule */ }}
                       title="Ver agenda"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -410,7 +338,7 @@ const ProviderManagement: React.FC = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Detalhes do Profissional</h2>
-              <button 
+              <button
                 className="modal-close"
                 onClick={() => setSelectedProvider(null)}
               >
@@ -419,7 +347,7 @@ const ProviderManagement: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="modal-body">
               <div className="provider-details-modal">
                 <div className="detail-section">
@@ -468,7 +396,7 @@ const ProviderManagement: React.FC = () => {
                         saturday: 'Sábado',
                         sunday: 'Domingo'
                       };
-                      
+
                       return (
                         <div key={day} className="working-hours-item">
                           <span className="day-name">{dayNames[day]}:</span>
@@ -519,15 +447,15 @@ const ProviderManagement: React.FC = () => {
             </div>
 
             <div className="modal-footer">
-              <button 
+              <button
                 className="btn btn-outline"
                 onClick={() => setSelectedProvider(null)}
               >
                 Fechar
               </button>
-              <button 
+              <button
                 className="btn btn-primary"
-                onClick={() => {/* TODO: Edit provider */}}
+                onClick={() => {/* TODO: Edit provider */ }}
               >
                 Editar Profissional
               </button>
@@ -542,7 +470,7 @@ const ProviderManagement: React.FC = () => {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Novo Profissional</h2>
-              <button 
+              <button
                 className="modal-close"
                 onClick={() => setShowAddModal(false)}
               >
@@ -551,13 +479,13 @@ const ProviderManagement: React.FC = () => {
                 </svg>
               </button>
             </div>
-            
+
             <div className="modal-body">
               <p>Formulário de cadastro de profissional em desenvolvimento...</p>
             </div>
 
             <div className="modal-footer">
-              <button 
+              <button
                 className="btn btn-outline"
                 onClick={() => setShowAddModal(false)}
               >

@@ -33,131 +33,36 @@ const PatientManagement: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      // Note: This would need to be implemented in the backend
-      // For now, we'll create a mock implementation
-      const mockPatients: Patient[] = [
-        {
-          _id: '1',
-          firstName: 'João',
-          lastName: 'Silva',
-          fullName: 'João Silva',
-          email: 'joao.silva@email.com',
-          phone: '(11) 99999-1111',
-          dateOfBirth: '1985-03-15',
-          gender: 'male',
-          cpf: '123.456.789-00',
-          address: {
-            street: 'Rua das Flores',
-            number: '123',
-            neighborhood: 'Centro',
-            city: 'São Paulo',
-            state: 'SP',
-            zipCode: '01234-567'
-          },
-          emergencyContact: {
-            name: 'Maria Silva',
-            phone: '(11) 99999-2222',
-            relationship: 'Esposa'
-          },
-          medicalHistory: {
-            allergies: ['Penicilina'],
-            medications: [],
-            conditions: ['Hipertensão'],
-            notes: 'Paciente com histórico de hipertensão controlada'
-          },
-          clinic: user?.clinicId || 'clinic1',
-          isActive: true,
-          createdAt: '2024-01-15T10:00:00Z',
-          updatedAt: '2024-01-15T10:00:00Z'
-        },
-        {
-          _id: '2',
-          firstName: 'Maria',
-          lastName: 'Santos',
-          fullName: 'Maria Santos',
-          email: 'maria.santos@email.com',
-          phone: '(11) 99999-3333',
-          dateOfBirth: '1990-07-22',
-          gender: 'female',
-          cpf: '987.654.321-00',
-          address: {
-            street: 'Av. Paulista',
-            number: '1000',
-            neighborhood: 'Bela Vista',
-            city: 'São Paulo',
-            state: 'SP',
-            zipCode: '01310-100'
-          },
-          emergencyContact: {
-            name: 'José Santos',
-            phone: '(11) 99999-4444',
-            relationship: 'Pai'
-          },
-          medicalHistory: {
-            allergies: [],
-            medications: ['Anticoncepcional'],
-            conditions: [],
-            notes: 'Paciente jovem, sem complicações'
-          },
-          clinic: user?.clinicId || 'clinic1',
-          isActive: true,
-          createdAt: '2024-01-20T14:30:00Z',
-          updatedAt: '2024-01-20T14:30:00Z'
-        },
-        {
-          _id: '3',
-          firstName: 'Carlos',
-          lastName: 'Oliveira',
-          fullName: 'Carlos Oliveira',
-          email: 'carlos.oliveira@email.com',
-          phone: '(11) 99999-5555',
-          dateOfBirth: '1975-12-10',
-          gender: 'male',
-          cpf: '456.789.123-00',
-          address: {
-            street: 'Rua Augusta',
-            number: '500',
-            neighborhood: 'Consolação',
-            city: 'São Paulo',
-            state: 'SP',
-            zipCode: '01305-000'
-          },
-          emergencyContact: {
-            name: 'Ana Oliveira',
-            phone: '(11) 99999-6666',
-            relationship: 'Esposa'
-          },
-          medicalHistory: {
-            allergies: ['Látex'],
-            medications: ['Losartana'],
-            conditions: ['Diabetes Tipo 2'],
-            notes: 'Paciente diabético, requer cuidados especiais'
-          },
-          clinic: user?.clinicId || 'clinic1',
-          isActive: true,
-          createdAt: '2024-01-10T09:15:00Z',
-          updatedAt: '2024-01-25T16:45:00Z'
-        }
-      ];
-
-      // Filter patients based on search
-      let filteredPatients = mockPatients;
+      // Build query parameters
+      const queryParams: Record<string, any> = {};
+      
       if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        filteredPatients = mockPatients.filter(patient => 
-          patient.fullName?.toLowerCase().includes(searchLower) ||
-          patient.email?.toLowerCase().includes(searchLower) ||
-          patient.phone?.includes(filters.search!) ||
-          patient.cpf?.includes(filters.search!)
-        );
+        queryParams.search = filters.search;
       }
-
+      
       if (filters.isActive !== undefined) {
-        filteredPatients = filteredPatients.filter(patient => patient.isActive === filters.isActive);
+        queryParams.isActive = filters.isActive;
+      }
+      
+      if (filters.page) {
+        queryParams.page = filters.page;
+      }
+      
+      if (filters.limit) {
+        queryParams.limit = filters.limit;
       }
 
-      setPatients(filteredPatients);
-      setTotal(filteredPatients.length);
+      // Call API service
+      const result = await apiService.patients.getAll(queryParams);
+      
+      if (result.success && result.data) {
+        setPatients(result.data);
+        setTotal(result.data.length); // Note: Backend should return total count in pagination
+      } else {
+        setError(result.message || 'Erro ao carregar pacientes');
+        setPatients([]);
+        setTotal(0);
+      }
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar pacientes');
     } finally {

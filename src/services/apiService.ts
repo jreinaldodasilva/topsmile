@@ -1,22 +1,122 @@
 // src/services/apiService.ts - Updated for Backend Integration
 import { request } from './http';
-import type { 
-  ApiResult, 
-  Contact, 
-  ContactFilters, 
-  ContactListResponse, 
-  DashboardStats, 
-  User 
+import type {
+  ApiResult,
+  Contact,
+  ContactFilters,
+  ContactListResponse,
+  DashboardStats,
+  User
 } from '../types/api';
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User };
 
-// ADDED: New types for appointments and forms
+// ADDED: New types for appointments, forms, patients, and providers
 export interface Appointment {
   _id: string;
-  scheduledAt: string;
-  patientId: string;
-  // Add other appointment fields as needed
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  appointmentType: string | AppointmentType;
+  scheduledStart: string | Date;
+  scheduledEnd: string | Date;
+  actualStart?: string | Date;
+  actualEnd?: string | Date;
+  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  priority?: 'routine' | 'urgent' | 'emergency';
+  notes?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface AppointmentType {
+  _id: string;
+  name: string;
+  description?: string;
+  duration: number;
+  price?: number;
+  color?: string;
+  category?: string;
+  isActive: boolean;
+  clinic: string | Clinic;
+}
+
+export interface Patient {
+  _id: string;
+  firstName: string;
+  lastName?: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  dateOfBirth?: string | Date;
+  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  cpf?: string;
+  address?: {
+    street?: string;
+    number?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+  };
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relationship: string;
+  };
+  medicalHistory?: {
+    allergies?: string[];
+    medications?: string[];
+    conditions?: string[];
+    notes?: string;
+  };
+  clinic: string | Clinic;
+  isActive?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface Provider {
+  _id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  specialties: string[];
+  license?: string;
+  clinic: string | Clinic;
+  workingHours: {
+    [key: string]: {
+      start: string;
+      end: string;
+      isWorking: boolean;
+    };
+  };
+  timeZone: string;
+  bufferTimeBefore: number;
+  bufferTimeAfter: number;
+  appointmentTypes: string[];
+  isActive: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
+
+export interface Clinic {
+  _id: string;
+  name: string;
+  email?: string;
+  phone?: string;
+  address?: {
+    street: string;
+    number?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
+  };
+  isActive?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface FormTemplate {
@@ -38,12 +138,13 @@ export interface FormResponse {
   submittedAt: string;
 }
 
+
 // UPDATED: Authentication methods to match backend endpoints
-async function login(email: string, password: string): Promise<ApiResult<{ 
-  user: User; 
-  accessToken: string; 
-  refreshToken: string; 
-  expiresIn: string; 
+async function login(email: string, password: string): Promise<ApiResult<{
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: string;
 }>> {
   const res = await request<{ user: User; accessToken: string; refreshToken: string; expiresIn: string }>('/api/auth/login', {
     method: 'POST',
@@ -53,9 +154,9 @@ async function login(email: string, password: string): Promise<ApiResult<{
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function register(payload: { 
-  name: string; 
-  email: string; 
+async function register(payload: {
+  name: string;
+  email: string;
   password: string;
   clinic?: {
     name: string;
@@ -68,11 +169,11 @@ async function register(payload: {
       zipCode?: string;
     };
   };
-}): Promise<ApiResult<{ 
-  user: User; 
-  accessToken: string; 
-  refreshToken: string; 
-  expiresIn: string; 
+}): Promise<ApiResult<{
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: string;
 }>> {
   const res = await request('/api/auth/register', {
     method: 'POST',
@@ -119,7 +220,7 @@ async function getContacts(query?: Record<string, any>): Promise<ApiResult<Conta
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join('&')
     : '';
-  
+
   const res = await request<ContactListResponse>(`/api/admin/contacts${qs}`);
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -171,9 +272,9 @@ async function getContactStats(): Promise<ApiResult<{
 }
 
 // UPDATED: Public contact form - matches backend validation
-async function sendContactForm(payload: { 
-  name: string; 
-  email: string; 
+async function sendContactForm(payload: {
+  name: string;
+  email: string;
   clinic: string;
   specialty: string;
   phone: string;
@@ -192,7 +293,7 @@ async function sendContactForm(payload: {
 
 // ADDED: Batch contact operations
 async function batchUpdateContacts(
-  contactIds: string[], 
+  contactIds: string[],
   updates: { status?: string; assignedTo?: string }
 ): Promise<ApiResult<{ modifiedCount: number; matchedCount: number }>> {
   const res = await request('/api/admin/contacts/batch', {
@@ -231,7 +332,7 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join('&')
     : '';
-  
+
   const res = await request<Appointment[]>(`/api/appointments${qs}`);
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -305,7 +406,7 @@ async function getFormResponses(query?: Record<string, any>): Promise<ApiResult<
         .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
         .join('&')
     : '';
-  
+
   const res = await request<FormResponse[]>(`/api/forms/responses${qs}`);
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -321,6 +422,77 @@ async function createFormResponse(payload: {
   });
   return { success: res.ok, data: res.data, message: res.message };
 }
+
+// ADDED: Patients API methods
+async function getPatients(query: Record<string, any> = {}): Promise<ApiResult<Patient[]>> {
+    const qs = Object.keys(query).length
+        ? `?${new URLSearchParams(query as any).toString()}`
+        : '';
+    const res = await request<Patient[]>(`/api/patients${qs}`);
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function getPatient(id: string): Promise<ApiResult<Patient>> {
+    const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`);
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patient>> {
+    const res = await request<Patient>(`/api/patients`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
+    const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
+        method: 'PATCH', // Using PATCH for consistency with other update methods
+        body: JSON.stringify(payload),
+    });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function deletePatient(id: string): Promise<ApiResult<void>> {
+    const res = await request<void>(`/api/patients/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+// ADDED: Providers API methods
+async function getProviders(query: Record<string, any> = {}): Promise<ApiResult<Provider[]>> {
+    const qs = Object.keys(query).length
+        ? `?${new URLSearchParams(query as any).toString()}`
+        : '';
+    const res = await request<Provider[]>(`/api/providers${qs}`);
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function getProvider(id: string): Promise<ApiResult<Provider>> {
+    const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`);
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createProvider(payload: Partial<Provider>): Promise<ApiResult<Provider>> {
+    const res = await request<Provider>(`/api/providers`, {
+        method: 'POST',
+        body: JSON.stringify(payload),
+    });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function updateProvider(id: string, payload: Partial<Provider>): Promise<ApiResult<Provider>> {
+    const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`, {
+        method: 'PATCH', // Using PATCH for consistency
+        body: JSON.stringify(payload),
+    });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function deleteProvider(id: string): Promise<ApiResult<void>> {
+    const res = await request<void>(`/api/providers/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    return { success: res.ok, data: res.data, message: res.message };
+}
+
 
 // ADDED: Health check endpoints
 async function getHealthStatus(): Promise<ApiResult<{
@@ -340,12 +512,12 @@ async function getHealthStatus(): Promise<ApiResult<{
  * Main API service object with nested structure
  */
 export const apiService = {
-  auth: { 
-    login, 
-    register, 
-    me, 
+  auth: {
+    login,
+    register,
+    me,
     refreshToken,
-    logout 
+    logout
   },
   contacts: {
     getAll: getContacts,
@@ -378,11 +550,25 @@ export const apiService = {
       create: createFormResponse
     }
   },
-  dashboard: { 
-    getStats: getDashboardStats 
+  patients: {
+      getAll: getPatients,
+      getOne: getPatient,
+      create: createPatient,
+      update: updatePatient,
+      delete: deletePatient,
   },
-  public: { 
-    sendContactForm 
+  providers: {
+      getAll: getProviders,
+      getOne: getProvider,
+      create: createProvider,
+      update: updateProvider,
+      delete: deleteProvider,
+  },
+  dashboard: {
+    getStats: getDashboardStats
+  },
+  public: {
+    sendContactForm
   },
   system: {
     health: getHealthStatus
@@ -417,7 +603,17 @@ export const apiService = {
   deleteFormTemplate,
   getFormResponses,
   createFormResponse,
-  getHealthStatus
+  getHealthStatus,
+  getPatients,
+  getPatient,
+  createPatient,
+  updatePatient,
+  deletePatient,
+  getProviders,
+  getProvider,
+  createProvider,
+  updateProvider,
+  deleteProvider
 };
 
 export default apiService;
