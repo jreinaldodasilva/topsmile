@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Patient } from '../../types/api';
+import PatientForm from '../../components/Admin/Forms/PatientForm';
 import './PatientManagement.css';
 
 interface PatientFilters {
@@ -26,6 +27,7 @@ const PatientManagement: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
 
   // Fetch patients from backend
   const fetchPatients = async () => {
@@ -252,7 +254,7 @@ const PatientManagement: React.FC = () => {
                       </button>
                       <button
                         className="btn btn-sm btn-outline"
-                        onClick={() => {/* TODO: Edit patient */}}
+                        onClick={() => setEditingPatient(patient)}
                         title="Editar"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -414,15 +416,21 @@ const PatientManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Add Patient Modal Placeholder */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Add/Edit Patient Modal */}
+      {(showAddModal || editingPatient) && (
+        <div className="modal-overlay" onClick={() => {
+          setShowAddModal(false);
+          setEditingPatient(null);
+        }}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Novo Paciente</h2>
+              <h2>{editingPatient ? 'Editar Paciente' : 'Novo Paciente'}</h2>
               <button 
                 className="modal-close"
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingPatient(null);
+                }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -431,16 +439,26 @@ const PatientManagement: React.FC = () => {
             </div>
             
             <div className="modal-body">
-              <p>Formulário de cadastro de paciente em desenvolvimento...</p>
-            </div>
-
-            <div className="modal-footer">
-              <button 
-                className="btn btn-outline"
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancelar
-              </button>
+              <PatientForm
+                patient={editingPatient}
+                onSave={(patient) => {
+                  // Update the patients list
+                  if (editingPatient) {
+                    setPatients(prev => prev.map(p => p._id === patient._id ? patient : p));
+                  } else {
+                    setPatients(prev => [patient, ...prev]);
+                    setTotal(prev => prev + 1);
+                  }
+                  
+                  // Close modal
+                  setShowAddModal(false);
+                  setEditingPatient(null);
+                }}
+                onCancel={() => {
+                  setShowAddModal(false);
+                  setEditingPatient(null);
+                }}
+              />
             </div>
           </div>
         </div>

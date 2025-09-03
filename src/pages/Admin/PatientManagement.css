@@ -355,6 +355,11 @@
   flex-direction: column;
 }
 
+.modal-content.large-modal {
+  max-width: 1000px;
+  width: 95%;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
