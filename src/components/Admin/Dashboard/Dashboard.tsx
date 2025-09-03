@@ -185,29 +185,100 @@ const Dashboard: React.FC = () => {
           </div>
         </section>
 
-        {/* UPDATED: Actions section with new contact count */}
+        {/* UPDATED: Enhanced actions section with navigation to all modules */}
         <section className="actions-section">
-          <h3>Ações Rápidas</h3>
-          <div className="action-buttons">
-            <button
-              className="action-button primary"
-              onClick={() => window.location.href = '/admin/contacts'}
-            >
-              Ver Todos os Contatos ({safeStats.contacts.total})
-            </button>
-            <button
-              className="action-button secondary"
-              onClick={() => fetchDashboardData()}
-              disabled={loading}
-            >
-              {loading ? 'Atualizando...' : 'Atualizar Dados'}
-            </button>
-            <button 
-              className="action-button secondary"
-              onClick={() => window.location.href = '/admin/settings'}
-            >
-              Configurações
-            </button>
+          <h3>Módulos do Sistema</h3>
+          <div className="modules-grid">
+            <div className="module-card">
+              <div className="module-icon contacts">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div className="module-info">
+                <h4>Gestão de Contatos</h4>
+                <p>{safeStats.contacts.total} contatos cadastrados</p>
+                <button
+                  className="module-button"
+                  onClick={() => window.location.href = '/admin/contacts'}
+                >
+                  Gerenciar Contatos
+                </button>
+              </div>
+            </div>
+
+            <div className="module-card">
+              <div className="module-icon patients">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <div className="module-info">
+                <h4>Gestão de Pacientes</h4>
+                <p>Cadastro e histórico médico</p>
+                <button
+                  className="module-button"
+                  onClick={() => window.location.href = '/admin/patients'}
+                >
+                  Gerenciar Pacientes
+                </button>
+              </div>
+            </div>
+
+            <div className="module-card">
+              <div className="module-icon providers">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div className="module-info">
+                <h4>Gestão de Profissionais</h4>
+                <p>Dentistas e especialistas</p>
+                <button
+                  className="module-button"
+                  onClick={() => window.location.href = '/admin/providers'}
+                >
+                  Gerenciar Profissionais
+                </button>
+              </div>
+            </div>
+
+            <div className="module-card">
+              <div className="module-icon appointments">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <div className="module-info">
+                <h4>Agenda de Consultas</h4>
+                <p>Agendamentos e calendário</p>
+                <button
+                  className="module-button"
+                  onClick={() => window.location.href = '/admin/appointments'}
+                >
+                  Ver Agenda
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div className="quick-actions">
+            <h4>Ações Rápidas</h4>
+            <div className="action-buttons">
+              <button
+                className="action-button secondary"
+                onClick={() => fetchDashboardData()}
+                disabled={loading}
+              >
+                {loading ? 'Atualizando...' : 'Atualizar Dados'}
+              </button>
+              <button 
+                className="action-button secondary"
+                onClick={() => window.location.href = '/admin/billing'}
+              >
+                Financeiro
+              </button>
+            </div>
           </div>
         </section>
 

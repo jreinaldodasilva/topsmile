@@ -24,10 +24,14 @@ const FeaturesPage = React.lazy(() => import('./pages/Features/FeaturesPage'));
 const PricingPage = React.lazy(() => import('./pages/Pricing/PricingPage'));
 const ContactPage = React.lazy(() => import('./pages/Contact/ContactPage'));
 const LoginPage = React.lazy(() => import('./pages/Login/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/Login/RegisterPage'));
 
 // Admin pages
 const AdminPage = React.lazy(() => import('./pages/Login/AdminPage'));
 const ContactManagement = React.lazy(() => import('./pages/Admin/ContactManagement'));
+const PatientManagement = React.lazy(() => import('./pages/Admin/PatientManagement'));
+const ProviderManagement = React.lazy(() => import('./pages/Admin/ProviderManagement'));
+const AppointmentCalendar = React.lazy(() => import('./pages/Admin/AppointmentCalendar'));
 
 const App: React.FC = () => (
   <ErrorBoundary level="critical" context="app-root">
@@ -79,6 +83,14 @@ const App: React.FC = () => (
                   } 
                 />
                 <Route 
+                  path="/register" 
+                  element={
+                    <ErrorBoundary level="page" context="register-page">
+                      <RegisterPage />
+                    </ErrorBoundary>
+                  } 
+                />
+                <Route 
                   path="/calendar" 
                   element={
                     <ErrorBoundary level="page" context="calendar-page">
@@ -118,19 +130,24 @@ const App: React.FC = () => (
                   }
                 />
 
-                {/* Future admin routes can be added here */}
+                {/* Enhanced admin routes */}
                 <Route
                   path="/admin/patients"
                   element={
                     <ProtectedRoute roles={['super_admin', 'admin', 'manager', 'dentist']}>
                       <ErrorBoundary level="page" context="patient-management">
-                        <div style={{ padding: '2rem', textAlign: 'center' }}>
-                          <h1>Gestão de Pacientes</h1>
-                          <p>Em desenvolvimento...</p>
-                          <button onClick={() => window.location.href = '/admin'}>
-                            ← Voltar ao Dashboard
-                          </button>
-                        </div>
+                        <PatientManagement />
+                      </ErrorBoundary>
+                    </ProtectedRoute>
+                  }
+                />
+
+                <Route
+                  path="/admin/providers"
+                  element={
+                    <ProtectedRoute roles={['super_admin', 'admin', 'manager']}>
+                      <ErrorBoundary level="page" context="provider-management">
+                        <ProviderManagement />
                       </ErrorBoundary>
                     </ProtectedRoute>
                   }
@@ -141,13 +158,7 @@ const App: React.FC = () => (
                   element={
                     <ProtectedRoute roles={['super_admin', 'admin', 'manager', 'dentist', 'assistant']}>
                       <ErrorBoundary level="page" context="appointment-management">
-                        <div style={{ padding: '2rem', textAlign: 'center' }}>
-                          <h1>Agendamentos</h1>
-                          <p>Em desenvolvimento...</p>
-                          <button onClick={() => window.location.href = '/admin'}>
-                            ← Voltar ao Dashboard
-                          </button>
-                        </div>
+                        <AppointmentCalendar />
                       </ErrorBoundary>
                     </ProtectedRoute>
                   }
