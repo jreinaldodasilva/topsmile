@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Provider } from '../../types/api';
+import ProviderForm from '../../components/Admin/Forms/ProviderForm';
 import './ProviderManagement.css';
 
 interface ProviderFilters {
@@ -28,6 +29,7 @@ const ProviderManagement: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
   // Fetch providers from backend
   const fetchProviders = async () => {
@@ -308,7 +310,7 @@ const ProviderManagement: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
-                      onClick={() => {/* TODO: Edit provider */ }}
+                      onClick={() => setEditingProvider(provider)}
                       title="Editar"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -464,15 +466,21 @@ const ProviderManagement: React.FC = () => {
         </div>
       )}
 
-      {/* Add Provider Modal Placeholder */}
-      {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Add/Edit Provider Modal */}
+      {(showAddModal || editingProvider) && (
+        <div className="modal-overlay" onClick={() => {
+          setShowAddModal(false);
+          setEditingProvider(null);
+        }}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Novo Profissional</h2>
+              <h2>{editingProvider ? 'Editar Profissional' : 'Novo Profissional'}</h2>
               <button
                 className="modal-close"
-                onClick={() => setShowAddModal(false)}
+                onClick={() => {
+                  setShowAddModal(false);
+                  setEditingProvider(null);
+                }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -481,16 +489,26 @@ const ProviderManagement: React.FC = () => {
             </div>
 
             <div className="modal-body">
-              <p>Formulário de cadastro de profissional em desenvolvimento...</p>
-            </div>
-
-            <div className="modal-footer">
-              <button
-                className="btn btn-outline"
-                onClick={() => setShowAddModal(false)}
-              >
-                Cancelar
-              </button>
+              <ProviderForm
+                provider={editingProvider}
+                onSave={(provider) => {
+                  // Update the providers list
+                  if (editingProvider) {
+                    setProviders(prev => prev.map(p => p._id === provider._id ? provider : p));
+                  } else {
+                    setProviders(prev => [provider, ...prev]);
+                    setTotal(prev => prev + 1);
+                  }
+                  
+                  // Close modal
+                  setShowAddModal(false);
+                  setEditingProvider(null);
+                }}
+                onCancel={() => {
+                  setShowAddModal(false);
+                  setEditingProvider(null);
+                }}
+              />
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Provider, Patient } from '../../types/api';
+import AppointmentForm from '../../components/Admin/Forms/AppointmentForm';
 import './AppointmentCalendar.css';
 
 interface CalendarFilters {
@@ -24,6 +25,7 @@ const AppointmentCalendar: React.FC = () => {
   });
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Fetch appointments and providers
@@ -408,7 +410,7 @@ const AppointmentCalendar: React.FC = () => {
                     className="btn btn-sm btn-outline"
                     onClick={(e) => {
                       e.stopPropagation();
-                      // TODO: Edit appointment
+                      setEditingAppointment(appointment);
                     }}
                     title="Editar"
                   >
@@ -546,15 +548,21 @@ const AppointmentCalendar: React.FC = () => {
         </div>
       )}
 
-      {/* New Appointment Modal Placeholder */}
-      {showNewAppointmentModal && (
-        <div className="modal-overlay" onClick={() => setShowNewAppointmentModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      {/* Add/Edit Appointment Modal */}
+      {(showNewAppointmentModal || editingAppointment) && (
+        <div className="modal-overlay" onClick={() => {
+          setShowNewAppointmentModal(false);
+          setEditingAppointment(null);
+        }}>
+          <div className="modal-content large-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2>Nova Consulta</h2>
+              <h2>{editingAppointment ? 'Editar Consulta' : 'Nova Consulta'}</h2>
               <button 
                 className="modal-close"
-                onClick={() => setShowNewAppointmentModal(false)}
+                onClick={() => {
+                  setShowNewAppointmentModal(false);
+                  setEditingAppointment(null);
+                }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -563,16 +571,26 @@ const AppointmentCalendar: React.FC = () => {
             </div>
             
             <div className="modal-body">
-              <p>Formulário de agendamento de consulta em desenvolvimento...</p>
-            </div>
-
-            <div className="modal-footer">
-              <button 
-                className="btn btn-outline"
-                onClick={() => setShowNewAppointmentModal(false)}
-              >
-                Cancelar
-              </button>
+              <AppointmentForm
+                appointment={editingAppointment}
+                onSave={(appointment) => {
+                  // Update the appointments list
+                  if (editingAppointment) {
+                    setAppointments(prev => prev.map(a => a._id === appointment._id ? appointment : a));
+                  } else {
+                    setAppointments(prev => [appointment, ...prev]);
+                  }
+                  
+                  // Close modal
+                  setShowNewAppointmentModal(false);
+                  setEditingAppointment(null);
+                }}
+                onCancel={() => {
+                  setShowNewAppointmentModal(false);
+                  setEditingAppointment(null);
+                }}
+                preselectedDate={currentDate.toISOString().split('T')[0]}
+              />
             </div>
           </div>
         </div>
