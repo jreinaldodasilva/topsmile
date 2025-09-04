@@ -116,13 +116,23 @@ const PatientForm: React.FC<PatientFormProps> = ({
     
     if (name.includes('.')) {
       const [section, field] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [section]: {
-          ...prev[section as keyof PatientFormData],
-          [field]: value
+      setFormData(prev => {
+        const sectionKey = section as keyof PatientFormData;
+        const currentSection = prev[sectionKey];
+        
+        // Ensure we're only spreading object types
+        if (typeof currentSection === 'object' && currentSection !== null && !Array.isArray(currentSection)) {
+          return {
+            ...prev,
+            [section]: {
+              ...currentSection,
+              [field]: value
+            }
+          };
         }
-      }));
+        
+        return prev;
+      });
     } else {
       setFormData(prev => ({
         ...prev,
@@ -188,7 +198,9 @@ const PatientForm: React.FC<PatientFormProps> = ({
     try {
       const patientData = {
         ...formData,
-        fullName: `${formData.firstName} ${formData.lastName}`.trim()
+        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
+        // Convert empty string to undefined for gender to match Patient type
+        gender: formData.gender === '' ? undefined : formData.gender
       };
 
       let result;

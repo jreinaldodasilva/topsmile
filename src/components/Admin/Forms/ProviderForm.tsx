@@ -93,13 +93,24 @@ const ProviderForm: React.FC<ProviderFormProps> = ({
 
   useEffect(() => {
     if (provider) {
+      // Ensure working hours match the expected structure
+      const workingHours = provider.workingHours ? {
+        monday: provider.workingHours.monday || defaultWorkingHours.monday,
+        tuesday: provider.workingHours.tuesday || defaultWorkingHours.tuesday,
+        wednesday: provider.workingHours.wednesday || defaultWorkingHours.wednesday,
+        thursday: provider.workingHours.thursday || defaultWorkingHours.thursday,
+        friday: provider.workingHours.friday || defaultWorkingHours.friday,
+        saturday: provider.workingHours.saturday || defaultWorkingHours.saturday,
+        sunday: provider.workingHours.sunday || defaultWorkingHours.sunday
+      } : defaultWorkingHours;
+
       setFormData({
         name: provider.name || '',
         email: provider.email || '',
         phone: provider.phone || '',
         specialties: provider.specialties || [],
         license: provider.license || '',
-        workingHours: provider.workingHours || defaultWorkingHours,
+        workingHours,
         timeZone: provider.timeZone || 'America/Sao_Paulo',
         bufferTimeBefore: provider.bufferTimeBefore || 15,
         bufferTimeAfter: provider.bufferTimeAfter || 15,
