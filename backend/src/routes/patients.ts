@@ -425,7 +425,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 });
 
 // Update patient
-router.put('/:id', updatePatientValidation, async (req: AuthenticatedRequest, res: any) => {
+router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {

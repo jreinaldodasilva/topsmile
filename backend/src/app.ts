@@ -25,6 +25,7 @@ import appointmentsRoutes from "./routes/appointments";
 import patientsRoutes from "./routes/patients";
 import providersRoutes from "./routes/providers";
 import appointmentTypesRoutes from "./routes/appointmentTypes"; 
+import formsRoutes from "./routes/forms";
 
 dotenv.config();
 
@@ -305,6 +306,7 @@ app.use("/api/appointments", appointmentsRoutes);
 app.use("/api/patients", patientsRoutes);
 app.use("/api/providers", providersRoutes);
 app.use("/api/appointment-types", appointmentTypesRoutes); 
+app.use("/api/forms", formsRoutes);
 
 // IMPROVED: Email transporter with better error handling
 const createTransporter = (): nodemailer.Transporter<SMTPTransport.SentMessageInfo> => {

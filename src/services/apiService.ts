@@ -343,17 +343,41 @@ async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
 }
 
 async function createAppointment(payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
+  // Map frontend fields to backend fields
+  const backendPayload = {
+    patient: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
+    provider: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
+    appointmentType: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
+    scheduledStart: payload.scheduledStart,
+    scheduledEnd: payload.scheduledEnd,
+    status: payload.status,
+    priority: payload.priority,
+    notes: payload.notes
+  };
+  
   const res = await request('/api/appointments', {
     method: 'POST',
-    body: JSON.stringify(payload)
+    body: JSON.stringify(backendPayload)
   });
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
+  // Map frontend fields to backend fields
+  const backendPayload = {
+    patient: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
+    provider: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
+    appointmentType: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
+    scheduledStart: payload.scheduledStart,
+    scheduledEnd: payload.scheduledEnd,
+    status: payload.status,
+    priority: payload.priority,
+    notes: payload.notes
+  };
+  
   const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(payload)
+    body: JSON.stringify(backendPayload)
   });
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -424,11 +448,11 @@ async function createFormResponse(payload: {
 }
 
 // ADDED: Patients API methods
-async function getPatients(query: Record<string, any> = {}): Promise<ApiResult<Patient[]>> {
+async function getPatients(query: Record<string, any> = {}): Promise<ApiResult<{ patients: Patient[]; total: number; page: number; totalPages: number; hasNext: boolean; hasPrev: boolean; } | Patient[]>> {
     const qs = Object.keys(query).length
         ? `?${new URLSearchParams(query as any).toString()}`
         : '';
-    const res = await request<Patient[]>(`/api/patients${qs}`);
+    const res = await request(`/api/patients${qs}`);
     return { success: res.ok, data: res.data, message: res.message };
 }
 
@@ -438,17 +462,43 @@ async function getPatient(id: string): Promise<ApiResult<Patient>> {
 }
 
 async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patient>> {
+    // Map frontend fields to backend fields
+    const backendPayload = {
+        name: payload.firstName ? `${payload.firstName} ${payload.lastName || ''}`.trim() : payload.fullName,
+        email: payload.email,
+        phone: payload.phone,
+        birthDate: payload.dateOfBirth,
+        gender: payload.gender === 'prefer_not_to_say' ? undefined : payload.gender,
+        cpf: payload.cpf,
+        address: payload.address,
+        emergencyContact: payload.emergencyContact,
+        medicalHistory: payload.medicalHistory
+    };
+    
     const res = await request<Patient>(`/api/patients`, {
         method: 'POST',
-        body: JSON.stringify(payload),
+        body: JSON.stringify(backendPayload),
     });
     return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
+    // Map frontend fields to backend fields
+    const backendPayload = {
+        name: payload.firstName ? `${payload.firstName} ${payload.lastName || ''}`.trim() : payload.fullName,
+        email: payload.email,
+        phone: payload.phone,
+        birthDate: payload.dateOfBirth,
+        gender: payload.gender === 'prefer_not_to_say' ? undefined : payload.gender,
+        cpf: payload.cpf,
+        address: payload.address,
+        emergencyContact: payload.emergencyContact,
+        medicalHistory: payload.medicalHistory
+    };
+    
     const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
-        method: 'PATCH', // Using PATCH for consistency with other update methods
-        body: JSON.stringify(payload),
+        method: 'PATCH',
+        body: JSON.stringify(backendPayload),
     });
     return { success: res.ok, data: res.data, message: res.message };
 }

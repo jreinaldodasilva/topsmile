@@ -13,6 +13,16 @@ interface PatientFilters {
   limit?: number;
 }
 
+// Define the expected API response structure
+interface PaginatedPatientsResponse {
+  patients: Patient[];
+  total: number;
+  page: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
 const PatientManagement: React.FC = () => {
   const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -25,6 +35,9 @@ const PatientManagement: React.FC = () => {
     limit: 20
   });
   const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
@@ -58,15 +71,38 @@ const PatientManagement: React.FC = () => {
       const result = await apiService.patients.getAll(queryParams);
       
       if (result.success && result.data) {
-        setPatients(result.data);
-        setTotal(result.data.length); // Note: Backend should return total count in pagination
+        // Handle both paginated and non-paginated responses
+        if (Array.isArray(result.data)) {
+          // Legacy response format - just an array
+          setPatients(result.data);
+          setTotal(result.data.length);
+          setTotalPages(1);
+          setHasNext(false);
+          setHasPrev(false);
+        } else {
+          // New paginated response format
+          const paginatedData = result.data as PaginatedPatientsResponse;
+          setPatients(paginatedData.patients);
+          setTotal(paginatedData.total);
+          setTotalPages(paginatedData.totalPages);
+          setHasNext(paginatedData.hasNext);
+          setHasPrev(paginatedData.hasPrev);
+        }
       } else {
         setError(result.message || 'Erro ao carregar pacientes');
         setPatients([]);
         setTotal(0);
+        setTotalPages(0);
+        setHasNext(false);
+        setHasPrev(false);
       }
     } catch (err: any) {
       setError(err.message || 'Erro ao carregar pacientes');
+      setPatients([]);
+      setTotal(0);
+      setTotalPages(0);
+      setHasNext(false);
+      setHasPrev(false);
     } finally {
       setLoading(false);
     }
@@ -82,6 +118,10 @@ const PatientManagement: React.FC = () => {
 
   const handleFilterChange = (key: keyof PatientFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setFilters(prev => ({ ...prev, page: newPage }));
   };
 
   const formatDate = (dateString: string | Date | undefined) => {
@@ -279,6 +319,39 @@ const PatientManagement: React.FC = () => {
         </table>
       </div>
 
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="pagination-container">
+          <div className="pagination">
+            <button
+              className="pagination-btn"
+              onClick={() => handlePageChange(filters.page! - 1)}
+              disabled={!hasPrev}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Anterior
+            </button>
+            
+            <span className="pagination-info">
+              Página {filters.page} de {totalPages}
+            </span>
+            
+            <button
+              className="pagination-btn"
+              onClick={() => handlePageChange(filters.page! + 1)}
+              disabled={!hasNext}
+            >
+              Próxima
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Patient Details Modal */}
       {selectedPatient && (
         <div className="modal-overlay" onClick={() => setSelectedPatient(null)}>
@@ -407,7 +480,10 @@ const PatientManagement: React.FC = () => {
               </button>
               <button 
                 className="btn btn-primary"
-                onClick={() => {/* TODO: Edit patient */}}
+                onClick={() => {
+                  setEditingPatient(selectedPatient);
+                  setSelectedPatient(null);
+                }}
               >
                 Editar Paciente
               </button>

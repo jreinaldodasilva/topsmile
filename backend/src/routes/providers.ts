@@ -506,7 +506,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 });
 
 // Update provider
-router.put('/:id', 
+router.patch('/:id', 
     authorize('super_admin', 'admin', 'manager'),
     updateProviderValidation, 
     async (req: AuthenticatedRequest, res: any) => {
