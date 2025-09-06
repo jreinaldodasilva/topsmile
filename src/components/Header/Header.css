@@ -524,6 +524,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
   width: 2.5rem;
   height: 2.5rem;
   background: none;
@@ -532,6 +534,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: var(--transition-all);
+  -webkit-tap-highlight-color: transparent;
 }
 
 .header__mobile-menu-button:hover {
@@ -591,6 +594,8 @@
   font-weight: var(--font-weight-medium);
   transition: var(--transition-colors);
   min-height: var(--touch-target-min);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
 }
 
 .header__mobile-nav-link:hover {

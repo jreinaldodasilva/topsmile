@@ -48,13 +48,46 @@ const EnhancedHeader: React.FC<HeaderProps> = ({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const location = useLocation();
-  
+
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notificationsRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const unreadCount = notifications.filter(n => !n.read).length;
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  // Touch event handlers for swipe gestures
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    // Close mobile menu on left swipe
+    if (isLeftSwipe && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+
+    // Open mobile menu on right swipe from left edge
+    if (isRightSwipe && !isMobileMenuOpen && touchStart < 50) {
+      setIsMobileMenuOpen(true);
+    }
+  };
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -166,20 +199,28 @@ const EnhancedHeader: React.FC<HeaderProps> = ({
       
       <header className="header" role="banner">
         <div className="container">
+          {/* Skip Links for Accessibility */}
+          <a href="#main-content" className="skip-link">
+            Pular para conteúdo principal
+          </a>
+          <a href="#main-navigation" className="skip-link">
+            Pular para navegação principal
+          </a>
+
           {/* Logo */}
           <div className="header__logo">
             <Link to="/" className="header__logo-link" aria-label="TopSmile - Página inicial">
-              <img 
-                src="/src/assets/images/icon-192x192.png" 
-                alt="TopSmile" 
-                className="header__logo-img" 
+              <img
+                src="/src/assets/images/icon-192x192.png"
+                alt="TopSmile"
+                className="header__logo-img"
               />
               <span className="header__logo-text">TopSmile</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="header__nav hide-mobile" role="navigation" aria-label="Navegação principal">
+          <nav id="main-navigation" className="header__nav hide-mobile" role="navigation" aria-label="Navegação principal">
             <ul className="header__nav-list">
               {navLinks.map(link => (
                 <li key={link.label} className="header__nav-item">
@@ -373,12 +414,15 @@ const EnhancedHeader: React.FC<HeaderProps> = ({
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div 
+          <div
             id="mobile-menu"
             className="header__mobile-menu show-mobile"
             ref={mobileMenuRef}
             role="navigation"
             aria-label="Menu de navegação móvel"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
           >
             {showSearch && (
               <div className="header__mobile-search">

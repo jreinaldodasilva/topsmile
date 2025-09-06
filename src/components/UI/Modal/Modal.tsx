@@ -44,14 +44,52 @@ const Modal: React.FC<ModalProps> = ({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, closeOnEscape, onClose]);
 
-  // Focus management
+  // Focus management and trap
   useEffect(() => {
     if (isOpen) {
       previousFocusRef.current = document.activeElement as HTMLElement;
-      modalRef.current?.focus();
 
       // Prevent body scroll
       document.body.style.overflow = 'hidden';
+
+      // Focus the modal
+      setTimeout(() => {
+        modalRef.current?.focus();
+      }, 100);
+
+      // Focus trap function
+      const handleTabKey = (event: KeyboardEvent) => {
+        if (event.key !== 'Tab') return;
+
+        const modal = modalRef.current;
+        if (!modal) return;
+
+        const focusableElements = modal.querySelectorAll(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        const firstElement = focusableElements[0] as HTMLElement;
+        const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+        if (event.shiftKey) {
+          // Shift + Tab
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement?.focus();
+          }
+        } else {
+          // Tab
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement?.focus();
+          }
+        }
+      };
+
+      document.addEventListener('keydown', handleTabKey);
+
+      return () => {
+        document.removeEventListener('keydown', handleTabKey);
+      };
     } else {
       if (previousFocusRef.current) {
         previousFocusRef.current.focus();

@@ -23,10 +23,12 @@
   transition: var(--transition-all);
   
   /* Touch targets */
+  min-width: var(--touch-target-min);
   min-height: var(--touch-target-min);
   
   /* Focus styles */
   outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn:focus-visible {

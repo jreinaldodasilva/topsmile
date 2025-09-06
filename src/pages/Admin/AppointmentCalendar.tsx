@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Provider, Patient } from '../../types/api';
 import AppointmentForm from '../../components/Admin/Forms/AppointmentForm';
+import Button from '../../components/UI/Button/Button';
 import './AppointmentCalendar.css';
 
 interface CalendarFilters {

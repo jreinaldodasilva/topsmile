@@ -6,15 +6,42 @@ import { ErrorProvider } from './contexts/ErrorContext';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { NotificationContainer } from './components/Notifications';
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
+import Skeleton from './components/UI/Skeleton/Skeleton';
 import CalendarPage from "./pages/Calendar/CalendarPage";
 import FormRendererPage from "./pages/FormRenderer/FormRendererPage";
 import UnauthorizedPage from "./pages/Unauthorized/UnauthorizedPage";
 import './styles/global.css';
 
-// Simple Loading component
+// Enhanced Loading component with skeleton
 const Loading: React.FC = () => (
-  <div role="status" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-    <span style={{ fontSize: '1.2rem' }}>Loading...</span>
+  <div role="status" style={{
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+    padding: '2rem',
+    gap: '1.5rem'
+  }}>
+    {/* Header skeleton */}
+    <div style={{ width: '100%', maxWidth: '400px' }}>
+      <Skeleton variant="rectangular" height={40} width="80%" style={{ marginBottom: '1rem' }} />
+      <Skeleton variant="text" lines={2} />
+    </div>
+
+    {/* Content skeleton */}
+    <div style={{ width: '100%', maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <Skeleton variant="rectangular" height={200} />
+      <div style={{ display: 'flex', gap: '1rem' }}>
+        <Skeleton variant="rectangular" height={100} width="60%" />
+        <Skeleton variant="rectangular" height={100} width="40%" />
+      </div>
+    </div>
+
+    {/* Loading text */}
+    <span style={{ fontSize: '1.2rem', color: 'var(--text-secondary)', marginTop: '1rem' }}>
+      Carregando...
+    </span>
   </div>
 );
 

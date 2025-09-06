@@ -1,46 +1,90 @@
-# Front-End UX/UI Improvements and Design Unification
+# Frontend Enhancement Plan - Align with Homepage UX/UI
 
-## Phase 1: Design System Enhancement
-- [x] Standardize spacing scale usage across all components
-- [x] Create component-specific design tokens
-- [x] Ensure consistent color usage and semantic meaning
-- [x] Add missing design tokens for shadows, animations
+## Overview
+Thoroughly review and enhance all frontend pages and components to be consistent with the homepage's UX/UI, layout, design, and content.
 
-## Phase 2: Component Library Expansion
-- [x] Create reusable Card component
-- [x] Create reusable Modal component
-- [x] Enhance Form and Input components
-- [x] Create Select component
-- [x] Standardize component APIs and props
-- [x] Add missing variants and states for existing components
-- [x] Implement consistent loading and error states
+## Information Gathered
+- Homepage uses modern design system with CSS variables, gradients, animations, responsive design
+- Admin pages (AppointmentCalendar) use hardcoded colors and basic styling
+- Contact page has some animations but inconsistent colors and spacing
+- Global CSS variables defined in src/styles/variables.css
+- Shared UI components exist in src/components/UI/
 
-## Phase 3: UX Pattern Improvements
-- [ ] Create Skeleton component for loading states
-- [ ] Enhance loading states with skeleton screens
-- [ ] Add micro-interactions and hover effects
-- [ ] Improve form validation and error handling
+## Plan
 
-## Phase 4: Mobile Experience Optimization
-- [ ] Optimize touch targets (minimum 44px)
-- [ ] Improve mobile navigation patterns
-- [ ] Add swipe gestures where appropriate
-- [ ] Enhance mobile-specific layouts
+### 1. Update Page Layouts and Styles
+- [x] Refactor Admin/AppointmentCalendar page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [x] Refactor Pricing page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [x] Refactor Features page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [x] Refactor Contact page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [x] Refactor Calendar page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [x] Refactor Login page to use consistent:
+  - Layout structure (header, main, footer)
+  - Typography hierarchy
+  - Color palette (use CSS variables)
+  - Spacing system
+  - Interactive elements (buttons, links, modals)
+- [ ] Refactor remaining pages in src/pages/* to use consistent design system
 
-## Phase 5: Accessibility Enhancements
-- [ ] Improve ARIA labels and roles
-- [ ] Enhance keyboard navigation
-- [ ] Add better screen reader support
-- [ ] Implement focus management for modals and dropdowns
+### 2. Enhance Shared UI Components
+- [ ] Update src/components/UI/* components:
+  - Button: Match homepage button styles
+  - Card: Use consistent shadows, borders, padding
+  - Modal: Align with homepage modal design
+  - Input/Select: Consistent form styling
+  - Toast/Notification: Match homepage patterns
 
-## Phase 6: Performance Optimizations
-- [ ] Optimize CSS animations and transitions
-- [ ] Implement better loading strategies
-- [ ] Reduce bundle size with code splitting
-- [ ] Add image optimization
+### 3. Update Page-Specific Components
+- [ ] Admin components (src/components/Admin/*)
+- [ ] ContactForm component
+- [ ] Features, Pricing, Testimonials components
+- [ ] Header and Footer components
 
-## Phase 7: Visual Hierarchy and Layout
-- [ ] Improve information architecture
-- [ ] Standardize section spacing and typography
-- [ ] Enhance visual consistency across pages
-- [ ] Add better content organization
+### 4. Refactor CSS Files
+- [ ] Replace hardcoded values with CSS variables
+- [ ] Add consistent animations and transitions
+- [ ] Ensure responsive design across all pages
+- [ ] Add dark mode support where applicable
+
+### 5. Testing and Validation
+- [ ] Test responsiveness on different screen sizes
+- [ ] Verify accessibility (contrast, focus states)
+- [ ] Check cross-browser compatibility
+- [ ] Validate component interactions
+
+## Dependent Files to Edit
+- src/pages/*/*.tsx and *.css (all pages)
+- src/components/*/*.tsx and *.css (all components)
+- src/styles/global.css (if needed)
+- src/styles/variables.css (ensure all variables are used)
+
+## Follow-up Steps
+- Run development server to test changes
+- Check console for any errors
+- Test user interactions and animations
+- Document any new patterns or components added

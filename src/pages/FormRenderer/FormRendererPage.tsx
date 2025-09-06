@@ -108,14 +108,14 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
 
   if (loading) {
     return (
-      <div className="p-4">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4"></div>
-          <div className="space-y-4">
+      <div className="form-renderer-page">
+        <div className="loading-skeleton">
+          <div className="skeleton-title"></div>
+          <div className="skeleton-fields">
             {[1, 2, 3].map(i => (
-              <div key={i}>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+              <div key={i} className="skeleton-field">
+                <div className="skeleton-label"></div>
+                <div className="skeleton-input"></div>
               </div>
             ))}
           </div>
@@ -126,23 +126,17 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
 
   if (error) {
     return (
-      <div className="p-4">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>{error}</p>
-              </div>
-              <div className="mt-4">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-red-100 px-3 py-2 text-sm leading-4 font-medium text-red-800 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
+      <div className="form-renderer-page">
+        <div className="error-banner">
+          <div className="error-content">
+            <h3 className="error-title">Erro</h3>
+            <p className="error-message">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="retry-button"
+            >
+              Tentar novamente
+            </button>
           </div>
         </div>
       </div>

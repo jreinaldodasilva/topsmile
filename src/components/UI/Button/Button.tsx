@@ -64,6 +64,7 @@ const Button: React.FC<ButtonProps> = ({
       className={classes}
       disabled={disabled || loading}
       aria-busy={loading}
+      aria-pressed={props['aria-pressed'] || undefined}
       {...props}
     >
       {loading && <LoadingSpinner />}

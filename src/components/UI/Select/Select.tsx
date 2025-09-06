@@ -65,6 +65,9 @@ const Select: React.FC<SelectProps> = ({
             helperText ? helperId : null
           ].filter(Boolean).join(' ') || undefined}
           aria-invalid={error ? 'true' : undefined}
+          aria-required={required ? 'true' : undefined}
+          aria-expanded="false"
+          role="combobox"
           required={required}
           {...props}
         >
