@@ -347,6 +347,40 @@ const workingHoursValidation = [
 ];
 
 // Create a new provider
+/**
+ * @swagger
+ * /api/providers:
+ *   post:
+ *     summary: Criar novo profissional
+ *     description: Cria um novo profissional na clínica
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Provider'
+ *     responses:
+ *       201:
+ *         description: Profissional criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.post('/', 
     authorize('super_admin', 'admin', 'manager'),
     createProviderValidation, 
