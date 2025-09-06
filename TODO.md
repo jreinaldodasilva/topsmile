@@ -14,12 +14,12 @@
 - [x] Add missing schemas to swagger.ts (Patient, Provider, Appointment, etc.)
 - [x] Add Swagger annotations to auth.ts (6 routes)
 - [x] Add Swagger annotations to patients.ts (8 routes)
-- [ ] Add Swagger annotations to providers.ts (5 routes)
-- [ ] Add Swagger annotations to appointmentTypes.ts (9 routes)
-- [ ] Add Swagger annotations to forms.ts (9 routes)
-- [ ] Add Swagger annotations to appointments.ts (6 routes)
-- [ ] Add Swagger annotations to calendar.ts (2 routes)
-- [ ] Add Swagger annotations to docs.ts (2 routes)
+- [x] Add Swagger annotations to providers.ts (5 routes)
+- [x] Add Swagger annotations to appointmentTypes.ts (9 routes)
+- [x] Add Swagger annotations to forms.ts (9 routes)
+- [x] Add Swagger annotations to appointments.ts (6 routes)
+- [x] Add Swagger annotations to calendar.ts (2 routes)
+- [x] Add Swagger annotations to docs.ts (2 routes)
 - [ ] Test Swagger UI documentation coverage
 - [ ] Update integration tests for Swagger spec validation
 

@@ -598,6 +598,96 @@ const options: swaggerJSDoc.Options = {
               format: 'date-time'
             }
           }
+        },
+        CalendarEvent: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              description: 'ID único do evento'
+            },
+            title: {
+              type: 'string',
+              description: 'Título do evento'
+            },
+            start: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data e hora de início'
+            },
+            end: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data e hora de fim'
+            },
+            patientId: {
+              type: 'string',
+              description: 'ID do paciente (opcional)'
+            },
+            providerId: {
+              type: 'string',
+              description: 'ID do prestador (opcional)'
+            },
+            appointmentTypeId: {
+              type: 'string',
+              description: 'ID do tipo de agendamento (opcional)'
+            },
+            status: {
+              type: 'string',
+              enum: ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled'],
+              description: 'Status do evento'
+            },
+            notes: {
+              type: 'string',
+              description: 'Observações do evento'
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data de criação'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data de atualização'
+            }
+          }
+        },
+        CreateCalendarEventRequest: {
+          type: 'object',
+          required: ['title', 'start', 'end'],
+          properties: {
+            title: {
+              type: 'string',
+              description: 'Título do evento'
+            },
+            start: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data e hora de início'
+            },
+            end: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Data e hora de fim'
+            },
+            patientId: {
+              type: 'string',
+              description: 'ID do paciente'
+            },
+            providerId: {
+              type: 'string',
+              description: 'ID do prestador'
+            },
+            appointmentTypeId: {
+              type: 'string',
+              description: 'ID do tipo de agendamento'
+            },
+            notes: {
+              type: 'string',
+              description: 'Observações'
+            }
+          }
         }
       }
     },
