@@ -202,7 +202,7 @@
   --button-height-sm: 2rem;    /* 32px */
   --button-height-md: 2.5rem;  /* 40px */
   --button-height-lg: 3rem;    /* 48px */
-  
+
   --input-height-sm: 2rem;     /* 32px */
   --input-height-md: 2.5rem;   /* 40px */
   --input-height-lg: 3rem;     /* 48px */
@@ -210,6 +210,56 @@
   --header-height: 4rem;       /* 64px */
   --sidebar-width: 16rem;      /* 256px */
   --sidebar-width-collapsed: 4rem; /* 64px */
+
+  /* Card Component */
+  --card-padding-sm: var(--space-4);
+  --card-padding-md: var(--space-6);
+  --card-padding-lg: var(--space-8);
+  --card-border-radius: var(--radius-lg);
+  --card-shadow: var(--shadow-sm);
+  --card-shadow-hover: var(--shadow-md);
+
+  /* Modal Component */
+  --modal-backdrop-bg: rgba(0, 0, 0, 0.5);
+  --modal-border-radius: var(--radius-xl);
+  --modal-shadow: var(--shadow-2xl);
+  --modal-max-width-sm: 20rem;
+  --modal-max-width-md: 28rem;
+  --modal-max-width-lg: 40rem;
+  --modal-max-width-xl: 60rem;
+
+  /* Form Components */
+  --form-field-border: 1px solid var(--color-border-primary);
+  --form-field-border-focus: 2px solid var(--color-primary-500);
+  --form-field-border-error: 2px solid var(--color-error-500);
+  --form-field-bg: var(--color-bg-primary);
+  --form-field-bg-disabled: var(--color-neutral-100);
+  --form-label-color: var(--color-text-primary);
+  --form-help-color: var(--color-text-secondary);
+  --form-error-color: var(--color-error-600);
+
+  /* Notification/Toast */
+  --toast-border-radius: var(--radius-lg);
+  --toast-shadow: var(--shadow-lg);
+  --toast-max-width: 24rem;
+
+  /* Animation Tokens */
+  --animation-duration-fast: 0.15s;
+  --animation-duration-normal: 0.3s;
+  --animation-duration-slow: 0.5s;
+  --animation-easing: cubic-bezier(0.4, 0, 0.2, 1);
+  --animation-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Z-Index Scale Enhancement */
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1020;
+  --z-index-fixed: 1030;
+  --z-index-modal-backdrop: 1040;
+  --z-index-modal: 1050;
+  --z-index-popover: 1060;
+  --z-index-tooltip: 1070;
+  --z-index-toast: 1080;
+  --z-index-loading: 1090;
 }
 
 /* Dark Mode Variables */

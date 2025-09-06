@@ -25,6 +25,7 @@ const PricingPage = React.lazy(() => import('./pages/Pricing/PricingPage'));
 const ContactPage = React.lazy(() => import('./pages/Contact/ContactPage'));
 const LoginPage = React.lazy(() => import('./pages/Login/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/Login/RegisterPage'));
+const TestComponents = React.lazy(() => import('./pages/TestComponents/TestComponents'));
 
 // Admin pages
 const AdminPage = React.lazy(() => import('./pages/Login/AdminPage'));
@@ -98,13 +99,21 @@ const App: React.FC = () => (
                     </ErrorBoundary>
                   } 
                 />
-                <Route 
-                  path="/forms" 
+                <Route
+                  path="/forms"
                   element={
                     <ErrorBoundary level="page" context="forms-page">
                       <FormRendererPage templateId="default" />
                     </ErrorBoundary>
-                  } 
+                  }
+                />
+                <Route
+                  path="/test-components"
+                  element={
+                    <ErrorBoundary level="page" context="test-components-page">
+                      <TestComponents />
+                    </ErrorBoundary>
+                  }
                 />
 
                 {/* Protected admin routes */}
