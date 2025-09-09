@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Provider } from '../../types/api';
+import EnhancedHeader from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 import ProviderForm from '../../components/Admin/Forms/ProviderForm';
 import './ProviderManagement.css';
 
@@ -134,16 +136,26 @@ const ProviderManagement: React.FC = () => {
 
   if (loading && providers.length === 0) {
     return (
-      <div className="provider-management">
-        <div className="loading-container">
-          <div className="loading-spinner">Carregando profissionais...</div>
-        </div>
+      <div className="provider-management-page">
+        <EnhancedHeader />
+        <main className="provider-management-main">
+          <div className="container">
+            <div className="loading-container">
+              <div className="loading-spinner">Carregando profissionais...</div>
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="provider-management">
+    <div className="provider-management-page">
+      <EnhancedHeader />
+
+      <main className="provider-management-main">
+        <div className="container">
       {/* Header */}
       <div className="page-header">
         <div className="header-content">
@@ -513,6 +525,10 @@ const ProviderManagement: React.FC = () => {
           </div>
         </div>
       )}
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

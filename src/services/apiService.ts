@@ -126,6 +126,8 @@ export interface FormTemplate {
     id: string;
     label: string;
     type: string;
+    required?: boolean;
+    options?: Array<{ value: string; label: string }>;
     // Add other question fields as needed
   }>;
 }

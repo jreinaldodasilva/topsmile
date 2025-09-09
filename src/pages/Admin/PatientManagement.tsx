@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Patient } from '../../types/api';
+import EnhancedHeader from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
 import PatientForm from '../../components/Admin/Forms/PatientForm';
 import './PatientManagement.css';
 
@@ -153,16 +155,26 @@ const PatientManagement: React.FC = () => {
 
   if (loading && patients.length === 0) {
     return (
-      <div className="patient-management">
-        <div className="loading-container">
-          <div className="loading-spinner">Carregando pacientes...</div>
-        </div>
+      <div className="patient-management-page">
+        <EnhancedHeader />
+        <main className="patient-management-main">
+          <div className="container">
+            <div className="loading-container">
+              <div className="loading-spinner">Carregando pacientes...</div>
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="patient-management">
+    <div className="patient-management-page">
+      <EnhancedHeader />
+
+      <main className="patient-management-main">
+        <div className="container">
       {/* Header */}
       <div className="page-header">
         <div className="header-content">
@@ -539,6 +551,10 @@ const PatientManagement: React.FC = () => {
           </div>
         </div>
       )}
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };
