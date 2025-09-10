@@ -1,6 +1,26 @@
 import { User } from '../src/models/User';
 import { Clinic } from '../src/models/Clinic';
 import { Contact } from '../src/models/Contact';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+
+let mongoServer: MongoMemoryServer | null = null;
+
+export const setupTestDB = async (): Promise<void> => {
+  if (!mongoServer) {
+    mongoServer = await MongoMemoryServer.create();
+  }
+  const mongoUri = mongoServer.getUri();
+  await mongoose.connect(mongoUri);
+};
+
+export const teardownTestDB = async (): Promise<void> => {
+  await mongoose.disconnect();
+  if (mongoServer) {
+    await mongoServer.stop();
+    mongoServer = null;
+  }
+};
 
 export const createTestUser = async (overrides = {}) => {
   const defaultUser = {
