@@ -2,7 +2,7 @@
 import { Appointment, IAppointment } from '../models/Appointment';
 import { Provider, IProvider } from '../models/Provider';
 import { AppointmentType, IAppointmentType } from '../models/AppointmentType';
-import { startOfDay, endOfDay, addMinutes, format, isWithinInterval, parseISO } from 'date-fns';
+import { startOfDay, endOfDay, addMinutes, format, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import mongoose from 'mongoose';
 

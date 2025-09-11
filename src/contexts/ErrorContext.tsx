@@ -140,7 +140,7 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         }
       }
     });
-  }, [showError, showInfo, showWarning]);
+  }, [showError, showInfo, showWarning, dismissNotification]);
 
   const value: ErrorContextType = {
     notifications,

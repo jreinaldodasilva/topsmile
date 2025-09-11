@@ -2,8 +2,7 @@
 import express from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
 import { schedulingService } from "../services/schedulingService";
-import { AppointmentType } from "../models/AppointmentType";
-import { Provider } from "../models/Provider";
+
 import { Appointment } from "../models/Appointment";
 import { body, validationResult } from 'express-validator';
 

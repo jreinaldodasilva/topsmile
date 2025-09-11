@@ -74,7 +74,7 @@ const ContactSchema = new Schema<IContact>({
         trim: true,
         validate: {
             validator: function (phone: string) {
-                return /^[\d\s\-\(\)\+]{10,20}$/.test(phone);
+                return /^[\d\s\-()+]{10,20}$/.test(phone);
             },
             message: 'Telefone inválido'
         }

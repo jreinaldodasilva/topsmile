@@ -1,15 +1,7 @@
 import request from 'supertest';
 import app from '../../src/app';
-import { setupTestDB, teardownTestDB } from '../testHelpers';
 
 describe('Patient Portal Integration Tests', () => {
-  beforeAll(async () => {
-    await setupTestDB();
-  });
-
-  afterAll(async () => {
-    await teardownTestDB();
-  });
 
   let patientToken: string;
 

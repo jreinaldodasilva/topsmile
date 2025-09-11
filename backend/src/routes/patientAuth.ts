@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { patientAuthService, PatientRegisterData, PatientLoginData } from '../services/patientAuthService';
-import { authenticatePatient, requirePatientVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
+import { authenticatePatient, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 
 const router = express.Router();
 
@@ -366,7 +366,7 @@ router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, 
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/verify-email', async (req, res) => {
+router.post('/verify-email', async (req: express.Request, res: express.Response) => {
   try {
     const { token } = req.body;
 
@@ -492,7 +492,7 @@ router.post('/forgot-password', resetPasswordValidation, async (req: express.Req
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/reset-password', newPasswordValidation, async (req, res) => {
+router.post('/reset-password', newPasswordValidation, async (req: express.Request, res: express.Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

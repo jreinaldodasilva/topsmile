@@ -18,7 +18,7 @@ import { checkDatabaseConnection, handleValidationError } from './middleware/dat
 import { Contact } from './models/Contact'; // FIXED: Replaced require with import
 
 // Authentication imports
-import { authenticate, authorize, ensureClinicAccess, AuthenticatedRequest } from './middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from './middleware/auth';
 import authRoutes from './routes/auth';
 import calendarRoutes from "./routes/calendar";
 import appointmentsRoutes from "./routes/appointments";
@@ -355,7 +355,7 @@ const contactValidation = [
   body('name')
     .isLength({ min: 2, max: 100 })
     .withMessage('Nome deve ter entre 2 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ\s\-'\.]*$/)
+    .matches(/^[a-zA-ZÀ-ÿ\s\-'.]*$/)
     .withMessage('Nome contém caracteres inválidos')
     .trim()
     .escape(),
@@ -380,7 +380,7 @@ const contactValidation = [
     .escape(),
 
   body('phone')
-    .matches(/^[\d\s\-\(\)\+]{10,20}$/)
+    .matches(/^[\d\s\-()+]{10,20}$/)
     .withMessage('Digite um telefone válido')
     .trim()
 ];

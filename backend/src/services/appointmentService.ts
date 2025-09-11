@@ -22,13 +22,14 @@ export interface UpdateAppointmentData {
   scheduledStart?: Date;
   scheduledEnd?: Date;
   notes?: string;
-  status?: 'scheduled' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+  status?: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
   cancellationReason?: string;
   rescheduleHistory?: Array<{
-    previousStart: Date;
-    previousEnd: Date;
+    oldDate: Date;
+    newDate: Date;
     reason: string;
-    date: Date;
+    rescheduleBy: 'patient' | 'clinic';
+    timestamp: Date;
   }>;
 }
 
@@ -49,7 +50,7 @@ class AppointmentService {
       const overlapping = await Appointment.findOne({
         provider: data.provider,
         clinic: data.clinic,
-        status: { $in: ['scheduled', 'confirmed', 'in-progress'] },
+        status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
         $or: [
           {
             scheduledStart: { $lt: data.scheduledEnd, $gte: data.scheduledStart }
@@ -155,7 +156,7 @@ class AppointmentService {
         const overlapping = await Appointment.findOne({
           provider: appointment.provider,
           clinic: clinicId,
-          status: { $in: ['scheduled', 'confirmed', 'in-progress'] },
+          status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
           _id: { $ne: appointmentId },
           $or: [
             {
@@ -180,10 +181,11 @@ class AppointmentService {
           appointment.rescheduleHistory = [];
         }
         appointment.rescheduleHistory.push({
-          previousStart: appointment.scheduledStart,
-          previousEnd: appointment.scheduledEnd,
+          oldDate: appointment.scheduledStart,
+          newDate: appointment.scheduledEnd,
           reason: data.rescheduleHistory?.[0]?.reason || 'Reagendamento',
-          date: new Date()
+          rescheduleBy: 'clinic',
+          timestamp: new Date()
         });
 
         appointment.scheduledStart = data.scheduledStart;
@@ -304,7 +306,7 @@ class AppointmentService {
       const overlapping = await Appointment.findOne({
         provider: appointment.provider,
         clinic: clinicId,
-        status: { $in: ['scheduled', 'confirmed', 'in-progress'] },
+        status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
         _id: { $ne: appointmentId },
         $or: [
           {
@@ -329,10 +331,11 @@ class AppointmentService {
       }
 
       appointment.rescheduleHistory.push({
-        previousStart: appointment.scheduledStart,
-        previousEnd: appointment.scheduledEnd,
+        oldDate: appointment.scheduledStart,
+        newDate: appointment.scheduledEnd,
         reason,
-        date: new Date()
+        rescheduleBy: 'clinic',
+        timestamp: new Date()
       });
 
       appointment.scheduledStart = newStart;

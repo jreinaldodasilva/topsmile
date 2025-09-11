@@ -57,7 +57,7 @@ const registerValidation = [
 
   body('clinic.phone')
     .optional()
-    .matches(/^[\d\s\-\(\)\+]{10,20}$/)
+    .matches(/^[\d\s\-()+]{10,20}$/)
     .withMessage('Telefone da clínica inválido'),
 
   body('clinic.address.street')

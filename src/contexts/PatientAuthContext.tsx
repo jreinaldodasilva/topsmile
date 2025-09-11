@@ -166,7 +166,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     await performLogout();
   };
 
-  const performLogout = async () => {
+  const performLogout = useCallback(async () => {
     try {
       setAccessToken(null);
       setPatientUser(null);
@@ -180,7 +180,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Patient logout error:', error);
       navigate('/patient/login');
     }
-  };
+  }, [navigate]);
 
   const clearError = useCallback(() => {
     setError(null);

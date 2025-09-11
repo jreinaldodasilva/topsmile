@@ -1,7 +1,7 @@
 // backend/src/routes/forms.ts
 import express from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
-import { body, query, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
 

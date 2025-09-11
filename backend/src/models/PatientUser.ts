@@ -15,6 +15,11 @@ export interface IPatientUser extends Document {
   lockUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
+  // Instance methods
+  comparePassword(candidatePassword: string): Promise<boolean>;
+  isLocked(): boolean;
+  incLoginAttempts(): void;
+  resetLoginAttempts(): void;
 }
 
 const PatientUserSchema = new Schema<IPatientUser>({

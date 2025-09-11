@@ -1,41 +1,21 @@
 import request from 'supertest';
 import express from 'express';
 import mongoose from 'mongoose';
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import jwt from 'jsonwebtoken';
 import patientRoutes from '../../src/routes/patients';
 import { User } from '../../src/models/User';
 import { Patient } from '../../src/models/Patient';
 import { Clinic } from '../../src/models/Clinic';
 
-let mongoServer: MongoMemoryServer;
 let app: express.Application;
 let testUser: any;
 let testClinic: any;
 let accessToken: string;
 
 beforeAll(async () => {
-  // Start MongoDB Memory Server
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-
-  // Connect to the in-memory database
-  await mongoose.connect(mongoUri);
-
   // Create test app
   app = express();
   app.use(express.json());
-
-  // Mock authentication middleware
-  app.use('/api/patients', (req: any, res, next) => {
-    req.user = {
-      userId: testUser._id.toString(),
-      email: testUser.email,
-      role: testUser.role,
-      clinicId: testClinic._id.toString()
-    };
-    next();
-  });
 
   // Use patient routes
   app.use('/api/patients', patientRoutes);
@@ -47,16 +27,6 @@ beforeAll(async () => {
       message: err.message || 'Internal server error'
     });
   });
-});
-
-afterAll(async () => {
-  // Close database connection
-  await mongoose.disconnect();
-
-  // Stop MongoDB Memory Server
-  if (mongoServer) {
-    await mongoServer.stop();
-  }
 });
 
 beforeEach(async () => {
@@ -100,6 +70,17 @@ beforeEach(async () => {
     process.env.JWT_SECRET || 'test-secret',
     { expiresIn: '1h' }
   );
+
+  // Mock authentication middleware
+  app.use('/api/patients', (req: any, res, next) => {
+    req.user = {
+      userId: testUser._id.toString(),
+      email: testUser.email,
+      role: testUser.role,
+      clinicId: testClinic._id.toString()
+    };
+    next();
+  });
 });
 
 describe('Patient Routes Integration Tests', () => {

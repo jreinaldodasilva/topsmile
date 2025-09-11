@@ -30,8 +30,14 @@ describe('AdminDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Total de Pacientes/i)).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText(/Consultas Hoje/i)).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText(/Receita Mensal/i)).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText(/Satisfação/i)).toBeInTheDocument();
     });
   });
@@ -65,7 +71,11 @@ describe('AdminDashboard', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Ações Rápidas/i)).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText(/Novo Paciente/i)).toBeInTheDocument();
+    });
+    await waitFor(() => {
       expect(screen.getByText(/Agendar Consulta/i)).toBeInTheDocument();
     });
   });

@@ -3,7 +3,6 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
 import { SignOptions, JwtPayload } from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
 import { User, IUser } from '../models/User';
 import { Clinic } from '../models/Clinic';
 

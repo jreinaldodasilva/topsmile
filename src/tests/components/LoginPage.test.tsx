@@ -71,6 +71,9 @@ describe('LoginPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Erro no login/i)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
       expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
     });
   });

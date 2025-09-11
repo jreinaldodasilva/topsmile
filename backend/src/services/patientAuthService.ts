@@ -1,6 +1,6 @@
 import { PatientUser, IPatientUser } from '../models/PatientUser';
 import { Patient } from '../models/Patient';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
 export interface PatientRegisterData {
@@ -171,7 +171,7 @@ class PatientAuthService {
   // Generate access and refresh tokens
   private async generateTokens(patientUser: IPatientUser): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: TokenPayload = {
-      patientUserId: patientUser._id.toString(),
+      patientUserId: (patientUser._id as any).toString(),
       patientId: patientUser.patient.toString(),
       email: patientUser.email,
       type: 'patient'
@@ -180,13 +180,13 @@ class PatientAuthService {
     const accessToken = jwt.sign(
       payload,
       process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES || '15m' }
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES || '15m', algorithm: 'HS256' } as SignOptions
     );
 
     const refreshToken = jwt.sign(
-      { patientUserId: patientUser._id.toString(), type: 'patient' },
+      { patientUserId: (patientUser._id as any).toString(), type: 'patient' },
       process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7d' }
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7d' } as SignOptions
     );
 
     return { accessToken, refreshToken };

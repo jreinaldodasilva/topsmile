@@ -174,9 +174,9 @@ const LoginPage: React.FC = () => {
                 </label>
               </div>
 
-              <a href="#" className="forgot-password">
+              <button type="button" className="forgot-password" onClick={() => alert('Funcionalidade em desenvolvimento')}>
                 Esqueceu a senha?
-              </a>
+              </button>
             </div>
           </div>
 
