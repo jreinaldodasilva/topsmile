@@ -8,6 +8,8 @@ The TopSmile backend uses Jest as the testing framework with TypeScript support.
 
 ```
 backend/tests/
+├── customMatchers.ts     # Custom Jest matchers for domain-specific assertions
+├── db-test.test.ts       # Database connection test
 ├── setup.ts              # Global test setup (MongoDB Memory Server)
 ├── testHelpers.ts        # Helper functions for creating test data
 ├── unit/
@@ -20,8 +22,11 @@ backend/tests/
 │       └── schedulingService.test.ts
 └── integration/          # Integration tests for API routes
     ├── authRoutes.test.ts
+    ├── errorBoundary.test.ts
+    ├── patientPortal.test.ts
     ├── patientRoutes.test.ts
-    └── patientPortal.test.ts
+    ├── performance.test.ts
+    └── security.test.ts
 ```
 
 ## Test Configuration
@@ -31,9 +36,13 @@ backend/tests/
 - **Preset**: `ts-jest` for TypeScript support
 - **Environment**: Node.js
 - **Test Roots**: `src/` and `tests/` directories
-- **Coverage**: Excludes `app.ts`, `config/`, and type definition files
+- **Transform Ignore Patterns**: Handles ES modules from specific packages (supertest, @faker-js/faker)
+- **Coverage**: Excludes `src/app.ts`, `src/config/`, and type definition files
+- **Coverage Reporters**: Text, LCOV, and HTML formats
 - **Setup**: `tests/setup.ts` runs before all tests
 - **Timeout**: 30 seconds per test
+- **Detect Open Handles**: Enabled for MongoDB Memory Server cleanup
+- **Force Exit**: Enabled to ensure clean test termination
 
 ### Global Setup (`tests/setup.ts`)
 
@@ -41,6 +50,21 @@ backend/tests/
 - Connects Mongoose to in-memory database
 - Clears all collections after each test
 - Stops MongoDB Memory Server after all tests
+
+### Database Connection Test (`tests/db-test.test.ts`)
+
+A simple test to verify database connectivity:
+
+```typescript
+describe('Database Setup Test', () => {
+  it('should connect to database', async () => {
+    const mongoose = require('mongoose');
+    expect(mongoose.connection.readyState).toBeGreaterThan(0);
+  });
+});
+```
+
+This test ensures that the MongoDB Memory Server is properly started and Mongoose is connected before running other tests.
 
 ## Running Tests
 
@@ -92,23 +116,72 @@ Coverage reports are generated in multiple formats:
 Unit tests focus on individual service functions. Use the test helpers for consistent test data.
 
 ```typescript
-import { patientService } from '../../src/services/patientService';
-import { createTestPatient, createTestClinic } from '../testHelpers';
+import { appointmentService } from '../../../src/services/appointmentService';
+import { Appointment } from '../../../src/models/Appointment';
+import { Patient } from '../../../src/models/Patient';
+import { Provider } from '../../../src/models/Provider';
+import { AppointmentType } from '../../../src/models/AppointmentType';
+import { createTestUser, createTestClinic } from '../../testHelpers';
 
-describe('PatientService', () => {
-  describe('createPatient', () => {
-    it('should create a patient successfully', async () => {
-      const clinic = await createTestClinic();
-      const patientData = {
-        name: 'João Silva',
-        phone: '+5511999999999',
-        clinic: clinic._id
+describe('AppointmentService', () => {
+  let testClinic: any;
+  let testPatient: any;
+  let testProvider: any;
+  let testAppointmentType: any;
+
+  beforeEach(async () => {
+    testClinic = await createTestClinic();
+    testUser = await createTestUser({ clinic: testClinic._id });
+
+    // Create test patient
+    testPatient = await Patient.create({
+      name: 'Test Patient',
+      phone: '(11) 99999-9999',
+      email: 'patient@example.com',
+      clinic: testClinic._id,
+      status: 'active'
+    });
+
+    // Create test provider
+    testProvider = await Provider.create({
+      name: 'Dr. Test Provider',
+      email: 'provider@example.com',
+      phone: '(11) 88888-8888',
+      clinic: testClinic._id,
+      specialties: ['Odontologia Geral'],
+      licenseNumber: 'CRO-12345',
+      status: 'active'
+    });
+
+    // Create test appointment type
+    testAppointmentType = await AppointmentType.create({
+      name: 'Consulta Geral',
+      duration: 60,
+      color: '#3B82F6',
+      category: 'consulta',
+      clinic: testClinic._id,
+      status: 'active'
+    });
+  });
+
+  describe('createAppointment', () => {
+    it('should create a new appointment successfully', async () => {
+      const appointmentData = {
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        appointmentType: testAppointmentType._id.toString(),
+        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledEnd: new Date('2024-01-15T11:00:00Z'),
+        notes: 'Primeira consulta',
+        clinic: testClinic._id.toString()
       };
 
-      const result = await patientService.createPatient(patientData);
+      const result = await appointmentService.createAppointment(appointmentData);
 
-      expect(result.success).toBe(true);
-      expect(result.data.name).toBe('João Silva');
+      expect(result).toBeDefined();
+      expect(result.patient.toString()).toBe(testPatient._id.toString());
+      expect(result.provider.toString()).toBe(testProvider._id.toString());
+      expect(result.status).toBe('scheduled');
     });
   });
 });
@@ -153,11 +226,68 @@ The `testHelpers.ts` file provides utilities for creating test data:
 ### Test Data Creation
 - `createTestUser()`: Create test user with default data
 - `createTestClinic()`: Create test clinic with default data
-- `createTestPatient()`: Create test patient with default data
 - `createTestContact()`: Create test contact with default data
 
 ### Authentication
 - `generateAuthToken()`: Generate mock JWT token for testing
+
+### Realistic Data Generation
+- `createRealisticPatient()`: Create patient with realistic data using faker
+- `createRealisticProvider()`: Create provider with realistic data using faker
+- `createRealisticAppointment()`: Generate realistic appointment data structure
+- `createTestUserWithClinic()`: Create user associated with a clinic
+
+## Custom Matchers
+
+The test suite includes custom Jest matchers for domain-specific assertions, defined in `customMatchers.ts`. These matchers provide reusable validation logic for common test scenarios.
+
+### Available Matchers
+
+#### Domain Object Validation
+- `toBeValidAppointment()`: Validates appointment objects have required fields and valid status/type
+- `toBeValidUser()`: Validates user objects have required fields, valid role, and email format
+- `toBeValidEmail()`: Validates email address format
+- `toBeValidPhone()`: Validates Brazilian phone number format (e.g., (11) 99999-9999)
+- `toHaveValidTokenStructure()`: Validates JWT token structure
+
+#### Response Validation Helpers
+- `expectAppointmentConflict()`: Asserts 409 status with conflict message
+- `expectAuthenticationRequired()`: Asserts 401 status with authentication message
+- `expectAuthorizationDenied()`: Asserts 403 status with authorization message
+- `expectValidationError()`: Asserts 400/422 status with validation error
+
+### Usage Examples
+
+```typescript
+import '../customMatchers';
+
+describe('User Validation', () => {
+  it('should validate user object', () => {
+    const user = { name: 'João', email: 'joao@example.com', role: 'admin', password: 'pass' };
+    expect(user).toBeValidUser();
+  });
+
+  it('should validate email format', () => {
+    expect('test@example.com').toBeValidEmail();
+  });
+
+  it('should validate phone format', () => {
+    expect('(11) 99999-9999').toBeValidPhone();
+  });
+});
+
+describe('API Responses', () => {
+  it('should handle appointment conflicts', async () => {
+    const response = await request(app).post('/api/appointments').send(conflictingData);
+    expectAppointmentConflict(response);
+  });
+
+  it('should require authentication', async () => {
+    const response = await request(app).get('/api/protected');
+    expectAuthenticationRequired(response);
+  });
+});
+```
 
 ## Best Practices
 
