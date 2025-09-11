@@ -54,29 +54,29 @@ export interface DeviceInfo {
 }
 
 class AuthService {
-    private readonly JWT_SECRET: string;
     private readonly ACCESS_TOKEN_EXPIRES: string;
     private readonly REFRESH_TOKEN_EXPIRES_DAYS: number;
     private readonly MAX_REFRESH_TOKENS_PER_USER: number;
 
     constructor() {
-        // Read configuration from environment with safe defaults for development.
-        // In production we require a real JWT secret and will exit if missing.
-        this.JWT_SECRET = process.env.JWT_SECRET || '';
-        if (!this.JWT_SECRET || this.JWT_SECRET === 'your-secret-key') {
-            if (process.env.NODE_ENV === 'production') {
-                console.error('FATAL: JWT_SECRET is not configured. Set JWT_SECRET env var before starting the app.');
-                // Exit to avoid running with an insecure default secret.
-                process.exit(1);
-            } else {
-                console.warn('Warning: JWT_SECRET not set. Using insecure fallback for development only.');
-                this.JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-change-in-production';
-            }
-        }
-
         this.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || '15m';
         this.REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
         this.MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
+    }
+
+    // Get JWT secret with runtime environment variable reading
+    private getJwtSecret(): string {
+        const secret = process.env.JWT_SECRET || '';
+        if (!secret || secret === 'your-secret-key') {
+            if (process.env.NODE_ENV === 'production') {
+                console.error('FATAL: JWT_SECRET is not configured. Set JWT_SECRET env var before starting the app.');
+                process.exit(1);
+            } else {
+                // For tests and development, use a consistent fallback
+                return process.env.JWT_SECRET || 'test-jwt-secret-key';
+            }
+        }
+        return secret;
     }
 
     // FIXED: Generate short-lived access token with proper typing
@@ -96,7 +96,7 @@ class AuthService {
             algorithm: 'HS256' // Explicit algorithm for security
         };
 
-        return jwt.sign(cleanPayload, this.JWT_SECRET, options);
+        return jwt.sign(cleanPayload, this.getJwtSecret(), options);
     }
 
     // Generate secure random refresh token string
@@ -148,7 +148,7 @@ class AuthService {
     // FIXED: Verify access token with proper error handling and typing
     verifyAccessToken(token: string): TokenPayload {
         try {
-            const payload = jwt.verify(token, this.JWT_SECRET, {
+            const payload = jwt.verify(token, this.getJwtSecret(), {
                 issuer: 'topsmile-api',
                 audience: 'topsmile-client',
                 algorithms: ['HS256'] // Explicit algorithm verification

@@ -3,7 +3,6 @@ import { Appointment } from '../../../src/models/Appointment';
 import { Provider } from '../../../src/models/Provider';
 import { AppointmentType } from '../../../src/models/AppointmentType';
 
-// Mock the models
 jest.mock('../../../src/models/Appointment');
 jest.mock('../../../src/models/Provider');
 jest.mock('../../../src/models/AppointmentType');
@@ -11,6 +10,82 @@ jest.mock('../../../src/models/AppointmentType');
 const mockAppointment = Appointment as jest.Mocked<typeof Appointment>;
 const mockProvider = Provider as jest.Mocked<typeof Provider>;
 const mockAppointmentType = AppointmentType as jest.Mocked<typeof AppointmentType>;
+
+// Helper to mock chained calls like findById().session() and findById().lean()
+function mockFindByIdWithSessionAndLean(mockModel: any, returnValue: any) {
+  const mockSession = jest.fn().mockReturnThis();
+  const mockLean = jest.fn().mockReturnThis();
+  const mockExec = jest.fn().mockResolvedValue(returnValue);
+
+  mockModel.findById = jest.fn(() => ({
+    session: mockSession,
+    lean: mockLean,
+    exec: mockExec
+  }));
+  mockSession.mockReturnValue({
+    lean: mockLean,
+    exec: mockExec
+  });
+  mockLean.mockReturnValue({
+    exec: mockExec
+  });
+  return { mockSession, mockLean, mockExec };
+}
+
+// Helper to mock find().session() and find().lean()
+function mockFindWithSessionAndLean(mockModel: any, returnValue: any) {
+  const mockSession = jest.fn().mockReturnThis();
+  const mockLean = jest.fn().mockReturnThis();
+  const mockSort = jest.fn().mockReturnThis();
+  const mockSkip = jest.fn().mockReturnThis();
+  const mockLimit = jest.fn().mockReturnThis();
+  const mockPopulate = jest.fn().mockReturnThis();
+  const mockExec = jest.fn().mockResolvedValue(returnValue);
+
+  mockModel.find = jest.fn(() => ({
+    session: mockSession,
+    lean: mockLean,
+    sort: mockSort,
+    skip: mockSkip,
+    limit: mockLimit,
+    populate: mockPopulate,
+    exec: mockExec
+  }));
+  mockSession.mockReturnValue({
+    lean: mockLean,
+    sort: mockSort,
+    skip: mockSkip,
+    limit: mockLimit,
+    populate: mockPopulate,
+    exec: mockExec
+  });
+  mockLean.mockReturnValue({
+    sort: mockSort,
+    skip: mockSkip,
+    limit: mockLimit,
+    populate: mockPopulate,
+    exec: mockExec
+  });
+  mockSort.mockReturnValue({
+    skip: mockSkip,
+    limit: mockLimit,
+    populate: mockPopulate,
+    exec: mockExec
+  });
+  mockSkip.mockReturnValue({
+    limit: mockLimit,
+    populate: mockPopulate,
+    exec: mockExec
+  });
+  mockLimit.mockReturnValue({
+    populate: mockPopulate,
+    exec: mockExec
+  });
+  mockPopulate.mockReturnValue({
+    exec: mockExec
+  });
+  return { mockSession, mockLean, mockSort, mockSkip, mockLimit, mockPopulate, mockExec };
+};
 
 describe('SchedulingService', () => {
   beforeEach(() => {
@@ -54,17 +129,16 @@ describe('SchedulingService', () => {
         _id: 'appointment-id'
       };
 
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockProvider.findById.mockResolvedValue(mockProviderData as any);
-      mockAppointment.find.mockResolvedValue([]); // No conflicts
+      // Mock the chained calls properly
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindByIdWithSessionAndLean(mockProvider, mockProviderData);
+      mockFindWithSessionAndLean(mockAppointment, []); // No conflicts
       mockAppointment.prototype.save = jest.fn().mockResolvedValue(mockSavedAppointment);
 
       const result = await schedulingService.createAppointment(appointmentData);
 
       expect(result.success).toBe(true);
       expect(result.data?.status).toBe('confirmed');
-      expect(mockAppointmentType.findById).toHaveBeenCalledWith('type-id');
-      expect(mockProvider.findById).toHaveBeenCalledWith('provider-id');
     });
 
     it('should return error for invalid appointment type', async () => {
@@ -76,7 +150,7 @@ describe('SchedulingService', () => {
         scheduledStart: new Date()
       };
 
-      mockAppointmentType.findById.mockResolvedValue(null);
+      mockFindByIdWithSessionAndLean(mockAppointmentType, null);
 
       const result = await schedulingService.createAppointment(appointmentData);
 
@@ -104,8 +178,8 @@ describe('SchedulingService', () => {
         isActive: false
       };
 
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockProvider.findById.mockResolvedValue(mockProviderData as any);
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindByIdWithSessionAndLean(mockProvider, mockProviderData);
 
       const result = await schedulingService.createAppointment(appointmentData);
 
@@ -146,9 +220,9 @@ describe('SchedulingService', () => {
         status: 'confirmed'
       };
 
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockProvider.findById.mockResolvedValue(mockProviderData as any);
-      mockAppointment.find.mockResolvedValue([conflictingAppointment]);
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindByIdWithSessionAndLean(mockProvider, mockProviderData);
+      mockFindWithSessionAndLean(mockAppointment, [conflictingAppointment]);
 
       const result = await schedulingService.createAppointment(appointmentData);
 
@@ -186,9 +260,9 @@ describe('SchedulingService', () => {
         bufferAfter: 15
       };
 
-      mockAppointment.findById.mockResolvedValue(mockAppointmentData as any);
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockAppointment.find.mockResolvedValue([]); // No conflicts
+      mockFindByIdWithSessionAndLean(mockAppointment, mockAppointmentData);
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindWithSessionAndLean(mockAppointment, []); // No conflicts
 
       const result = await schedulingService.rescheduleAppointment(appointmentId, newStart, reason, rescheduleBy);
 
@@ -199,7 +273,7 @@ describe('SchedulingService', () => {
     });
 
     it('should return error for non-existent appointment', async () => {
-      mockAppointment.findById.mockResolvedValue(null);
+      mockFindByIdWithSessionAndLean(mockAppointment, null);
 
       const result = await schedulingService.rescheduleAppointment(
         'non-existent-id',

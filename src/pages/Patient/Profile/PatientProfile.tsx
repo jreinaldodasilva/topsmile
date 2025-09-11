@@ -164,7 +164,15 @@ const PatientProfile: React.FC = () => {
         }
       };
 
-      const response = await apiService.patientAuth.updateProfile(updateData);
+      if (!patientUser?.patient?._id) {
+        setError('Dados do paciente não encontrados');
+        return;
+      }
+
+      const response = await apiService.patients.update(patientUser.patient._id, {
+        ...updateData.patient,
+        gender: updateData.patient.gender as 'male' | 'female' | 'other' | 'prefer_not_to_say' | undefined
+      });
 
       if (response.success) {
         setSuccess('Perfil atualizado com sucesso!');

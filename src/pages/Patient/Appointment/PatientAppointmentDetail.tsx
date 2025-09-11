@@ -60,7 +60,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
       setLoading(true);
       setError(null);
 
-      const response = await apiService.appointments.getById(id);
+      const response = await apiService.appointments.getOne(id);
 
       if (response.success && response.data) {
         setAppointment(response.data as Appointment);

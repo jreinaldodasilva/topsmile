@@ -2,6 +2,8 @@ import request from 'supertest';
 import express from 'express';
 import { authService } from '../../src/services/authService';
 import { createTestUser } from '../testHelpers';
+// Import and use auth routes
+import authRoutes from '../../src/routes/auth';
 
 // Mock the auth service for integration tests
 jest.mock('../../src/services/authService');
@@ -11,8 +13,6 @@ const mockAuthService = authService as jest.Mocked<typeof authService>;
 const app = express();
 app.use(express.json());
 
-// Import and use auth routes
-import authRoutes from '../../src/routes/auth';
 app.use('/api/auth', authRoutes);
 
 describe('Auth Routes Integration', () => {

@@ -3,6 +3,7 @@ import { Clinic } from '../src/models/Clinic';
 import { Contact } from '../src/models/Contact';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 let mongoServer: MongoMemoryServer | null = null;
 
@@ -106,8 +107,14 @@ export const createTestContact = async (overrides = {}) => {
   return await contact.save();
 };
 
-export const generateAuthToken = (userId: string, role = 'admin') => {
-  // This would normally use your JWT service
-  // For testing, we'll create a simple mock
-  return `mock-jwt-token-${userId}-${role}`;
+export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string) => {
+  const payload: any = {
+    userId,
+    role,
+  };
+  if (clinicId) {
+    payload.clinicId = clinicId;
+  }
+  const secret = process.env.JWT_SECRET || 'test-jwt-secret-key';
+  return jwt.sign(payload, secret, { expiresIn: '1h' });
 };

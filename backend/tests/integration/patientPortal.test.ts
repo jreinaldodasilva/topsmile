@@ -1,9 +1,35 @@
-import request from 'supertest';
-import app from '../../src/app';
+import request, { Response } from 'supertest';
+import express from 'express';
+import patientAuthRoutes from '../../src/routes/patientAuth';
+import appointmentsRoutes from '../../src/routes/appointments';
+import patientsRoutes from '../../src/routes/patients';
+import appointmentTypesRoutes from '../../src/routes/appointmentTypes';
+import providersRoutes from '../../src/routes/providers';
 
 describe('Patient Portal Integration Tests', () => {
-
+  let app: express.Application;
   let patientToken: string;
+
+  beforeAll(() => {
+    // Create test app
+    app = express();
+    app.use(express.json());
+
+    // Use patient portal routes
+    app.use('/api/patient/auth', patientAuthRoutes);
+    app.use('/api/appointments', appointmentsRoutes);
+    app.use('/api/patients', patientsRoutes);
+    app.use('/api/appointment-types', appointmentTypesRoutes);
+    app.use('/api/providers', providersRoutes);
+
+    // Error handling middleware
+    app.use((err: any, req: any, res: any, next: any) => {
+      res.status(err.status || 500).json({
+        success: false,
+        message: err.message || 'Internal server error'
+      });
+    });
+  });
 
   it('should register a new patient user', async () => {
     const res = await request(app)
@@ -110,6 +136,8 @@ describe('Patient Portal Integration Tests', () => {
       .query({ patient: 'test-patient-id', status: 'scheduled' })
       .set('Authorization', `Bearer ${patientToken}`);
 
+    expect(getRes.statusCode).toBe(200);
+
     if (getRes.body.data && getRes.body.data.length > 0) {
       const appointmentId = getRes.body.data[0]._id;
 
@@ -122,7 +150,7 @@ describe('Patient Portal Integration Tests', () => {
       expect(cancelRes.body.success).toBe(true);
     } else {
       // If no appointments to cancel, test should still pass
-      expect(getRes.statusCode).toBe(200);
+      expect(true).toBe(true);
     }
   });
 
@@ -158,7 +186,7 @@ describe('Patient Portal Integration Tests', () => {
 
   it('should handle rate limiting on auth endpoints', async () => {
     // Make multiple rapid requests to test rate limiting
-    const promises = [];
+    const promises: any[] = [];
     for (let i = 0; i < 10; i++) {
       promises.push(
         request(app)
@@ -170,7 +198,7 @@ describe('Patient Portal Integration Tests', () => {
       );
     }
 
-    const results = await Promise.all(promises);
+    const results = (await Promise.all(promises)) as Response[];
     const rateLimitedResponses = results.filter(res => res.statusCode === 429);
 
     // At least some requests should be rate limited
@@ -179,7 +207,7 @@ describe('Patient Portal Integration Tests', () => {
 
   it('should handle concurrent session management', async () => {
     // Login with same credentials multiple times
-    const loginPromises = [];
+    const loginPromises: any[] = [];
     for (let i = 0; i < 3; i++) {
       loginPromises.push(
         request(app)
@@ -191,7 +219,7 @@ describe('Patient Portal Integration Tests', () => {
       );
     }
 
-    const loginResults = await Promise.all(loginPromises);
+    const loginResults = (await Promise.all(loginPromises)) as Response[];
 
     // All logins should succeed
     loginResults.forEach(res => {
@@ -207,7 +235,7 @@ describe('Patient Portal Integration Tests', () => {
         .set('Authorization', `Bearer ${res.body.data.accessToken}`)
     );
 
-    const validationResults = await Promise.all(validationPromises);
+    const validationResults = (await Promise.all(validationPromises)) as Response[];
     validationResults.forEach(res => {
       expect(res.statusCode).toBe(200);
       expect(res.body.success).toBe(true);
@@ -220,6 +248,8 @@ describe('Patient Portal Integration Tests', () => {
       .get('/api/appointments')
       .query({ patient: 'test-patient-id', status: 'scheduled' })
       .set('Authorization', `Bearer ${patientToken}`);
+
+    expect(getRes.statusCode).toBe(200);
 
     if (getRes.body.data && getRes.body.data.length > 0) {
       const appointmentId = getRes.body.data[0]._id;
@@ -237,7 +267,7 @@ describe('Patient Portal Integration Tests', () => {
       expect(rescheduleRes.statusCode).toBe(200);
       expect(rescheduleRes.body.success).toBe(true);
     } else {
-      expect(getRes.statusCode).toBe(200);
+      expect(true).toBe(true);
     }
   });
 

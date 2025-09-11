@@ -43,6 +43,7 @@ beforeEach(async () => {
     address: {
       street: 'Test Street',
       number: '123',
+      neighborhood: 'Test Neighborhood',
       city: 'Test City',
       state: 'TS',
       zipCode: '12345-678'
@@ -53,7 +54,7 @@ beforeEach(async () => {
   testUser = await User.create({
     name: 'Test User',
     email: 'test@example.com',
-    password: 'hashedpassword',
+    password: 'TestPassword123!',
     role: 'admin',
     clinic: testClinic._id,
     isActive: true
@@ -67,20 +68,20 @@ beforeEach(async () => {
       role: testUser.role,
       clinicId: testClinic._id.toString()
     },
-    process.env.JWT_SECRET || 'test-secret',
+    process.env.JWT_SECRET || 'test-jwt-secret-key',
     { expiresIn: '1h' }
   );
 
-  // Mock authentication middleware
-  app.use('/api/patients', (req: any, res, next) => {
-    req.user = {
-      userId: testUser._id.toString(),
-      email: testUser.email,
-      role: testUser.role,
-      clinicId: testClinic._id.toString()
-    };
-    next();
-  });
+  // Remove mock authentication middleware to use real JWT verification
+  // app.use('/api/patients', (req: any, res, next) => {
+  //   req.user = {
+  //     userId: testUser._id.toString(),
+  //     email: testUser.email,
+  //     role: testUser.role,
+  //     clinicId: testClinic._id.toString()
+  //   };
+  //   next();
+  // });
 });
 
 describe('Patient Routes Integration Tests', () => {
@@ -96,6 +97,7 @@ describe('Patient Routes Integration Tests', () => {
         address: {
           street: 'Rua das Flores',
           number: '123',
+          neighborhood: 'Centro',
           city: 'São Paulo',
           state: 'SP',
           zipCode: '01234-567'

@@ -148,7 +148,7 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       const result = await appointmentService.getAppointmentById(appointmentId, testClinic._id.toString());
 
@@ -173,7 +173,6 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        status: 'scheduled',
         clinic: testClinic._id.toString()
       });
 
@@ -183,9 +182,14 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-16T10:00:00Z'),
         scheduledEnd: new Date('2024-01-16T11:00:00Z'),
-        status: 'confirmed',
         clinic: testClinic._id.toString()
       });
+
+      // Update the second appointment to confirmed status
+      const appointments = await appointmentService.getAppointments(testClinic._id.toString());
+      if (appointments[1]) {
+        await appointmentService.updateAppointment(appointments[1]._id.toString(), testClinic._id.toString(), { status: 'confirmed' });
+      }
     });
 
     it('should return appointments for clinic', async () => {
@@ -241,11 +245,10 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       const updateData = {
-        notes: 'Updated notes',
-        status: 'confirmed' as const
+        notes: 'Updated notes'
       };
 
       const result = await appointmentService.updateAppointment(appointmentId, testClinic._id.toString(), updateData);
@@ -266,7 +269,7 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       const newStartTime = new Date('2024-01-15T14:00:00Z');
       const newEndTime = new Date('2024-01-15T15:00:00Z');
@@ -304,7 +307,7 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       const result = await appointmentService.cancelAppointment(appointmentId, testClinic._id.toString(), 'Patient request');
 
@@ -370,35 +373,36 @@ describe('AppointmentService', () => {
   describe('getAppointmentStats', () => {
     beforeEach(async () => {
       // Create appointments with different statuses
-      await appointmentService.createAppointment({
+      const appointment1 = await appointmentService.createAppointment({
         patient: testPatient._id.toString(),
         provider: testProvider._id.toString(),
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        status: 'scheduled',
         clinic: testClinic._id.toString()
       });
 
-      await appointmentService.createAppointment({
+      const appointment2 = await appointmentService.createAppointment({
         patient: testPatient._id.toString(),
         provider: testProvider._id.toString(),
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-16T10:00:00Z'),
         scheduledEnd: new Date('2024-01-16T11:00:00Z'),
-        status: 'completed',
         clinic: testClinic._id.toString()
       });
 
-      await appointmentService.createAppointment({
+      const appointment3 = await appointmentService.createAppointment({
         patient: testPatient._id.toString(),
         provider: testProvider._id.toString(),
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-17T10:00:00Z'),
         scheduledEnd: new Date('2024-01-17T11:00:00Z'),
-        status: 'cancelled',
         clinic: testClinic._id.toString()
       });
+
+      // Update appointments to different statuses
+      await appointmentService.updateAppointment(appointment2._id.toString(), testClinic._id.toString(), { status: 'completed' });
+      await appointmentService.updateAppointment(appointment3._id.toString(), testClinic._id.toString(), { status: 'cancelled' });
     });
 
     it('should return correct appointment statistics', async () => {
@@ -434,7 +438,7 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       const newStartTime = new Date('2024-01-15T14:00:00Z');
       const newEndTime = new Date('2024-01-15T15:00:00Z');
@@ -476,7 +480,7 @@ describe('AppointmentService', () => {
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = createdAppointment._id.toString();
+      const appointmentId = (createdAppointment._id as any).toString();
 
       // Try to reschedule to conflicting time
       const conflictingStartTime = new Date('2024-01-15T14:30:00Z');

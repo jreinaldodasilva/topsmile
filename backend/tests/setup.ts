@@ -1,25 +1,25 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
-let mongoServer: MongoMemoryServer;
-
 beforeAll(async () => {
-  // Start MongoDB Memory Server
-  mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
+  console.log('Setting up test database...');
+  // Set JWT_SECRET for tests if not already set
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = 'test-jwt-secret-key';
+  }
 
-  // Connect to the in-memory database
+  // Connect to the local MongoDB instance
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/test-db';
+  console.log('Connecting to MongoDB at:', mongoUri);
+
+  // Connect to the database
   await mongoose.connect(mongoUri);
+  console.log('Connected to test database');
 });
 
 afterAll(async () => {
   // Close database connection
   await mongoose.disconnect();
-
-  // Stop MongoDB Memory Server
-  if (mongoServer) {
-    await mongoServer.stop();
-  }
+  console.log('Disconnected from test database');
 });
 
 afterEach(async () => {

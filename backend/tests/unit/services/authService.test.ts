@@ -132,7 +132,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = registeredUser.data.user._id.toString();
+      const userId = (registeredUser.data.user._id as any).toString();
 
       const user = await authService.getUserById(userId);
 
@@ -157,7 +157,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = registeredUser.data.user._id.toString();
+      const userId = (registeredUser.data.user._id as any).toString();
 
       await expect(
         authService.changePassword(userId, userData.password, 'NewPass123!')
@@ -180,7 +180,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = registeredUser.data.user._id.toString();
+      const userId = (registeredUser.data.user._id as any).toString();
 
       await expect(
         authService.changePassword(userId, 'WrongPass123!', 'NewPass123!')
