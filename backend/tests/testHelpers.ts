@@ -2,7 +2,24 @@ import { User } from '../src/models/User';
 import { Clinic } from '../src/models/Clinic';
 import { Contact } from '../src/models/Contact';
 import jwt from 'jsonwebtoken';
-import { faker } from '@faker-js/faker';
+// Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
+import type { Faker } from '@faker-js/faker';
+
+let fakerInstance: Faker | undefined;
+
+/**
+ * Lazily loads the ESM-only @faker-js/faker into CommonJS tests using dynamic import.
+ * Keeps typing via a type-only import and avoids top-level ESM import errors.
+ */
+async function ensureFaker(): Promise<Faker> {
+  if (!fakerInstance) {
+    const mod = await import('@faker-js/faker');
+    fakerInstance = mod.faker;
+    // Optional: seed for deterministic test data
+    // fakerInstance.seed(123);
+  }
+  return fakerInstance;
+}
 
 export const createTestUser = async (overrides = {}): Promise<any> => {
   const defaultUser = {
@@ -90,26 +107,27 @@ export const createTestContact = async (overrides = {}): Promise<any> => {
 
 // Enhanced test data factories using faker
 export const createRealisticPatient = async (overrides = {}) => {
+  const f = await ensureFaker();
   const defaultPatient = {
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
-    phone: faker.phone.number({ style: 'national' }),
-    birthDate: faker.date.birthdate({ min: 18, max: 80, mode: 'age' }),
+    name: f.person.fullName(),
+    email: f.internet.email(),
+    phone: f.phone.number({ style: 'national' }),
+    birthDate: f.date.birthdate({ min: 18, max: 80, mode: 'age' }),
     address: {
-      street: faker.location.streetAddress(),
-      city: faker.location.city(),
-      state: faker.location.state({ abbreviated: true }),
-      zipCode: faker.location.zipCode('#####-###')
+      street: f.location.streetAddress(),
+      city: f.location.city(),
+      state: f.location.state({ abbreviated: true }),
+      zipCode: f.location.zipCode('#####-###')
     },
     medicalHistory: {
-      allergies: faker.helpers.arrayElements(['Penicillin', 'Latex', 'Ibuprofen', 'None'], { min: 0, max: 2 }),
-      medications: faker.helpers.arrayElements(['Aspirin', 'Lisinopril', 'Metformin', 'None'], { min: 0, max: 2 }),
-      conditions: faker.helpers.arrayElements(['Hypertension', 'Diabetes', 'Asthma', 'None'], { min: 0, max: 2 })
+      allergies: f.helpers.arrayElements(['Penicillin', 'Latex', 'Ibuprofen', 'None'], { min: 0, max: 2 }),
+      medications: f.helpers.arrayElements(['Aspirin', 'Lisinopril', 'Metformin', 'None'], { min: 0, max: 2 }),
+      conditions: f.helpers.arrayElements(['Hypertension', 'Diabetes', 'Asthma', 'None'], { min: 0, max: 2 })
     },
     emergencyContact: {
-      name: faker.person.fullName(),
-      phone: faker.phone.number({ style: 'national' }),
-      relationship: faker.helpers.arrayElement(['Spouse', 'Parent', 'Sibling', 'Friend'])
+      name: f.person.fullName(),
+      phone: f.phone.number({ style: 'national' }),
+      relationship: f.helpers.arrayElement(['Spouse', 'Parent', 'Sibling', 'Friend'])
     }
   };
 
@@ -123,21 +141,22 @@ export const createRealisticPatient = async (overrides = {}) => {
 };
 
 export const createRealisticProvider = async (overrides = {}) => {
+  const f = await ensureFaker();
   const specialties = ['General Dentistry', 'Orthodontics', 'Oral Surgery', 'Periodontics', 'Endodontics'];
   const defaultProvider = {
-    name: faker.person.fullName(),
-    email: faker.internet.email(),
-    phone: faker.phone.number({ style: 'national' }),
-    specialty: faker.helpers.arrayElement(specialties),
-    licenseNumber: faker.string.alphanumeric(8).toUpperCase(),
-    experience: faker.number.int({ min: 5, max: 30 }),
+    name: f.person.fullName(),
+    email: f.internet.email(),
+    phone: f.phone.number({ style: 'national' }),
+    specialty: f.helpers.arrayElement(specialties),
+    licenseNumber: f.string.alphanumeric(8).toUpperCase(),
+    experience: f.number.int({ min: 5, max: 30 }),
     workingHours: {
       monday: { start: '08:00', end: '18:00', isWorking: true },
       tuesday: { start: '08:00', end: '18:00', isWorking: true },
       wednesday: { start: '08:00', end: '18:00', isWorking: true },
       thursday: { start: '08:00', end: '18:00', isWorking: true },
       friday: { start: '08:00', end: '18:00', isWorking: true },
-      saturday: { start: '08:00', end: '12:00', isWorking: faker.datatype.boolean() },
+      saturday: { start: '08:00', end: '12:00', isWorking: f.datatype.boolean() },
       sunday: { start: '08:00', end: '12:00', isWorking: false }
     }
   };
@@ -152,11 +171,12 @@ export const createRealisticProvider = async (overrides = {}) => {
 };
 
 export const createRealisticAppointment = async (patientId: string, providerId: string, overrides = {}) => {
+  const f = await ensureFaker();
   const appointmentTypes = ['Consulta', 'Limpeza', 'Tratamento de Canal', 'Extração', 'Ortodontia'];
   const statuses = ['scheduled', 'confirmed', 'completed', 'cancelled'];
 
-  const startTime = faker.date.future();
-  const duration = faker.number.int({ min: 30, max: 120 });
+  const startTime = f.date.future();
+  const duration = f.number.int({ min: 30, max: 120 });
   const endTime = new Date(startTime.getTime() + duration * 60000); // Add duration in minutes
 
   const defaultAppointment = {
@@ -164,10 +184,10 @@ export const createRealisticAppointment = async (patientId: string, providerId: 
     provider: providerId,
     scheduledStart: startTime,
     scheduledEnd: endTime,
-    type: faker.helpers.arrayElement(appointmentTypes),
-    status: faker.helpers.arrayElement(statuses),
-    notes: faker.lorem.sentence(),
-    price: faker.number.int({ min: 100, max: 500 }),
+    type: f.helpers.arrayElement(appointmentTypes),
+    status: f.helpers.arrayElement(statuses),
+    notes: f.lorem.sentence(),
+    price: f.number.int({ min: 100, max: 500 }),
     duration: duration
   };
 
