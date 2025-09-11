@@ -25,7 +25,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Test User',
         email: 'test@example.com',
-        password: 'password123',
+        password: 'SecurePass123!',
       };
 
       await authService.register(userData);
@@ -39,7 +39,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Test User',
         email: 'duplicate@example.com',
-        password: 'password123',
+        password: 'SecurePass123!',
       };
 
       await authService.register(userData);
@@ -58,6 +58,7 @@ describe('AuthService', () => {
           address: {
             street: 'Rua das Flores',
             number: '456',
+            neighborhood: 'Centro',
             city: 'São Paulo',
             state: 'SP',
             zipCode: '01234-567'
@@ -131,7 +132,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = (registeredUser.data.user as any)._id.toString();
+      const userId = registeredUser.data.user._id.toString();
 
       const user = await authService.getUserById(userId);
 
@@ -141,7 +142,7 @@ describe('AuthService', () => {
     });
 
     it('should return null for non-existent user', async () => {
-      const user = await authService.getUserById('nonexistent-id');
+      const user = await authService.getUserById('507f1f77bcf86cd799439011'); // Valid ObjectId format
 
       expect(user).toBeNull();
     });
@@ -156,7 +157,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = (registeredUser.data.user as any)._id.toString();
+      const userId = registeredUser.data.user._id.toString();
 
       await expect(
         authService.changePassword(userId, userData.password, 'NewPass123!')
@@ -179,7 +180,7 @@ describe('AuthService', () => {
       };
 
       const registeredUser = await authService.register(userData);
-      const userId = (registeredUser.data.user as any)._id.toString();
+      const userId = registeredUser.data.user._id.toString();
 
       await expect(
         authService.changePassword(userId, 'WrongPass123!', 'NewPass123!')

@@ -103,7 +103,7 @@ const newPasswordValidation = [
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/register', registerValidation, async (req, res) => {
+router.post('/register', registerValidation, async (req: express.Request, res: express.Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -187,7 +187,7 @@ router.post('/register', registerValidation, async (req, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/login', loginValidation, async (req, res) => {
+router.post('/login', loginValidation, async (req: express.Request, res: express.Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -262,7 +262,7 @@ router.post('/login', loginValidation, async (req, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/refresh', async (req, res) => {
+router.post('/refresh', async (req: express.Request, res: express.Response) => {
   try {
     const { refreshToken } = req.body;
 
@@ -428,7 +428,7 @@ router.post('/verify-email', async (req, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.post('/forgot-password', resetPasswordValidation, async (req, res) => {
+router.post('/forgot-password', resetPasswordValidation, async (req: express.Request, res: express.Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

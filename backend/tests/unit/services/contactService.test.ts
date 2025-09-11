@@ -1,64 +1,86 @@
 import { contactService } from '../../../src/services/contactService';
-import { createTestContact } from '../../testHelpers';
+import { Contact } from '../../../src/models/Contact';
+import { createTestClinic } from '../../testHelpers';
 
 describe('ContactService', () => {
+  let testClinic: any;
+
+  beforeEach(async () => {
+    testClinic = await createTestClinic();
+  });
+
   describe('createContact', () => {
     it('should create a new contact successfully', async () => {
       const contactData = {
         name: 'João Silva',
         email: 'joao.silva@example.com',
-        clinic: 'Clínica Odontológica ABC',
-        specialty: 'Ortodontia',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia Geral',
         phone: '(11) 99999-9999',
-        source: 'website_contact_form'
+        source: 'website'
       };
 
-      const contact = await contactService.createContact(contactData);
+      const result = await contactService.createContact(contactData);
 
-      expect(contact).toBeDefined();
-      expect(contact.name).toBe(contactData.name);
-      expect(contact.email).toBe(contactData.email);
-      expect(contact.clinic).toBe(contactData.clinic);
-      expect(contact.specialty).toBe(contactData.specialty);
-      expect(contact.phone).toBe(contactData.phone);
-      expect(contact.status).toBe('new');
+      expect(result).toBeDefined();
+      expect(result.name).toBe(contactData.name);
+      expect(result.email).toBe(contactData.email);
+      expect(result.clinic.toString()).toBe(testClinic._id.toString());
+      expect(result.specialty).toBe(contactData.specialty);
+      expect(result.phone).toBe(contactData.phone);
+      expect(result.source).toBe(contactData.source);
+      expect(result.status).toBe('new');
+    });
+
+    it('should create contact with default source', async () => {
+      const contactData = {
+        name: 'Maria Santos',
+        email: 'maria@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
+        phone: '(11) 88888-8888'
+      };
+
+      const result = await contactService.createContact(contactData);
+
+      expect(result).toBeDefined();
+      expect(result.source).toBe('website_contact_form');
     });
 
     it('should update existing contact when email already exists', async () => {
       const contactData1 = {
         name: 'João Silva',
         email: 'joao@example.com',
-        clinic: 'Clínica ABC',
-        specialty: 'Ortodontia',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia Geral',
         phone: '(11) 99999-9999'
       };
 
       const contactData2 = {
-        name: 'João Silva Santos',
+        name: 'João Silva Atualizado',
         email: 'joao@example.com',
-        clinic: 'Clínica XYZ',
-        specialty: 'Implantodontia',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
         phone: '(11) 88888-8888'
       };
 
-      const contact1 = await contactService.createContact(contactData1);
-      const contact2 = await contactService.createContact(contactData2);
+      const firstResult = await contactService.createContact(contactData1);
+      const secondResult = await contactService.createContact(contactData2);
 
-      expect((contact1._id as any).toString()).toBe((contact2._id as any).toString());
-      expect(contact2.name).toBe(contactData2.name);
-      expect(contact2.clinic).toBe(contactData2.clinic);
-      expect(contact2.specialty).toBe(contactData2.specialty);
-      expect(contact2.phone).toBe(contactData2.phone);
+      expect(secondResult.name).toBe(contactData2.name);
+      expect(secondResult.specialty).toBe(contactData2.specialty);
+      expect(secondResult.phone).toBe(contactData2.phone);
+      expect(secondResult.status).toBe('new'); // Status reset to new
     });
   });
 
   describe('createContactSafe', () => {
-    it('should create new contact and return isNew: true', async () => {
+    it('should create new contact and return isNew true', async () => {
       const contactData = {
-        name: 'Maria Santos',
-        email: 'maria@example.com',
-        clinic: 'Clínica Maria',
-        specialty: 'Endodontia',
+        name: 'Pedro Costa',
+        email: 'pedro@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
         phone: '(11) 77777-7777'
       };
 
@@ -67,197 +89,433 @@ describe('ContactService', () => {
       expect(result.contact).toBeDefined();
       expect(result.isNew).toBe(true);
       expect(result.message).toBe('Contato criado com sucesso');
+      expect(result.contact.name).toBe(contactData.name);
     });
 
-    it('should update existing contact and return isNew: false', async () => {
+    it('should update existing contact and return isNew false', async () => {
       const contactData1 = {
-        name: 'Pedro Oliveira',
-        email: 'pedro@example.com',
-        clinic: 'Clínica Pedro',
-        specialty: 'Periodontia',
+        name: 'Ana Oliveira',
+        email: 'ana@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
         phone: '(11) 66666-6666'
       };
 
       const contactData2 = {
-        name: 'Pedro Oliveira Santos',
-        email: 'pedro@example.com',
-        clinic: 'Clínica Pedro Atualizada',
-        specialty: 'Periodontia Avançada',
+        name: 'Ana Oliveira Silva',
+        email: 'ana@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
         phone: '(11) 55555-5555'
       };
 
       await contactService.createContactSafe(contactData1);
       const result = await contactService.createContactSafe(contactData2);
 
+      expect(result.contact).toBeDefined();
       expect(result.isNew).toBe(false);
       expect(result.message).toBe('Contato atualizado com sucesso');
       expect(result.contact.name).toBe(contactData2.name);
+    });
+
+    it('should throw error for missing required fields', async () => {
+      const invalidData = {
+        name: 'Test User',
+        email: '', // Missing email
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      };
+
+      await expect(
+        contactService.createContactSafe(invalidData as any)
+      ).rejects.toThrow('Campos obrigatórios não fornecidos');
+    });
+  });
+
+  describe('createMultipleContacts', () => {
+    it('should create multiple new contacts successfully', async () => {
+      const contactsData = [
+        {
+          name: 'Contact 1',
+          email: 'contact1@example.com',
+          clinic: testClinic._id.toString(),
+          specialty: 'Odontologia',
+          phone: '(11) 11111-1111'
+        },
+        {
+          name: 'Contact 2',
+          email: 'contact2@example.com',
+          clinic: testClinic._id.toString(),
+          specialty: 'Ortodontia',
+          phone: '(11) 22222-2222'
+        }
+      ];
+
+      const result = await contactService.createMultipleContacts(contactsData);
+
+      expect(result.created).toBe(2);
+      expect(result.updated).toBe(0);
+      expect(result.failed.length).toBe(0);
+      expect(result.contacts.length).toBe(2);
+    });
+
+    it('should handle mix of new and existing contacts', async () => {
+      // Create first contact
+      await contactService.createContact({
+        name: 'Existing Contact',
+        email: 'existing@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      });
+
+      const contactsData = [
+        {
+          name: 'Existing Contact Updated',
+          email: 'existing@example.com',
+          clinic: testClinic._id.toString(),
+          specialty: 'Ortodontia',
+          phone: '(11) 88888-8888'
+        },
+        {
+          name: 'New Contact',
+          email: 'new@example.com',
+          clinic: testClinic._id.toString(),
+          specialty: 'Odontologia',
+          phone: '(11) 77777-7777'
+        }
+      ];
+
+      const result = await contactService.createMultipleContacts(contactsData);
+
+      expect(result.created).toBe(1);
+      expect(result.updated).toBe(1);
+      expect(result.failed.length).toBe(0);
+      expect(result.contacts.length).toBe(2);
+    });
+
+    it('should handle errors in batch creation', async () => {
+      const contactsData = [
+        {
+          name: 'Valid Contact',
+          email: 'valid@example.com',
+          clinic: testClinic._id.toString(),
+          specialty: 'Odontologia',
+          phone: '(11) 99999-9999'
+        },
+        {
+          name: 'Invalid Contact',
+          email: '', // Invalid email
+          clinic: testClinic._id.toString(),
+          specialty: 'Odontologia',
+          phone: '(11) 88888-8888'
+        }
+      ];
+
+      const result = await contactService.createMultipleContacts(contactsData);
+
+      expect(result.created).toBe(1);
+      expect(result.updated).toBe(0);
+      expect(result.failed.length).toBe(1);
+      expect(result.failed[0].email).toBe('');
+      expect(result.contacts.length).toBe(1);
     });
   });
 
   describe('getContactById', () => {
     it('should return contact by ID', async () => {
       const contactData = {
-        name: 'Ana Costa',
-        email: 'ana@example.com',
-        clinic: 'Clínica Ana',
-        specialty: 'Odontopediatria',
-        phone: '(11) 44444-4444'
+        name: 'Get By ID Test',
+        email: 'getbyid@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contact = await contactService.getContactById((createdContact._id as any).toString());
 
-      expect(contact).toBeDefined();
-      expect(contact?.name).toBe(contactData.name);
-      expect(contact?.email).toBe(contactData.email);
+      const result = await contactService.getContactById(createdContact._id.toString());
+
+      expect(result).toBeDefined();
+      expect(result!._id.toString()).toBe(createdContact._id.toString());
+      expect(result!.name).toBe(contactData.name);
     });
 
     it('should return null for non-existent contact', async () => {
-      const contact = await contactService.getContactById('507f1f77bcf86cd799439011'); // Valid ObjectId format but doesn't exist
+      const result = await contactService.getContactById('507f1f77bcf86cd799439011');
 
-      expect(contact).toBeNull();
+      expect(result).toBeNull();
     });
   });
 
   describe('getContactByEmail', () => {
     it('should return contact by email', async () => {
       const contactData = {
-        name: 'Carlos Ferreira',
-        email: 'carlos@example.com',
-        clinic: 'Clínica Carlos',
-        specialty: 'Cirurgia',
-        phone: '(11) 33333-3333'
+        name: 'Get By Email Test',
+        email: 'getbyemail@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
       };
 
-      await contactService.createContact(contactData);
-      const contact = await contactService.getContactByEmail(contactData.email);
+      const createdContact = await contactService.createContact(contactData);
 
-      expect(contact).toBeDefined();
-      expect(contact?.name).toBe(contactData.name);
-      expect(contact?.email).toBe(contactData.email);
+      const result = await contactService.getContactByEmail(contactData.email);
+
+      expect(result).toBeDefined();
+      expect(result!.email).toBe(contactData.email);
+      expect(result!.name).toBe(contactData.name);
     });
 
     it('should handle email case insensitivity', async () => {
       const contactData = {
-        name: 'Test Case',
-        email: 'testcase@example.com',
-        clinic: 'Test Clinic',
-        specialty: 'Test Specialty',
-        phone: '(11) 22222-2222'
+        name: 'Case Test',
+        email: 'casetest@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
       };
 
       await contactService.createContact(contactData);
-      const contact = await contactService.getContactByEmail('TESTCASE@EXAMPLE.COM');
 
-      expect(contact).toBeDefined();
-      expect(contact?.email).toBe(contactData.email);
+      const result = await contactService.getContactByEmail('CASETEST@EXAMPLE.COM');
+
+      expect(result).toBeDefined();
+      expect(result!.email).toBe(contactData.email);
+    });
+
+    it('should throw error for empty email', async () => {
+      await expect(
+        contactService.getContactByEmail('')
+      ).rejects.toThrow('E-mail é obrigatório');
     });
   });
 
   describe('getContacts', () => {
     beforeEach(async () => {
       // Create test contacts
-      await createTestContact({
-        name: 'Contact 1',
-        email: 'contact1@example.com',
-        clinic: 'Clinic A',
-        specialty: 'General',
-        status: 'new'
+      await contactService.createContact({
+        name: 'João Silva',
+        email: 'joao@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia Geral',
+        phone: '(11) 99999-9999',
+        source: 'website'
       });
 
-      await createTestContact({
-        name: 'Contact 2',
-        email: 'contact2@example.com',
-        clinic: 'Clinic B',
-        specialty: 'Specialist',
-        status: 'contacted'
+      await contactService.createContact({
+        name: 'Maria Santos',
+        email: 'maria@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
+        phone: '(11) 88888-8888',
+        source: 'referral'
       });
 
-      await createTestContact({
-        name: 'Contact 3',
-        email: 'contact3@example.com',
-        clinic: 'Clinic A',
-        specialty: 'General',
-        status: 'qualified'
+      await contactService.createContact({
+        name: 'Pedro Costa',
+        email: 'pedro@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia Geral',
+        phone: '(11) 77777-7777',
+        source: 'website'
       });
     });
 
-    it('should return paginated contacts', async () => {
-      const pagination = { page: 1, limit: 2 };
-      const result = await contactService.getContacts({}, pagination);
+    it('should return all contacts with pagination', async () => {
+      const result = await contactService.getContacts({}, { page: 1, limit: 10 });
 
-      expect(result.contacts).toHaveLength(2);
+      expect(result).toBeDefined();
+      expect(result.contacts.length).toBe(3);
       expect(result.total).toBe(3);
       expect(result.page).toBe(1);
+      expect(result.pages).toBe(1);
+    });
+
+    it('should filter by status', async () => {
+      const result = await contactService.getContacts(
+        { status: 'new' },
+        { page: 1, limit: 10 }
+      );
+
+      expect(result.contacts.length).toBe(3); // All are new by default
+    });
+
+    it('should filter by source', async () => {
+      const result = await contactService.getContacts(
+        { source: 'website' },
+        { page: 1, limit: 10 }
+      );
+
+      expect(result.contacts.length).toBe(2);
+    });
+
+    it('should filter by date range', async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const result = await contactService.getContacts(
+        { dateFrom: yesterday, dateTo: tomorrow },
+        { page: 1, limit: 10 }
+      );
+
+      expect(result.contacts.length).toBe(3);
+    });
+
+    it('should search by name', async () => {
+      const result = await contactService.getContacts(
+        { search: 'João' },
+        { page: 1, limit: 10 }
+      );
+
+      expect(result.contacts.length).toBe(1);
+      expect(result.contacts[0].name).toBe('João Silva');
+    });
+
+    it('should search by email', async () => {
+      const result = await contactService.getContacts(
+        { search: 'maria@example.com' },
+        { page: 1, limit: 10 }
+      );
+
+      expect(result.contacts.length).toBe(1);
+      expect(result.contacts[0].email).toBe('maria@example.com');
+    });
+
+    it('should paginate results', async () => {
+      const result = await contactService.getContacts(
+        {},
+        { page: 1, limit: 2 }
+      );
+
+      expect(result.contacts.length).toBe(2);
+      expect(result.total).toBe(3);
       expect(result.pages).toBe(2);
-      expect(result.limit).toBe(2);
     });
 
-    it('should filter contacts by status', async () => {
-      const filters = { status: 'new' };
-      const pagination = { page: 1, limit: 10 };
-      const result = await contactService.getContacts(filters, pagination);
+    it('should sort results', async () => {
+      const result = await contactService.getContacts(
+        {},
+        { page: 1, limit: 10, sortBy: 'name', sortOrder: 'asc' }
+      );
 
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].status).toBe('new');
-    });
-
-    it('should search contacts by name', async () => {
-      const filters = { search: 'Contact 1' };
-      const pagination = { page: 1, limit: 10 };
-      const result = await contactService.getContacts(filters, pagination);
-
-      expect(result.contacts).toHaveLength(1);
-      expect(result.contacts[0].name).toBe('Contact 1');
-    });
-
-    it('should sort contacts by created date descending', async () => {
-      const pagination = { page: 1, limit: 10, sortBy: 'createdAt', sortOrder: 'desc' as const };
-      const result = await contactService.getContacts({}, pagination);
-
-      expect(result.contacts).toHaveLength(3);
-      // Should be sorted by creation date (most recent first)
-      const dates = result.contacts.map(c => c.createdAt.getTime());
-      expect(dates[0]).toBeGreaterThanOrEqual(dates[1]);
-      expect(dates[1]).toBeGreaterThanOrEqual(dates[2]);
+      expect(result.contacts[0].name).toBe('João Silva');
+      expect(result.contacts[1].name).toBe('Maria Santos');
+      expect(result.contacts[2].name).toBe('Pedro Costa');
     });
   });
 
   describe('updateContact', () => {
     it('should update contact successfully', async () => {
       const contactData = {
-        name: 'Update Test',
-        email: 'update@example.com',
-        clinic: 'Original Clinic',
-        specialty: 'Original Specialty',
-        phone: '(11) 11111-1111'
+        name: 'Original Name',
+        email: 'original@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
       };
 
       const createdContact = await contactService.createContact(contactData);
+      const contactId = createdContact._id.toString();
 
-      const updates = {
+      const updateData = {
         name: 'Updated Name',
-        clinic: 'Updated Clinic',
+        specialty: 'Ortodontia',
         status: 'contacted' as const
       };
 
-      const updatedContact = await contactService.updateContact(
-        (createdContact._id as any).toString(),
-        updates
-      );
+      const result = await contactService.updateContact(contactId, updateData);
 
-      expect(updatedContact).toBeDefined();
-      expect(updatedContact?.name).toBe(updates.name);
-      expect(updatedContact?.clinic).toBe(updates.clinic);
-      expect(updatedContact?.status).toBe(updates.status);
+      expect(result).toBeDefined();
+      expect(result!.name).toBe(updateData.name);
+      expect(result!.specialty).toBe(updateData.specialty);
+      expect(result!.status).toBe(updateData.status);
+    });
+
+    it('should not update protected fields', async () => {
+      const contactData = {
+        name: 'Protected Fields Test',
+        email: 'protected@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      };
+
+      const createdContact = await contactService.createContact(contactData);
+      const contactId = createdContact._id.toString();
+      const originalCreatedAt = createdContact.createdAt;
+
+      const updateData = {
+        _id: 'fake-id',
+        createdAt: new Date('2020-01-01'),
+        updatedAt: new Date('2020-01-01')
+      };
+
+      const result = await contactService.updateContact(contactId, updateData);
+
+      expect(result).toBeDefined();
+      expect(result!.createdAt.getTime()).toBe(originalCreatedAt.getTime());
     });
 
     it('should return null for non-existent contact', async () => {
-      const updates = { name: 'Test Update' };
-      const result = await contactService.updateContact('507f1f77bcf86cd799439011', updates);
+      const updateData = { name: 'New Name' };
+
+      const result = await contactService.updateContact('507f1f77bcf86cd799439011', updateData);
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('updateContactStatus', () => {
+    it('should update status for multiple contacts', async () => {
+      const contact1 = await contactService.createContact({
+        name: 'Contact 1',
+        email: 'contact1@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 11111-1111'
+      });
+
+      const contact2 = await contactService.createContact({
+        name: 'Contact 2',
+        email: 'contact2@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 22222-2222'
+      });
+
+      const result = await contactService.updateContactStatus(
+        [contact1._id.toString(), contact2._id.toString()],
+        'contacted'
+      );
+
+      expect(result.modifiedCount).toBe(2);
+      expect(result.matchedCount).toBe(2);
+    });
+
+    it('should update status and assign contact', async () => {
+      const contact = await contactService.createContact({
+        name: 'Assign Test',
+        email: 'assign@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      });
+
+      const assignedToId = '507f1f77bcf86cd799439011'; // Mock user ID
+
+      const result = await contactService.updateContactStatus(
+        [contact._id.toString()],
+        'qualified',
+        assignedToId
+      );
+
+      expect(result.modifiedCount).toBe(1);
+      expect(result.matchedCount).toBe(1);
     });
   });
 
@@ -266,19 +524,21 @@ describe('ContactService', () => {
       const contactData = {
         name: 'Delete Test',
         email: 'delete@example.com',
-        clinic: 'Delete Clinic',
-        specialty: 'Delete Specialty',
-        phone: '(11) 00000-0000'
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const deleteResult = await contactService.deleteContact((createdContact._id as any).toString());
+      const contactId = createdContact._id.toString();
 
-      expect(deleteResult).toBe(true);
+      const result = await contactService.deleteContact(contactId);
+
+      expect(result).toBe(true);
 
       // Verify contact is deleted
-      const contact = await contactService.getContactById((createdContact._id as any).toString());
-      expect(contact).toBeNull();
+      const deletedContact = await Contact.findById(contactId);
+      expect(deletedContact).toBeNull();
     });
 
     it('should return false for non-existent contact', async () => {
@@ -288,43 +548,193 @@ describe('ContactService', () => {
     });
   });
 
+  describe('softDeleteContact', () => {
+    it('should soft delete contact successfully', async () => {
+      const contactData = {
+        name: 'Soft Delete Test',
+        email: 'softdelete@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      };
+
+      const createdContact = await contactService.createContact(contactData);
+      const contactId = createdContact._id.toString();
+
+      const result = await contactService.softDeleteContact(contactId, 'user123');
+
+      expect(result).toBeDefined();
+      expect(result!.status).toBe('deleted');
+      expect(result!.deletedAt).toBeDefined();
+      expect(result!.deletedBy).toBe('user123');
+    });
+
+    it('should return null for non-existent contact', async () => {
+      const result = await contactService.softDeleteContact('507f1f77bcf86cd799439011');
+
+      expect(result).toBeNull();
+    });
+  });
+
   describe('getContactStats', () => {
     beforeEach(async () => {
-      // Create test contacts with different statuses
-      await createTestContact({
+      // Create contacts with different statuses and sources
+      await contactService.createContact({
         name: 'New Contact',
         email: 'new@example.com',
-        status: 'new'
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 11111-1111',
+        source: 'website'
       });
 
-      await createTestContact({
+      await contactService.createContact({
         name: 'Contacted Contact',
         email: 'contacted@example.com',
-        status: 'contacted'
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
+        phone: '(11) 22222-2222',
+        source: 'referral'
       });
 
-      await createTestContact({
-        name: 'Qualified Contact',
-        email: 'qualified@example.com',
-        status: 'qualified'
+      // Update one contact to contacted status
+      const contactedContact = await contactService.getContactByEmail('contacted@example.com');
+      if (contactedContact) {
+        await contactService.updateContact(contactedContact._id.toString(), { status: 'contacted' });
+      }
+    });
+
+    it('should return correct contact statistics', async () => {
+      const result = await contactService.getContactStats();
+
+      expect(result).toBeDefined();
+      expect(result.total).toBe(2);
+      expect(Array.isArray(result.byStatus)).toBe(true);
+      expect(Array.isArray(result.bySource)).toBe(true);
+      expect(typeof result.recentCount).toBe('number');
+      expect(Array.isArray(result.monthlyTrend)).toBe(true);
+    });
+
+    it('should return status breakdown', async () => {
+      const result = await contactService.getContactStats();
+
+      const newStatus = result.byStatus.find(s => s._id === 'new');
+      const contactedStatus = result.byStatus.find(s => s._id === 'contacted');
+
+      expect(newStatus).toBeDefined();
+      expect(newStatus!.count).toBe(1);
+      expect(contactedStatus).toBeDefined();
+      expect(contactedStatus!.count).toBe(1);
+    });
+
+    it('should return source breakdown', async () => {
+      const result = await contactService.getContactStats();
+
+      const websiteSource = result.bySource.find(s => s._id === 'website');
+      const referralSource = result.bySource.find(s => s._id === 'referral');
+
+      expect(websiteSource).toBeDefined();
+      expect(websiteSource!.count).toBe(1);
+      expect(referralSource).toBeDefined();
+      expect(referralSource!.count).toBe(1);
+    });
+  });
+
+  describe('findDuplicateContacts', () => {
+    beforeEach(async () => {
+      // Create contacts with duplicate emails
+      await contactService.createContact({
+        name: 'João Silva',
+        email: 'duplicate@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      });
+
+      await contactService.createContact({
+        name: 'João Silva 2',
+        email: 'duplicate@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
+        phone: '(11) 88888-8888'
+      });
+
+      await contactService.createContact({
+        name: 'Unique Contact',
+        email: 'unique@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 77777-7777'
       });
     });
 
-    it('should return contact statistics', async () => {
-      const stats = await contactService.getContactStats();
+    it('should find duplicate contacts by email', async () => {
+      const result = await contactService.findDuplicateContacts();
 
-      expect(stats.total).toBe(3);
-      expect(stats.byStatus).toHaveLength(3);
-      expect(stats.recentCount).toBe(3); // All contacts are recent in test
+      expect(result).toBeDefined();
+      expect(result.length).toBe(1);
+      expect(result[0].email).toBe('duplicate@example.com');
+      expect(result[0].count).toBe(2);
+      expect(result[0].contacts.length).toBe(2);
+    });
 
-      // Check status counts
-      const newStatus = stats.byStatus.find(s => s._id === 'new');
-      const contactedStatus = stats.byStatus.find(s => s._id === 'contacted');
-      const qualifiedStatus = stats.byStatus.find(s => s._id === 'qualified');
+    it('should return empty array when no duplicates', async () => {
+      // Delete duplicates first
+      const duplicates = await contactService.findDuplicateContacts();
+      for (const dup of duplicates) {
+        await contactService.deleteContact(dup.contacts[1]._id.toString());
+      }
 
-      expect(newStatus?.count).toBe(1);
-      expect(contactedStatus?.count).toBe(1);
-      expect(qualifiedStatus?.count).toBe(1);
+      const result = await contactService.findDuplicateContacts();
+
+      expect(result).toBeDefined();
+      expect(result.length).toBe(0);
+    });
+  });
+
+  describe('mergeDuplicateContacts', () => {
+    it('should merge duplicate contacts successfully', async () => {
+      // Create duplicate contacts
+      const contact1 = await contactService.createContact({
+        name: 'João Silva',
+        email: 'merge@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999',
+        source: 'website'
+      });
+
+      const contact2 = await contactService.createContact({
+        name: 'João Silva Atualizado',
+        email: 'merge@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Ortodontia',
+        phone: '(11) 88888-8888',
+        source: 'referral'
+      });
+
+      const result = await contactService.mergeDuplicateContacts(
+        contact1._id.toString(),
+        [contact2._id.toString()]
+      );
+
+      expect(result).toBeDefined();
+      expect(result.name).toBe('João Silva Atualizado'); // Most recent data
+      expect(result.specialty).toBe('Ortodontia');
+      expect(result.phone).toBe('(11) 88888-8888');
+      expect(result.source).toContain('website');
+      expect(result.source).toContain('referral');
+
+      // Check that duplicate was marked as merged
+      const mergedContact = await Contact.findById(contact2._id.toString());
+      expect(mergedContact!.status).toBe('merged');
+      expect(mergedContact!.mergedInto?.toString()).toBe(contact1._id.toString());
+    });
+
+    it('should throw error for non-existent primary contact', async () => {
+      await expect(
+        contactService.mergeDuplicateContacts('507f1f77bcf86cd799439011', [])
+      ).rejects.toThrow('Contato principal não encontrado');
     });
   });
 });

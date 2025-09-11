@@ -74,6 +74,21 @@ export const createTestClinic = async (overrides = {}) => {
   return await clinic.save();
 };
 
+export const createTestUserWithClinic = async (overrides = {}) => {
+  const clinic = await createTestClinic();
+  const defaultUser = {
+    name: 'Test User',
+    email: 'test@example.com',
+    password: 'TestPassword123!',
+    role: 'admin' as const,
+    clinic: clinic._id,
+  };
+
+  const userData = { ...defaultUser, ...overrides };
+  const user = new User(userData);
+  return await user.save();
+};
+
 export const createTestContact = async (overrides = {}) => {
   const defaultContact = {
     name: 'João Silva',
