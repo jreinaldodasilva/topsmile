@@ -337,7 +337,7 @@ class AuthService {
             return {
                 success: true,
                 data: {
-                    user: savedUser.toJSON(),
+                    user: savedUser,
                     accessToken,
                     refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES
@@ -400,7 +400,7 @@ class AuthService {
             return {
                 success: true,
                 data: {
-                    user: user.toJSON(),
+                    user: user,
                     accessToken,
                     refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES

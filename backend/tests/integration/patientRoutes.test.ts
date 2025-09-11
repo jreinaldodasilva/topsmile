@@ -1,11 +1,11 @@
 import request from 'supertest';
 import express from 'express';
 import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
 import patientRoutes from '../../src/routes/patients';
 import { User } from '../../src/models/User';
 import { Patient } from '../../src/models/Patient';
 import { Clinic } from '../../src/models/Clinic';
+import { generateAuthToken } from '../testHelpers';
 
 let app: express.Application;
 let testUser: any;
@@ -61,15 +61,10 @@ beforeEach(async () => {
   });
 
   // Generate access token
-  accessToken = jwt.sign(
-    {
-      userId: testUser._id.toString(),
-      email: testUser.email,
-      role: testUser.role,
-      clinicId: testClinic._id.toString()
-    },
-    process.env.JWT_SECRET || 'test-jwt-secret-key',
-    { expiresIn: '1h' }
+  accessToken = generateAuthToken(
+    testUser._id.toString(),
+    testUser.role,
+    testClinic._id.toString()
   );
 
   // Remove mock authentication middleware to use real JWT verification

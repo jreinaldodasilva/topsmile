@@ -1,24 +1,58 @@
-describe('Appointment Scheduling', () => {
+describe('Complete Appointment Flow', () => {
   beforeEach(() => {
-    // Assume user is logged in
+    // Login as admin first
+    cy.login('admin@example.com', 'password123');
+  });
+
+  it('should handle complete patient journey', () => {
+    // Navigate to patients page
+    cy.visit('/patients');
+
+    // Create a new patient
+    cy.get('[data-cy="add-patient"]').click();
+    cy.get('[data-cy="patient-name"]').type('João Silva');
+    cy.get('[data-cy="patient-phone"]').type('(11) 99999-9999');
+    cy.get('[data-cy="patient-email"]').type('joao@example.com');
+    cy.get('[data-cy="save-patient"]').click();
+
+    // Verify patient was created
+    cy.get('[data-cy="patient-list"]').should('contain', 'João Silva');
+
+    // Schedule appointment
     cy.visit('/calendar');
+    cy.get('[data-cy="new-appointment"]').click();
+    cy.get('[data-cy="patient-select"]').select('João Silva');
+    cy.get('[data-cy="provider-select"]').select('Dr. Maria Santos');
+    cy.get('[data-cy="appointment-date"]').type('2024-01-15');
+    cy.get('[data-cy="appointment-time"]').type('10:00');
+    cy.get('[data-cy="appointment-type"]').select('Consulta');
+    cy.get('[data-cy="save-appointment"]').click();
+
+    // Verify appointment appears in calendar
+    cy.get('[data-cy="calendar"]').should('contain', 'João Silva');
+    cy.get('[data-cy="appointment-item"]').should('contain', '10:00');
   });
 
-  it('should display calendar', () => {
-    cy.get('[data-cy="calendar"]').should('be.visible');
-  });
+  it('should handle appointment conflicts', () => {
+    cy.visit('/calendar');
 
-  it('should allow scheduling new appointment', () => {
-    cy.get('[data-cy="new-appointment-button"]').click();
-    cy.get('[data-cy="patient-select"]').select('John Doe');
-    cy.get('[data-cy="date-input"]').type('2024-12-01');
-    cy.get('[data-cy="time-input"]').type('10:00');
-    cy.get('[data-cy="save-appointment-button"]').click();
+    // Try to schedule overlapping appointments
+    cy.get('[data-cy="new-appointment"]').click();
+    cy.get('[data-cy="patient-select"]').select('João Silva');
+    cy.get('[data-cy="provider-select"]').select('Dr. Maria Santos');
+    cy.get('[data-cy="appointment-date"]').type('2024-01-15');
+    cy.get('[data-cy="appointment-time"]').type('10:00');
+    cy.get('[data-cy="save-appointment"]').click();
 
-    cy.get('[data-cy="success-message"]').should('be.visible');
-  });
+    // Try to schedule another appointment at the same time
+    cy.get('[data-cy="new-appointment"]').click();
+    cy.get('[data-cy="patient-select"]').select('Maria Oliveira');
+    cy.get('[data-cy="provider-select"]').select('Dr. Maria Santos');
+    cy.get('[data-cy="appointment-date"]').type('2024-01-15');
+    cy.get('[data-cy="appointment-time"]').type('10:00');
+    cy.get('[data-cy="save-appointment"]').click();
 
-  it('should show existing appointments', () => {
-    cy.get('[data-cy="appointment-item"]').should('have.length.greaterThan', 0);
+    // Should show conflict warning
+    cy.get('[data-cy="conflict-warning"]').should('be.visible');
   });
 });

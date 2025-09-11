@@ -14,7 +14,7 @@ const mockAppointmentType = AppointmentType as jest.Mocked<typeof AppointmentTyp
 // Helper to mock chained calls like findById().session() and findById().lean()
 function mockFindByIdWithSessionAndLean(mockModel: any, returnValue: any) {
   const mockSession = jest.fn().mockReturnThis();
-  const mockLean = jest.fn().mockReturnThis();
+  const mockLean = jest.fn().mockResolvedValue(returnValue);
   const mockExec = jest.fn().mockResolvedValue(returnValue);
 
   mockModel.findById = jest.fn(() => ({
@@ -22,20 +22,19 @@ function mockFindByIdWithSessionAndLean(mockModel: any, returnValue: any) {
     lean: mockLean,
     exec: mockExec
   }));
+
   mockSession.mockReturnValue({
     lean: mockLean,
     exec: mockExec
   });
-  mockLean.mockReturnValue({
-    exec: mockExec
-  });
+
   return { mockSession, mockLean, mockExec };
 }
 
 // Helper to mock find().session() and find().lean()
 function mockFindWithSessionAndLean(mockModel: any, returnValue: any) {
   const mockSession = jest.fn().mockReturnThis();
-  const mockLean = jest.fn().mockReturnThis();
+  const mockLean = jest.fn().mockResolvedValue(returnValue);
   const mockSort = jest.fn().mockReturnThis();
   const mockSkip = jest.fn().mockReturnThis();
   const mockLimit = jest.fn().mockReturnThis();
@@ -51,6 +50,7 @@ function mockFindWithSessionAndLean(mockModel: any, returnValue: any) {
     populate: mockPopulate,
     exec: mockExec
   }));
+
   mockSession.mockReturnValue({
     lean: mockLean,
     sort: mockSort,
@@ -59,6 +59,7 @@ function mockFindWithSessionAndLean(mockModel: any, returnValue: any) {
     populate: mockPopulate,
     exec: mockExec
   });
+
   mockLean.mockReturnValue({
     sort: mockSort,
     skip: mockSkip,
@@ -66,26 +67,31 @@ function mockFindWithSessionAndLean(mockModel: any, returnValue: any) {
     populate: mockPopulate,
     exec: mockExec
   });
+
   mockSort.mockReturnValue({
     skip: mockSkip,
     limit: mockLimit,
     populate: mockPopulate,
     exec: mockExec
   });
+
   mockSkip.mockReturnValue({
     limit: mockLimit,
     populate: mockPopulate,
     exec: mockExec
   });
+
   mockLimit.mockReturnValue({
     populate: mockPopulate,
     exec: mockExec
   });
+
   mockPopulate.mockReturnValue({
     exec: mockExec
   });
+
   return { mockSession, mockLean, mockSort, mockSkip, mockLimit, mockPopulate, mockExec };
-};
+}
 
 describe('SchedulingService', () => {
   beforeEach(() => {
@@ -355,9 +361,9 @@ describe('SchedulingService', () => {
         bufferTimeAfter: 0
       };
 
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockProvider.find.mockResolvedValue([mockProviderData as any]);
-      mockAppointment.find.mockResolvedValue([]); // No existing appointments
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindWithSessionAndLean(mockProvider, [mockProviderData]);
+      mockFindWithSessionAndLean(mockAppointment, []); // No existing appointments
 
       const result = await schedulingService.getAvailableSlots(query);
 
@@ -486,8 +492,8 @@ describe('SchedulingService', () => {
         bufferAfter: 15
       };
 
-      mockAppointmentType.findById.mockResolvedValue(mockAppointmentTypeData as any);
-      mockAppointment.find.mockResolvedValue([]); // No conflicting appointments
+      mockFindByIdWithSessionAndLean(mockAppointmentType, mockAppointmentTypeData);
+      mockFindWithSessionAndLean(mockAppointment, []); // No conflicting appointments
 
       const result = await schedulingService.getAppointmentConflicts(providerId, startDate, endDate, appointmentTypeId);
 

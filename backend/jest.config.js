@@ -9,6 +9,10 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
+  // Handle ES modules from node_modules
+  transformIgnorePatterns: [
+    'node_modules/(?!(supertest|@faker-js/faker)/)'
+  ],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

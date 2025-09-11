@@ -137,21 +137,18 @@ describe('Patient Portal Integration Tests', () => {
       .set('Authorization', `Bearer ${patientToken}`);
 
     expect(getRes.statusCode).toBe(200);
+    expect(getRes.body.data).toBeDefined();
+    expect(getRes.body.data.length).toBeGreaterThan(0);
 
-    if (getRes.body.data && getRes.body.data.length > 0) {
-      const appointmentId = getRes.body.data[0]._id;
+    const appointmentId = getRes.body.data[0]._id;
 
-      const cancelRes = await request(app)
-        .patch(`/api/appointments/${appointmentId}`)
-        .set('Authorization', `Bearer ${patientToken}`)
-        .send({ status: 'cancelled' });
+    const cancelRes = await request(app)
+      .patch(`/api/appointments/${appointmentId}`)
+      .set('Authorization', `Bearer ${patientToken}`)
+      .send({ status: 'cancelled' });
 
-      expect(cancelRes.statusCode).toBe(200);
-      expect(cancelRes.body.success).toBe(true);
-    } else {
-      // If no appointments to cancel, test should still pass
-      expect(true).toBe(true);
-    }
+    expect(cancelRes.statusCode).toBe(200);
+    expect(cancelRes.body.success).toBe(true);
   });
 
   it('should handle patient profile updates', async () => {
@@ -250,25 +247,23 @@ describe('Patient Portal Integration Tests', () => {
       .set('Authorization', `Bearer ${patientToken}`);
 
     expect(getRes.statusCode).toBe(200);
+    expect(getRes.body.data).toBeDefined();
+    expect(getRes.body.data.length).toBeGreaterThan(0);
 
-    if (getRes.body.data && getRes.body.data.length > 0) {
-      const appointmentId = getRes.body.data[0]._id;
-      const newScheduledStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 days from now
-      const newScheduledEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString();
+    const appointmentId = getRes.body.data[0]._id;
+    const newScheduledStart = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(); // 2 days from now
+    const newScheduledEnd = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 60 * 60 * 1000).toISOString();
 
-      const rescheduleRes = await request(app)
-        .patch(`/api/appointments/${appointmentId}`)
-        .set('Authorization', `Bearer ${patientToken}`)
-        .send({
-          scheduledStart: newScheduledStart,
-          scheduledEnd: newScheduledEnd
-        });
+    const rescheduleRes = await request(app)
+      .patch(`/api/appointments/${appointmentId}`)
+      .set('Authorization', `Bearer ${patientToken}`)
+      .send({
+        scheduledStart: newScheduledStart,
+        scheduledEnd: newScheduledEnd
+      });
 
-      expect(rescheduleRes.statusCode).toBe(200);
-      expect(rescheduleRes.body.success).toBe(true);
-    } else {
-      expect(true).toBe(true);
-    }
+    expect(rescheduleRes.statusCode).toBe(200);
+    expect(rescheduleRes.body.success).toBe(true);
   });
 
   it('should handle patient medical history retrieval', async () => {
