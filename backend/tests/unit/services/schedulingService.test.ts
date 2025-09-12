@@ -13,49 +13,61 @@ describe('SchedulingService', () => {
   let testAppointmentType: any;
 
   beforeEach(async () => {
-    testClinic = await createTestClinic();
-    testUser = await createTestUser({ clinic: testClinic._id });
+    try {
+      testClinic = await createTestClinic();
+      console.log('Test clinic created:', testClinic._id);
 
-    // Create test patient
-    testPatient = await Patient.create({
-      name: 'Test Patient',
-      phone: '(11) 99999-9999',
-      email: 'patient@example.com',
-      clinic: testClinic._id,
-      status: 'active'
-    });
+      testUser = await createTestUser({ clinic: testClinic._id });
+      console.log('Test user created:', testUser._id);
 
-    // Create test provider
-    testProvider = await Provider.create({
-      name: 'Dr. Test Provider',
-      email: 'provider@example.com',
-      phone: '(11) 88888-8888',
-      clinic: testClinic._id,
-      specialties: ['general_dentistry'],
-      licenseNumber: 'CRO-12345',
-      isActive: true,
-      workingHours: {
-        monday: { start: '08:00', end: '18:00', isWorking: true },
-        tuesday: { start: '08:00', end: '18:00', isWorking: true },
-        wednesday: { start: '08:00', end: '18:00', isWorking: true },
-        thursday: { start: '08:00', end: '18:00', isWorking: true },
-        friday: { start: '08:00', end: '18:00', isWorking: true },
-        saturday: { start: '08:00', end: '12:00', isWorking: false },
-        sunday: { start: '08:00', end: '12:00', isWorking: false }
-      }
-    });
+      // Create test patient
+      testPatient = await Patient.create({
+        name: 'Test Patient',
+        phone: '(11) 99999-9999',
+        email: 'patient@example.com',
+        clinic: testClinic._id,
+        status: 'active'
+      });
+      console.log('Test patient created:', testPatient._id);
 
-    // Create test appointment type
-    testAppointmentType = await AppointmentType.create({
-      name: 'Consulta Geral',
-      duration: 60,
-      color: '#3B82F6',
-      category: 'consultation',
-      clinic: testClinic._id,
-      isActive: true,
-      bufferBefore: 15,
-      bufferAfter: 15
-    });
+      // Create test provider
+      testProvider = await Provider.create({
+        name: 'Dr. Test Provider',
+        email: 'provider@example.com',
+        phone: '(11) 88888-8888',
+        clinic: testClinic._id,
+        specialties: ['general_dentistry'],
+        licenseNumber: 'CRO-12345',
+        isActive: true,
+        timeZone: 'America/Sao_Paulo', // Set timezone explicitly
+        workingHours: {
+          monday: { start: '08:00', end: '18:00', isWorking: true },
+          tuesday: { start: '08:00', end: '18:00', isWorking: true },
+          wednesday: { start: '08:00', end: '18:00', isWorking: true },
+          thursday: { start: '08:00', end: '18:00', isWorking: true },
+          friday: { start: '08:00', end: '18:00', isWorking: true },
+          saturday: { start: '08:00', end: '12:00', isWorking: false },
+          sunday: { start: '08:00', end: '12:00', isWorking: false }
+        }
+      });
+      console.log('Test provider created:', testProvider._id);
+
+      // Create test appointment type
+      testAppointmentType = await AppointmentType.create({
+        name: 'Consulta Geral',
+        duration: 60,
+        color: '#3B82F6',
+        category: 'consultation',
+        clinic: testClinic._id,
+        isActive: true,
+        bufferBefore: 15,
+        bufferAfter: 15
+      });
+      console.log('Test appointment type created:', testAppointmentType._id);
+    } catch (error) {
+      console.error('Error in beforeEach:', error);
+      throw error;
+    }
   });
 
   describe('createAppointment', () => {
@@ -65,7 +77,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         notes: 'Test appointment',
         priority: 'routine',
         createdBy: testUser._id.toString()
@@ -85,7 +97,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: '507f1f77bcf86cd799439011', // Invalid ID
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -119,7 +131,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: (inactiveProvider._id as any).toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -136,7 +148,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -149,7 +161,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:30:00Z'), // Overlaps with first
+        scheduledStart: new Date('2024-01-15T13:30:00Z'), // 10:30 AM Sao Paulo time (13:30 UTC) - Overlaps with first
         createdBy: testUser._id.toString()
       };
 
@@ -168,7 +180,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -214,7 +226,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -239,7 +251,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -321,7 +333,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
@@ -371,8 +383,8 @@ describe('SchedulingService', () => {
 
   describe('getAppointmentConflicts', () => {
     it('should return no conflicts when slot is available', async () => {
-      const startDate = new Date('2024-01-15T10:00:00Z');
-      const endDate = new Date('2024-01-15T11:00:00Z');
+      const startDate = new Date('2024-01-15T13:00:00Z'); // 10:00 AM Sao Paulo time (13:00 UTC)
+      const endDate = new Date('2024-01-15T14:00:00Z'); // 11:00 AM Sao Paulo time (14:00 UTC)
 
       const result = await schedulingService.getAppointmentConflicts(
         testProvider._id.toString(),
@@ -392,15 +404,15 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
       await schedulingService.createAppointment(appointmentData);
 
       // Check for conflicts with overlapping time
-      const startDate = new Date('2024-01-15T10:30:00Z');
-      const endDate = new Date('2024-01-15T11:30:00Z');
+      const startDate = new Date('2024-01-15T13:30:00Z'); // 10:30 AM Sao Paulo time (13:30 UTC)
+      const endDate = new Date('2024-01-15T14:30:00Z'); // 11:30 AM Sao Paulo time (14:30 UTC)
 
       const result = await schedulingService.getAppointmentConflicts(
         testProvider._id.toString(),
@@ -423,7 +435,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T10:00:00Z'),
+        scheduledStart: new Date('2024-01-15T13:00:00Z'), // 10:00 AM Sao Paulo time (13:00 UTC)
         createdBy: testUser._id.toString()
       };
 
