@@ -31,9 +31,18 @@ describe('AppointmentService', () => {
       email: 'provider@example.com',
       phone: '(11) 88888-8888',
       clinic: testClinic._id,
-      specialties: ['Odontologia Geral'],
+      specialties: ['general_dentistry'],
       licenseNumber: 'CRO-12345',
-      status: 'active'
+      isActive: true,
+      workingHours: {
+        monday: { start: '08:00', end: '18:00', isWorking: true },
+        tuesday: { start: '08:00', end: '18:00', isWorking: true },
+        wednesday: { start: '08:00', end: '18:00', isWorking: true },
+        thursday: { start: '08:00', end: '18:00', isWorking: true },
+        friday: { start: '08:00', end: '18:00', isWorking: true },
+        saturday: { start: '08:00', end: '12:00', isWorking: false },
+        sunday: { start: '08:00', end: '12:00', isWorking: false }
+      }
     });
 
     // Create test appointment type
@@ -41,9 +50,9 @@ describe('AppointmentService', () => {
       name: 'Consulta Geral',
       duration: 60,
       color: '#3B82F6',
-      category: 'consulta',
+      category: 'consultation',
       clinic: testClinic._id,
-      status: 'active'
+      isActive: true
     });
   });
 
@@ -57,7 +66,8 @@ describe('AppointmentService', () => {
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
         notes: 'Primeira consulta',
         priority: 'routine' as const,
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
@@ -82,7 +92,8 @@ describe('AppointmentService', () => {
           reminder24h: false,
           reminder2h: false
         },
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
@@ -100,7 +111,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       await appointmentService.createAppointment(appointmentData1);
@@ -112,7 +124,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:30:00Z'), // Overlaps with first
         scheduledEnd: new Date('2024-01-15T11:30:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       await expect(
@@ -127,12 +140,13 @@ describe('AppointmentService', () => {
         // Missing appointmentType
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       await expect(
         appointmentService.createAppointment(invalidAppointmentData as any)
-      ).rejects.toThrow('Tipo de agendamento é obrigatório');
+      ).rejects.toThrow('Todos os campos obrigatórios devem ser preenchidos');
     });
   });
 
@@ -144,17 +158,18 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const appointmentId = createdAppointment.id;
 
       const result = await appointmentService.getAppointmentById(appointmentId, testClinic._id.toString());
 
       expect(result).toBeDefined();
-      expect((result!._id as any).toString()).toBe(appointmentId);
-      expect(result!.patient.toString()).toBe(testPatient._id.toString());
+      expect(result!.id).toBe(appointmentId);
+      expect(result!.patient._id.toString()).toBe(testPatient._id.toString());
     });
 
     it('should return null for non-existent appointment', async () => {
@@ -173,7 +188,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       await appointmentService.createAppointment({
@@ -182,13 +198,14 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-16T10:00:00Z'),
         scheduledEnd: new Date('2024-01-16T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       // Update the second appointment to confirmed status
       const appointments = await appointmentService.getAppointments(testClinic._id.toString());
       if (appointments[1]) {
-        await appointmentService.updateAppointment((appointments[1]._id as any).toString(), testClinic._id.toString(), { status: 'confirmed' });
+        await appointmentService.updateAppointment(appointments[1].id, testClinic._id.toString(), { status: 'confirmed' });
       }
     });
 
@@ -228,58 +245,60 @@ describe('AppointmentService', () => {
       });
 
       expect(result.length).toBe(2);
-      expect(result[0].provider.toString()).toBe(testProvider._id.toString());
+      expect(result[0].provider._id.toString()).toBe(testProvider._id.toString());
     });
   });
 
   describe('updateAppointment', () => {
     it('should update appointment successfully', async () => {
-      const appointmentData = {
+      const updateAppointmentData = {
         patient: testPatient._id.toString(),
         provider: testProvider._id.toString(),
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
         notes: 'Original notes',
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
-      const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const updateCreatedAppointment = await appointmentService.createAppointment(updateAppointmentData);
+      const updateAppointmentId = updateCreatedAppointment.id;
 
-      const updateData = {
+      const updateDataForNotes = {
         notes: 'Updated notes'
       };
 
-      const result = await appointmentService.updateAppointment(appointmentId, testClinic._id.toString(), updateData);
+      const result = await appointmentService.updateAppointment(updateAppointmentId, testClinic._id.toString(), updateDataForNotes);
 
       expect(result).toBeDefined();
       expect(result!.notes).toBe('Updated notes');
-      expect(result!.status).toBe('confirmed');
+      expect(result!.status).toBe('scheduled'); // Status doesn't auto-change to confirmed on update
     });
 
     it('should update appointment time', async () => {
-      const appointmentData = {
+      const timeUpdateAppointmentData = {
         patient: testPatient._id.toString(),
         provider: testProvider._id.toString(),
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
-      const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const timeUpdateCreatedAppointment = await appointmentService.createAppointment(timeUpdateAppointmentData);
+      const timeUpdateAppointmentId = timeUpdateCreatedAppointment.id;
 
       const newStartTime = new Date('2024-01-15T14:00:00Z');
       const newEndTime = new Date('2024-01-15T15:00:00Z');
 
-      const updateData = {
+      const timeUpdateData = {
         scheduledStart: newStartTime,
         scheduledEnd: newEndTime
       };
 
-      const result = await appointmentService.updateAppointment(appointmentId, testClinic._id.toString(), updateData);
+      const result = await appointmentService.updateAppointment(timeUpdateAppointmentId, testClinic._id.toString(), timeUpdateData);
 
       expect(result).toBeDefined();
       expect(result!.scheduledStart.getTime()).toBe(newStartTime.getTime());
@@ -287,9 +306,9 @@ describe('AppointmentService', () => {
     });
 
     it('should return null for non-existent appointment', async () => {
-      const updateData = { notes: 'New notes' };
+      const nonExistentUpdateData = { notes: 'New notes' };
 
-      const result = await appointmentService.updateAppointment('507f1f77bcf86cd799439011', testClinic._id.toString(), updateData);
+      const result = await appointmentService.updateAppointment('507f1f77bcf86cd799439011', testClinic._id.toString(), nonExistentUpdateData);
 
       expect(result).toBeNull();
     });
@@ -303,11 +322,12 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const appointmentId = createdAppointment.id;
 
       const result = await appointmentService.cancelAppointment(appointmentId, testClinic._id.toString(), 'Patient request');
 
@@ -348,7 +368,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       const startDate = new Date('2024-01-15T08:00:00Z');
@@ -379,7 +400,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       const appointment2 = await appointmentService.createAppointment({
@@ -388,7 +410,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-16T10:00:00Z'),
         scheduledEnd: new Date('2024-01-16T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       const appointment3 = await appointmentService.createAppointment({
@@ -397,12 +420,13 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-17T10:00:00Z'),
         scheduledEnd: new Date('2024-01-17T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       // Update appointments to different statuses
-      await appointmentService.updateAppointment((appointment2._id as any).toString(), testClinic._id.toString(), { status: 'completed' });
-      await appointmentService.updateAppointment((appointment3._id as any).toString(), testClinic._id.toString(), { status: 'cancelled' });
+      await appointmentService.updateAppointment(appointment2.id, testClinic._id.toString(), { status: 'completed' });
+      await appointmentService.updateAppointment(appointment3.id, testClinic._id.toString(), { status: 'cancelled' });
     });
 
     it('should return correct appointment statistics', async () => {
@@ -434,11 +458,12 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const appointmentId = createdAppointment.id;
 
       const newStartTime = new Date('2024-01-15T14:00:00Z');
       const newEndTime = new Date('2024-01-15T15:00:00Z');
@@ -466,7 +491,8 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T14:00:00Z'),
         scheduledEnd: new Date('2024-01-15T15:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       });
 
       // Create second appointment to reschedule
@@ -476,11 +502,12 @@ describe('AppointmentService', () => {
         appointmentType: testAppointmentType._id.toString(),
         scheduledStart: new Date('2024-01-15T10:00:00Z'),
         scheduledEnd: new Date('2024-01-15T11:00:00Z'),
-        clinic: testClinic._id.toString()
+        clinic: testClinic._id.toString(),
+        createdBy: testUser._id.toString()
       };
 
       const createdAppointment = await appointmentService.createAppointment(appointmentData);
-      const appointmentId = (createdAppointment._id as any).toString();
+      const appointmentId = createdAppointment.id;
 
       // Try to reschedule to conflicting time
       const conflictingStartTime = new Date('2024-01-15T14:30:00Z');

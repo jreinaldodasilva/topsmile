@@ -422,7 +422,7 @@ class PatientService {
             });
 
             if (!patient) {
-                return null;
+                throw new Error('Paciente inativo não encontrado');
             }
 
             // Check for duplicate phone with active patients

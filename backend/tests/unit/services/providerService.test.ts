@@ -21,7 +21,7 @@ describe('ProviderService', () => {
       color: '#3B82F6',
       category: 'consultation',
       clinic: testClinic._id,
-      status: 'active'
+      isActive: true
     });
   });
 

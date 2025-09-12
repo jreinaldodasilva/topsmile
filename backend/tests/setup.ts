@@ -34,11 +34,18 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  // Clear all collections after each test
-  const collections = mongoose.connection.collections;
+  // Clear all collections after each test, but only if connected
+  if (mongoose.connection.readyState === 1) {
+    const collections = mongoose.connection.collections;
 
-  for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany({});
+    for (const key in collections) {
+      const collection = collections[key];
+      try {
+        await collection.deleteMany({});
+      } catch (error) {
+        // Ignore cleanup errors if database is disconnected
+        console.warn(`Failed to clean collection ${key}:`, error);
+      }
+    }
   }
 });

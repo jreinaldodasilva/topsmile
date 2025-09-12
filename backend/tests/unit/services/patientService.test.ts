@@ -159,7 +159,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBe(3);
-      expect(result[0].clinic.toString()).toBe(testClinic._id.toString());
+      expect(result[0].clinic._id.toString()).toBe(testClinic._id.toString());
     });
 
     it('should return inactive patients when specified', async () => {

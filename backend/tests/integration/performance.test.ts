@@ -130,7 +130,14 @@ describe('Performance Tests', () => {
       for (const endpoint of endpoints) {
         const startTime = Date.now();
 
-        let req = (request(app) as any)[endpoint.method.toLowerCase()](endpoint.path);
+        let req: request.Test;
+        if (endpoint.method === 'POST') {
+          req = request(app).post(endpoint.path);
+        } else if (endpoint.method === 'GET') {
+          req = request(app).get(endpoint.path);
+        } else {
+          throw new Error(`Unsupported method: ${endpoint.method}`);
+        }
 
         if (endpoint.headers) {
           req = req.set(endpoint.headers);

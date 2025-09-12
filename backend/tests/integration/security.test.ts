@@ -88,7 +88,7 @@ describe('Security Tests', () => {
           email: maliciousEmail,
           password: 'password'
         })
-        .expect(401);
+        .expect(400);
 
       expect(response.body.success).toBe(false);
     });

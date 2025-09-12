@@ -16,6 +16,7 @@ export interface CreateAppointmentData {
     reminder2h?: boolean;
   };
   clinic: string;
+  createdBy: string;
 }
 
 export interface UpdateAppointmentData {
