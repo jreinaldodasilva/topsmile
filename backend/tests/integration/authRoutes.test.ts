@@ -27,7 +27,7 @@ describe('Auth Routes Integration', () => {
       role: 'admin'
     });
 
-    authToken = generateAuthToken(testUser._id.toString(), testUser.role);
+    authToken = generateAuthToken(testUser._id.toString(), testUser.role, undefined, testUser.email);
   });
 
   describe('POST /api/auth/register', () => {

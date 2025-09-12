@@ -143,7 +143,7 @@ class PatientService {
             });
 
             if (!patient) {
-                throw new Error('Paciente não encontrado');
+                return null;
             }
 
             // Check for duplicate phone if phone is being updated
@@ -422,7 +422,7 @@ class PatientService {
             });
 
             if (!patient) {
-                throw new Error('Paciente inativo não encontrado');
+                return null;
             }
 
             // Check for duplicate phone with active patients

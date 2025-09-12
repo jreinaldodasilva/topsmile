@@ -1,3 +1,23 @@
+// Mock the authenticate middleware before importing routes
+const mockAuthenticate = jest.fn((req: any, res: any, next: any) => {
+  // This will be updated in beforeEach with actual test data
+  req.user = {
+    id: 'mock-user-id',
+    email: 'test@example.com',
+    role: 'admin',
+    clinicId: 'mock-clinic-id'
+  };
+  next();
+});
+
+const mockAuthorize = jest.fn(() => (req: any, res: any, next: any) => next());
+
+jest.mock('../../src/middleware/auth', () => ({
+  authenticate: mockAuthenticate,
+  authorize: mockAuthorize,
+  AuthenticatedRequest: {}
+}));
+
 import request from 'supertest';
 import express from 'express';
 import mongoose from 'mongoose';
@@ -67,16 +87,16 @@ beforeEach(async () => {
     testClinic._id.toString()
   );
 
-  // Remove mock authentication middleware to use real JWT verification
-  // app.use('/api/patients', (req: any, res, next) => {
-  //   req.user = {
-  //     userId: testUser._id.toString(),
-  //     email: testUser.email,
-  //     role: testUser.role,
-  //     clinicId: testClinic._id.toString()
-  //   };
-  //   next();
-  // });
+  // Update mock to use actual test data
+  mockAuthenticate.mockImplementation((req: any, res: any, next: any) => {
+    req.user = {
+      id: testUser._id.toString(),
+      email: testUser.email,
+      role: testUser.role,
+      clinicId: testClinic._id.toString()
+    };
+    next();
+  });
 });
 
 describe('Patient Routes Integration Tests', () => {

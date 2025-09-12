@@ -130,7 +130,7 @@ describe('Performance Tests', () => {
       for (const endpoint of endpoints) {
         const startTime = Date.now();
 
-        let req = request(app)[endpoint.method.toLowerCase()](endpoint.path);
+        let req = (request(app) as any)[endpoint.method.toLowerCase()](endpoint.path);
 
         if (endpoint.headers) {
           req = req.set(endpoint.headers);

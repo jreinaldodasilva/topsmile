@@ -81,7 +81,6 @@ const PatientUserSchema = new Schema<IPatientUser>({
 });
 
 // Indexes
-PatientUserSchema.index({ email: 1 });
 PatientUserSchema.index({ patient: 1 });
 PatientUserSchema.index({ verificationToken: 1 });
 PatientUserSchema.index({ resetPasswordToken: 1 });

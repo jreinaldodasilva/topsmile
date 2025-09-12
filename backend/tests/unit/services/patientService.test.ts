@@ -113,7 +113,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       const result = await patientService.getPatientById(patientId, testClinic._id.toString());
 
@@ -166,7 +166,7 @@ describe('PatientService', () => {
       // First make one patient inactive
       const patients = await patientService.getPatientsByClinic(testClinic._id.toString());
       const patientToDeactivate = patients[0];
-      await patientService.deletePatient(patientToDeactivate._id.toString(), testClinic._id.toString());
+      await patientService.deletePatient((patientToDeactivate as any)._id.toString(), testClinic._id.toString());
 
       const activePatients = await patientService.getPatientsByClinic(testClinic._id.toString(), 'active');
       const inactivePatients = await patientService.getPatientsByClinic(testClinic._id.toString(), 'inactive');
@@ -186,7 +186,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       const updateData = {
         name: 'Updated Name',
@@ -217,7 +217,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       const medicalUpdate = {
         medicalHistory: {
@@ -245,7 +245,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       const result = await patientService.deletePatient(patientId, testClinic._id.toString());
 
@@ -364,7 +364,7 @@ describe('PatientService', () => {
       const patients = await patientService.getPatientsByClinic(testClinic._id.toString());
       const inactivePatient = patients.find(p => p.name === 'Inactive Patient');
       if (inactivePatient) {
-        await patientService.deletePatient(inactivePatient._id.toString(), testClinic._id.toString());
+        await patientService.deletePatient((inactivePatient._id as any).toString(), testClinic._id.toString());
       }
     });
 
@@ -387,7 +387,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       const medicalHistory = {
         allergies: ['Penicilina', 'Ibuprofeno'],
@@ -419,7 +419,7 @@ describe('PatientService', () => {
       };
 
       const createdPatient = await patientService.createPatient(patientData);
-      const patientId = createdPatient._id.toString();
+      const patientId = (createdPatient._id as any).toString();
 
       // Deactivate patient
       await patientService.deletePatient(patientId, testClinic._id.toString());

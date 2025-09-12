@@ -153,7 +153,7 @@ describe('AppointmentService', () => {
       const result = await appointmentService.getAppointmentById(appointmentId, testClinic._id.toString());
 
       expect(result).toBeDefined();
-      expect(result!._id.toString()).toBe(appointmentId);
+      expect((result!._id as any).toString()).toBe(appointmentId);
       expect(result!.patient.toString()).toBe(testPatient._id.toString());
     });
 
@@ -188,7 +188,7 @@ describe('AppointmentService', () => {
       // Update the second appointment to confirmed status
       const appointments = await appointmentService.getAppointments(testClinic._id.toString());
       if (appointments[1]) {
-        await appointmentService.updateAppointment(appointments[1]._id.toString(), testClinic._id.toString(), { status: 'confirmed' });
+        await appointmentService.updateAppointment((appointments[1]._id as any).toString(), testClinic._id.toString(), { status: 'confirmed' });
       }
     });
 
@@ -401,8 +401,8 @@ describe('AppointmentService', () => {
       });
 
       // Update appointments to different statuses
-      await appointmentService.updateAppointment(appointment2._id.toString(), testClinic._id.toString(), { status: 'completed' });
-      await appointmentService.updateAppointment(appointment3._id.toString(), testClinic._id.toString(), { status: 'cancelled' });
+      await appointmentService.updateAppointment((appointment2._id as any).toString(), testClinic._id.toString(), { status: 'completed' });
+      await appointmentService.updateAppointment((appointment3._id as any).toString(), testClinic._id.toString(), { status: 'cancelled' });
     });
 
     it('should return correct appointment statistics', async () => {

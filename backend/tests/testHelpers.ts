@@ -1,6 +1,6 @@
-import { User } from '../src/models/User';
-import { Clinic } from '../src/models/Clinic';
-import { Contact } from '../src/models/Contact';
+import { User, IUser } from '../src/models/User';
+import { Clinic, IClinic } from '../src/models/Clinic';
+import { Contact, IContact } from '../src/models/Contact';
 import jwt from 'jsonwebtoken';
 // Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
 import type { Faker } from '@faker-js/faker';
@@ -21,7 +21,7 @@ async function ensureFaker(): Promise<Faker> {
   return fakerInstance;
 }
 
-export const createTestUser = async (overrides = {}): Promise<any> => {
+export const createTestUser = async (overrides = {}): Promise<IUser> => {
   const defaultUser = {
     name: 'Test User',
     email: 'test@example.com',
@@ -34,7 +34,7 @@ export const createTestUser = async (overrides = {}): Promise<any> => {
   return await user.save();
 };
 
-export const createTestClinic = async (overrides = {}): Promise<any> => {
+export const createTestClinic = async (overrides = {}): Promise<IClinic> => {
   const defaultClinic = {
     name: 'Test Clinic',
     email: 'clinic@example.com',
@@ -73,7 +73,7 @@ export const createTestClinic = async (overrides = {}): Promise<any> => {
   return await clinic.save();
 };
 
-export const createTestUserWithClinic = async (overrides = {}) => {
+export const createTestUserWithClinic = async (overrides = {}): Promise<IUser> => {
   const clinic = await createTestClinic();
   const defaultUser = {
     name: 'Test User',
@@ -88,7 +88,7 @@ export const createTestUserWithClinic = async (overrides = {}) => {
   return await user.save();
 };
 
-export const createTestContact = async (overrides = {}): Promise<any> => {
+export const createTestContact = async (overrides = {}): Promise<IContact> => {
   const defaultContact = {
     name: 'João Silva',
     email: 'joao@example.com',
@@ -197,9 +197,10 @@ export const createRealisticAppointment = async (patientId: string, providerId: 
   return appointmentData;
 };
 
-export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string) => {
+export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string, email = 'test@example.com') => {
   const payload: any = {
     userId,
+    email,
     role,
   };
   if (clinicId) {

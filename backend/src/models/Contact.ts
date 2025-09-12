@@ -32,6 +32,11 @@ export interface IContact extends Document {
         utmMedium?: string;
         utmCampaign?: string;
     };
+    // Soft delete fields
+    deletedAt?: Date;
+    deletedBy?: mongoose.Types.ObjectId;
+    // Merge tracking
+    mergedInto?: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -145,6 +150,17 @@ const ContactSchema = new Schema<IContact>({
         utmSource: String,
         utmMedium: String,
         utmCampaign: String
+    },
+    // Soft delete fields
+    deletedAt: Date,
+    deletedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    // Merge tracking
+    mergedInto: {
+        type: Schema.Types.ObjectId,
+        ref: 'Contact'
     }
 }, {
     timestamps: true,

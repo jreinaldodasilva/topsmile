@@ -19,7 +19,7 @@ describe('ProviderService', () => {
       name: 'Consulta Geral',
       duration: 60,
       color: '#3B82F6',
-      category: 'consulta',
+      category: 'consultation',
       clinic: testClinic._id,
       status: 'active'
     });
@@ -31,7 +31,7 @@ describe('ProviderService', () => {
         name: 'Dr. João Silva',
         email: 'joao.silva@example.com',
         phone: '(11) 99999-9999',
-        specialties: ['Odontologia Geral', 'Ortodontia'],
+        specialties: ['general_dentistry', 'orthodontics'],
         licenseNumber: 'CRO-12345',
         clinicId: testClinic._id.toString()
       };
@@ -52,7 +52,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Maria Santos',
         email: 'maria@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -81,7 +81,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Pedro Costa',
         email: 'pedro@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         workingHours: customWorkingHours,
         timeZone: 'America/Sao_Paulo',
         bufferTimeBefore: 30,
@@ -102,7 +102,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Ana Oliveira',
         email: 'ana@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         userId: (testUser._id as mongoose.Types.ObjectId).toString(),
         clinicId: testClinic._id.toString()
       };
@@ -117,7 +117,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Carlos Mendes',
         email: 'carlos@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         appointmentTypes: [(testAppointmentType._id as mongoose.Types.ObjectId).toString()],
         clinicId: testClinic._id.toString()
       };
@@ -133,14 +133,14 @@ describe('ProviderService', () => {
       const providerData1 = {
         name: 'Dr. First',
         email: 'duplicate@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
       const providerData2 = {
         name: 'Dr. Second',
         email: 'duplicate@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -167,7 +167,7 @@ describe('ProviderService', () => {
     it('should throw error for missing required fields', async () => {
       const invalidProviderData = {
         email: 'test@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
         // Missing name
       };
@@ -184,7 +184,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Wrong Clinic',
         email: 'wrong@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         userId: (otherUser._id as mongoose.Types.ObjectId).toString(),
         clinicId: testClinic._id.toString()
       };
@@ -199,7 +199,7 @@ describe('ProviderService', () => {
       await providerService.createProvider({
         name: 'Dr. First',
         email: 'first@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         userId: testUser._id.toString(),
         clinicId: testClinic._id.toString()
       });
@@ -208,7 +208,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Second',
         email: 'second@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         userId: testUser._id.toString(),
         clinicId: testClinic._id.toString()
       };
@@ -224,7 +224,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Get Test',
         email: 'get@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -257,7 +257,7 @@ describe('ProviderService', () => {
         name: 'Dr. Original',
         email: 'original@example.com',
         phone: '(11) 99999-9999',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -268,7 +268,7 @@ describe('ProviderService', () => {
         name: 'Dr. Updated',
         email: 'updated@example.com',
         phone: '(11) 88888-8888',
-        specialties: ['Odontologia', 'Ortodontia']
+        specialties: ['general_dentistry', 'orthodontics']
       };
 
       const result = await providerService.updateProvider(providerId, testClinic._id.toString(), updateData);
@@ -284,7 +284,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. User Link',
         email: 'userlink@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -305,7 +305,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Appointment Types',
         email: 'apptypes@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -336,7 +336,7 @@ describe('ProviderService', () => {
       await providerService.createProvider({
         name: 'Dr. First',
         email: 'first@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -344,7 +344,7 @@ describe('ProviderService', () => {
       const secondProvider = await providerService.createProvider({
         name: 'Dr. Second',
         email: 'second@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -364,7 +364,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Delete Test',
         email: 'delete@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -400,7 +400,7 @@ describe('ProviderService', () => {
         name: 'Dr. João Silva',
         email: 'joao.silva@example.com',
         phone: '(11) 99999-9999',
-        specialties: ['Odontologia Geral'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -408,7 +408,7 @@ describe('ProviderService', () => {
         name: 'Dr. Maria Santos',
         email: 'maria.santos@example.com',
         phone: '(11) 88888-8888',
-        specialties: ['Ortodontia'],
+        specialties: ['orthodontics'],
         clinicId: testClinic._id.toString()
       });
 
@@ -416,7 +416,7 @@ describe('ProviderService', () => {
         name: 'Dr. Pedro Costa',
         email: 'pedro.costa@example.com',
         phone: '(11) 77777-7777',
-        specialties: ['Odontologia Geral', 'Ortodontia'],
+        specialties: ['general_dentistry', 'orthodontics'],
         clinicId: testClinic._id.toString()
       });
     });
@@ -446,7 +446,7 @@ describe('ProviderService', () => {
     it('should search providers by specialty', async () => {
       const result = await providerService.searchProviders({
         clinicId: testClinic._id.toString(),
-        search: 'Ortodontia'
+        search: 'orthodontics'
       });
 
       expect(result).toBeDefined();
@@ -456,7 +456,7 @@ describe('ProviderService', () => {
     it('should filter by specialties array', async () => {
       const result = await providerService.searchProviders({
         clinicId: testClinic._id.toString(),
-        specialties: ['Ortodontia']
+        specialties: ['orthodontics']
       });
 
       expect(result).toBeDefined();
@@ -507,14 +507,14 @@ describe('ProviderService', () => {
       await providerService.createProvider({
         name: 'Dr. Active',
         email: 'active@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
       await providerService.createProvider({
         name: 'Dr. Inactive',
         email: 'inactive@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -555,7 +555,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Hours Test',
         email: 'hours@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -601,7 +601,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Types Test',
         email: 'types@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -621,7 +621,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Invalid Types',
         email: 'invalid@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -642,21 +642,21 @@ describe('ProviderService', () => {
       await providerService.createProvider({
         name: 'Dr. Active General',
         email: 'active1@example.com',
-        specialties: ['Odontologia Geral'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
       await providerService.createProvider({
         name: 'Dr. Active Ortho',
         email: 'active2@example.com',
-        specialties: ['Ortodontia'],
+        specialties: ['orthodontics'],
         clinicId: testClinic._id.toString()
       });
 
       await providerService.createProvider({
         name: 'Dr. Inactive',
         email: 'inactive@example.com',
-        specialties: ['Odontologia Geral'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -682,8 +682,8 @@ describe('ProviderService', () => {
     it('should return specialty breakdown', async () => {
       const result = await providerService.getProviderStats(testClinic._id.toString());
 
-      const generalSpecialty = result.bySpecialty.find(s => s.specialty === 'Odontologia Geral');
-      const orthoSpecialty = result.bySpecialty.find(s => s.specialty === 'Ortodontia');
+      const generalSpecialty = result.bySpecialty.find(s => s.specialty === 'general_dentistry');
+      const orthoSpecialty = result.bySpecialty.find(s => s.specialty === 'orthodontics');
 
       expect(generalSpecialty).toBeDefined();
       expect(generalSpecialty!.count).toBe(2); // One active, one inactive but still counted
@@ -703,7 +703,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Reactivate Test',
         email: 'reactivate@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -730,7 +730,7 @@ describe('ProviderService', () => {
       const providerData = {
         name: 'Dr. Already Active',
         email: 'alreadyactive@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       };
 
@@ -747,7 +747,7 @@ describe('ProviderService', () => {
       await providerService.createProvider({
         name: 'Dr. First',
         email: 'conflict@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
@@ -755,7 +755,7 @@ describe('ProviderService', () => {
       const secondProvider = await providerService.createProvider({
         name: 'Dr. Second',
         email: 'conflict@example.com',
-        specialties: ['Odontologia'],
+        specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 

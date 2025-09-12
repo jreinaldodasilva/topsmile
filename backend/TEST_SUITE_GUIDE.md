@@ -359,6 +359,15 @@ it('should return correct response format', async () => {
    - Verify TypeScript compilation
    - Check path aliases in `tsconfig.json`
 
+4. **Validation Errors for Invalid Enum Values**
+   - Ensure test data uses valid enum values as defined in models
+   - For example, Provider specialties must be one of: 'general_dentistry', 'orthodontics', 'oral_surgery', 'periodontics', 'endodontics', 'prosthodontics', 'pediatric_dentistry', 'oral_pathology', 'dental_hygiene'
+   - Check model definitions for valid enum options
+
+5. **TypeScript Errors in Tests**
+   - Ensure proper typing for Mongoose documents
+   - Use `as any` for _id when needed, or properly type the interfaces
+
 ### Debugging Tests
 
 ```bash
@@ -367,6 +376,12 @@ npm test -- --verbose
 
 # Run specific test with debug info
 npm test -- --testNamePattern="debug test" --verbose
+
+# Run only unit tests
+npm test -- tests/unit/
+
+# Run only integration tests
+npm test -- tests/integration/
 
 # Use debugger in VS Code
 // Add this to test file

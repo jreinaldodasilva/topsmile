@@ -235,10 +235,10 @@ describe('ContactService', () => {
 
       const createdContact = await contactService.createContact(contactData);
 
-      const result = await contactService.getContactById(createdContact._id.toString());
+      const result = await contactService.getContactById((createdContact._id as any).toString());
 
       expect(result).toBeDefined();
-      expect(result!._id.toString()).toBe(createdContact._id.toString());
+      expect(result!._id.toString()).toBe((createdContact._id as any).toString());
       expect(result!.name).toBe(contactData.name);
     });
 
@@ -420,7 +420,7 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact._id.toString();
+      const contactId = (createdContact._id as any).toString();
 
       const updateData = {
         name: 'Updated Name',
@@ -446,7 +446,7 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact._id.toString();
+      const contactId = (createdContact._id as any).toString();
       const originalCreatedAt = createdContact.createdAt;
 
       const updateData = {
@@ -489,7 +489,7 @@ describe('ContactService', () => {
       });
 
       const result = await contactService.updateContactStatus(
-        [contact1._id.toString(), contact2._id.toString()],
+        [(contact1._id as any).toString(), (contact2._id as any).toString()],
         'contacted'
       );
 
@@ -509,7 +509,7 @@ describe('ContactService', () => {
       const assignedToId = '507f1f77bcf86cd799439011'; // Mock user ID
 
       const result = await contactService.updateContactStatus(
-        [contact._id.toString()],
+        [(contact._id as any).toString()],
         'qualified',
         assignedToId
       );
@@ -530,7 +530,7 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact._id.toString();
+      const contactId = (createdContact._id as any).toString();
 
       const result = await contactService.deleteContact(contactId);
 
@@ -559,7 +559,7 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact._id.toString();
+      const contactId = (createdContact._id as any).toString();
 
       const result = await contactService.softDeleteContact(contactId, 'user123');
 
@@ -600,7 +600,7 @@ describe('ContactService', () => {
       // Update one contact to contacted status
       const contactedContact = await contactService.getContactByEmail('contacted@example.com');
       if (contactedContact) {
-        await contactService.updateContact(contactedContact._id.toString(), { status: 'contacted' });
+        await contactService.updateContact((contactedContact._id as any).toString(), { status: 'contacted' });
       }
     });
 
@@ -682,7 +682,7 @@ describe('ContactService', () => {
       // Delete duplicates first
       const duplicates = await contactService.findDuplicateContacts();
       for (const dup of duplicates) {
-        await contactService.deleteContact(dup.contacts[1]._id.toString());
+        await contactService.deleteContact((dup.contacts[1]._id as any).toString());
       }
 
       const result = await contactService.findDuplicateContacts();
@@ -714,8 +714,8 @@ describe('ContactService', () => {
       });
 
       const result = await contactService.mergeDuplicateContacts(
-        contact1._id.toString(),
-        [contact2._id.toString()]
+        (contact1._id as any).toString(),
+        [(contact2._id as any).toString()]
       );
 
       expect(result).toBeDefined();
@@ -726,9 +726,9 @@ describe('ContactService', () => {
       expect(result.source).toContain('referral');
 
       // Check that duplicate was marked as merged
-      const mergedContact = await Contact.findById(contact2._id.toString());
+      const mergedContact = await Contact.findById((contact2._id as any).toString());
       expect(mergedContact!.status).toBe('merged');
-      expect(mergedContact!.mergedInto?.toString()).toBe(contact1._id.toString());
+      expect(mergedContact!.mergedInto?.toString()).toBe((contact1._id as any).toString());
     });
 
     it('should throw error for non-existent primary contact', async () => {
