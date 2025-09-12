@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="13" failures="4" errors="0" time="27.726">
+  <testsuite name="Auth Routes Integration" errors="0" failures="4" skipped="0" timestamp="2025-09-12T00:31:40" time="27.371" tests="13">
+    <testcase classname="Auth Routes Integration POST /api/auth/register should register a new user successfully" name="Auth Routes Integration POST /api/auth/register should register a new user successfully" time="5.184">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" name="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" time="1.796">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" name="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" time="0.711">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should login user successfully" name="Auth Routes Integration POST /api/auth/login should login user successfully" time="1.013">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" name="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" time="0.512">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" name="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" time="0.524">
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return current user profile" name="Auth Routes Integration GET /api/auth/me should return current user profile" time="0.585">
+      <failure>Error: expected 200 &quot;OK&quot;, got 401 &quot;Unauthorized&quot;
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:135:10)
+    at Promise.then.completed (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:444:34)
+----
+    at Test._assertStatus (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:309:14)
+    at /home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:365:13
+    at Test._assertFunction (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:342:13)
+    at Test.assert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:195:23)
+    at localAssert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:138:14)
+    at Server.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:152:11)
+    at Object.onceWrapper (node:events:633:28)
+    at Server.emit (node:events:519:28)
+    at emitCloseNT (node:net:2419:8)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" name="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" time="0.596">
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" name="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" time="0.512">
+      <failure>Error: expected 200 &quot;OK&quot;, got 401 &quot;Unauthorized&quot;
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:164:10)
+    at Promise.then.completed (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:444:34)
+----
+    at Test._assertStatus (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:309:14)
+    at /home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:365:13
+    at Test._assertFunction (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:342:13)
+    at Test.assert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:195:23)
+    at localAssert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:138:14)
+    at Server.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:152:11)
+    at Object.onceWrapper (node:events:633:28)
+    at Server.emit (node:events:519:28)
+    at emitCloseNT (node:net:2419:8)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" name="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" time="0.502">
+      <failure>Error: expected 400 &quot;Bad Request&quot;, got 401 &quot;Unauthorized&quot;
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:180:10)
+    at Promise.then.completed (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:444:34)
+----
+    at Test._assertStatus (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:309:14)
+    at /home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:365:13
+    at Test._assertFunction (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:342:13)
+    at Test.assert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:195:23)
+    at localAssert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:138:14)
+    at Server.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:152:11)
+    at Object.onceWrapper (node:events:633:28)
+    at Server.emit (node:events:519:28)
+    at emitCloseNT (node:net:2419:8)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/logout should logout user successfully" name="Auth Routes Integration POST /api/auth/logout should logout user successfully" time="0.554">
+      <failure>Error: expected 200 &quot;OK&quot;, got 401 &quot;Unauthorized&quot;
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:193:10)
+    at Promise.then.completed (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:298:28)
+    at new Promise (&lt;anonymous&gt;)
+    at callAsyncCircusFn (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/utils.js:231:10)
+    at _callCircusTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:316:40)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at _runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:252:3)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:126:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at _runTestsForDescribeBlock (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:121:9)
+    at run (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/run.js:71:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)
+    at jestAdapter (/home/rebelde/development/topsmile/backend/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)
+    at runTestInternal (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:367:16)
+    at runTest (/home/rebelde/development/topsmile/backend/node_modules/jest-runner/build/runTest.js:444:34)
+----
+    at Test._assertStatus (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:309:14)
+    at /home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:365:13
+    at Test._assertFunction (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:342:13)
+    at Test.assert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:195:23)
+    at localAssert (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:138:14)
+    at Server.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/node_modules/supertest/lib/test.js:152:11)
+    at Object.onceWrapper (node:events:633:28)
+    at Server.emit (node:events:519:28)
+    at emitCloseNT (node:net:2419:8)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" name="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" time="1.019">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" name="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" time="0.496">
+    </testcase>
+  </testsuite>
+</testsuites>

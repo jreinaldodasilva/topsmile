@@ -26,4 +26,8 @@ module.exports = {
   // Handle MongoDB Memory Server
   detectOpenHandles: true,
   forceExit: true,
+    reporters: [
+    'default',
+    ['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
+  ],
 };

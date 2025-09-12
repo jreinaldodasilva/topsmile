@@ -1,6 +1,7 @@
 import request from 'supertest';
 import express from 'express';
 import { createTestUser, generateAuthToken } from '../testHelpers';
+import { User } from '../../src/models/User';
 import { authenticate } from '../../src/middleware/auth';
 // Import and use auth routes
 import authRoutes from '../../src/routes/auth';
@@ -17,7 +18,8 @@ describe('Auth Routes Integration', () => {
   let authToken: string;
 
   beforeEach(async () => {
-    // Create a test user in the database
+    // Ensure a clean state by deleting all users before each test
+    await User.deleteMany({});
     testUser = await createTestUser({
       name: 'Test User',
       email: 'test@example.com',
@@ -25,7 +27,6 @@ describe('Auth Routes Integration', () => {
       role: 'admin'
     });
 
-    // Generate a real JWT token for the test user
     authToken = generateAuthToken(testUser._id.toString(), testUser.role);
   });
 
