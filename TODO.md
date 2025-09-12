@@ -9,18 +9,19 @@
 - [x] Set up custom matchers for frontend-specific assertions
 - [x] Configure coverage reporting
 
+## ✅ Completed Tasks
+
+### Step 2: Service Layer Tests ✅
+- [x] Fix `src/tests/services/apiService.test.ts` (remove MSW imports)
+- [x] Create `src/tests/services/http.test.ts`
+- [x] Create `src/tests/services/paymentService.test.ts`
+
 ## 🔄 Current Task
-- [ ] **Step 2: Service Layer Tests**
-  - [x] Fix `src/tests/services/apiService.test.ts` (remove MSW imports)
-  - [ ] Create `src/tests/services/http.test.ts`
-  - [ ] Create `src/tests/services/paymentService.test.ts`
+- [ ] **Step 3: Enhanced Context Tests**
 
 ## 📋 Pending Tasks
 
-### Step 2: Service Layer Tests
-- [ ] Create `src/tests/services/apiService.test.ts`
-- [ ] Create `src/tests/services/http.test.ts`
-- [ ] Create `src/tests/services/paymentService.test.ts`
+### Step 3: Enhanced Context Tests
 
 ### Step 3: Enhanced Context Tests
 - [ ] Enhance `src/tests/contexts/AuthContext.test.tsx`
