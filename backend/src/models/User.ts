@@ -10,9 +10,14 @@ export interface IUser extends Document {
     clinic?: mongoose.Types.ObjectId;
     isActive: boolean;
     lastLogin?: Date;
+    loginAttempts: number;
+    lockUntil?: Date;
     createdAt: Date;
     updatedAt: Date;
     comparePassword(candidatePassword: string): Promise<boolean>;
+    incLoginAttempts(): Promise<void>;
+    resetLoginAttempts(): Promise<void>;
+    isLocked(): boolean;
 }
 
 const UserSchema = new Schema<IUser>({
@@ -56,6 +61,13 @@ const UserSchema = new Schema<IUser>({
         default: true
     },
     lastLogin: {
+        type: Date
+    },
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockUntil: {
         type: Date
     }
 }, {
@@ -133,6 +145,35 @@ UserSchema.pre('save', async function (next) {
 // Compare password method
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
     return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Account lockout methods
+UserSchema.methods.incLoginAttempts = async function (): Promise<void> {
+    // If we have a previous lock that has expired, restart at 1
+    if (this.lockUntil && this.lockUntil < new Date()) {
+        return this.resetLoginAttempts();
+    }
+
+    const MAX_LOGIN_ATTEMPTS = 5;
+    const LOCK_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
+
+    this.loginAttempts += 1;
+
+    if (this.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
+        this.lockUntil = new Date(Date.now() + LOCK_TIME);
+    }
+
+    await this.save();
+};
+
+UserSchema.methods.resetLoginAttempts = async function (): Promise<void> {
+    this.loginAttempts = 0;
+    this.lockUntil = undefined;
+    await this.save();
+};
+
+UserSchema.methods.isLocked = function (): boolean {
+    return !!(this.lockUntil && this.lockUntil > new Date());
 };
 
 // Indexes

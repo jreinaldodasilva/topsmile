@@ -5,6 +5,14 @@ import { RefreshToken } from '../models/RefreshToken';
 import { SignOptions, JwtPayload } from 'jsonwebtoken';
 import { User, IUser } from '../models/User';
 import { Clinic } from '../models/Clinic';
+import { tokenBlacklistService } from './tokenBlacklistService';
+import {
+    AppError,
+    ValidationError,
+    UnauthorizedError,
+    ConflictError,
+    NotFoundError
+} from '../types/errors';
 
 export interface RegisterData {
     name: string;
@@ -148,6 +156,15 @@ class AuthService {
     // FIXED: Verify access token with proper error handling and typing
     verifyAccessToken(token: string): TokenPayload {
         try {
+            if (!token || typeof token !== 'string') {
+                throw new UnauthorizedError('Token inválido');
+            }
+
+            // Check if token is blacklisted
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                throw new UnauthorizedError('Token foi revogado');
+            }
+
             const payload = jwt.verify(token, this.getJwtSecret(), {
                 issuer: 'topsmile-api',
                 audience: 'topsmile-client',
@@ -156,33 +173,39 @@ class AuthService {
 
             // FIXED: Proper type checking instead of unsafe casting
             if (typeof payload === 'string') {
-                throw new Error('Token payload deve ser um objeto');
+                throw new UnauthorizedError('Formato de token inválido');
             }
 
             const typedPayload = payload as TokenPayload;
-            
+
             // Validate required fields
             if (!typedPayload.userId || !typedPayload.email || !typedPayload.role) {
-                throw new Error('Token payload incompleto');
+                throw new UnauthorizedError('Token com dados incompletos');
             }
 
             return typedPayload;
         } catch (error) {
-            if (error instanceof jwt.JsonWebTokenError) {
-                throw new Error('Token inválido');
-            } else if (error instanceof jwt.TokenExpiredError) {
-                throw new Error('Token expirado');
-            } else if (error instanceof jwt.NotBeforeError) {
-                throw new Error('Token ainda não é válido');
+            if (error instanceof AppError) {
+                throw error;
             }
-            throw error;
+
+            if (error instanceof jwt.TokenExpiredError) {
+                throw new UnauthorizedError('Token expirado');
+            }
+
+            if (error instanceof jwt.JsonWebTokenError) {
+                throw new UnauthorizedError('Token inválido');
+            }
+
+            console.error('Token verification error:', error as Error);
+            throw new UnauthorizedError('Falha na verificação do token');
         }
     }
 
     // FIXED: Rotate and refresh access token with better error handling
     async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
         if (!refreshTokenString) {
-            throw new Error('Token de atualização é obrigatório');
+            throw new ValidationError('Token de atualização é obrigatório');
         }
 
         const stored = await RefreshToken.findOne({
@@ -192,7 +215,7 @@ class AuthService {
         }).populate('userId');
 
         if (!stored) {
-            throw new Error('Token de atualização inválido ou expirado');
+            throw new UnauthorizedError('Token de atualização inválido ou expirado');
         }
 
         const user = stored.userId as any;
@@ -200,7 +223,7 @@ class AuthService {
             // Revoke the token if user is inactive
             stored.isRevoked = true;
             await stored.save();
-            throw new Error('Usuário inválido ou inativo');
+            throw new UnauthorizedError('Usuário inválido ou inativo');
         }
 
         // Revoke used refresh token (rotation for security)
@@ -231,10 +254,10 @@ class AuthService {
     // Logout (revoke a refresh token)
     async logout(refreshTokenString: string): Promise<void> {
         if (!refreshTokenString) return;
-        
+
         try {
             await RefreshToken.findOneAndUpdate(
-                { token: refreshTokenString }, 
+                { token: refreshTokenString },
                 { isRevoked: true }
             );
         } catch (error) {
@@ -243,20 +266,37 @@ class AuthService {
         }
     }
 
+    // Logout with access token (blacklist the access token)
+    async logoutWithAccessToken(accessToken: string): Promise<void> {
+        if (!accessToken) return;
+
+        try {
+            // Decode token to get expiration time
+            const decoded = this.verifyAccessToken(accessToken);
+            const expiresAt = new Date(decoded.exp! * 1000); // JWT exp is in seconds
+
+            // Add to blacklist
+            await tokenBlacklistService.addToBlacklist(accessToken, expiresAt);
+        } catch (error) {
+            console.error('Error during access token logout:', error);
+            // Don't throw - logout should be graceful
+        }
+    }
+
     // Logout all devices for a user
     async logoutAllDevices(userId: string): Promise<void> {
         if (!userId) {
-            throw new Error('ID do usuário é obrigatório');
+            throw new ValidationError('ID do usuário é obrigatório');
         }
 
         try {
             await RefreshToken.updateMany(
-                { userId, isRevoked: false }, 
+                { userId, isRevoked: false },
                 { isRevoked: true }
             );
         } catch (error) {
-            console.error('Error during logout all devices:', error);
-            throw new Error('Erro ao fazer logout de todos os dispositivos');
+            console.error('Error during logout all devices:', error as Error);
+            throw new AppError('Erro ao fazer logout de todos os dispositivos', 500);
         }
     }
 
@@ -265,17 +305,17 @@ class AuthService {
         try {
             // Validate input data
             if (!data.name || !data.email || !data.password) {
-                throw new Error('Dados obrigatórios não fornecidos');
+                throw new ValidationError('Nome, e-mail e senha são obrigatórios');
             }
 
-            if (data.password.length < 6) {
-                throw new Error('Senha deve ter pelo menos 6 caracteres');
+            if (data.password.length < 8) {
+                throw new ValidationError('Senha deve ter pelo menos 8 caracteres');
             }
 
             // Check if user already exists
             const existingUser = await User.findOne({ email: data.email.toLowerCase() });
             if (existingUser) {
-                throw new Error('Usuário já existe');
+                throw new ConflictError('Usuário já existe com este e-mail');
             }
 
             let clinicId;
@@ -344,10 +384,22 @@ class AuthService {
                 }
             };
         } catch (error) {
-            if (error instanceof Error) {
-                throw error;
+            if (error instanceof AppError) {
+                throw error; // Re-throw our custom errors
             }
-            throw new Error('Erro ao registrar usuário');
+
+            // Handle MongoDB validation errors
+            if (error && typeof error === 'object' && 'name' in error && error.name === 'ValidationError') {
+                throw new ValidationError('Dados inválidos: ' + (error as any).message);
+            }
+
+            // Handle MongoDB duplicate key errors
+            if (error && typeof error === 'object' && 'code' in error && (error as any).code === 11000) {
+                throw new ConflictError('E-mail já está em uso');
+            }
+
+            console.error('Unexpected registration error:', error);
+            throw new AppError('Erro interno ao registrar usuário', 500);
         }
     }
 
@@ -356,7 +408,7 @@ class AuthService {
         try {
             // Validate input
             if (!data.email || !data.password) {
-                throw new Error('E-mail e senha são obrigatórios');
+                throw new ValidationError('E-mail e senha são obrigatórios');
             }
 
             const user = await User.findOne({ email: data.email.toLowerCase() })
@@ -365,16 +417,28 @@ class AuthService {
 
             if (!user) {
                 // Use same message for both cases to prevent user enumeration
-                throw new Error('E-mail ou senha inválidos');
+                throw new UnauthorizedError('Credenciais inválidas');
+            }
+
+            // Check if account is locked
+            if (user.isLocked()) {
+                throw new UnauthorizedError('Conta temporariamente bloqueada devido a múltiplas tentativas de login. Tente novamente mais tarde.');
             }
 
             const isMatch = await user.comparePassword(data.password);
             if (!isMatch) {
-                throw new Error('E-mail ou senha inválidos');
+                // Increment login attempts on failed password
+                await user.incLoginAttempts();
+                throw new UnauthorizedError('Credenciais inválidas');
             }
 
             if (!user.isActive) {
-                throw new Error('Usuário inativo');
+                throw new UnauthorizedError('Conta desativada');
+            }
+
+            // Reset login attempts on successful login
+            if (user.loginAttempts > 0) {
+                await user.resetLoginAttempts();
             }
 
             // FIXED: Proper payload construction
@@ -407,7 +471,12 @@ class AuthService {
                 }
             };
         } catch (error) {
-            throw error instanceof Error ? error : new Error('Erro ao fazer login');
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            console.error('Unexpected login error:', error);
+            throw new AppError('Erro interno ao fazer login', 500);
         }
     }
 
@@ -415,13 +484,22 @@ class AuthService {
     async getUserById(userId: string): Promise<IUser | null> {
         try {
             if (!userId) {
-                throw new Error('ID do usuário é obrigatório');
+                throw new ValidationError('ID do usuário é obrigatório');
             }
 
-            return await User.findById(userId).populate('clinic', 'name subscription settings');
+            const user = await User.findById(userId).populate('clinic', 'name subscription settings');
+            if (!user) {
+                throw new NotFoundError('Usuário');
+            }
+
+            return user;
         } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+
             console.error('Error fetching user by ID:', error);
-            throw new Error('Erro ao buscar usuário');
+            throw new AppError('Erro ao buscar usuário', 500);
         }
     }
 
@@ -429,25 +507,25 @@ class AuthService {
     async changePassword(userId: string, currentPassword: string, newPassword: string): Promise<boolean> {
         try {
             if (!userId || !currentPassword || !newPassword) {
-                throw new Error('Todos os campos são obrigatórios');
+                throw new ValidationError('Todos os campos são obrigatórios');
             }
 
-            if (newPassword.length < 6) {
-                throw new Error('Nova senha deve ter pelo menos 6 caracteres');
+            if (newPassword.length < 8) {
+                throw new ValidationError('Nova senha deve ter pelo menos 8 caracteres');
             }
 
             if (currentPassword === newPassword) {
-                throw new Error('Nova senha deve ser diferente da atual');
+                throw new ValidationError('Nova senha deve ser diferente da atual');
             }
 
             const user = await User.findById(userId).select('+password');
             if (!user) {
-                throw new Error('Usuário não encontrado');
+                throw new NotFoundError('Usuário');
             }
 
             const isCurrentPasswordValid = await user.comparePassword(currentPassword);
             if (!isCurrentPasswordValid) {
-                throw new Error('Senha atual incorreta');
+                throw new UnauthorizedError('Senha atual incorreta');
             }
 
             user.password = newPassword;
@@ -458,10 +536,12 @@ class AuthService {
 
             return true;
         } catch (error) {
-            if (error instanceof Error) {
+            if (error instanceof AppError) {
                 throw error;
             }
-            throw new Error('Erro ao alterar senha');
+
+            console.error('Error changing password:', error);
+            throw new AppError('Erro ao alterar senha', 500);
         }
     }
 
@@ -469,12 +549,12 @@ class AuthService {
     async resetPassword(email: string): Promise<string> {
         try {
             if (!email) {
-                throw new Error('E-mail é obrigatório');
+                throw new ValidationError('E-mail é obrigatório');
             }
 
             const user = await User.findOne({ email: email.toLowerCase() });
             if (!user) {
-                throw new Error('E-mail não encontrado');
+                throw new NotFoundError('Usuário');
             }
 
             // Generate more secure temporary password
@@ -487,10 +567,12 @@ class AuthService {
 
             return tempPassword;
         } catch (error) {
-            if (error instanceof Error) {
+            if (error instanceof AppError) {
                 throw error;
             }
-            throw new Error('Erro ao resetar senha');
+
+            console.error('Error resetting password:', error);
+            throw new AppError('Erro ao resetar senha', 500);
         }
     }
 
@@ -502,21 +584,26 @@ class AuthService {
             const user = await this.getUserById(decoded.userId);
 
             if (!user || !user.isActive) {
-                throw new Error('Usuário inválido');
+                throw new UnauthorizedError('Usuário inválido ou inativo');
             }
 
             const payload: TokenPayload = {
                 userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                ...(user.clinic && { 
-                    clinicId: user.clinic._id?.toString() || user.clinic.toString() 
+                ...(user.clinic && {
+                    clinicId: user.clinic._id?.toString() || user.clinic.toString()
                 })
             };
 
             return this.generateAccessToken(payload);
         } catch (error) {
-            throw new Error('Erro ao renovar token');
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            console.error('Error refreshing token:', error);
+            throw new AppError('Erro ao renovar token', 500);
         }
     }
 }

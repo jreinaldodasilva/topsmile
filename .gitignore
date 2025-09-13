@@ -11,6 +11,7 @@
 /backend/coverage
 /dist
 /backend/dist
+/backend/reports/junit.xml
 
 # production
 /build
