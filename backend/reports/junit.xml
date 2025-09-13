@@ -1,99 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="88" failures="22" errors="0" time="180.064">
-  <testsuite name="AuthService" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:44:27" time="22.074" tests="11">
-    <testcase classname="AuthService register should register a new user successfully" name="AuthService register should register a new user successfully" time="2.545">
+<testsuites name="jest tests" tests="88" failures="22" errors="0" time="149.83">
+  <testsuite name="Patient Routes Integration Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:55:23" time="31.114" tests="23">
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should create a patient successfully" name="Patient Routes Integration Tests POST /api/patients should create a patient successfully" time="3.739">
     </testcase>
-    <testcase classname="AuthService register should hash the password" name="AuthService register should hash the password" time="0.65">
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" name="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" time="0.604">
     </testcase>
-    <testcase classname="AuthService register should throw error for duplicate email" name="AuthService register should throw error for duplicate email" time="0.545">
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" name="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" time="0.701">
     </testcase>
-    <testcase classname="AuthService register should create clinic when clinic data is provided" name="AuthService register should create clinic when clinic data is provided" time="0.521">
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" name="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" time="0.613">
     </testcase>
-    <testcase classname="AuthService login should login user with correct credentials" name="AuthService login should login user with correct credentials" time="0.975">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" name="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" time="0.556">
     </testcase>
-    <testcase classname="AuthService login should throw error for invalid email" name="AuthService login should throw error for invalid email" time="0.024">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by name" name="Patient Routes Integration Tests GET /api/patients should search patients by name" time="0.86">
     </testcase>
-    <testcase classname="AuthService login should throw error for invalid password" name="AuthService login should throw error for invalid password" time="0.94">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by phone" name="Patient Routes Integration Tests GET /api/patients should search patients by phone" time="0.624">
     </testcase>
-    <testcase classname="AuthService getUserById should return user by ID" name="AuthService getUserById should return user by ID" time="0.498">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by email" name="Patient Routes Integration Tests GET /api/patients should search patients by email" time="0.579">
     </testcase>
-    <testcase classname="AuthService getUserById should return null for non-existent user" name="AuthService getUserById should return null for non-existent user" time="0.023">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should filter by status" name="Patient Routes Integration Tests GET /api/patients should filter by status" time="0.556">
     </testcase>
-    <testcase classname="AuthService changePassword should change password successfully" name="AuthService changePassword should change password successfully" time="1.939">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should paginate results" name="Patient Routes Integration Tests GET /api/patients should paginate results" time="0.608">
     </testcase>
-    <testcase classname="AuthService changePassword should throw error for incorrect current password" name="AuthService changePassword should throw error for incorrect current password" time="0.963">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should sort results" name="Patient Routes Integration Tests GET /api/patients should sort results" time="0.61">
     </testcase>
-  </testsuite>
-  <testsuite name="Security Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:44:52" time="23.642" tests="7">
-    <testcase classname="Security Tests Token Expiration should handle expired tokens" name="Security Tests Token Expiration should handle expired tokens" time="3.895">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" name="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" time="0.632">
     </testcase>
-    <testcase classname="Security Tests Token Expiration should handle malformed tokens" name="Security Tests Token Expiration should handle malformed tokens" time="0.699">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" name="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" time="0.536">
     </testcase>
-    <testcase classname="Security Tests Token Expiration should handle missing tokens" name="Security Tests Token Expiration should handle missing tokens" time="0.642">
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" time="0.513">
     </testcase>
-    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" name="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" time="0.834">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" time="0.573">
     </testcase>
-    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" name="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" time="0.546">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" time="0.596">
     </testcase>
-    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" name="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" time="0.547">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" time="0.536">
     </testcase>
-    <testcase classname="Security Tests Rate Limiting should handle rapid successive requests" name="Security Tests Rate Limiting should handle rapid successive requests" time="0.612">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" time="0.564">
     </testcase>
-  </testsuite>
-  <testsuite name="Performance Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:45:16" time="21.804" tests="5">
-    <testcase classname="Performance Tests Load Testing should handle multiple concurrent login requests" name="Performance Tests Load Testing should handle multiple concurrent login requests" time="7.266">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" time="0.529">
     </testcase>
-    <testcase classname="Performance Tests Load Testing should handle rapid successive auth requests" name="Performance Tests Load Testing should handle rapid successive auth requests" time="1.052">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" time="0.618">
     </testcase>
-    <testcase classname="Performance Tests Memory Usage should not have memory leaks with repeated requests" name="Performance Tests Memory Usage should not have memory leaks with repeated requests" time="1.872">
-    </testcase>
-    <testcase classname="Performance Tests Database Query Performance should handle database load efficiently" name="Performance Tests Database Query Performance should handle database load efficiently" time="5.318">
-    </testcase>
-    <testcase classname="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" name="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" time="0.563">
-    </testcase>
-  </testsuite>
-  <testsuite name="Patient Routes Integration Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:45:38" time="26.651" tests="23">
-    <testcase classname="Patient Routes Integration Tests POST /api/patients should create a patient successfully" name="Patient Routes Integration Tests POST /api/patients should create a patient successfully" time="4.01">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" name="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" time="0.635">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" name="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" time="0.686">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" name="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" time="0.714">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" name="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" time="0.629">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by name" name="Patient Routes Integration Tests GET /api/patients should search patients by name" time="0.566">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by phone" name="Patient Routes Integration Tests GET /api/patients should search patients by phone" time="0.623">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by email" name="Patient Routes Integration Tests GET /api/patients should search patients by email" time="0.6">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should filter by status" name="Patient Routes Integration Tests GET /api/patients should filter by status" time="0.779">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should paginate results" name="Patient Routes Integration Tests GET /api/patients should paginate results" time="0.657">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients should sort results" name="Patient Routes Integration Tests GET /api/patients should sort results" time="0.598">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" name="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" time="0.613">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" name="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" time="0.526">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" time="0.567">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" time="0.59">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" time="0.583">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" time="0.557">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" time="0.557">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" time="0.523">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" time="0.518">
-    </testcase>
-    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" time="0.585">
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" time="0.599">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 404
@@ -101,13 +49,13 @@ Received: 400
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientRoutes.test.ts:558:31)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" name="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" time="0.53">
+    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" name="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" time="0.523">
     </testcase>
-    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" time="0.522">
+    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" time="0.505">
     </testcase>
   </testsuite>
-  <testsuite name="Patient Portal Integration Tests" errors="0" failures="19" skipped="0" timestamp="2025-09-13T17:46:05" time="19.126" tests="22">
-    <testcase classname="Patient Portal Integration Tests should register a new patient user" name="Patient Portal Integration Tests should register a new patient user" time="3.894">
+  <testsuite name="Patient Portal Integration Tests" errors="0" failures="19" skipped="0" timestamp="2025-09-13T17:55:55" time="16.452" tests="22">
+    <testcase classname="Patient Portal Integration Tests should register a new patient user" name="Patient Portal Integration Tests should register a new patient user" time="3.494">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -115,7 +63,7 @@ Received: 400
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:42:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should login patient user and return access token" name="Patient Portal Integration Tests should login patient user and return access token" time="1.065">
+    <testcase classname="Patient Portal Integration Tests should login patient user and return access token" name="Patient Portal Integration Tests should login patient user and return access token" time="0.991">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -123,7 +71,7 @@ Received: 400
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:53:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should get patient user info with valid token" name="Patient Portal Integration Tests should get patient user info with valid token" time="1.169">
+    <testcase classname="Patient Portal Integration Tests should get patient user info with valid token" name="Patient Portal Integration Tests should get patient user info with valid token" time="1.499">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -131,7 +79,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:63:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should get upcoming appointments for patient" name="Patient Portal Integration Tests should get upcoming appointments for patient" time="0.271">
+    <testcase classname="Patient Portal Integration Tests should get upcoming appointments for patient" name="Patient Portal Integration Tests should get upcoming appointments for patient" time="0.319">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -139,7 +87,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:73:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle invalid login credentials" name="Patient Portal Integration Tests should handle invalid login credentials" time="0.149">
+    <testcase classname="Patient Portal Integration Tests should handle invalid login credentials" name="Patient Portal Integration Tests should handle invalid login credentials" time="0.195">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 401
@@ -147,7 +95,7 @@ Received: 400
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:85:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should logout patient user successfully" name="Patient Portal Integration Tests should logout patient user successfully" time="0.115">
+    <testcase classname="Patient Portal Integration Tests should logout patient user successfully" name="Patient Portal Integration Tests should logout patient user successfully" time="0.094">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -155,11 +103,11 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:93:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should reject requests with invalid token" name="Patient Portal Integration Tests should reject requests with invalid token" time="0.183">
+    <testcase classname="Patient Portal Integration Tests should reject requests with invalid token" name="Patient Portal Integration Tests should reject requests with invalid token" time="0.195">
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should reject requests without token" name="Patient Portal Integration Tests should reject requests without token" time="0.181">
+    <testcase classname="Patient Portal Integration Tests should reject requests without token" name="Patient Portal Integration Tests should reject requests without token" time="0.314">
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle appointment booking with valid data" name="Patient Portal Integration Tests should handle appointment booking with valid data" time="0.106">
+    <testcase classname="Patient Portal Integration Tests should handle appointment booking with valid data" name="Patient Portal Integration Tests should handle appointment booking with valid data" time="0.521">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 201
@@ -167,7 +115,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:127:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle appointment cancellation" name="Patient Portal Integration Tests should handle appointment cancellation" time="0.163">
+    <testcase classname="Patient Portal Integration Tests should handle appointment cancellation" name="Patient Portal Integration Tests should handle appointment cancellation" time="0.359">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -175,7 +123,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:139:31)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle patient profile updates" name="Patient Portal Integration Tests should handle patient profile updates" time="0.154">
+    <testcase classname="Patient Portal Integration Tests should handle patient profile updates" name="Patient Portal Integration Tests should handle patient profile updates" time="0.297">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -183,9 +131,9 @@ Received: 404
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:172:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle password reset request" name="Patient Portal Integration Tests should handle password reset request" time="0.114">
+    <testcase classname="Patient Portal Integration Tests should handle password reset request" name="Patient Portal Integration Tests should handle password reset request" time="0.281">
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle rate limiting on auth endpoints" name="Patient Portal Integration Tests should handle rate limiting on auth endpoints" time="0.349">
+    <testcase classname="Patient Portal Integration Tests should handle rate limiting on auth endpoints" name="Patient Portal Integration Tests should handle rate limiting on auth endpoints" time="0.279">
       <failure>Error: expect(received).toBeGreaterThan(expected)
 
 Expected: &gt; 0
@@ -193,7 +141,7 @@ Received:   0
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:202:41)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle concurrent session management" name="Patient Portal Integration Tests should handle concurrent session management" time="0.164">
+    <testcase classname="Patient Portal Integration Tests should handle concurrent session management" name="Patient Portal Integration Tests should handle concurrent session management" time="0.327">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -203,7 +151,7 @@ Received: 400
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:222:18)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle appointment rescheduling" name="Patient Portal Integration Tests should handle appointment rescheduling" time="0.167">
+    <testcase classname="Patient Portal Integration Tests should handle appointment rescheduling" name="Patient Portal Integration Tests should handle appointment rescheduling" time="0.3">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -211,7 +159,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:249:31)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle patient medical history retrieval" name="Patient Portal Integration Tests should handle patient medical history retrieval" time="0.134">
+    <testcase classname="Patient Portal Integration Tests should handle patient medical history retrieval" name="Patient Portal Integration Tests should handle patient medical history retrieval" time="0.341">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -219,7 +167,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:273:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle appointment type listing" name="Patient Portal Integration Tests should handle appointment type listing" time="0.113">
+    <testcase classname="Patient Portal Integration Tests should handle appointment type listing" name="Patient Portal Integration Tests should handle appointment type listing" time="0.154">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -227,7 +175,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:282:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle provider availability checking" name="Patient Portal Integration Tests should handle provider availability checking" time="0.181">
+    <testcase classname="Patient Portal Integration Tests should handle provider availability checking" name="Patient Portal Integration Tests should handle provider availability checking" time="0.218">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 200
@@ -235,7 +183,7 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:299:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle error responses gracefully" name="Patient Portal Integration Tests should handle error responses gracefully" time="0.064">
+    <testcase classname="Patient Portal Integration Tests should handle error responses gracefully" name="Patient Portal Integration Tests should handle error responses gracefully" time="0.117">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: 404
@@ -243,14 +191,14 @@ Received: 401
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:308:28)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle CORS headers properly" name="Patient Portal Integration Tests should handle CORS headers properly" time="0.04">
+    <testcase classname="Patient Portal Integration Tests should handle CORS headers properly" name="Patient Portal Integration Tests should handle CORS headers properly" time="0.096">
       <failure>Error: expect(received).toBeDefined()
 
 Received: undefined
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:320:56)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle large request payloads" name="Patient Portal Integration Tests should handle large request payloads" time="0.041">
+    <testcase classname="Patient Portal Integration Tests should handle large request payloads" name="Patient Portal Integration Tests should handle large request payloads" time="0.117">
       <failure>Error: expect(received).toContain(expected) // indexOf
 
 Expected value: 401
@@ -258,7 +206,7 @@ Received array: [200, 201, 400, 413]
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:341:34)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Patient Portal Integration Tests should handle database connection errors gracefully" name="Patient Portal Integration Tests should handle database connection errors gracefully" time="0.042">
+    <testcase classname="Patient Portal Integration Tests should handle database connection errors gracefully" name="Patient Portal Integration Tests should handle database connection errors gracefully" time="0.188">
       <failure>Error: expect(received).toContain(expected) // indexOf
 
 Expected value: 401
@@ -267,14 +215,47 @@ Received array: [200, 500]
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
   </testsuite>
-  <testsuite name="Error Boundary Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:46:24" time="14.188" tests="6">
-    <testcase classname="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" name="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" time="3.72">
+  <testsuite name="Auth Routes Integration" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:56:11" time="21.937" tests="13">
+    <testcase classname="Auth Routes Integration POST /api/auth/register should register a new user successfully" name="Auth Routes Integration POST /api/auth/register should register a new user successfully" time="5.843">
     </testcase>
-    <testcase classname="Error Boundary Tests Database Connection Failures should handle database connection timeout" name="Error Boundary Tests Database Connection Failures should handle database connection timeout" time="1.191">
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" name="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" time="1.713">
     </testcase>
-    <testcase classname="Error Boundary Tests External Service Failures should handle external API failures" name="Error Boundary Tests External Service Failures should handle external API failures" time="1.062">
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" name="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" time="0.776">
     </testcase>
-    <testcase classname="Error Boundary Tests Malformed Requests should handle malformed JSON" name="Error Boundary Tests Malformed Requests should handle malformed JSON" time="0.468">
+    <testcase classname="Auth Routes Integration POST /api/auth/login should login user successfully" name="Auth Routes Integration POST /api/auth/login should login user successfully" time="1.349">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" name="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" time="0.545">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" name="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" time="0.698">
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return current user profile" name="Auth Routes Integration GET /api/auth/me should return current user profile" time="0.574">
+      <failure>Error: expect(received).toBeDefined()
+
+Received: undefined
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:139:39)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" name="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" time="0.512">
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" name="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" time="1.373">
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" name="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" time="0.516">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/logout should logout user successfully" name="Auth Routes Integration POST /api/auth/logout should logout user successfully" time="0.491">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" name="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" time="1.006">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" name="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" time="0.479">
+    </testcase>
+  </testsuite>
+  <testsuite name="Error Boundary Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:56:33" time="15.665" tests="6">
+    <testcase classname="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" name="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" time="4.32">
+    </testcase>
+    <testcase classname="Error Boundary Tests Database Connection Failures should handle database connection timeout" name="Error Boundary Tests Database Connection Failures should handle database connection timeout" time="1.131">
+    </testcase>
+    <testcase classname="Error Boundary Tests External Service Failures should handle external API failures" name="Error Boundary Tests External Service Failures should handle external API failures" time="1.083">
+    </testcase>
+    <testcase classname="Error Boundary Tests Malformed Requests should handle malformed JSON" name="Error Boundary Tests Malformed Requests should handle malformed JSON" time="0.49">
       <failure>Error: expect(received).toBe(expected) // Object.is equality
 
 Expected: false
@@ -282,46 +263,65 @@ Received: undefined
     at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/errorBoundary.test.ts:76:37)
     at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
     </testcase>
-    <testcase classname="Error Boundary Tests Malformed Requests should handle oversized payloads" name="Error Boundary Tests Malformed Requests should handle oversized payloads" time="0.496">
+    <testcase classname="Error Boundary Tests Malformed Requests should handle oversized payloads" name="Error Boundary Tests Malformed Requests should handle oversized payloads" time="0.514">
     </testcase>
-    <testcase classname="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" name="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" time="2.061">
-    </testcase>
-  </testsuite>
-  <testsuite name="Auth Routes Integration" errors="0" failures="1" skipped="0" timestamp="2025-09-13T17:46:38" time="18.642" tests="13">
-    <testcase classname="Auth Routes Integration POST /api/auth/register should register a new user successfully" name="Auth Routes Integration POST /api/auth/register should register a new user successfully" time="3.45">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" name="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" time="0.764">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" name="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" time="0.58">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/login should login user successfully" name="Auth Routes Integration POST /api/auth/login should login user successfully" time="1.048">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" name="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" time="0.51">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" name="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" time="0.512">
-    </testcase>
-    <testcase classname="Auth Routes Integration GET /api/auth/me should return current user profile" name="Auth Routes Integration GET /api/auth/me should return current user profile" time="0.518">
-      <failure>Error: expect(received).toBeDefined()
-
-Received: undefined
-    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:139:39)
-    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
-    </testcase>
-    <testcase classname="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" name="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" time="0.493">
-    </testcase>
-    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" name="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" time="1.365">
-    </testcase>
-    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" name="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" time="0.476">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/logout should logout user successfully" name="Auth Routes Integration POST /api/auth/logout should logout user successfully" time="0.508">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" name="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" time="1.037">
-    </testcase>
-    <testcase classname="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" name="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" time="0.685">
+    <testcase classname="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" name="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" time="2.278">
     </testcase>
   </testsuite>
-  <testsuite name="Database Setup Test" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:46:57" time="4.186" tests="1">
-    <testcase classname="Database Setup Test should connect to database" name="Database Setup Test should connect to database" time="0.002">
+  <testsuite name="Security Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:56:49" time="11.892" tests="7">
+    <testcase classname="Security Tests Token Expiration should handle expired tokens" name="Security Tests Token Expiration should handle expired tokens" time="3.723">
+    </testcase>
+    <testcase classname="Security Tests Token Expiration should handle malformed tokens" name="Security Tests Token Expiration should handle malformed tokens" time="0.588">
+    </testcase>
+    <testcase classname="Security Tests Token Expiration should handle missing tokens" name="Security Tests Token Expiration should handle missing tokens" time="0.667">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" name="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" time="0.701">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" name="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" time="0.67">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" name="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" time="0.517">
+    </testcase>
+    <testcase classname="Security Tests Rate Limiting should handle rapid successive requests" name="Security Tests Rate Limiting should handle rapid successive requests" time="0.695">
+    </testcase>
+  </testsuite>
+  <testsuite name="AuthService" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:57:01" time="15.552" tests="11">
+    <testcase classname="AuthService register should register a new user successfully" name="AuthService register should register a new user successfully" time="3.07">
+    </testcase>
+    <testcase classname="AuthService register should hash the password" name="AuthService register should hash the password" time="0.567">
+    </testcase>
+    <testcase classname="AuthService register should throw error for duplicate email" name="AuthService register should throw error for duplicate email" time="0.592">
+    </testcase>
+    <testcase classname="AuthService register should create clinic when clinic data is provided" name="AuthService register should create clinic when clinic data is provided" time="0.58">
+    </testcase>
+    <testcase classname="AuthService login should login user with correct credentials" name="AuthService login should login user with correct credentials" time="1.104">
+    </testcase>
+    <testcase classname="AuthService login should throw error for invalid email" name="AuthService login should throw error for invalid email" time="0.018">
+    </testcase>
+    <testcase classname="AuthService login should throw error for invalid password" name="AuthService login should throw error for invalid password" time="1.055">
+    </testcase>
+    <testcase classname="AuthService getUserById should return user by ID" name="AuthService getUserById should return user by ID" time="0.525">
+    </testcase>
+    <testcase classname="AuthService getUserById should return null for non-existent user" name="AuthService getUserById should return null for non-existent user" time="0.022">
+    </testcase>
+    <testcase classname="AuthService changePassword should change password successfully" name="AuthService changePassword should change password successfully" time="1.866">
+    </testcase>
+    <testcase classname="AuthService changePassword should throw error for incorrect current password" name="AuthService changePassword should throw error for incorrect current password" time="1.092">
+    </testcase>
+  </testsuite>
+  <testsuite name="Performance Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:57:16" time="19.067" tests="5">
+    <testcase classname="Performance Tests Load Testing should handle multiple concurrent login requests" name="Performance Tests Load Testing should handle multiple concurrent login requests" time="5.98">
+    </testcase>
+    <testcase classname="Performance Tests Load Testing should handle rapid successive auth requests" name="Performance Tests Load Testing should handle rapid successive auth requests" time="0.968">
+    </testcase>
+    <testcase classname="Performance Tests Memory Usage should not have memory leaks with repeated requests" name="Performance Tests Memory Usage should not have memory leaks with repeated requests" time="1.477">
+    </testcase>
+    <testcase classname="Performance Tests Database Query Performance should handle database load efficiently" name="Performance Tests Database Query Performance should handle database load efficiently" time="5.237">
+    </testcase>
+    <testcase classname="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" name="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" time="0.524">
+    </testcase>
+  </testsuite>
+  <testsuite name="Database Setup Test" errors="0" failures="0" skipped="0" timestamp="2025-09-13T17:57:36" time="3.978" tests="1">
+    <testcase classname="Database Setup Test should connect to database" name="Database Setup Test should connect to database" time="0.003">
     </testcase>
   </testsuite>
 </testsuites>
