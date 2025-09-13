@@ -551,9 +551,19 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 
         const result = await providerService.searchProviders(filters);
 
+        // Transform pagination to match frontend expectations
+        const transformedResult = {
+            providers: result.providers,
+            total: result.total,
+            page: result.page,
+            totalPages: result.totalPages,
+            hasNext: result.page < result.totalPages,
+            hasPrev: result.page > 1
+        };
+
         return res.json({
             success: true,
-            data: result
+            data: transformedResult
         });
     } catch (error: any) {
         console.error('Error searching providers:', error);
@@ -674,7 +684,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const provider = await providerService.getProviderById(req.params.id, req.user.clinicId);
+        const provider = await providerService.getProviderById(req.params.id!, req.user.clinicId);
 
         if (!provider) {
             return res.status(404).json({
@@ -764,7 +774,7 @@ router.patch('/:id',
             }
 
             const provider = await providerService.updateProvider(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body
             );
@@ -923,7 +933,7 @@ router.patch('/:id/working-hours',
             }
 
             const provider = await providerService.updateWorkingHours(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body
             );
@@ -1024,7 +1034,7 @@ router.patch('/:id/appointment-types',
             }
 
             const provider = await providerService.updateAppointmentTypes(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body.appointmentTypes
             );
@@ -1100,7 +1110,7 @@ router.patch('/:id/reactivate',
                 });
             }
 
-            const provider = await providerService.reactivateProvider(req.params.id, req.user.clinicId);
+            const provider = await providerService.reactivateProvider(req.params.id!, req.user.clinicId);
 
             if (!provider) {
                 return res.status(404).json({
@@ -1171,7 +1181,7 @@ router.delete('/:id',
                 });
             }
 
-            const success = await providerService.deleteProvider(req.params.id, req.user.clinicId);
+            const success = await providerService.deleteProvider(req.params.id!, req.user.clinicId);
 
             if (!success) {
                 return res.status(404).json({

@@ -687,7 +687,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
         }
 
         const appointmentType = await appointmentTypeService.getAppointmentTypeById(
-            req.params.id, 
+            req.params.id!,
             req.user.clinicId
         );
 
@@ -779,7 +779,7 @@ router.put('/:id',
             }
 
             const appointmentType = await appointmentTypeService.updateAppointmentType(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body
             );
@@ -880,7 +880,7 @@ router.post('/:id/duplicate',
             }
 
             const duplicatedType = await appointmentTypeService.duplicateAppointmentType(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body.name
             );
@@ -950,7 +950,7 @@ router.patch('/:id/reactivate',
             }
 
             const appointmentType = await appointmentTypeService.reactivateAppointmentType(
-                req.params.id, 
+                req.params.id!,
                 req.user.clinicId
             );
 
@@ -1024,7 +1024,7 @@ router.delete('/:id',
             }
 
             const success = await appointmentTypeService.deleteAppointmentType(
-                req.params.id, 
+                req.params.id!,
                 req.user.clinicId
             );
 

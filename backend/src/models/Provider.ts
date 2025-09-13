@@ -60,7 +60,15 @@ const validateWorkingHours = function(hours: any) {
 
 // Helper function to convert time string to minutes for comparison
 const timeToMinutes = (time: string): number => {
-    const [hours, minutes] = time.split(':').map(Number);
+    const parts = time.split(':');
+    if (parts.length !== 2) {
+        throw new Error('Invalid time format');
+    }
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+    if (isNaN(hours) || isNaN(minutes)) {
+        throw new Error('Invalid time format');
+    }
     return hours * 60 + minutes;
 };
 

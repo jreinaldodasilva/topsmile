@@ -593,11 +593,11 @@ async function deletePatient(id: string): Promise<ApiResult<void>> {
 }
 
 // ADDED: Providers API methods
-async function getProviders(query: Record<string, any> = {}): Promise<ApiResult<Provider[]>> {
+async function getProviders(query: Record<string, any> = {}): Promise<ApiResult<{ providers: Provider[]; total: number; page: number; totalPages: number; hasNext: boolean; hasPrev: boolean; } | Provider[]>> {
     const qs = Object.keys(query).length
         ? `?${new URLSearchParams(query as any).toString()}`
         : '';
-    const res = await request<Provider[]>(`/api/providers${qs}`);
+    const res = await request(`/api/providers${qs}`);
     return { success: res.ok, data: res.data, message: res.message };
 }
 

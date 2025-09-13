@@ -481,7 +481,7 @@ class ContactService {
 
       // Merge data (you can customize this logic based on business rules)
       const mergedData: any = {};
-      
+
       // Collect all sources
       const sources = [primaryContact.source, ...duplicateContacts.map(c => c.source)]
         .filter(Boolean);
@@ -494,10 +494,12 @@ class ContactService {
         .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
 
       const mostRecent = allContacts[0];
-      mergedData.name = mostRecent.name;
-      mergedData.phone = mostRecent.phone;
-      mergedData.clinic = mostRecent.clinic;
-      mergedData.specialty = mostRecent.specialty;
+      if (mostRecent) {
+        mergedData.name = mostRecent.name;
+        mergedData.phone = mostRecent.phone;
+        mergedData.clinic = mostRecent.clinic;
+        mergedData.specialty = mostRecent.specialty;
+      }
 
       // Update primary contact with merged data
       const updatedContact = await Contact.findByIdAndUpdate(

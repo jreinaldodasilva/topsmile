@@ -242,8 +242,13 @@ function parseTimeToDate(date: Date, timeString: string, timeZone: string): Date
   }
   
   try {
-    const [hours, minutes] = timeString.split(':').map(Number);
-    
+    const parts = timeString.split(':');
+    if (parts.length !== 2) {
+      throw new Error(`Invalid time format: ${timeString}`);
+    }
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+
     if (isNaN(hours) || isNaN(minutes) || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
       throw new Error(`Invalid time format: ${timeString}`);
     }

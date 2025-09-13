@@ -465,9 +465,19 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 
         const result = await patientService.searchPatients(filters);
 
+        // Transform pagination to match frontend expectations
+        const transformedResult = {
+            patients: result.patients,
+            total: result.total,
+            page: result.page,
+            totalPages: result.totalPages,
+            hasNext: result.page < result.totalPages,
+            hasPrev: result.page > 1
+        };
+
         return res.json({
             success: true,
-            data: result
+            data: transformedResult
         });
     } catch (error: any) {
         console.error('Error searching patients:', error);
@@ -585,7 +595,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const patient = await patientService.getPatientById(req.params.id, req.user.clinicId);
+        const patient = await patientService.getPatientById(req.params.id!, req.user.clinicId);
 
         if (!patient) {
             return res.status(404).json({
@@ -669,7 +679,7 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
         }
 
         const patient = await patientService.updatePatient(
-            req.params.id,
+            req.params.id!,
             req.user.clinicId,
             req.body
         );
@@ -778,7 +788,7 @@ router.patch('/:id/medical-history',
             }
 
             const patient = await patientService.updateMedicalHistory(
-                req.params.id,
+                req.params.id!,
                 req.user.clinicId,
                 req.body
             );
@@ -849,7 +859,7 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const patient = await patientService.reactivatePatient(req.params.id, req.user.clinicId);
+        const patient = await patientService.reactivatePatient(req.params.id!, req.user.clinicId);
 
         if (!patient) {
             return res.status(404).json({
@@ -916,7 +926,7 @@ router.delete('/:id', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const success = await patientService.deletePatient(req.params.id, req.user.clinicId);
+        const success = await patientService.deletePatient(req.params.id!, req.user.clinicId);
 
         if (!success) {
             return res.status(404).json({

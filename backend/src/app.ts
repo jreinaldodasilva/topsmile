@@ -4,11 +4,7 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-import { body, validationResult } from 'express-validator';
-import nodemailer from 'nodemailer';
-import SMTPTransport from "nodemailer/lib/smtp-transport";
 import dotenv from 'dotenv';
-import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
 
 // Database imports
@@ -28,6 +24,13 @@ import appointmentTypesRoutes from "./routes/appointmentTypes";
 import formsRoutes from "./routes/forms";
 import docsRoutes from "./routes/docs";
 
+// Contact routes
+import contactRoutes from './routes/contact';
+import adminContactRoutes from './routes/admin/contacts';
+
+// Error handling
+import { errorHandler } from './middleware/errorHandler';
+
 dotenv.config();
 
 const app = express();
@@ -38,34 +41,42 @@ const PORT = process.env.PORT || 5000;
  */
 const validateEnv = () => {
   const requiredInProd = [
-    { 
-      name: 'JWT_SECRET', 
+    {
+      name: 'JWT_SECRET',
       message: 'JWT_SECRET is required in production',
       validate: (value: string) => value && value !== 'your-secret-key' && value.length >= 32,
       errorMsg: 'JWT_SECRET must be at least 32 characters long and not use default value'
     },
-    { 
-      name: 'DATABASE_URL', 
+    {
+      name: 'DATABASE_URL',
       message: 'DATABASE_URL is required in production',
       validate: (value: string) => value && (value.startsWith('mongodb://') || value.startsWith('mongodb+srv://')),
       errorMsg: 'DATABASE_URL must be a valid MongoDB connection string'
     },
-    { 
-      name: 'SENDGRID_API_KEY', 
+    {
+      name: 'SENDGRID_API_KEY',
       message: 'SENDGRID_API_KEY is required in production for email functionality',
       validate: (value: string) => value && value.startsWith('SG.'),
       errorMsg: 'SENDGRID_API_KEY must be a valid SendGrid API key'
     },
-    { 
-      name: 'ADMIN_EMAIL', 
+    {
+      name: 'ADMIN_EMAIL',
       message: 'ADMIN_EMAIL is required in production',
       validate: (value: string) => value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
       errorMsg: 'ADMIN_EMAIL must be a valid email address'
+    },
+    {
+      name: 'FRONTEND_URL',
+      message: 'FRONTEND_URL is required in production for CORS',
+      validate: (value: string) => value && /^https?:\/\/.+/.test(value),
+      errorMsg: 'FRONTEND_URL must be a valid URL starting with http:// or https://'
     }
   ];
 
   const recommendedInProd = [
-    'FRONTEND_URL',
+    'JWT_REFRESH_SECRET',
+    'REDIS_URL',
+    'DATABASE_NAME',
     'FROM_EMAIL',
     'ACCESS_TOKEN_EXPIRES',
     'REFRESH_TOKEN_EXPIRES_DAYS'
@@ -309,326 +320,14 @@ app.use("/api/providers", providersRoutes);
 app.use("/api/appointment-types", appointmentTypesRoutes);
 app.use("/api/forms", formsRoutes);
 app.use("/api/docs", docsRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/admin/contacts', adminContactRoutes);
 
-// IMPROVED: Email transporter with better error handling
-const createTransporter = (): nodemailer.Transporter<SMTPTransport.SentMessageInfo> => {
-  if (process.env.NODE_ENV === "production") {
-    if (!process.env.SENDGRID_API_KEY) {
-      throw new Error("SENDGRID_API_KEY is required in production");
-    }
 
-    return nodemailer.createTransport({
-      service: "SendGrid",
-      auth: {
-        user: "apikey",
-        pass: process.env.SENDGRID_API_KEY,
-      },
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      rateLimit: 14, // SendGrid allows 15 emails/second
-    } as SMTPTransport.Options);
-  } else {
-    // Development transporter (Ethereal)
-    if (process.env.ETHEREAL_USER && process.env.ETHEREAL_PASS) {
-      return nodemailer.createTransport({
-        host: "smtp.ethereal.email",
-        port: 587,
-        auth: {
-          user: process.env.ETHEREAL_USER,
-          pass: process.env.ETHEREAL_PASS,
-        },
-      } as SMTPTransport.Options);
-    }
 
-    // Fallback: Console transport (for local dev only)
-    return nodemailer.createTransport({
-      streamTransport: true,
-      newline: "unix",
-      buffer: true,
-    } as SMTPTransport.Options);
-  }
-};
 
-// IMPROVED: Contact form validation with enhanced security
-const contactValidation = [
-  body('name')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome deve ter entre 2 e 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ\s\-'.]*$/)
-    .withMessage('Nome contém caracteres inválidos')
-    .trim()
-    .escape(),
 
-  body('email')
-    .isEmail()
-    .withMessage('Digite um e-mail válido')
-    .normalizeEmail()
-    .isLength({ max: 254 })
-    .withMessage('E-mail muito longo'),
 
-  body('clinic')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres')
-    .trim()
-    .escape(),
-
-  body('specialty')
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Especialidade deve ter entre 2 e 100 caracteres')
-    .trim()
-    .escape(),
-
-  body('phone')
-    .matches(/^[\d\s\-()+]{10,20}$/)
-    .withMessage('Digite um telefone válido')
-    .trim()
-];
-
-// Enhanced contact form data interface
-interface ContactFormData {
-  name: string;
-  email: string;
-  clinic: string;
-  specialty: string;
-  phone: string;
-}
-
-// IMPROVED: More thorough input sanitization
-const sanitizeContactData = (data: ContactFormData): ContactFormData => {
-  return {
-    name: DOMPurify.sanitize(data.name?.trim() || ''),
-    email: DOMPurify.sanitize(data.email?.trim().toLowerCase() || ''),
-    clinic: DOMPurify.sanitize(data.clinic?.trim() || ''),
-    specialty: DOMPurify.sanitize(data.specialty?.trim() || ''),
-    phone: DOMPurify.sanitize(data.phone?.trim() || '')
-  };
-};
-
-// IMPROVED: Contact form endpoint with enhanced security and error handling
-app.post('/api/contact', contactLimiter, contactValidation, async (req: Request, res: Response) => {
-  try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dados inválidos',
-        errors: errors.array()
-      });
-    }
-
-    // ADDED: Rate limiting per email address
-    const { email } = req.body;
-    // In production, you might want to implement Redis-based rate limiting per email
-
-    // Sanitize input data
-    const sanitizedData = sanitizeContactData(req.body);
-    const { name, clinic, specialty, phone } = sanitizedData;
-
-    // ADDED: Additional validation
-    if (!name || !email || !clinic || !specialty || !phone) {
-      return res.status(400).json({
-        success: false,
-        message: 'Todos os campos são obrigatórios'
-      });
-    }
-
-    // ADDED: Metadata collection for analytics
-    const metadata = {
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-      referrer: req.get('Referrer'),
-      utmSource: req.query.utm_source as string,
-      utmMedium: req.query.utm_medium as string,
-      utmCampaign: req.query.utm_campaign as string
-    };
-
-    // Save to database with metadata
-    const contact = await contactService.createContact({
-      name,
-      email: sanitizedData.email,
-      clinic,
-      specialty,
-      phone,
-      source: 'website_contact_form'
-    });
-
-    // Create email transporter with error handling
-    let transporter;
-    try {
-      transporter = createTransporter();
-    } catch (error) {
-      console.error('Failed to create email transporter:', error);
-      // Continue without sending emails in development
-      if (process.env.NODE_ENV === 'production') {
-        return res.status(500).json({
-          success: false,
-          message: 'Erro na configuração de e-mail'
-        });
-      }
-    }
-
-    // IMPROVED: Email templates with better formatting
-    const adminEmailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@topsmile.com',
-      to: process.env.ADMIN_EMAIL || 'contato@topsmile.com',
-      subject: `🦷 Nova solicitação TopSmile - ${clinic}`,
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc;">
-          <div style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">TopSmile</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Nova solicitação de contato</p>
-          </div>
-          
-          <div style="padding: 30px; background: white; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; border-left: 4px solid #3949ab;">
-              <h3 style="color: #1a237e; margin: 0 0 15px 0; font-size: 18px;">Informações do Lead</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">ID:</td><td style="padding: 8px 0;">#${contact.id}</td></tr>
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">Nome:</td><td style="padding: 8px 0;">${name}</td></tr>
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">E-mail:</td><td style="padding: 8px 0;"><a href="mailto:${sanitizedData.email}" style="color: #3949ab;">${sanitizedData.email}</a></td></tr>
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">Clínica:</td><td style="padding: 8px 0;">${clinic}</td></tr>
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">Especialidade:</td><td style="padding: 8px 0;">${specialty}</td></tr>
-                <tr><td style="padding: 8px 0; font-weight: 600; color: #475569;">Telefone:</td><td style="padding: 8px 0;"><a href="tel:${phone}" style="color: #3949ab;">${phone}</a></td></tr>
-              </table>
-            </div>
-            
-            <div style="background: #ecfccb; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #84cc16;">
-              <p style="margin: 0; color: #365314;"><strong>Status:</strong> ${contact.status} | <strong>Prioridade:</strong> ${contact.priority}</p>
-              <p style="margin: 5px 0 0 0; color: #365314; font-size: 14px;"><strong>Recebido em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-            </div>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.ADMIN_URL || process.env.FRONTEND_URL || 'http://localhost:3000'}/admin/contacts/${contact.id}" 
-                 style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
-                Gerenciar Lead
-              </a>
-            </div>
-          </div>
-          
-          <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px;">
-            <p>TopSmile - Sistema de Gestão Odontológica</p>
-          </div>
-        </div>
-      `
-    };
-
-    const userEmailOptions = {
-      from: process.env.FROM_EMAIL || 'noreply@topsmile.com',
-      to: sanitizedData.email,
-      subject: '🦷 Obrigado pelo interesse no TopSmile!',
-      html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc;">
-          <div style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">TopSmile</h1>
-            <p style="margin: 10px 0 0 0; opacity: 0.9;">Sistema de Gestão Odontológica</p>
-          </div>
-          
-          <div style="padding: 30px; background: white; border-radius: 0 0 8px 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <h2 style="color: #1a237e; margin: 0 0 20px 0;">Olá, ${name}! 👋</h2>
-            
-            <p style="color: #334155; line-height: 1.6; margin: 0 0 20px 0;">
-              Obrigado pelo seu interesse no <strong>TopSmile</strong>! Recebemos sua solicitação de contato e nossa equipe entrará em contato <strong>em até 24 horas</strong>.
-            </p>
-            
-            <div style="background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #3949ab;">
-              <h3 style="color: #3949ab; margin: 0 0 15px 0; font-size: 16px;">📋 Resumo da sua solicitação:</h3>
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr><td style="padding: 5px 0; font-weight: 600; color: #475569;">Clínica:</td><td style="padding: 5px 0;">${clinic}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: 600; color: #475569;">Especialidade:</td><td style="padding: 5px 0;">${specialty}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: 600; color: #475569;">Telefone:</td><td style="padding: 5px 0;">${phone}</td></tr>
-                <tr><td style="padding: 5px 0; font-weight: 600; color: #475569;">Protocolo:</td><td style="padding: 5px 0;"><strong>#${contact.id}</strong></td></tr>
-              </table>
-            </div>
-            
-            <div style="background: #ecfdf5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #10b981;">
-              <h3 style="color: #059669; margin: 0 0 10px 0; font-size: 16px;">🚀 Próximos passos:</h3>
-              <ul style="color: #047857; margin: 0; padding-left: 20px;">
-                <li>Nossa equipe analisará suas necessidades</li>
-                <li>Entraremos em contato para agendar uma demonstração</li>
-                <li>Apresentaremos uma proposta personalizada</li>
-              </ul>
-            </div>
-            
-            <p style="color: #334155; line-height: 1.6;">
-              Enquanto isso, convidamos você a conhecer mais sobre nossos recursos em nosso site.
-            </p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" 
-                 style="background: linear-gradient(135deg, #1a237e 0%, #3949ab 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; margin-right: 10px;">
-                Visitar TopSmile
-              </a>
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/features" 
-                 style="background: transparent; color: #3949ab; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; border: 2px solid #3949ab;">
-                Ver Recursos
-              </a>
-            </div>
-          </div>
-          
-          <div style="text-align: center; padding: 20px; color: #64748b; font-size: 12px; line-height: 1.4;">
-            <p style="margin: 0 0 10px 0;">Este é um e-mail automático. Se você não solicitou este contato, pode ignorar esta mensagem.</p>
-            <p style="margin: 0;"><strong>Protocolo de atendimento:</strong> #${contact.id} | <strong>Data:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-          </div>
-        </div>
-      `
-    };
-
-    // Send emails with improved error handling
-    if (transporter) {
-      try {
-        await Promise.all([
-          transporter.sendMail(adminEmailOptions),
-          transporter.sendMail(userEmailOptions)
-        ]);
-      } catch (emailError) {
-        console.error('Failed to send emails:', emailError);
-        // Don't fail the request if email fails - contact is already saved
-        console.warn('Contact saved but email notification failed');
-      }
-    }
-
-    // IMPROVED: Development logging with structured data
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('📧 Contact form submitted:', {
-        id: contact.id,
-        name,
-        email: sanitizedData.email,
-        clinic,
-        specialty,
-        phone,
-        priority: contact.priority,
-        source: contact.source,
-        metadata,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    return res.status(200).json({
-      success: true,
-      message: 'Mensagem enviada com sucesso! Nossa equipe retornará em até 24 horas.',
-      data: {
-        id: contact.id,
-        protocol: contact.id,
-        estimatedResponse: '24 horas'
-      }
-    });
-
-  } catch (error) {
-    console.error('Contact form error:', error);
-
-    // IMPROVED: Better error responses without exposing internals
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const errorMessage = isDevelopment && error instanceof Error ? error.message : 'Erro interno do servidor';
-    
-    return res.status(500).json({
-      success: false,
-      message: 'Erro ao processar solicitação. Tente novamente mais tarde.',
-      ...(isDevelopment && { debug: errorMessage })
-    });
-  }
-});
 
 // IMPROVED: Enhanced health check endpoints
 app.get('/api/health', (req, res) => {
@@ -769,229 +468,10 @@ app.get('/api/health/metrics',
   }
 );
 
-// PROTECTED ENDPOINTS (Authentication required)
 
-// Contact management endpoints - Admin only
-app.get('/api/admin/contacts',
-  authenticate,
-  authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 per page
-      const status = req.query.status as string;
-      const search = req.query.search as string;
-      const sortBy = req.query.sortBy as string || 'createdAt';
-      const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
 
-      const filters: any = {};
-      if (status) filters.status = status;
-      if (search) filters.search = search;
-
-      const result = await contactService.getContacts(filters, {
-        page,
-        limit,
-        sortBy,
-        sortOrder
-      });
-
-      return res.json({
-        success: true,
-        data: result
-      });
-    } catch (error) {
-      console.error('Error fetching contacts:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar contatos'
-      });
-    }
-  }
-);
-
-app.get('/api/admin/contacts/stats',
-  authenticate,
-  authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const stats = await contactService.getContactStats();
-      return res.json({
-        success: true,
-        data: stats
-      });
-    } catch (error) {
-      console.error('Error fetching contact stats:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar estatísticas'
-      });
-    }
-  }
-);
-
-app.get('/api/admin/contacts/:id',
-  authenticate,
-  authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const contact = await contactService.getContactById(req.params.id);
-      if (!contact) {
-        return res.status(404).json({
-          success: false,
-          message: 'Contato não encontrado'
-        });
-      }
-      return res.json({
-        success: true,
-        data: contact
-      });
-    } catch (error) {
-      console.error('Error fetching contact:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar contato'
-      });
-    }
-  }
-);
-
-app.patch('/api/admin/contacts/:id',
-  authenticate,
-  authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const updates = req.body;
-
-      // Add assignedTo if updating status and user is not super_admin
-      if (updates.status && req.user && req.user.role !== 'super_admin') {
-        updates.assignedTo = req.user.id;
-        updates.assignedToClinic = req.user.clinicId;
-      }
-
-      const contact = await contactService.updateContact(req.params.id, updates);
-
-      if (!contact) {
-        return res.status(404).json({
-          success: false,
-          message: 'Contato não encontrado'
-        });
-      }
-
-      return res.json({
-        success: true,
-        data: contact
-      });
-    } catch (error) {
-      console.error('Error updating contact:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao atualizar contato'
-      });
-    }
-  }
-);
-
-app.delete('/api/admin/contacts/:id',
-  authenticate,
-  authorize('super_admin', 'admin'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const deleted = await contactService.deleteContact(req.params.id);
-
-      if (!deleted) {
-        return res.status(404).json({
-          success: false,
-          message: 'Contato não encontrado'
-        });
-      }
-
-      return res.json({
-        success: true,
-        message: 'Contato excluído com sucesso'
-      });
-    } catch (error) {
-      console.error('Error deleting contact:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao excluir contato'
-      });
-    }
-  }
-);
-
-// IMPROVED: Enhanced dashboard with better metrics
-app.get('/api/admin/dashboard',
-  authenticate,
-  authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
-    try {
-      const [contactStats] = await Promise.all([
-        contactService.getContactStats()
-      ]);
-
-      const systemHealth = {
-        uptime: Math.floor(process.uptime() / 60),
-        memoryUsage: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-        databaseStatus: mongoose.connection.readyState === 1 ? 'healthy' : 'unhealthy'
-      };
-
-      return res.json({
-        success: true,
-        data: {
-          contacts: contactStats,
-          system: systemHealth,
-          summary: {
-            totalContacts: contactStats.total,
-            newThisWeek: contactStats.recentCount,
-            conversionRate: contactStats.total > 0 
-              ? Math.round((contactStats.byStatus.find(s => s._id === 'converted')?.count || 0) / contactStats.total * 100)
-              : 0
-          },
-          user: {
-            name: req.user?.email?.split('@')[0], // First part of email
-            role: req.user?.role,
-            clinicId: req.user?.clinicId,
-            lastActivity: new Date().toISOString()
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      return res.status(500).json({
-        success: false,
-        message: 'Erro ao buscar dados do dashboard'
-      });
-    }
-  }
-);
-
-// IMPROVED: Error handling middleware with better logging
-app.use(handleValidationError);
-
-app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-  // Log error with context
-  console.error('Unhandled error:', {
-    message: error.message,
-    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    path: req.path,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
-  });
-
-  // Send appropriate error response
-  const isDevelopment = process.env.NODE_ENV !== 'production';
-  
-  return res.status(500).json({
-    success: false,
-    message: 'Erro interno do servidor',
-    ...(isDevelopment && { 
-      error: error.message,
-      stack: error.stack 
-    })
-  });
-});
+// Error handling middleware
+app.use(errorHandler);
 
 // IMPROVED: 404 handler with request logging
 app.use('*', (req, res) => {

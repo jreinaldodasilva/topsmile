@@ -40,11 +40,13 @@ afterEach(async () => {
 
     for (const key in collections) {
       const collection = collections[key];
-      try {
-        await collection.deleteMany({});
-      } catch (error) {
-        // Ignore cleanup errors if database is disconnected
-        console.warn(`Failed to clean collection ${key}:`, error);
+      if (collection) {
+        try {
+          await collection.deleteMany({});
+        } catch (error) {
+          // Ignore cleanup errors if database is disconnected
+          console.warn(`Failed to clean collection ${key}:`, error);
+        }
       }
     }
   }

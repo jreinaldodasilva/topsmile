@@ -77,10 +77,12 @@ expect.extend({
   toHaveValidTokenStructure(received: string) {
     try {
       const parts = received.split('.');
-      const isValid = parts.length === 3 &&
-                     parts[0].length > 0 &&
-                     parts[1].length > 0 &&
-                     parts[2].length > 0;
+      let isValid = false;
+      if (parts.length === 3) {
+        isValid = (parts[0]?.length ?? 0) > 0 &&
+                  (parts[1]?.length ?? 0) > 0 &&
+                  (parts[2]?.length ?? 0) > 0;
+      }
 
       return {
         message: () => `Expected ${received} to have valid JWT structure`,

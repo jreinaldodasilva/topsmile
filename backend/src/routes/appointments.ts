@@ -411,7 +411,7 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
  */
 router.get("/:id", async (req: AuthenticatedRequest, res) => {
   try {
-    const appointment = await Appointment.findById(req.params.id)
+    const appointment = await Appointment.findById(req.params.id!)
       .populate('patient', 'name phone email')
       .populate('provider', 'name specialties')
       .populate('appointmentType', 'name duration color category')
@@ -530,7 +530,7 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
       });
     }
 
-    const appointment = await Appointment.findById(req.params.id);
+    const appointment = await Appointment.findById(req.params.id!);
     if (!appointment) {
       return res.status(404).json({
         success: false,
@@ -655,8 +655,8 @@ router.patch("/:id/status",
       }
 
       const { status, cancellationReason } = req.body;
-      
-      const appointment = await Appointment.findById(req.params.id);
+
+      const appointment = await Appointment.findById(req.params.id!);
       if (!appointment) {
         return res.status(404).json({
           success: false,
@@ -674,7 +674,7 @@ router.patch("/:id/status",
 
       if (status === 'cancelled') {
         const updatedAppointment = await schedulingService.cancelAppointment(
-          req.params.id, 
+          req.params.id!,
           cancellationReason || 'Cancelado pelo usuário'
         );
         return res.json({
@@ -786,7 +786,7 @@ router.patch("/:id/reschedule",
       const { newStart, reason, rescheduleBy } = req.body;
 
       const updatedAppointment = await schedulingService.rescheduleAppointment(
-        req.params.id,
+        req.params.id!,
         new Date(newStart),
         reason,
         rescheduleBy
@@ -811,7 +811,7 @@ router.delete("/:id",
   authorize('super_admin', 'admin'), 
   async (req: AuthenticatedRequest, res) => {
     try {
-      const appointment = await Appointment.findById(req.params.id);
+      const appointment = await Appointment.findById(req.params.id!);
       if (!appointment) {
         return res.status(404).json({
           success: false,
@@ -827,7 +827,7 @@ router.delete("/:id",
         });
       }
 
-      await Appointment.findByIdAndDelete(req.params.id);
+      await Appointment.findByIdAndDelete(req.params.id!);
 
       return res.json({
         success: true,

@@ -22,15 +22,15 @@ const extractToken = (req: Request): string | null => {
   const authHeader = req.headers.authorization;
   if (authHeader) {
     const match = authHeader.match(/^Bearer\s+(.+)$/i);
-    if (match) return match[1];
+    if (match && match[1]) return match[1];
   }
 
   // Check cookies as fallback (if using cookie-based auth)
   const cookies = (req as any).cookies;
   if (cookies) {
-    return cookies['topsmile_access_token'] || 
-           cookies['topsmile_token'] || 
-           cookies['access_token'] || 
+    return cookies['topsmile_access_token'] ||
+           cookies['topsmile_token'] ||
+           cookies['access_token'] ||
            null;
   }
 
