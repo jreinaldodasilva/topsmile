@@ -61,7 +61,7 @@ class ContactService {
         }
       );
 
-      return updatedContact;
+      return updatedContact as IContact;
     } catch (error) {
       console.error('Error creating contact:', error);
       throw error;
@@ -158,7 +158,7 @@ class ContactService {
 
   async getContactById(id: string): Promise<IContact | null> {
     try {
-      return await Contact.findById(id).populate('assignedTo', 'name email');
+      return await Contact.findById(id).populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
       console.error('Error fetching contact:', error);
       throw error;
@@ -175,7 +175,7 @@ class ContactService {
       }
 
       return await Contact.findOne({ email: email.toLowerCase().trim() })
-        .populate('assignedTo', 'name email');
+        .populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
       console.error('Error fetching contact by email:', error);
       throw error;
@@ -233,7 +233,7 @@ class ContactService {
       const pages = Math.ceil(total / limit);
 
       return {
-        contacts,
+        contacts: contacts as IContact[],
         total,
         page,
         pages,
@@ -256,12 +256,12 @@ class ContactService {
       return await Contact.findByIdAndUpdate(
         id,
         { $set: safeUpdates },
-        { 
-          new: true, 
+        {
+          new: true,
           runValidators: true,
           upsert: false // Don't create if doesn't exist
         }
-      ).populate('assignedTo', 'name email');
+      ).populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
       console.error('Error updating contact:', error);
       throw error;
@@ -324,7 +324,7 @@ class ContactService {
           }
         },
         { new: true, runValidators: true }
-      );
+      ) as IContact | null;
     } catch (error) {
       console.error('Error soft deleting contact:', error);
       throw error;
@@ -453,7 +453,11 @@ class ContactService {
         }
       ]);
 
-      return duplicates;
+      return duplicates.map(d => ({
+        email: d.email,
+        contacts: d.contacts as IContact[],
+        count: d.count
+      }));
     } catch (error) {
       console.error('Error finding duplicate contacts:', error);
       throw error;
@@ -520,7 +524,7 @@ class ContactService {
         }
       );
 
-      return updatedContact!;
+      return updatedContact as IContact;
     } catch (error) {
       console.error('Error merging duplicate contacts:', error);
       throw error;

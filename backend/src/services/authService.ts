@@ -320,11 +320,12 @@ class AuthService {
 
             let clinicId;
             if (data.clinic) {
+                const clinicData = data.clinic;
                 const clinic = new Clinic({
-                    name: data.clinic.name,
+                    name: clinicData.name,
                     email: data.email.toLowerCase(),
-                    phone: data.clinic.phone,
-                    address: data.clinic.address,
+                    phone: clinicData.phone,
+                    address: clinicData.address,
                     subscription: {
                         plan: 'basic',
                         status: 'active',
@@ -389,7 +390,7 @@ class AuthService {
             }
 
             // Handle MongoDB validation errors
-            if (error && typeof error === 'object' && 'name' in error && error.name === 'ValidationError') {
+            if (error && typeof error === 'object' && 'name' in error && (error as any).name === 'ValidationError') {
                 throw new ValidationError('Dados inválidos: ' + (error as any).message);
             }
 

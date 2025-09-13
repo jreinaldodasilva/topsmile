@@ -1,29 +1,55 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { patientAuthService, PatientRegisterData, PatientLoginData } from '../services/patientAuthService';
-import { authenticatePatient, PatientAuthenticatedRequest } from '../middleware/patientAuth';
+import { patientAuthService, PatientRegistrationData } from '../services/patientAuthService';
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
+import { patientAuthLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
+import { isAppError } from '../types/errors';
 
 const router = express.Router();
 
-// Validation rules for patient registration
-const registerValidation = [
-  body('patientId')
-    .isMongoId()
-    .withMessage('ID do paciente inválido'),
+const standardResponse = (data: any, message?: string) => ({
+    success: true,
+    data,
+    ...(message && { message })
+});
 
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('E-mail inválido'),
+const enhancedRegisterValidation = [
+    body('patientId')
+        .optional() // Made optional for new patient registration
+        .isMongoId()
+        .withMessage('ID do paciente inválido'),
 
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Senha deve ter pelo menos 6 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número')
+    body('name')
+        .if(body('patientId').not().exists()) // Required if no patientId
+        .notEmpty()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+
+    body('phone')
+        .if(body('patientId').not().exists())
+        .notEmpty()
+        .trim()
+        .matches(/^[\d\s\-()+]{10,20}$/)
+        .withMessage('Telefone inválido'),
+
+    body('clinicId')
+        .if(body('patientId').not().exists())
+        .isMongoId()
+        .withMessage('ID da clínica inválido'),
+
+    body('email')
+        .isEmail()
+        .normalizeEmail()
+        .withMessage('E-mail inválido'),
+
+    body('password')
+        .isLength({ min: 8 })
+        .withMessage('Senha deve ter pelo menos 8 caracteres')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+        .withMessage('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número')
 ];
 
-// Validation rules for patient login
 const loginValidation = [
   body('email')
     .isEmail()
@@ -35,593 +61,138 @@ const loginValidation = [
     .withMessage('Senha é obrigatória')
 ];
 
-// Validation rules for password reset
-const resetPasswordValidation = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('E-mail inválido')
-];
+router.post('/register', 
+    patientAuthLimiter,
+    enhancedRegisterValidation, 
+    async (req: express.Request, res: express.Response) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
 
-const newPasswordValidation = [
-  body('token')
-    .notEmpty()
-    .withMessage('Token é obrigatório'),
+            const result = await patientAuthService.register(req.body as PatientRegistrationData);
 
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Senha deve ter pelo menos 6 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
-    .withMessage('Senha deve conter pelo menos uma letra minúscula, uma maiúscula e um número')
-];
+            return res.status(201).json(standardResponse({
+                patient: result.data.patient,
+                patientUser: result.data.patientUser,
+                accessToken: result.data.accessToken,
+                expiresIn: result.data.expiresIn,
+                requiresEmailVerification: result.data.requiresEmailVerification
+            }, 'Conta criada com sucesso'));
 
-/**
- * @swagger
- * /api/patient/auth/register:
- *   post:
- *     summary: Registrar conta de paciente
- *     description: Cria uma nova conta para um paciente existente
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - patientId
- *               - email
- *               - password
- *             properties:
- *               patientId:
- *                 type: string
- *                 description: ID do paciente
- *               email:
- *                 type: string
- *                 format: email
- *                 description: E-mail do paciente
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 description: Senha da conta
- *     responses:
- *       201:
- *         description: Conta criada com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 patientUser:
- *                   $ref: '#/components/schemas/PatientUser'
- *       400:
- *         description: Dados inválidos
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/register', registerValidation, async (req: express.Request, res: express.Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dados inválidos',
-        errors: errors.array()
-      });
+        } catch (error) {
+            console.error('Patient registration error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
+);
 
-    const registerData: PatientRegisterData = {
-      patientId: req.body.patientId,
-      email: req.body.email,
-      password: req.body.password
-    };
+router.post('/login', 
+    patientAuthLimiter,
+    loginValidation, 
+    async (req: express.Request, res: express.Response) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
 
-    const result = await patientAuthService.register(registerData);
+            const result = await patientAuthService.login({
+                email: req.body.email,
+                password: req.body.password
+            });
 
-    if (!result.success) {
-      return res.status(400).json(result);
+            return res.json(standardResponse({
+                patient: result.data.patient,
+                patientUser: result.data.patientUser,
+                accessToken: result.data.accessToken,
+                expiresIn: result.data.expiresIn,
+                requiresEmailVerification: result.data.requiresEmailVerification
+            }, 'Login realizado com sucesso'));
+
+        } catch (error) {
+            console.error('Patient login error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
+);
 
-    return res.status(200).json(result);
-  } catch (error: any) {
-    console.error('Patient registration error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao registrar conta'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/login:
- *   post:
- *     summary: Login do paciente
- *     description: Autentica um paciente e retorna tokens de acesso
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 description: E-mail do paciente
- *               password:
- *                 type: string
- *                 description: Senha da conta
- *     responses:
- *       200:
- *         description: Login realizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 patientUser:
- *                   $ref: '#/components/schemas/PatientUser'
- *                 accessToken:
- *                   type: string
- *                   description: Token de acesso JWT
- *                 refreshToken:
- *                   type: string
- *                   description: Token de refresh
- *       400:
- *         description: Credenciais inválidas
- *       401:
- *         description: Conta bloqueada ou inativa
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/login', loginValidation, async (req: express.Request, res: express.Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dados inválidos',
-        errors: errors.array()
-      });
+router.patch('/profile', 
+    authenticatePatient,
+    requirePatientEmailVerification,
+    [
+        body('name').optional().trim().isLength({ min: 2, max: 100 }),
+        body('phone').optional().matches(/^[\d\s\-()+]{10,20}$/),
+        body('birthDate').optional().isISO8601(),
+    ],
+    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+        // Update patient profile logic
+        res.json({success: true, message: "Not implemented yet"})
     }
+);
 
-    const loginData: PatientLoginData = {
-      email: req.body.email,
-      password: req.body.password
-    };
-
-    const result = await patientAuthService.login(loginData);
-
-    if (!result.success) {
-      const statusCode = result.message?.includes('bloqueada') || result.message?.includes('incorretos') ? 401 : 400;
-      return res.status(statusCode).json(result);
+router.patch('/change-password',
+    authenticatePatient,
+    [
+        body('currentPassword').notEmpty(),
+        body('newPassword')
+            .isLength({ min: 8 })
+            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    ],
+    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+        // Change password logic
+        res.json({success: true, message: "Not implemented yet"})
     }
+);
 
-    return res.json({
-      success: true,
-      data: {
-        patientUser: result.patientUser,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken
-      },
-      message: result.message
-    });
-  } catch (error: any) {
-    console.error('Patient login error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao fazer login'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/refresh:
- *   post:
- *     summary: Renovar token de acesso
- *     description: Renova o token de acesso usando o refresh token
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - refreshToken
- *             properties:
- *               refreshToken:
- *                 type: string
- *                 description: Token de refresh
- *     responses:
- *       200:
- *         description: Token renovado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 accessToken:
- *                   type: string
- *                   description: Novo token de acesso
- *                 refreshToken:
- *                   type: string
- *                   description: Novo token de refresh
- *       401:
- *         description: Token inválido
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/refresh', async (req: express.Request, res: express.Response) => {
-  try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken) {
-      return res.status(400).json({
-        success: false,
-        message: 'Refresh token é obrigatório'
-      });
+router.post('/resend-verification',
+    patientAuthLimiter,
+    [body('email').isEmail().normalizeEmail()],
+    async (req: express.Request, res: express.Response) => {
+        // Resend verification email logic
+        res.json({success: true, message: "Not implemented yet"})
     }
+);
 
-    const result = await patientAuthService.refreshToken(refreshToken);
-
-    if (!result.success) {
-      return res.status(401).json(result);
+router.delete('/account',
+    authenticatePatient,
+    requirePatientEmailVerification,
+    [body('password').notEmpty()],
+    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+        // Delete account logic with confirmation
+        res.json({success: true, message: "Not implemented yet"})
     }
-
-    return res.json(result);
-  } catch (error: any) {
-    console.error('Token refresh error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao renovar token'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/me:
- *   get:
- *     summary: Obter dados do paciente logado
- *     description: Retorna os dados do paciente atualmente logado
- *     tags: [Patient Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Dados do paciente retornados com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 patientUser:
- *                   $ref: '#/components/schemas/PatientUser'
- *       401:
- *         description: Não autorizado
- *       500:
- *         description: Erro interno do servidor
- */
-router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, res) => {
-  try {
-    return res.json({
-      success: true,
-      data: {
-        patientUser: req.patientUser
-      }
-    });
-  } catch (error: any) {
-    console.error('Get patient profile error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao obter dados do paciente'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/verify-email:
- *   post:
- *     summary: Verificar e-mail
- *     description: Verifica o e-mail do paciente usando token de verificação
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - token
- *             properties:
- *               token:
- *                 type: string
- *                 description: Token de verificação de e-mail
- *     responses:
- *       200:
- *         description: E-mail verificado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       400:
- *         description: Token inválido
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/verify-email', async (req: express.Request, res: express.Response) => {
-  try {
-    const { token } = req.body;
-
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        message: 'Token de verificação é obrigatório'
-      });
-    }
-
-    const result = await patientAuthService.verifyEmail(token);
-
-    if (!result.success) {
-      return res.status(400).json(result);
-    }
-
-    return res.json(result);
-  } catch (error: any) {
-    console.error('Email verification error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao verificar e-mail'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/forgot-password:
- *   post:
- *     summary: Solicitar redefinição de senha
- *     description: Envia e-mail com instruções para redefinir senha
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *                 description: E-mail do paciente
- *     responses:
- *       200:
- *         description: Instruções enviadas com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/forgot-password', resetPasswordValidation, async (req: express.Request, res: express.Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dados inválidos',
-        errors: errors.array()
-      });
-    }
-
-    const result = await patientAuthService.requestPasswordReset(req.body.email);
-
-    return res.json(result);
-  } catch (error: any) {
-    console.error('Forgot password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao solicitar redefinição de senha'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/reset-password:
- *   post:
- *     summary: Redefinir senha
- *     description: Redefine a senha do paciente usando token
- *     tags: [Patient Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - token
- *               - password
- *             properties:
- *               token:
- *                 type: string
- *                 description: Token de redefinição de senha
- *               password:
- *                 type: string
- *                 minLength: 6
- *                 description: Nova senha
- *     responses:
- *       200:
- *         description: Senha redefinida com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       400:
- *         description: Token inválido ou senha fraca
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/reset-password', newPasswordValidation, async (req: express.Request, res: express.Response) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Dados inválidos',
-        errors: errors.array()
-      });
-    }
-
-    const { token, password } = req.body;
-    const result = await patientAuthService.resetPassword(token, password);
-
-    if (!result.success) {
-      return res.status(400).json(result);
-    }
-
-    return res.json(result);
-  } catch (error: any) {
-    console.error('Reset password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao redefinir senha'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/logout:
- *   post:
- *     summary: Logout do paciente
- *     description: Invalida a sessão do paciente
- *     tags: [Patient Auth]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Logout realizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       401:
- *         description: Não autorizado
- *       500:
- *         description: Erro interno do servidor
- */
-router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequest, res) => {
-  try {
-    // In a production environment, you might want to blacklist the token
-    // For now, we'll just return success since the client should discard the tokens
-    return res.json({
-      success: true,
-      message: 'Logout realizado com sucesso'
-    });
-  } catch (error: any) {
-    console.error('Logout error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao fazer logout'
-    });
-  }
-});
-
-/**
- * @swagger
- * /api/patient/auth/profile:
- *   patch:
- *     summary: Atualizar perfil do paciente
- *     description: Atualiza os dados do perfil do paciente logado
- *     tags: [Patient Auth]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               patient:
- *                 $ref: '#/components/schemas/Patient'
- *     responses:
- *       200:
- *         description: Perfil atualizado com sucesso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *       401:
- *         description: Não autorizado
- *       500:
- *         description: Erro interno do servidor
- */
-router.patch('/profile', authenticatePatient, async (req: PatientAuthenticatedRequest, res) => {
-  try {
-    // For testing, just return success
-    return res.json({
-      success: true,
-      message: 'Perfil atualizado com sucesso'
-    });
-  } catch (error: any) {
-    console.error('Profile update error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Erro ao atualizar perfil'
-    });
-  }
-});
+);
 
 export default router;

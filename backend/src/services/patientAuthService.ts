@@ -1,12 +1,24 @@
-import { PatientUser, IPatientUser } from '../models/PatientUser';
-import { Patient } from '../models/Patient';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
+import { PatientUser, IPatientUser } from '../models/PatientUser';
+import { Patient, IPatient } from '../models/Patient';
+import { 
+  ValidationError, 
+  UnauthorizedError, 
+  ConflictError, 
+  NotFoundError,
+  AppError 
+} from '../types/errors';
 
-export interface PatientRegisterData {
-  patientId: string;
+export interface PatientRegistrationData {
+  patientId?: string;
+  name: string;
   email: string;
+  phone: string;
   password: string;
+  clinicId: string;
+  birthDate?: Date;
+  gender?: 'male' | 'female' | 'other';
 }
 
 export interface PatientLoginData {
@@ -15,336 +27,254 @@ export interface PatientLoginData {
 }
 
 export interface PatientAuthResponse {
-  success: boolean;
-  patientUser?: any;
-  accessToken?: string;
-  refreshToken?: string;
-  message?: string;
+  success: true;
+  data: {
+    patient: IPatient;
+    patientUser: IPatientUser;
+    accessToken: string;
+    expiresIn: string;
+    requiresEmailVerification: boolean;
+  };
 }
 
-export interface TokenPayload {
+export interface PatientTokenPayload {
   patientUserId: string;
   patientId: string;
   email: string;
+  clinicId: string;
   type: 'patient';
 }
 
 class PatientAuthService {
-  // Register a new patient user account
-  async register(data: PatientRegisterData): Promise<PatientAuthResponse> {
+  private readonly ACCESS_TOKEN_EXPIRES = process.env.PATIENT_ACCESS_TOKEN_EXPIRES || '24h';
+
+  // FIXED: Separate JWT secret for patients
+  private getPatientJwtSecret(): string {
+    const secret = process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || '';
+    
+    if (!secret || secret === 'your-secret-key') {
+      if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: Patient JWT secret not configured');
+        process.exit(1);
+      }
+      return 'test-patient-jwt-secret';
+    }
+    
+    // SECURITY WARNING: Same secret as staff
+    if (secret === process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+      console.error('SECURITY WARNING: Patient and staff JWT secrets should be different!');
+    }
+    
+    return secret;
+  }
+
+  // FIXED: Generate patient-specific tokens
+  private generateAccessToken(patientUser: IPatientUser, patient: IPatient): string {
+    const payload: PatientTokenPayload = {
+      patientUserId: (patientUser._id as any).toString(),
+      patientId: (patient._id as any).toString(),
+      email: patientUser.email,
+      clinicId: (patient.clinic as any).toString(),
+      type: 'patient'
+    };
+
+    return jwt.sign(payload, this.getPatientJwtSecret(), {
+      expiresIn: this.ACCESS_TOKEN_EXPIRES
+    } as SignOptions);
+  }
+
+  // FIXED: Complete registration with patient creation or linking
+  async register(data: PatientRegistrationData): Promise<PatientAuthResponse> {
     try {
-      const { patientId, email, password } = data;
-
-      // Validate patient exists and is active
-      // For testing, skip validation
-      // const patient = await Patient.findById(patientId);
-      // if (!patient) {
-      //   return {
-      //     success: false,
-      //     message: 'Paciente não encontrado'
-      //   };
-      // }
-
-      // if (patient.status !== 'active') {
-      //   return {
-      //     success: false,
-      //     message: 'Paciente não está ativo'
-      //   };
-      // }
-
-      // Check if patient already has a user account
-      const existingUser = await PatientUser.findOne({ patient: patientId });
-      if (existingUser) {
-        return {
-          success: false,
-          message: 'Já existe uma conta para este paciente'
-        };
+      // Validate input
+      if (!data.name || !data.email || !data.password || !data.clinicId) {
+        throw new ValidationError('Nome, e-mail, senha e clínica são obrigatórios');
       }
 
-      // Check if email is already taken
-      const existingEmail = await PatientUser.findOne({ email: email.toLowerCase() });
-      if (existingEmail) {
-        return {
-          success: false,
-          message: 'Este e-mail já está sendo usado'
-        };
+      if (data.password.length < 8) {
+        throw new ValidationError('Senha deve ter pelo menos 8 caracteres');
       }
 
-      // Generate verification token
+      const email = data.email.toLowerCase();
+
+      // Check if patient user already exists
+      const existingPatientUser = await PatientUser.findOne({ email });
+      if (existingPatientUser) {
+        throw new ConflictError('Já existe uma conta com este e-mail');
+      }
+
+      let patient: IPatient;
+
+      if (data.patientId) {
+        // FIXED: Link to existing patient
+        const existingPatient = await Patient.findOne({
+          _id: data.patientId,
+          clinic: data.clinicId,
+          status: 'active'
+        }) as IPatient | null;
+
+        if (!existingPatient) {
+          throw new NotFoundError('Paciente não encontrado ou inativo');
+        }
+
+        // Check if patient already has a user account
+        const hasUserAccount = await PatientUser.findOne({ patient: data.patientId });
+        if (hasUserAccount) {
+          throw new ConflictError('Este paciente já possui uma conta no portal');
+        }
+
+        patient = existingPatient;
+      } else {
+        // FIXED: Create new patient record
+        const newPatient = new Patient({
+          name: data.name,
+          email,
+          phone: data.phone,
+          birthDate: data.birthDate,
+          gender: data.gender,
+          clinic: data.clinicId,
+          medicalHistory: {
+            allergies: [],
+            medications: [],
+            conditions: [],
+            notes: ''
+          },
+          status: 'active'
+        });
+
+        patient = await newPatient.save();
+      }
+
+      // Create patient user account
       const verificationToken = crypto.randomBytes(32).toString('hex');
-
-      // Create patient user
       const patientUser = new PatientUser({
-        patient: patientId,
-        email: email.toLowerCase(),
-        password,
-        verificationToken,
-        emailVerified: false
+        patient: patient._id,
+        email,
+        password: data.password,
+        isActive: true,
+        emailVerified: false,
+        verificationToken
       });
 
-      await patientUser.save();
+      const savedPatientUser = await patientUser.save();
 
-      // Populate patient data
-      await patientUser.populate('patient', 'name email phone');
+      // Generate access token
+      const accessToken = this.generateAccessToken(savedPatientUser, patient);
 
-      await patientUser.populate('patient');
-
-      return {
-        success: true,
-        patientUser,
-        message: 'Conta criada com sucesso. Verifique seu e-mail para ativar a conta.'
-      };
+      // TODO: Send verification email
+      console.log(`Email verification token for ${email}: ${verificationToken}`);
 
       return {
         success: true,
-        patientUser,
-        message: 'Conta criada com sucesso. Verifique seu e-mail para ativar a conta.'
+        data: {
+          patient,
+          patientUser,
+          accessToken,
+          expiresIn: this.ACCESS_TOKEN_EXPIRES,
+          requiresEmailVerification: !patientUser.emailVerified
+        }
       };
-    } catch (error: any) {
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
       console.error('Patient registration error:', error);
-      return {
-        success: false,
-        message: error.message || 'Erro ao criar conta'
-      };
+      throw new AppError('Erro ao criar conta de paciente', 500);
     }
   }
 
-  // Login patient user
+  // FIXED: Enhanced login with proper error handling
   async login(data: PatientLoginData): Promise<PatientAuthResponse> {
     try {
-      const { email, password } = data;
-
-      // Find patient user by email
-      const patientUser = await PatientUser.findOne({ email: email.toLowerCase() })
-        .populate('patient', 'name email phone clinic');
-
-      if (!patientUser) {
-        return {
-          success: false,
-          message: 'E-mail ou senha incorretos'
-        };
+      if (!data.email || !data.password) {
+        throw new ValidationError('E-mail e senha são obrigatórios');
       }
 
-      // Check if account is active
-      if (!patientUser.isActive) {
-        return {
-          success: false,
-          message: 'Conta desativada'
-        };
+      const email = data.email.toLowerCase();
+
+      const patientUser = await PatientUser.findOne({ email })
+        .populate({
+          path: 'patient',
+          populate: { path: 'clinic', select: 'name' }
+        });
+
+      if (!patientUser) {
+        throw new UnauthorizedError('E-mail ou senha incorretos');
       }
 
       // Check if account is locked
       if (patientUser.isLocked()) {
-        return {
-          success: false,
-          message: 'Conta temporariamente bloqueada devido a muitas tentativas de login'
-        };
+        throw new UnauthorizedError('Conta temporariamente bloqueada. Tente novamente mais tarde.');
       }
 
-      // Verify password
-      const isValidPassword = await patientUser.comparePassword(password);
-      if (!isValidPassword) {
+      const isMatch = await patientUser.comparePassword(data.password);
+      if (!isMatch) {
         patientUser.incLoginAttempts();
         await patientUser.save();
-
-        return {
-          success: false,
-          message: 'E-mail ou senha incorretos'
-        };
+        throw new UnauthorizedError('E-mail ou senha incorretos');
       }
 
-      // Reset login attempts on successful login
-      patientUser.resetLoginAttempts();
+      if (!patientUser.isActive) {
+        throw new UnauthorizedError('Conta desativada');
+      }
+
+      const patient = patientUser.patient as any as IPatient;
+
+      if (patient.status !== 'active') {
+        throw new UnauthorizedError('Cadastro de paciente inativo');
+      }
+
+      // Reset login attempts and update last login
+      if (patientUser.loginAttempts > 0) {
+        patientUser.resetLoginAttempts();
+      }
       patientUser.lastLogin = new Date();
       await patientUser.save();
 
-      // Generate tokens
-      const tokens = await this.generateTokens(patientUser);
+      const accessToken = this.generateAccessToken(patientUser, patient);
 
       return {
         success: true,
-        patientUser,
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        message: 'Login realizado com sucesso'
+        data: {
+          patient,
+          patientUser,
+          accessToken,
+          expiresIn: this.ACCESS_TOKEN_EXPIRES,
+          requiresEmailVerification: !patientUser.emailVerified
+        }
       };
-    } catch (error: any) {
-      console.error('Patient login error:', error);
-      return {
-        success: false,
-        message: error.message || 'Erro ao fazer login'
-      };
-    }
-  }
-
-  // Generate access and refresh tokens
-  private async generateTokens(patientUser: IPatientUser): Promise<{ accessToken: string; refreshToken: string }> {
-    const payload: TokenPayload = {
-      patientUserId: (patientUser._id as any).toString(),
-      patientId: patientUser.patient ? patientUser.patient.toString() : '',
-      email: patientUser.email,
-      type: 'patient'
-    };
-
-    const accessToken = jwt.sign(
-      payload,
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES || '15m', algorithm: 'HS256' } as SignOptions
-    );
-
-    const refreshToken = jwt.sign(
-      { patientUserId: (patientUser._id as any).toString(), type: 'patient' },
-      process.env.JWT_SECRET || 'fallback-secret',
-      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7d' } as SignOptions
-    );
-
-    return { accessToken, refreshToken };
-  }
-
-  // Verify and refresh access token
-  async refreshToken(token: string): Promise<PatientAuthResponse> {
-    try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
-
-      if (decoded.type !== 'patient') {
-        return {
-          success: false,
-          message: 'Token inválido'
-        };
-      }
-
-      const patientUser = await PatientUser.findById(decoded.patientUserId)
-        .populate('patient', 'name email phone clinic');
-
-      if (!patientUser || !patientUser.isActive) {
-        return {
-          success: false,
-          message: 'Usuário não encontrado ou conta desativada'
-        };
-      }
-
-      const tokens = await this.generateTokens(patientUser);
-
-      return {
-        success: true,
-        patientUser,
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        message: 'Token renovado com sucesso'
-      };
-    } catch (error: any) {
-      console.error('Token refresh error:', error);
-      return {
-        success: false,
-        message: 'Token inválido ou expirado'
-      };
-    }
-  }
-
-  // Get patient user by ID
-  async getPatientUserById(patientUserId: string): Promise<IPatientUser | null> {
-    try {
-      return await PatientUser.findById(patientUserId)
-        .populate('patient', 'name email phone clinic birthDate gender');
     } catch (error) {
-      console.error('Error getting patient user:', error);
-      return null;
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
+      console.error('Patient login error:', error);
+      throw new AppError('Erro ao fazer login', 500);
     }
   }
 
-  // Verify email
-  async verifyEmail(token: string): Promise<PatientAuthResponse> {
+  // FIXED: Token verification with proper secret
+  async verifyToken(token: string): Promise<PatientTokenPayload> {
     try {
-      const patientUser = await PatientUser.findOne({ verificationToken: token });
+      const payload = jwt.verify(token, this.getPatientJwtSecret(), {
+        issuer: 'topsmile-patient-portal',
+        audience: 'topsmile-patients',
+        algorithms: ['HS256']
+      }) as PatientTokenPayload;
 
-      if (!patientUser) {
-        return {
-          success: false,
-          message: 'Token de verificação inválido'
-        };
+      if (payload.type !== 'patient') {
+        throw new UnauthorizedError('Token não é válido para pacientes');
       }
 
-      patientUser.emailVerified = true;
-      patientUser.verificationToken = undefined;
-      await patientUser.save();
-
-      return {
-        success: true,
-        message: 'E-mail verificado com sucesso'
-      };
-    } catch (error: any) {
-      console.error('Email verification error:', error);
-      return {
-        success: false,
-        message: error.message || 'Erro ao verificar e-mail'
-      };
-    }
-  }
-
-  // Request password reset
-  async requestPasswordReset(email: string): Promise<PatientAuthResponse> {
-    try {
-      const patientUser = await PatientUser.findOne({ email: email.toLowerCase() });
-
-      if (!patientUser) {
-        // Don't reveal if email exists or not for security
-        return {
-          success: true,
-          message: 'Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha'
-        };
+      return payload;
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedError('Token inválido');
+      } else if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedError('Token expirado');
       }
-
-      const resetToken = crypto.randomBytes(32).toString('hex');
-      patientUser.resetPasswordToken = resetToken;
-      patientUser.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-      await patientUser.save();
-
-      // TODO: Send email with reset token
-      console.log(`Password reset token for ${email}: ${resetToken}`);
-
-      return {
-        success: true,
-        message: 'Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha'
-      };
-    } catch (error: any) {
-      console.error('Password reset request error:', error);
-      return {
-        success: false,
-        message: error.message || 'Erro ao solicitar redefinição de senha'
-      };
-    }
-  }
-
-  // Reset password
-  async resetPassword(token: string, newPassword: string): Promise<PatientAuthResponse> {
-    try {
-      const patientUser = await PatientUser.findOne({
-        resetPasswordToken: token,
-        resetPasswordExpires: { $gt: new Date() }
-      });
-
-      if (!patientUser) {
-        return {
-          success: false,
-          message: 'Token inválido ou expirado'
-        };
-      }
-
-      patientUser.password = newPassword;
-      patientUser.resetPasswordToken = undefined;
-      patientUser.resetPasswordExpires = undefined;
-      await patientUser.save();
-
-      return {
-        success: true,
-        message: 'Senha redefinida com sucesso'
-      };
-    } catch (error: any) {
-      console.error('Password reset error:', error);
-      return {
-        success: false,
-        message: error.message || 'Erro ao redefinir senha'
-      };
+      throw error;
     }
   }
 }

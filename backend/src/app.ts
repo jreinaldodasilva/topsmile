@@ -24,6 +24,8 @@ import appointmentTypesRoutes from "./routes/appointmentTypes";
 import formsRoutes from "./routes/forms";
 import docsRoutes from "./routes/docs";
 
+import patientAuthRoutes from './routes/patientAuth';
+
 // Contact routes
 import contactRoutes from './routes/contact';
 import adminContactRoutes from './routes/admin/contacts';
@@ -322,6 +324,7 @@ app.use("/api/forms", formsRoutes);
 app.use("/api/docs", docsRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin/contacts', adminContactRoutes);
+app.use('/api/patient-auth', patientAuthRoutes);
 
 
 

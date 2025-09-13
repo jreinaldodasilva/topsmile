@@ -101,7 +101,7 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
 
     // Send emails asynchronously (don't block response)
     emailService.sendContactEmails({
-      id: contact.id,
+      id: contact.id as string,
       name,
       email,
       clinic,

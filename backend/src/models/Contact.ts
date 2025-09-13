@@ -18,20 +18,6 @@ export interface IContact extends Document {
     priority: 'low' | 'medium' | 'high';
     leadScore?: number; // 0-100 scoring system
     lastContactedAt?: Date;
-    conversionDetails?: {
-        convertedAt: Date;
-        convertedBy: mongoose.Types.ObjectId;
-        conversionNotes: string;
-        estimatedValue?: number;
-    };
-    metadata: {
-        ipAddress?: string;
-        userAgent?: string;
-        referrer?: string;
-        utmSource?: string;
-        utmMedium?: string;
-        utmCampaign?: string;
-    };
     // Soft delete fields
     deletedAt?: Date;
     deletedBy?: mongoose.Types.ObjectId;
@@ -131,26 +117,6 @@ const ContactSchema = new Schema<IContact>({
         type: Date,
         index: true
     },
-    conversionDetails: {
-        convertedAt: Date,
-        convertedBy: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        conversionNotes: String,
-        estimatedValue: {
-            type: Number,
-            min: 0
-        }
-    },
-    metadata: {
-        ipAddress: String,
-        userAgent: String,
-        referrer: String,
-        utmSource: String,
-        utmMedium: String,
-        utmCampaign: String
-    },
     // Soft delete fields
     deletedAt: Date,
     deletedBy: {
@@ -163,15 +129,7 @@ const ContactSchema = new Schema<IContact>({
         ref: 'Contact'
     }
 }, {
-    timestamps: true,
-    toJSON: {
-        transform: function (doc, ret) {
-            ret.id = ret._id;
-            delete ret._id;
-            delete (ret as any).__v;
-            return ret;
-        }
-    }
+    timestamps: true
 });
 
 // IMPROVED: Performance indexes for common queries
@@ -216,7 +174,7 @@ ContactSchema.pre('save', function(next) {
     }
     
     // Auto-fill conversion details when status becomes 'converted'
-    if (this.isModified('status') && this.status === 'converted' && !this.conversionDetails?.convertedAt) {
+    /* if (this.isModified('status') && this.status === 'converted' && !this.conversionDetails?.convertedAt) {
         if (!this.conversionDetails) {
             this.conversionDetails = {
                 convertedAt: new Date(),
@@ -226,7 +184,7 @@ ContactSchema.pre('save', function(next) {
         } else {
             this.conversionDetails.convertedAt = new Date();
         }
-    }
+    } */
     
     next();
 });
