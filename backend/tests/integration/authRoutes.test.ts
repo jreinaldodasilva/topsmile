@@ -136,9 +136,8 @@ describe('Auth Routes Integration', () => {
 
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
-      expect(response.body.data.user).toBeDefined();
-      expect(response.body.data.user.email).toBe(testUser.email);
-      expect(response.body.data.user.name).toBe(testUser.name);
+      expect(response.body.data.email).toBe(testUser.email);
+      expect(response.body.data.name).toBe(testUser.name);
     });
 
     it('should return 401 for invalid token', async () => {

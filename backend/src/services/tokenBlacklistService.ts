@@ -9,10 +9,11 @@ interface BlacklistedToken {
 class TokenBlacklistService {
     private blacklist: Map<string, BlacklistedToken> = new Map();
     private readonly CLEANUP_INTERVAL = 60 * 60 * 1000; // 1 hour
+    private intervalId: NodeJS.Timeout | null = null;
 
     constructor() {
         // Clean up expired tokens periodically
-        setInterval(() => {
+        this.intervalId = setInterval(() => {
             this.cleanup();
         }, this.CLEANUP_INTERVAL);
     }
@@ -109,6 +110,16 @@ class TokenBlacklistService {
      */
     clear(): void {
         this.blacklist.clear();
+    }
+
+    /**
+     * Stop the periodic cleanup interval (for testing purposes)
+     */
+    stopCleanup(): void {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
     }
 }
 

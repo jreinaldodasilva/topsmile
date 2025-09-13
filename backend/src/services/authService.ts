@@ -481,7 +481,7 @@ class AuthService {
     }
 
     // Get user by ID with clinic info
-    async getUserById(userId: string): Promise<IUser | null> {
+    async getUserById(userId: string): Promise<IUser> {
         try {
             if (!userId) {
                 throw new ValidationError('ID do usuário é obrigatório');
@@ -489,7 +489,7 @@ class AuthService {
 
             const user = await User.findById(userId).populate('clinic', 'name subscription settings');
             if (!user) {
-                return null;
+                throw new NotFoundError('Usuário');
             }
 
             return user;

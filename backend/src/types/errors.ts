@@ -19,7 +19,7 @@ export class ValidationError extends AppError {
 
 export class NotFoundError extends AppError {
   constructor(resource: string) {
-    super(`${resource} not found`, 404);
+    super(`${resource} não encontrado`, 404);
   }
 }
 

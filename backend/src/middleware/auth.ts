@@ -93,10 +93,19 @@ export const authenticate = async (
 
     // Optional: Verify user still exists and is active
     if (process.env.VERIFY_USER_ON_REQUEST === 'true') {
-      const user = await authService.getUserById(req.user.id);
-      if (!user || !user.isActive) {
-        res.status(401).json({ 
-          success: false, 
+      try {
+        const user = await authService.getUserById(req.user.id);
+        if (!user.isActive) {
+          res.status(401).json({
+            success: false,
+            message: 'Usuário inválido ou inativo',
+            code: 'USER_INACTIVE'
+          });
+          return;
+        }
+      } catch (error) {
+        res.status(401).json({
+          success: false,
           message: 'Usuário inválido ou inativo',
           code: 'USER_INACTIVE'
         });

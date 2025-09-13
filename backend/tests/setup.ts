@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import './customMatchers';
+import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
 
 let mongoServer: MongoMemoryServer;
 
@@ -22,6 +23,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  // Stop the token blacklist cleanup interval
+  tokenBlacklistService.stopCleanup();
+
   // Close database connection
   await mongoose.disconnect();
   console.log('Disconnected from test database');

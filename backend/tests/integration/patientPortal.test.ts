@@ -10,7 +10,10 @@ describe('Patient Portal Integration Tests', () => {
   let app: express.Application;
   let patientToken: string;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    // Clean collections
+    const mongoose = require('mongoose');
+    await mongoose.connection.db.dropDatabase();
     // Create test app
     app = express();
     app.use(express.json());
@@ -35,7 +38,7 @@ describe('Patient Portal Integration Tests', () => {
     const res = await request(app)
       .post('/api/patient/auth/register')
       .send({
-        patientId: 'test-patient-id',
+        patientId: '507f1f77bcf86cd799439011',
         email: 'testpatient@example.com',
         password: 'TestPassword123!'
       });
@@ -68,7 +71,7 @@ describe('Patient Portal Integration Tests', () => {
   it('should get upcoming appointments for patient', async () => {
     const res = await request(app)
       .get('/api/appointments')
-      .query({ patient: 'test-patient-id', status: 'scheduled,confirmed' })
+      .query({ patient: '507f1f77bcf86cd799439011', status: 'scheduled,confirmed' })
       .set('Authorization', `Bearer ${patientToken}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -111,7 +114,7 @@ describe('Patient Portal Integration Tests', () => {
 
   it('should handle appointment booking with valid data', async () => {
     const appointmentData = {
-      patient: 'test-patient-id',
+      patient: '507f1f77bcf86cd799439011',
       appointmentType: 'cleaning',
       provider: 'test-provider-id',
       clinic: 'test-clinic-id',
@@ -133,7 +136,7 @@ describe('Patient Portal Integration Tests', () => {
     // First get appointments to find one to cancel
     const getRes = await request(app)
       .get('/api/appointments')
-      .query({ patient: 'test-patient-id', status: 'scheduled' })
+      .query({ patient: '507f1f77bcf86cd799439011', status: 'scheduled' })
       .set('Authorization', `Bearer ${patientToken}`);
 
     expect(getRes.statusCode).toBe(200);
@@ -243,7 +246,7 @@ describe('Patient Portal Integration Tests', () => {
     // Get existing appointments
     const getRes = await request(app)
       .get('/api/appointments')
-      .query({ patient: 'test-patient-id', status: 'scheduled' })
+      .query({ patient: '507f1f77bcf86cd799439011', status: 'scheduled' })
       .set('Authorization', `Bearer ${patientToken}`);
 
     expect(getRes.statusCode).toBe(200);
@@ -268,7 +271,7 @@ describe('Patient Portal Integration Tests', () => {
 
   it('should handle patient medical history retrieval', async () => {
     const res = await request(app)
-      .get('/api/patients/test-patient-id')
+      .get('/api/patients/507f1f77bcf86cd799439011')
       .set('Authorization', `Bearer ${patientToken}`);
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
@@ -328,7 +331,7 @@ describe('Patient Portal Integration Tests', () => {
       .post('/api/appointments')
       .set('Authorization', `Bearer ${patientToken}`)
       .send({
-        patient: 'test-patient-id',
+        patient: '507f1f77bcf86cd799439011',
         appointmentType: 'cleaning',
         provider: 'test-provider-id',
         clinic: 'test-clinic-id',
@@ -346,7 +349,7 @@ describe('Patient Portal Integration Tests', () => {
     // For now, we'll test with a timeout scenario
     const res = await request(app)
       .get('/api/appointments')
-      .query({ patient: 'test-patient-id' })
+      .query({ patient: '507f1f77bcf86cd799439011' })
       .set('Authorization', `Bearer ${patientToken}`)
       .timeout(5000); // 5 second timeout
 

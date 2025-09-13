@@ -341,13 +341,6 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
   try {
     const user = await authService.getUserById(req.user!.id);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Usuário não encontrado'
-      });
-    }
-
     return res.json({
       success: true,
       data: user
