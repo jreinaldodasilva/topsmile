@@ -480,7 +480,7 @@ describe('AppointmentService', () => {
       expect(result!.scheduledStart.getTime()).toBe(newStartTime.getTime());
       expect(result!.scheduledEnd.getTime()).toBe(newEndTime.getTime());
       expect(result!.rescheduleHistory.length).toBe(1);
-      expect(result!.rescheduleHistory[0].reason).toBe('Patient request');
+      expect(result!.rescheduleHistory![0]!.reason).toBe('Patient request');
     });
 
     it('should throw error for conflicting time slot', async () => {

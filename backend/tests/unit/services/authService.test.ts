@@ -142,7 +142,7 @@ describe('AuthService', () => {
     });
 
     it('should throw error for non-existent user', async () => {
-      await expect(authService.getUserById('507f1f77bcf86cd799439011')).rejects.toThrow('Usuário not found');
+      await expect(authService.getUserById('507f1f77bcf86cd799439011')).rejects.toThrow('Usuário não encontrado');
     });
   });
 

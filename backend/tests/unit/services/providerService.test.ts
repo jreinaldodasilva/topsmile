@@ -320,7 +320,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result!.appointmentTypes).toHaveLength(1);
-      expect(result!.appointmentTypes[0].toString()).toBe(testAppointmentType._id.toString());
+      expect(result!.appointmentTypes![0]!.toString()).toBe(testAppointmentType._id.toString());
     });
 
     it('should return null for non-existent provider', async () => {
@@ -429,7 +429,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result.providers.length).toBe(1);
-      expect(result.providers[0].name).toBe('Dr. João Silva');
+      expect(result.providers[0]!.name).toBe('Dr. João Silva');
     });
 
     it('should search providers by email', async () => {

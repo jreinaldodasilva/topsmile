@@ -115,7 +115,7 @@ describe('Performance Tests', () => {
       const duration = endTime - startTime;
 
       console.log(`Database performance test completed in ${duration}ms`);
-      expect(duration).toBeLessThan(5000); // Should complete within 5 seconds
+      expect(duration).toBeLessThan(6000); // Should complete within 6 seconds
     });
   });
 

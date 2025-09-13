@@ -201,6 +201,7 @@ describe('SchedulingService', () => {
       expect(rescheduleResult.success).toBe(true);
       expect(rescheduleResult.data).toBeDefined();
       expect(rescheduleResult.data!.scheduledStart.getTime()).toBe(newStart.getTime());
+      expect(rescheduleResult.data!.rescheduleHistory).toBeDefined();
       expect(rescheduleResult.data!.rescheduleHistory).toHaveLength(1);
       expect(rescheduleResult.data!.rescheduleHistory![0].reason).toBe(reason);
     });

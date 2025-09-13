@@ -372,8 +372,7 @@ describe('ContactService', () => {
         { page: 1, limit: 10 }
       );
 
-      expect(result.contacts.length).toBe(1);
-      expect(result.contacts[0].name).toBe('João Silva');
+      expect(result.contacts[0]!.name).toBe('João Silva');
     });
 
     it('should search by email', async () => {

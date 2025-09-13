@@ -87,6 +87,14 @@ class PatientAuthService {
       // Populate patient data
       await patientUser.populate('patient', 'name email phone');
 
+      await patientUser.populate('patient');
+
+      return {
+        success: true,
+        patientUser,
+        message: 'Conta criada com sucesso. Verifique seu e-mail para ativar a conta.'
+      };
+
       return {
         success: true,
         patientUser,
@@ -173,7 +181,7 @@ class PatientAuthService {
   private async generateTokens(patientUser: IPatientUser): Promise<{ accessToken: string; refreshToken: string }> {
     const payload: TokenPayload = {
       patientUserId: (patientUser._id as any).toString(),
-      patientId: patientUser.patient.toString(),
+      patientId: patientUser.patient ? patientUser.patient.toString() : '',
       email: patientUser.email,
       type: 'patient'
     };
