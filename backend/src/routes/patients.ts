@@ -3,6 +3,7 @@ import express from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
+import { isAppError } from '../types/errors';
 
 const router = express.Router();
 
@@ -875,6 +876,12 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
         });
     } catch (error: any) {
         console.error('Error reactivating patient:', error);
+        if (isAppError(error)) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao reativar paciente'

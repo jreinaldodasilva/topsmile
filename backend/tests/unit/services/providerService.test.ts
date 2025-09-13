@@ -126,7 +126,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result.appointmentTypes).toHaveLength(1);
-      expect(result.appointmentTypes[0].toString()).toBe(testAppointmentType._id.toString());
+      expect(result.appointmentTypes![0]!.toString()).toBe(testAppointmentType._id.toString());
     });
 
     it('should throw error for duplicate email in same clinic', async () => {
@@ -440,7 +440,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result.providers.length).toBe(1);
-      expect(result.providers[0].email).toBe('maria.santos@example.com');
+      expect(result.providers[0]!.email).toBe('maria.santos@example.com');
     });
 
     it('should search providers by specialty', async () => {
@@ -496,9 +496,9 @@ describe('ProviderService', () => {
       });
 
       expect(result).toBeDefined();
-      expect(result.providers[0].name).toBe('Dr. Pedro Costa');
-      expect(result.providers[1].name).toBe('Dr. Maria Santos');
-      expect(result.providers[2].name).toBe('Dr. João Silva');
+      expect(result.providers[0]!.name).toBe('Dr. Pedro Costa');
+      expect(result.providers[1]!.name).toBe('Dr. Maria Santos');
+      expect(result.providers[2]!.name).toBe('Dr. João Silva');
     });
   });
 
@@ -531,8 +531,8 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBe(1);
-      expect(result[0].name).toBe('Dr. Active');
-      expect((result[0].clinic as any).name).toBe(testClinic.name);
+      expect(result[0]!.name).toBe('Dr. Active');
+      expect((result[0]!.clinic as any).name).toBe(testClinic.name);
     });
 
     it('should return inactive providers when specified', async () => {
@@ -541,6 +541,8 @@ describe('ProviderService', () => {
 
       expect(activeProviders.length).toBe(1);
       expect(inactiveProviders.length).toBe(1);
+      expect(activeProviders[0]!.name).toBe('Dr. Active');
+      expect(inactiveProviders[0]!.name).toBe('Dr. Inactive');
     });
 
     it('should throw error for invalid clinic ID', async () => {
@@ -614,7 +616,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result!.appointmentTypes).toHaveLength(1);
-      expect(result!.appointmentTypes[0].toString()).toBe(testAppointmentType._id.toString());
+      expect(result!.appointmentTypes![0]!.toString()).toBe(testAppointmentType._id.toString());
     });
 
     it('should throw error for invalid appointment type ID', async () => {

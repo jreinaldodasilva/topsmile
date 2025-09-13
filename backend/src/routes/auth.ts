@@ -6,6 +6,7 @@ import { authService } from '../services/authService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response } from 'express';
+import { NotFoundError } from '../types/errors';
 
 const router = express.Router();
 
@@ -352,6 +353,12 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
       data: user
     });
   } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        success: false,
+        message: error.message
+      });
+    }
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar perfil do usuário'

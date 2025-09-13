@@ -159,7 +159,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBe(3);
-      expect(result[0].clinic._id.toString()).toBe(testClinic._id.toString());
+      expect(result[0]!.clinic._id.toString()).toBe(testClinic._id.toString());
     });
 
     it('should return inactive patients when specified', async () => {
@@ -300,7 +300,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.patients.length).toBe(1);
-      expect(result.patients[0].name).toBe('João Silva Santos');
+      expect(result.patients[0]!.name).toBe('João Silva Santos');
     });
 
     it('should search patients by email', async () => {
@@ -311,7 +311,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.patients.length).toBe(1);
-      expect(result.patients[0].email).toBe('maria.silva@example.com');
+      expect(result.patients[0]!.email).toBe('maria.silva@example.com');
     });
 
     it('should return empty array for no matches', async () => {

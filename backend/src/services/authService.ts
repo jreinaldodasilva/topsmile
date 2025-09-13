@@ -417,7 +417,7 @@ class AuthService {
 
             if (!user) {
                 // Use same message for both cases to prevent user enumeration
-                throw new UnauthorizedError('Credenciais inválidas');
+                throw new UnauthorizedError('E-mail ou senha inválidos');
             }
 
             // Check if account is locked
@@ -429,7 +429,7 @@ class AuthService {
             if (!isMatch) {
                 // Increment login attempts on failed password
                 await user.incLoginAttempts();
-                throw new UnauthorizedError('Credenciais inválidas');
+                throw new UnauthorizedError('E-mail ou senha inválidos');
             }
 
             if (!user.isActive) {
@@ -489,7 +489,7 @@ class AuthService {
 
             const user = await User.findById(userId).populate('clinic', 'name subscription settings');
             if (!user) {
-                throw new NotFoundError('Usuário');
+                return null;
             }
 
             return user;

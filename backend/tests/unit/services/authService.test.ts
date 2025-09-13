@@ -141,10 +141,8 @@ describe('AuthService', () => {
       expect(user?.email).toBe(userData.email);
     });
 
-    it('should return null for non-existent user', async () => {
-      const user = await authService.getUserById('507f1f77bcf86cd799439011'); // Valid ObjectId format
-
-      expect(user).toBeNull();
+    it('should throw error for non-existent user', async () => {
+      await expect(authService.getUserById('507f1f77bcf86cd799439011')).rejects.toThrow('Usuário not found');
     });
   });
 

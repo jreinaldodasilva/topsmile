@@ -1,6 +1,7 @@
 // backend/src/services/patientService.ts
 import { Patient, IPatient } from '../models/Patient';
 import mongoose from 'mongoose';
+import { NotFoundError } from '../types/errors';
 
 export interface CreatePatientData {
     name: string;
@@ -422,7 +423,7 @@ class PatientService {
             });
 
             if (!patient) {
-                throw new Error('Paciente inativo não encontrado');
+                throw new NotFoundError('Paciente inativo');
             }
 
             // Check for duplicate phone with active patients

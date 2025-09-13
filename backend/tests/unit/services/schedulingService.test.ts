@@ -202,7 +202,7 @@ describe('SchedulingService', () => {
       expect(rescheduleResult.data).toBeDefined();
       expect(rescheduleResult.data!.scheduledStart.getTime()).toBe(newStart.getTime());
       expect(rescheduleResult.data!.rescheduleHistory).toHaveLength(1);
-      expect(rescheduleResult.data!.rescheduleHistory[0].reason).toBe(reason);
+      expect(rescheduleResult.data!.rescheduleHistory![0].reason).toBe(reason);
     });
 
     it('should return error for non-existent appointment', async () => {
@@ -289,7 +289,7 @@ describe('SchedulingService', () => {
         expect(result[0]).toHaveProperty('start');
         expect(result[0]).toHaveProperty('end');
         expect(result[0]).toHaveProperty('available');
-        expect(result[0].available).toBe(true);
+        expect(result[0]!.available).toBe(true);
       }
     });
 
