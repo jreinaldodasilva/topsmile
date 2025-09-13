@@ -42,7 +42,7 @@ const Button: React.FC<ButtonProps> = ({
   ].filter(Boolean).join(' ');
 
   const LoadingSpinner = () => (
-    <svg className="btn__spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg className="btn__spinner" data-testid="loading-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <circle
         className="btn__spinner-circle"
         cx="12"
@@ -69,13 +69,13 @@ const Button: React.FC<ButtonProps> = ({
     >
       {loading && <LoadingSpinner />}
       {icon && iconPosition === 'left' && !loading && (
-        <span className="btn__icon btn__icon--left">{icon}</span>
+        <span className="btn__icon btn__icon--left" data-testid="icon-left">{icon}</span>
       )}
       <span className={loading ? 'btn__content--loading' : 'btn__content'}>
         {children}
       </span>
       {icon && iconPosition === 'right' && !loading && (
-        <span className="btn__icon btn__icon--right">{icon}</span>
+        <span className="btn__icon btn__icon--right" data-testid="icon-right">{icon}</span>
       )}
     </button>
   );

@@ -1,4 +1,5 @@
-// Mock Stripe first
+import { paymentService } from '../../services/paymentService';
+
 const mockStripe = {
   confirmCardPayment: jest.fn()
 };
@@ -6,8 +7,6 @@ const mockStripe = {
 jest.mock('@stripe/stripe-js', () => ({
   loadStripe: jest.fn(() => Promise.resolve(mockStripe))
 }));
-
-import { paymentService } from '../../services/paymentService';
 
 // Mock fetch
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;

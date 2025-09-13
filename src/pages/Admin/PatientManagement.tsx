@@ -1,6 +1,5 @@
 // src/pages/Admin/PatientManagement.tsx
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/apiService';
 import type { Patient } from '../../types/api';
 import EnhancedHeader from '../../components/Header/Header';
@@ -26,7 +25,6 @@ interface PaginatedPatientsResponse {
 }
 
 const PatientManagement: React.FC = () => {
-  const { user } = useAuth();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,33 +43,33 @@ const PatientManagement: React.FC = () => {
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
 
   // Fetch patients from backend
-  const fetchPatients = async () => {
+  const fetchPatients = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Build query parameters
       const queryParams: Record<string, any> = {};
-      
+
       if (filters.search) {
         queryParams.search = filters.search;
       }
-      
+
       if (filters.isActive !== undefined) {
         queryParams.isActive = filters.isActive;
       }
-      
+
       if (filters.page) {
         queryParams.page = filters.page;
       }
-      
+
       if (filters.limit) {
         queryParams.limit = filters.limit;
       }
 
       // Call API service
       const result = await apiService.patients.getAll(queryParams);
-      
+
       if (result.success && result.data) {
         // Handle both paginated and non-paginated responses
         if (Array.isArray(result.data)) {
@@ -108,11 +106,11 @@ const PatientManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchPatients();
-  }, [filters]);
+  }, [fetchPatients]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));

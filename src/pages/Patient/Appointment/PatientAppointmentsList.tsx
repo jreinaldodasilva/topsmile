@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
@@ -30,16 +30,7 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all');
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/patient/login');
-      return;
-    }
-
-    fetchAppointments();
-  }, [isAuthenticated, navigate]);
-
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -60,7 +51,16 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientUser?.patient._id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/patient/login');
+      return;
+    }
+
+    fetchAppointments();
+  }, [isAuthenticated, navigate, fetchAppointments]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);

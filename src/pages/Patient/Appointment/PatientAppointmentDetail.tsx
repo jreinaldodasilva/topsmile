@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
@@ -42,18 +42,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
   const [error, setError] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState(false);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/patient/login');
-      return;
-    }
-
-    if (id) {
-      fetchAppointment();
-    }
-  }, [isAuthenticated, navigate, id]);
-
-  const fetchAppointment = async () => {
+  const fetchAppointment = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -73,7 +62,18 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/patient/login');
+      return;
+    }
+
+    if (id) {
+      fetchAppointment();
+    }
+  }, [isAuthenticated, navigate, id, fetchAppointment]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);

@@ -2,12 +2,15 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import RegisterPage from '../../pages/Login/RegisterPage';
 import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from '../../contexts/AuthContext';
 
 describe('RegisterPage', () => {
   const setup = () => {
     render(
       <BrowserRouter>
-        <RegisterPage />
+        <AuthProvider>
+          <RegisterPage />
+        </AuthProvider>
       </BrowserRouter>
     );
   };

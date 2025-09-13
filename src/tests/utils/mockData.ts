@@ -1,8 +1,5 @@
 import { faker } from '@faker-js/faker';
 
-// Set locale to Portuguese (Brazil) for realistic data
-faker.locale = 'pt_BR';
-
 // Mock User Data
 export const generateMockUser = (overrides = {}) => ({
   _id: faker.database.mongodbObjectId(),
@@ -20,28 +17,28 @@ export const generateMockUser = (overrides = {}) => ({
 export const generateMockPatient = (overrides = {}) => {
   const firstName = faker.name.firstName();
   const lastName = faker.name.lastName();
-  
+
   return {
     _id: faker.database.mongodbObjectId(),
     firstName,
     lastName,
     fullName: `${firstName} ${lastName}`,
     email: faker.internet.email(firstName, lastName),
-    phone: faker.phone.number('(##) #####-####'),
+    phone: faker.phone.number(),
     dateOfBirth: faker.date.birthdate({ min: 18, max: 80, mode: 'age' }).toISOString().split('T')[0],
     gender: faker.helpers.arrayElement(['male', 'female', 'other', 'prefer_not_to_say']),
     cpf: faker.helpers.replaceSymbols('###.###.###-##'),
     address: {
-      street: faker.address.streetName(),
+      street: faker.address.street(),
       number: faker.address.buildingNumber(),
-      neighborhood: faker.address.cityName(),
+      neighborhood: faker.address.city(),
       city: faker.address.city(),
       state: faker.address.stateAbbr(),
       zipCode: faker.address.zipCode('#####-###')
     },
     emergencyContact: {
       name: faker.name.fullName(),
-      phone: faker.phone.number('(##) #####-####'),
+      phone: faker.phone.number(),
       relationship: faker.helpers.arrayElement(['spouse', 'parent', 'sibling', 'child', 'friend'])
     },
     medicalHistory: {
@@ -63,10 +60,10 @@ export const generateMockProvider = (overrides = {}) => ({
   _id: faker.database.mongodbObjectId(),
   name: `Dr. ${faker.name.fullName()}`,
   email: faker.internet.email(),
-  phone: faker.phone.number('(##) #####-####'),
+  phone: faker.phone.number(),
   specialties: faker.helpers.arrayElements([
     'general_dentistry',
-    'orthodontics', 
+    'orthodontics',
     'oral_surgery',
     'periodontics',
     'endodontics',
@@ -135,8 +132,8 @@ export const generateMockAppointmentType = (overrides = {}) => ({
   ]),
   description: faker.lorem.sentence(),
   duration: faker.helpers.arrayElement([30, 45, 60, 90, 120]),
-  price: faker.datatype.number({ min: 50, max: 500 }),
-  color: faker.internet.color(),
+  price: faker.number.int({ min: 50, max: 500 }),
+  color: faker.color.rgb(),
   category: faker.helpers.arrayElement(['consulta', 'tratamento', 'cirurgia', 'preventivo']),
   isActive: faker.datatype.boolean({ probability: 0.9 }),
   clinic: faker.database.mongodbObjectId(),
@@ -150,7 +147,7 @@ export const generateMockContact = (overrides = {}) => ({
   _id: faker.database.mongodbObjectId(),
   name: faker.name.fullName(),
   email: faker.internet.email(),
-  phone: faker.phone.number('(##) #####-####'),
+  phone: faker.phone.number(),
   clinic: faker.company.name() + ' Odontologia',
   specialty: faker.helpers.arrayElement([
     'Ortodontia',
@@ -177,11 +174,11 @@ export const generateMockClinic = (overrides = {}) => ({
   _id: faker.database.mongodbObjectId(),
   name: `${faker.company.name()} Odontologia`,
   email: faker.internet.email(),
-  phone: faker.phone.number('(##) ####-####'),
+  phone: faker.phone.number(),
   address: {
-    street: faker.address.streetName(),
+    street: faker.address.street(),
     number: faker.address.buildingNumber(),
-    neighborhood: faker.address.cityName(),
+    neighborhood: faker.address.city(),
     city: faker.address.city(),
     state: faker.address.stateAbbr(),
     zipCode: faker.address.zipCode('#####-###'),
@@ -223,7 +220,7 @@ export const generateMockFormTemplate = (overrides = {}) => ({
     label: faker.lorem.sentence().replace('.', '?'),
     type: faker.helpers.arrayElement(['text', 'textarea', 'select', 'radio', 'checkbox', 'date']),
     required: faker.datatype.boolean(),
-    options: faker.datatype.boolean() ? 
+    options: faker.datatype.boolean() ?
       Array.from({ length: faker.datatype.number({ min: 2, max: 5 }) }, () => ({
         value: faker.lorem.word(),
         label: faker.lorem.words(2)
@@ -294,7 +291,7 @@ export const generateMultiple = <T>(generator: (overrides?: any) => T, count: nu
 };
 
 // Realistic Brazilian data generators
-export const generateBrazilianPhone = () => faker.phone.number('(##) #####-####');
+export const generateBrazilianPhone = () => faker.helpers.replaceSymbols('(##) #####-####');
 export const generateBrazilianCPF = () => faker.helpers.replaceSymbols('###.###.###-##');
 export const generateBrazilianZipCode = () => faker.address.zipCode('#####-###');
 export const generateBrazilianState = () => faker.helpers.arrayElement([

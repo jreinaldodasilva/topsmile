@@ -33,40 +33,6 @@ const Home: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
 
-  useEffect(() => {
-    setIsVisible(true);
-    
-    // Auto-rotate features
-    const interval = setInterval(() => {
-      setActiveFeature(prev => (prev + 1) % features.length);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const stats: Stat[] = [
-    {
-      label: 'Consultórios Ativos',
-      value: '1,200+',
-      description: 'Profissionais confiam no TopSmile'
-    },
-    {
-      label: 'Pacientes Atendidos',
-      value: '500K+',
-      description: 'Consultas gerenciadas com sucesso'
-    },
-    {
-      label: 'Taxa de Satisfação',
-      value: '98%',
-      description: 'Aprovação dos nossos usuários'
-    },
-    {
-      label: 'Economia de Tempo',
-      value: '70%',
-      description: 'Redução no tempo administrativo'
-    }
-  ];
-
   const features: Feature[] = [
     {
       id: 'appointments',
@@ -121,6 +87,40 @@ const Home: React.FC = () => {
       title: 'Relatórios e Analytics',
       description: 'Tenha insights poderosos sobre seu negócio com dashboards interativos e relatórios detalhados.',
       benefits: ['Dashboard em tempo real', 'Métricas de performance', 'Análise de faturamento', 'Relatórios customizados']
+    }
+  ];
+
+  useEffect(() => {
+    setIsVisible(true);
+
+    // Auto-rotate features
+    const interval = setInterval(() => {
+      setActiveFeature(prev => (prev + 1) % features.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [features.length]);
+
+  const stats: Stat[] = [
+    {
+      label: 'Consultórios Ativos',
+      value: '1,200+',
+      description: 'Profissionais confiam no TopSmile'
+    },
+    {
+      label: 'Pacientes Atendidos',
+      value: '500K+',
+      description: 'Consultas gerenciadas com sucesso'
+    },
+    {
+      label: 'Taxa de Satisfação',
+      value: '98%',
+      description: 'Aprovação dos nossos usuários'
+    },
+    {
+      label: 'Economia de Tempo',
+      value: '70%',
+      description: 'Redução no tempo administrativo'
     }
   ];
 

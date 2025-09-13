@@ -13,7 +13,7 @@ interface AuthResult {
   message?: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
   accessToken: string | null;
   user: User | null;
@@ -43,7 +43,7 @@ interface RegisterData {
   };
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();

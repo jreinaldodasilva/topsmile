@@ -82,10 +82,11 @@ const Toast: React.FC<ToastProps> = ({
   return (
     <div
       className={`toast toast--${type} ${isVisible ? 'toast--visible' : ''} ${isExiting ? 'toast--exiting' : ''}`}
+      data-testid="toast"
       role="alert"
       aria-live="assertive"
     >
-      <div className="toast__icon">
+      <div className="toast__icon" data-testid="toast-icon">
         {getIcon()}
       </div>
 

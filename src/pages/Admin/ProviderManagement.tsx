@@ -1,6 +1,5 @@
 // src/pages/Admin/ProviderManagement.tsx
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/apiService';
 import type { Provider } from '../../types/api';
 import EnhancedHeader from '../../components/Header/Header';
@@ -17,7 +16,6 @@ interface ProviderFilters {
 }
 
 const ProviderManagement: React.FC = () => {
-  const { user } = useAuth();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +32,7 @@ const ProviderManagement: React.FC = () => {
   const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
   // Fetch providers from backend
-  const fetchProviders = async () => {
+  const fetchProviders = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -78,11 +76,11 @@ const ProviderManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
     fetchProviders();
-  }, [filters]);
+  }, [fetchProviders]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
@@ -90,11 +88,6 @@ const ProviderManagement: React.FC = () => {
 
   const handleFilterChange = (key: keyof ProviderFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
-  };
-
-  const formatDate = (dateString: string | Date | undefined) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR');
   };
 
   const formatWorkingHours = (workingHours: Provider['workingHours']) => {

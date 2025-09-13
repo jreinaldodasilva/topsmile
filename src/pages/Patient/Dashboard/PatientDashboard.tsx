@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
@@ -22,22 +22,13 @@ interface Appointment {
 }
 
 const PatientDashboard: React.FC = function PatientDashboard() {
-  const { patientUser, logout, isAuthenticated } = usePatientAuth();
+  const { patientUser, isAuthenticated } = usePatientAuth();
   const navigate = useNavigate();
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/patient/login');
-      return;
-    }
-
-    fetchUpcomingAppointments();
-  }, [isAuthenticated, navigate]);
-
-  const fetchUpcomingAppointments = async () => {
+  const fetchUpcomingAppointments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -61,15 +52,16 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [patientUser?.patient._id]);
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error('Logout error:', error);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/patient/login');
+      return;
     }
-  };
+
+    fetchUpcomingAppointments();
+  }, [isAuthenticated, navigate, fetchUpcomingAppointments]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);

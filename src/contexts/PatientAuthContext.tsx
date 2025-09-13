@@ -36,7 +36,7 @@ interface PatientAuthResult {
   message?: string;
 }
 
-interface PatientAuthContextType {
+export interface PatientAuthContextType {
   isAuthenticated: boolean;
   accessToken: string | null;
   patientUser: PatientUser | null;
@@ -52,7 +52,7 @@ interface PatientAuthContextType {
 const ACCESS_KEY = 'topsmile_patient_access_token';
 const REFRESH_KEY = 'topsmile_patient_refresh_token';
 
-const PatientAuthContext = createContext<PatientAuthContextType | undefined>(undefined);
+export const PatientAuthContext = createContext<PatientAuthContextType | undefined>(undefined);
 
 export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
@@ -62,6 +62,22 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
 
   const isAuthenticated = !loading && !!accessToken && !!patientUser;
+
+  const performLogout = useCallback(async () => {
+    try {
+      setAccessToken(null);
+      setPatientUser(null);
+
+      localStorage.removeItem(ACCESS_KEY);
+      localStorage.removeItem(REFRESH_KEY);
+
+      await apiService.patientAuth.logout();
+      navigate('/patient/login');
+    } catch (error) {
+      console.error('Patient logout error:', error);
+      navigate('/patient/login');
+    }
+  }, [navigate]);
 
   // Initial authentication check
   useEffect(() => {
@@ -90,7 +106,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     verifyAuth();
-  }, []);
+  }, [performLogout]);
 
   const login = async (email: string, password: string): Promise<PatientAuthResult> => {
     try {
@@ -165,22 +181,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await performLogout();
   };
-
-  const performLogout = useCallback(async () => {
-    try {
-      setAccessToken(null);
-      setPatientUser(null);
-
-      localStorage.removeItem(ACCESS_KEY);
-      localStorage.removeItem(REFRESH_KEY);
-
-      await apiService.patientAuth.logout();
-      navigate('/patient/login');
-    } catch (error) {
-      console.error('Patient logout error:', error);
-      navigate('/patient/login');
-    }
-  }, [navigate]);
 
   const clearError = useCallback(() => {
     setError(null);

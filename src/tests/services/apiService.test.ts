@@ -20,7 +20,8 @@ describe('apiService', () => {
               role: 'admin'
             },
             accessToken: 'mock-access-token',
-            refreshToken: 'mock-refresh-token'
+            refreshToken: 'mock-refresh-token',
+            expiresIn: '3600'
           }
         };
 

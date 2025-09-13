@@ -114,6 +114,7 @@ const Modal: React.FC<ModalProps> = ({
   return (
     <div
       className="modal-backdrop"
+      data-testid="modal-backdrop"
       onClick={handleBackdropClick}
       role="dialog"
       aria-modal="true"
@@ -123,6 +124,7 @@ const Modal: React.FC<ModalProps> = ({
       <div
         ref={modalRef}
         className={`modal ${size ? `modal--${size}` : ''} ${className}`}
+        data-testid="modal"
         tabIndex={-1}
         role="document"
       >

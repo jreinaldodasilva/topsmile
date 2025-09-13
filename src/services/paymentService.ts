@@ -1,4 +1,4 @@
-import { loadStripe, Stripe, StripeElements, StripeCardElement } from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeCardElement } from '@stripe/stripe-js';
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || '');
@@ -100,7 +100,7 @@ class PaymentService {
 
         // For network or API errors, enable retry
         if (error.type === 'api_connection_error' || error.type === 'api_error') {
-          const retryState = this.initializeRetryState(retryId || clientSecret);
+          this.initializeRetryState(retryId || clientSecret);
           return {
             success: false,
             error: error.message,

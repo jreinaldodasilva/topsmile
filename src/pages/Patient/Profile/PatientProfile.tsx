@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
@@ -67,16 +67,7 @@ const PatientProfile: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'personal' | 'medical' | 'emergency'>('personal');
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/patient/login');
-      return;
-    }
-
-    loadPatientData();
-  }, [isAuthenticated, navigate]);
-
-  const loadPatientData = () => {
+  const loadPatientData = useCallback(() => {
     if (!patientUser?.patient) return;
 
     const patient = patientUser.patient;
@@ -107,7 +98,16 @@ const PatientProfile: React.FC = () => {
     });
 
     setLoading(false);
-  };
+  }, [patientUser]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/patient/login');
+      return;
+    }
+
+    loadPatientData();
+  }, [isAuthenticated, navigate, loadPatientData]);
 
   const handleInputChange = (field: string, value: string) => {
     setPatientData(prev => ({
