@@ -156,13 +156,13 @@ async function login(email: string, password: string): Promise<ApiResult<{
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-// ADDED: Patient authentication methods
+// ADDED: Patient authentication methods - FIXED endpoints to match backend
 async function patientLogin(email: string, password: string): Promise<ApiResult<{
   patientUser: any;
   accessToken: string;
   refreshToken: string;
 }>> {
-  const res = await request('/api/patient/auth/login', {
+  const res = await request('/api/patient-auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     auth: false
@@ -179,7 +179,7 @@ async function patientRegister(data: {
   accessToken?: string;
   refreshToken?: string;
 }>> {
-  const res = await request('/api/patient/auth/register', {
+  const res = await request('/api/patient-auth/register', {
     method: 'POST',
     body: JSON.stringify(data),
     auth: false
@@ -188,7 +188,7 @@ async function patientRegister(data: {
 }
 
 async function patientMe(): Promise<ApiResult<any>> {
-  const res = await request('/api/patient/auth/me');
+  const res = await request('/api/patient-auth/me');
   return { success: res.ok, data: res.data, message: res.message };
 }
 
@@ -196,7 +196,7 @@ async function patientRefreshToken(refreshToken: string): Promise<ApiResult<{
   accessToken: string;
   refreshToken: string;
 }>> {
-  const res = await request('/api/patient/auth/refresh', {
+  const res = await request('/api/patient-auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refreshToken }),
     auth: false
@@ -205,14 +205,14 @@ async function patientRefreshToken(refreshToken: string): Promise<ApiResult<{
 }
 
 async function patientLogout(): Promise<ApiResult<void>> {
-  const res = await request('/api/patient/auth/logout', {
+  const res = await request('/api/patient-auth/logout', {
     method: 'POST'
   });
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function patientVerifyEmail(token: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient/auth/verify-email', {
+  const res = await request('/api/patient-auth/verify-email', {
     method: 'POST',
     body: JSON.stringify({ token }),
     auth: false
@@ -221,7 +221,7 @@ async function patientVerifyEmail(token: string): Promise<ApiResult<void>> {
 }
 
 async function patientForgotPassword(email: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient/auth/forgot-password', {
+  const res = await request('/api/patient-auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
     auth: false
@@ -230,7 +230,7 @@ async function patientForgotPassword(email: string): Promise<ApiResult<void>> {
 }
 
 async function patientResetPassword(token: string, password: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient/auth/reset-password', {
+  const res = await request('/api/patient-auth/reset-password', {
     method: 'POST',
     body: JSON.stringify({ token, password }),
     auth: false

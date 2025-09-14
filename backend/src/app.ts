@@ -28,7 +28,7 @@ import patientAuthRoutes from './routes/patientAuth';
 
 // Contact routes
 import contactRoutes from './routes/contact';
-import adminContactRoutes from './routes/admin/contacts';
+import adminRoutes from './routes/admin';
 
 // Error handling
 import { errorHandler } from './middleware/errorHandler';
@@ -323,7 +323,7 @@ app.use("/api/appointment-types", appointmentTypesRoutes);
 app.use("/api/forms", formsRoutes);
 app.use("/api/docs", docsRoutes);
 app.use('/api/contact', contactRoutes);
-app.use('/api/admin/contacts', adminContactRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/patient-auth', patientAuthRoutes);
 
 
