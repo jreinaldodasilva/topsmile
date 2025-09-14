@@ -412,6 +412,30 @@ export type ApiError = {
   debug?: string; // Only in development
 };
 
+// ADDED: Calendar types
+export type CalendarEvent = {
+  id: string;
+  title: string;
+  start: string | Date;
+  end: string | Date;
+  patientId?: string;
+  providerId?: string;
+  appointmentTypeId?: string;
+  status?: string;
+  notes?: string;
+  [key: string]: any;
+};
+
+export type CreateCalendarEventRequest = {
+  title: string;
+  start: string | Date;
+  end: string | Date;
+  patientId?: string;
+  providerId?: string;
+  appointmentTypeId?: string;
+  notes?: string;
+};
+
 // ADDED: Scheduling types
 export type TimeSlot = {
   start: Date;

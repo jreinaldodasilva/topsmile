@@ -5,6 +5,7 @@ import type { Patient } from '../../types/api';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import PatientForm from '../../components/Admin/Forms/PatientForm';
+import ScheduleAppointmentModal from './ScheduleAppointmentModal';
 import './PatientManagement.css';
 
 interface PatientFilters {
@@ -34,6 +35,7 @@ const PatientManagement: React.FC = () => {
     page: 1,
     limit: 20
   });
+  const [sort, setSort] = useState<Record<string, any>>({ createdAt: -1 });
   const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [hasNext, setHasNext] = useState(false);
@@ -41,6 +43,7 @@ const PatientManagement: React.FC = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
+  const [schedulingPatient, setSchedulingPatient] = useState<Patient | null>(null);
 
   // Fetch patients from backend
   const fetchPatients = useCallback(async () => {
@@ -65,6 +68,10 @@ const PatientManagement: React.FC = () => {
 
       if (filters.limit) {
         queryParams.limit = filters.limit;
+      }
+
+      if (sort) {
+        queryParams.sort = JSON.stringify(sort);
       }
 
       // Call API service
@@ -122,6 +129,29 @@ const PatientManagement: React.FC = () => {
 
   const handlePageChange = (newPage: number) => {
     setFilters(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleSort = (field: string) => {
+    setSort(prev => {
+      const newSort: Record<string, any> = {};
+      if (prev[field]) {
+        newSort[field] = prev[field] === 1 ? -1 : 1;
+      } else {
+        newSort[field] = 1;
+      }
+      return newSort;
+    });
+  };
+
+  const handleDeletePatient = async (patientId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
+      try {
+        await apiService.patients.delete(patientId);
+        fetchPatients();
+      } catch (error) {
+        console.error('Failed to delete patient:', error);
+      }
+    }
   };
 
   const formatDate = (dateString: string | Date | undefined) => {
@@ -244,13 +274,23 @@ const PatientManagement: React.FC = () => {
         <table className="patients-table">
           <thead>
             <tr>
-              <th>Nome</th>
+              <th onClick={() => handleSort('fullName')}>
+                Nome {sort.fullName && (sort.fullName === 1 ? '▲' : '▼')}
+              </th>
               <th>Contato</th>
-              <th>Idade</th>
-              <th>Gênero</th>
+              <th onClick={() => handleSort('dateOfBirth')}>
+                Idade {sort.dateOfBirth && (sort.dateOfBirth === 1 ? '▲' : '▼')}
+              </th>
+              <th onClick={() => handleSort('gender')}>
+                Gênero {sort.gender && (sort.gender === 1 ? '▲' : '▼')}
+              </th>
               <th>CPF</th>
-              <th>Última Consulta</th>
-              <th>Status</th>
+              <th onClick={() => handleSort('updatedAt')}>
+                Última Consulta {sort.updatedAt && (sort.updatedAt === 1 ? '▲' : '▼')}
+              </th>
+              <th onClick={() => handleSort('isActive')}>
+                Status {sort.isActive && (sort.isActive === 1 ? '▲' : '▼')}
+              </th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -313,11 +353,20 @@ const PatientManagement: React.FC = () => {
                       </button>
                       <button
                         className="btn btn-sm btn-outline"
-                        onClick={() => {/* TODO: Schedule appointment */}}
+                        onClick={() => setSchedulingPatient(patient)}
                         title="Agendar consulta"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </button>
+                      <button
+                        className="btn btn-sm btn-outline btn-danger"
+                        onClick={() => handleDeletePatient(patient._id)}
+                        title="Excluir"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     </div>
@@ -500,6 +549,13 @@ const PatientManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {schedulingPatient && (
+        <ScheduleAppointmentModal 
+          patient={schedulingPatient} 
+          onClose={() => setSchedulingPatient(null)} 
+        />
       )}
 
       {/* Add/Edit Patient Modal */}

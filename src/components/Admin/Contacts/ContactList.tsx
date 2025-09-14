@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useContacts } from '../../../hooks/useApiState';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
+import ViewContactModal from './ViewContactModal';
+import CreateContactModal from './CreateContactModal';
 import './ContactList.css';
 
 interface ContactListProps {
@@ -9,7 +11,7 @@ interface ContactListProps {
 }
 
 const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
-  const { contactsData, loading, error, fetchContacts, updateContact, deleteContact } = useContacts();
+  const { contactsData, loading, error, fetchContacts, updateContact, deleteContact, createContact } = useContacts();
   
   // UPDATED: Use 'limit' instead of 'pageSize' to match backend
   const [filters, setFilters] = useState<ContactFilters>({ 
@@ -17,14 +19,30 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     limit: 10, 
     ...(initialFilters ?? {}) 
   });
+  const [sort, setSort] = useState<Record<string, any>>({ createdAt: -1 });
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  const handleViewContact = (contact: Contact) => {
+    setSelectedContact(contact);
+  };
+
+  const handleCreateContact = async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      await createContact(contact);
+      setIsCreateModalOpen(false);
+    } catch (error) {
+      console.error('Failed to create contact:', error);
+    }
+  };
 
   useEffect(() => {
     // Fetch on filters change
     (async () => {
-      await fetchContacts(filters);
+      await fetchContacts(filters, sort);
     })();
-  }, [fetchContacts, filters]);
+  }, [fetchContacts, filters, sort]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -67,6 +85,18 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     setFilters(prev => ({ ...(prev ?? {}), page }));
   };
 
+  const handleSort = (field: string) => {
+    setSort(prev => {
+      const newSort: Record<string, any> = {};
+      if (prev[field]) {
+        newSort[field] = prev[field] === 1 ? -1 : 1;
+      } else {
+        newSort[field] = 1;
+      }
+      return newSort;
+    });
+  };
+
   // UPDATED: Better handling of ContactListResponse vs Contact[] 
   const isContactListResponse = (data: any): data is ContactListResponse => {
     return data && typeof data === 'object' && 'contacts' in data && Array.isArray(data.contacts);
@@ -86,6 +116,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       {/* Header with filters */}
       <div className="contact-list-header">
         <h2>Gerenciar Contatos</h2>
+        <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>Criar Contato</button>
         <div className="contact-filters">
           <div className="search-box">
             <input 
@@ -138,6 +169,17 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         </div>
       </div>
 
+      {isCreateModalOpen && (
+        <CreateContactModal 
+          onClose={() => setIsCreateModalOpen(false)} 
+          onCreate={handleCreateContact} 
+        />
+      )}
+
+      {selectedContact && (
+        <ViewContactModal contact={selectedContact} onClose={() => setSelectedContact(null)} />
+      )}
+
       {/* Error banner */}
       {error && (
         <div className="error-banner">
@@ -168,13 +210,25 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
               <table className="contact-table">
                 <thead>
                   <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Clínica</th>
-                    <th>Especialidade</th>
+                    <th onClick={() => handleSort('name')}>
+                      Nome {sort.name && (sort.name === 1 ? '▲' : '▼')}
+                    </th>
+                    <th onClick={() => handleSort('email')}>
+                      Email {sort.email && (sort.email === 1 ? '▲' : '▼')}
+                    </th>
+                    <th onClick={() => handleSort('clinic')}>
+                      Clínica {sort.clinic && (sort.clinic === 1 ? '▲' : '▼')}
+                    </th>
+                    <th onClick={() => handleSort('specialty')}>
+                      Especialidade {sort.specialty && (sort.specialty === 1 ? '▲' : '▼')}
+                    </th>
                     <th>Telefone</th>
-                    <th>Status</th>
-                    <th>Data</th>
+                    <th onClick={() => handleSort('status')}>
+                      Status {sort.status && (sort.status === 1 ? '▲' : '▼')}
+                    </th>
+                    <th onClick={() => handleSort('createdAt')}>
+                      Data {sort.createdAt && (sort.createdAt === 1 ? '▲' : '▼')}
+                    </th>
                     <th>Ações</th>
                   </tr>
                 </thead>
@@ -225,7 +279,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
                             <button 
                               className="action-button view"
                               title="Visualizar detalhes"
-                              onClick={() => console.log('View contact', contactId)}
+                              onClick={() => handleViewContact(contact)}
                             >
                               👁️
                             </button>

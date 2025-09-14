@@ -409,6 +409,66 @@ async function mergeDuplicateContacts(
   return { success: res.ok, data: res.data, message: res.message };
 }
 
+// ADDED: Appointment Types API methods
+async function getAppointmentTypes(query?: Record<string, any>): Promise<ApiResult<AppointmentType[]>> {
+  const qs = query
+    ? '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+
+  const res = await request<AppointmentType[]>(`/api/appointment-types${qs}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function getAppointmentType(id: string): Promise<ApiResult<AppointmentType>> {
+  const res = await request<AppointmentType>(`/api/appointment-types/${encodeURIComponent(id)}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createAppointmentType(payload: Partial<AppointmentType>): Promise<ApiResult<AppointmentType>> {
+  const res = await request('/api/appointment-types', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function updateAppointmentType(id: string, payload: Partial<AppointmentType>): Promise<ApiResult<AppointmentType>> {
+  const res = await request(`/api/appointment-types/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function deleteAppointmentType(id: string): Promise<ApiResult<void>> {
+  const res = await request(`/api/appointment-types/${encodeURIComponent(id)}`, {
+    method: 'DELETE'
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+// ADDED: Calendar API methods
+async function getCalendarEvents(query?: Record<string, any>): Promise<ApiResult<any>> {
+  const qs = query
+    ? '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+
+  const res = await request(`/api/calendar${qs}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createCalendarEvent(payload: any): Promise<ApiResult<any>> {
+  const res = await request('/api/calendar', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
 // ADDED: Appointments API methods
 async function getAppointments(query?: Record<string, any>): Promise<ApiResult<Appointment[]>> {
   const qs = query
@@ -642,6 +702,24 @@ async function getHealthStatus(): Promise<ApiResult<{
   return { success: res.ok, data: res.data, message: res.message };
 }
 
+async function forgotPassword(email: string): Promise<ApiResult<void>> {
+  const res = await request('/api/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function resetPassword(token: string, password: string): Promise<ApiResult<void>> {
+  const res = await request('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
 /**
  * Main API service object with nested structure
  */
@@ -651,7 +729,9 @@ export const apiService = {
     register,
     me,
     refreshToken,
-    logout
+    logout,
+    forgotPassword,
+    resetPassword
   },
   patientAuth: {
     login: patientLogin,
@@ -680,6 +760,17 @@ export const apiService = {
     create: createAppointment,
     update: updateAppointment,
     delete: deleteAppointment
+  },
+  appointmentTypes: {
+    getAll: getAppointmentTypes,
+    getOne: getAppointmentType,
+    create: createAppointmentType,
+    update: updateAppointmentType,
+    delete: deleteAppointmentType
+  },
+  calendar: {
+    getEvents: getCalendarEvents,
+    createEvent: createCalendarEvent
   },
   forms: {
     templates: {
@@ -740,6 +831,13 @@ export const apiService = {
   createAppointment,
   updateAppointment,
   deleteAppointment,
+  getAppointmentTypes,
+  getAppointmentType,
+  createAppointmentType,
+  updateAppointmentType,
+  deleteAppointmentType,
+  getCalendarEvents,
+  createCalendarEvent,
   getFormTemplates,
   getFormTemplate,
   createFormTemplate,

@@ -1,5 +1,6 @@
 // src/pages/Admin/ProviderManagement.tsx
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
 import type { Provider } from '../../types/api';
 import EnhancedHeader from '../../components/Header/Header';
@@ -16,6 +17,7 @@ interface ProviderFilters {
 }
 
 const ProviderManagement: React.FC = () => {
+  const navigate = useNavigate();
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,6 +28,7 @@ const ProviderManagement: React.FC = () => {
     page: 1,
     limit: 20
   });
+  const [sort, setSort] = useState<Record<string, any>>({ createdAt: -1 });
   const [total, setTotal] = useState(0);
   const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -60,6 +63,10 @@ const ProviderManagement: React.FC = () => {
         queryParams.limit = filters.limit;
       }
 
+      if (sort) {
+        queryParams.sort = JSON.stringify(sort);
+      }
+
       // Call API service
       const result = await apiService.providers.getAll(queryParams);
 
@@ -88,6 +95,17 @@ const ProviderManagement: React.FC = () => {
 
   const handleFilterChange = (key: keyof ProviderFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  };
+
+  const handleDeleteProvider = async (providerId: string) => {
+    if (window.confirm('Tem certeza que deseja excluir este profissional?')) {
+      try {
+        await apiService.providers.delete(providerId);
+        fetchProviders();
+      } catch (error) {
+        console.error('Failed to delete provider:', error);
+      }
+    }
   };
 
   const formatWorkingHours = (workingHours: Provider['workingHours']) => {
@@ -212,6 +230,24 @@ const ProviderManagement: React.FC = () => {
               <option value="false">Inativos</option>
             </select>
           </div>
+
+          <div className="filter-group">
+            <label>Ordenar por:</label>
+            <select
+              value={Object.keys(sort)[0]}
+              onChange={(e) => setSort({ [e.target.value]: sort[Object.keys(sort)[0]] })}
+              className="filter-select"
+            >
+              <option value="createdAt">Data de Criação</option>
+              <option value="name">Nome</option>
+            </select>
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => setSort({ [Object.keys(sort)[0]]: sort[Object.keys(sort)[0]] === 1 ? -1 : 1 })}
+            >
+              {sort[Object.keys(sort)[0]] === 1 ? '▲' : '▼'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -324,11 +360,20 @@ const ProviderManagement: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-sm btn-outline"
-                      onClick={() => {/* TODO: View schedule */ }}
+                      onClick={() => navigate(`/admin/appointments?providerId=${provider._id}`)}
                       title="Ver agenda"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline btn-danger"
+                      onClick={() => handleDeleteProvider(provider._id)}
+                      title="Excluir"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                       </svg>
                     </button>
                   </div>

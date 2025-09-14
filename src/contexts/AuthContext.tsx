@@ -82,13 +82,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // Check if tokens exist in localStorage
+        // Check if tokens exist in storage
         if (!hasTokens()) {
           setLoading(false);
           return;
         }
 
-        const token = localStorage.getItem(ACCESS_KEY);
+        const token = getAccessToken();
         if (!token) {
           setLoading(false);
           return;
@@ -116,7 +116,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [performLogout]);
 
   // UPDATED: Enhanced login function
-  const login = async (email: string, password: string): Promise<AuthResult> => {
+  const login = async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
     try {
       setError(null);
       setLoading(true);
@@ -127,8 +127,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { user, accessToken, refreshToken } = response.data;
         
         // Store tokens
-        localStorage.setItem(ACCESS_KEY, accessToken);
-        localStorage.setItem(REFRESH_KEY, refreshToken);
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem(ACCESS_KEY, accessToken);
+        storage.setItem(REFRESH_KEY, refreshToken);
         
         // Update state
         setAccessToken(accessToken);
@@ -166,8 +167,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const { user, accessToken, refreshToken } = response.data;
         
         // Store tokens
-        localStorage.setItem(ACCESS_KEY, accessToken);
-        localStorage.setItem(REFRESH_KEY, refreshToken);
+        sessionStorage.setItem(ACCESS_KEY, accessToken);
+        sessionStorage.setItem(REFRESH_KEY, refreshToken);
         
         // Update state
         setAccessToken(accessToken);

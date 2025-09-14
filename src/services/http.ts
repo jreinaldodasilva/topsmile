@@ -48,7 +48,7 @@ let refreshingPromise: Promise<void> | null = null;
 
 /** UPDATED: Perform token refresh using backend endpoint */
 async function performRefresh(): Promise<void> {
-  const refreshToken = localStorage.getItem(REFRESH_KEY);
+  const refreshToken = getRefreshToken();
   if (!refreshToken) throw new Error('No refresh token available');
 
   const url = `${API_BASE_URL}/api/auth/refresh`;
@@ -120,7 +120,7 @@ export async function request<T = any>(
   };
 
   try {
-    const accessToken = localStorage.getItem(ACCESS_KEY);
+    const accessToken = getAccessToken();
     const res = await makeRequest(accessToken);
     
     // If not 401, return the response
@@ -163,11 +163,13 @@ export async function request<T = any>(
 
 /** UPDATED: Logout function to call backend endpoint */
 export async function logout(refreshToken?: string): Promise<void> {
-  const token = refreshToken || localStorage.getItem(REFRESH_KEY);
+  const token = refreshToken || getRefreshToken();
   
   // Clear local tokens first
   localStorage.removeItem(ACCESS_KEY);
   localStorage.removeItem(REFRESH_KEY);
+  sessionStorage.removeItem(ACCESS_KEY);
+  sessionStorage.removeItem(REFRESH_KEY);
   
   // Notify backend about logout (don't wait for response)
   if (token) {
@@ -191,17 +193,21 @@ export async function logout(refreshToken?: string): Promise<void> {
   }));
 }
 
+function getToken(key: string): string | null {
+  return localStorage.getItem(key) || sessionStorage.getItem(key);
+}
+
 /** ADDED: Check if tokens exist */
 export function hasTokens(): boolean {
-  return !!(localStorage.getItem(ACCESS_KEY) && localStorage.getItem(REFRESH_KEY));
+  return !!(getToken(ACCESS_KEY) && getToken(REFRESH_KEY));
 }
 
 /** ADDED: Get current access token */
 export function getAccessToken(): string | null {
-  return localStorage.getItem(ACCESS_KEY);
+  return getToken(ACCESS_KEY);
 }
 
 /** ADDED: Get current refresh token */
 export function getRefreshToken(): string | null {
-  return localStorage.getItem(REFRESH_KEY);
+  return getToken(REFRESH_KEY);
 }

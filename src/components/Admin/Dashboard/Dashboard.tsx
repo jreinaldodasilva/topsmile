@@ -1,20 +1,9 @@
-// src/components/Admin/Dashboard/EnhancedDashboard.tsx
+// src/components/Admin/Dashboard/Dashboard.tsx
 import React, { useState, useEffect } from 'react';
 import Button from '../../UI/Button/Button';
+import { apiService } from '../../../services/apiService';
+import { DashboardStats, Appointment as ApiAppointment, Patient } from '../../../types/api';
 import './Dashboard.css';
-
-interface DashboardStats {
-  totalPatients: number;
-  todayAppointments: number;
-  monthlyRevenue: number;
-  satisfaction: number;
-  trends: {
-    patients: number;
-    appointments: number;
-    revenue: number;
-    satisfaction: number;
-  };
-}
 
 interface Appointment {
   id: string;
@@ -43,11 +32,25 @@ interface Task {
 
 const EnhancedDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats>({
-    totalPatients: 0,
-    todayAppointments: 0,
-    monthlyRevenue: 0,
-    satisfaction: 0,
-    trends: { patients: 0, appointments: 0, revenue: 0, satisfaction: 0 }
+    contacts: {
+      total: 0,
+      byStatus: [],
+      bySource: [],
+      recentCount: 0,
+      monthlyTrend: []
+    },
+    summary: {
+      totalContacts: 0,
+      newThisWeek: 0,
+      conversionRate: 0,
+      revenue: '0'
+    },
+    user: {
+      name: '',
+      role: '',
+      clinicId: '',
+      lastActivity: ''
+    }
   });
   
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
@@ -59,81 +62,50 @@ const EnhancedDashboard: React.FC = () => {
   useEffect(() => {
     const loadDashboardData = async () => {
       setIsLoading(true);
-      
-      // Simulate API calls
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStats({
-        totalPatients: 1247,
-        todayAppointments: 12,
-        monthlyRevenue: 45680,
-        satisfaction: 4.8,
-        trends: {
-          patients: 12,
-          appointments: 8,
-          revenue: 15,
-          satisfaction: 5
-        }
-      });
+      try {
+        const [statsRes, appointmentsRes, patientsRes] = await Promise.all([
+          apiService.dashboard.getStats(),
+          apiService.appointments.getAll({ limit: 5, sort: 'scheduledStart' }),
+          apiService.patients.getAll({ limit: 5, sort: '-createdAt' })
+        ]);
 
-      setUpcomingAppointments([
-        {
-          id: '1',
-          patientName: 'Maria Silva',
-          time: '09:00',
-          type: 'Limpeza',
-          status: 'scheduled'
-        },
-        {
-          id: '2',
-          patientName: 'João Santos',
-          time: '10:30',
-          type: 'Consulta',
-          status: 'in-progress'
-        },
-        {
-          id: '3',
-          patientName: 'Ana Costa',
-          time: '14:00',
-          type: 'Tratamento',
-          status: 'scheduled'
+        if (statsRes.success && statsRes.data) {
+          setStats(statsRes.data);
+        } else {
+          console.error(statsRes.message);
         }
-      ]);
 
-      setRecentPatients([
-        {
-          id: '1',
-          name: 'Carlos Oliveira',
-          lastVisit: new Date('2024-01-15'),
-          nextAppointment: new Date('2024-02-20'),
-          status: 'active'
-        },
-        {
-          id: '2',
-          name: 'Lucia Ferreira',
-          lastVisit: new Date('2024-01-10'),
-          status: 'inactive'
+        if (appointmentsRes.success && appointmentsRes.data) {
+          const mappedAppointments: Appointment[] = (appointmentsRes.data as ApiAppointment[]).slice(0, 5).map(apiApt => ({
+            id: apiApt._id || apiApt.id || '',
+            patientName: typeof apiApt.patient === 'string' ? apiApt.patient : apiApt.patient?.fullName || `${apiApt.patient?.firstName} ${apiApt.patient?.lastName || ''}`.trim() || 'Unknown',
+            time: new Date(apiApt.scheduledStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            type: typeof apiApt.appointmentType === 'string' ? apiApt.appointmentType : apiApt.appointmentType?.name || 'Consulta',
+            status: apiApt.status === 'scheduled' ? 'scheduled' : apiApt.status === 'in_progress' ? 'in-progress' : apiApt.status === 'completed' ? 'completed' : 'cancelled'
+          }));
+          setUpcomingAppointments(mappedAppointments);
+        } else {
+          console.error(appointmentsRes.message);
         }
-      ]);
 
-      setPendingTasks([
-        {
-          id: '1',
-          title: 'Confirmar consulta de amanhã',
-          priority: 'high',
-          dueDate: new Date(),
-          completed: false
-        },
-        {
-          id: '2',
-          title: 'Atualizar fichas médicas',
-          priority: 'medium',
-          dueDate: new Date('2024-02-25'),
-          completed: false
+        if (patientsRes.success && patientsRes.data) {
+          const patientsArray = Array.isArray(patientsRes.data) ? patientsRes.data : patientsRes.data.patients || [];
+          const mappedPatients: RecentPatient[] = patientsArray.slice(0, 5).map(apiPatient => ({
+            id: apiPatient._id || '',
+            name: apiPatient.fullName || `${apiPatient.firstName} ${apiPatient.lastName || ''}`.trim(),
+            lastVisit: new Date(apiPatient.createdAt || Date.now()),
+            status: apiPatient.isActive ? 'active' : 'inactive'
+          }));
+          setRecentPatients(mappedPatients);
+        } else {
+          console.error(patientsRes.message);
         }
-      ]);
 
-      setIsLoading(false);
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadDashboardData();
@@ -261,16 +233,13 @@ const EnhancedDashboard: React.FC = () => {
             </div>
             <div className="dashboard__stat-content">
               <div className="dashboard__stat-header">
-                <h3 className="dashboard__stat-title">Total de Pacientes</h3>
+                <h3 className="dashboard__stat-title">Total de Contatos</h3>
                 <div className="dashboard__stat-trend">
-                  {getTrendIcon(stats.trends.patients)}
-                  <span className={stats.trends.patients > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
-                    {Math.abs(stats.trends.patients)}%
-                  </span>
+                  <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{stats.totalPatients.toLocaleString()}</div>
-              <p className="dashboard__stat-description">vs mês anterior</p>
+              <div className="dashboard__stat-value">{stats.contacts.total.toLocaleString()}</div>
+              <p className="dashboard__stat-description">total registrado</p>
             </div>
           </div>
 
@@ -282,16 +251,13 @@ const EnhancedDashboard: React.FC = () => {
             </div>
             <div className="dashboard__stat-content">
               <div className="dashboard__stat-header">
-                <h3 className="dashboard__stat-title">Consultas Hoje</h3>
+                <h3 className="dashboard__stat-title">Novos Esta Semana</h3>
                 <div className="dashboard__stat-trend">
-                  {getTrendIcon(stats.trends.appointments)}
-                  <span className={stats.trends.appointments > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
-                    {Math.abs(stats.trends.appointments)}%
-                  </span>
+                  <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{stats.todayAppointments}</div>
-              <p className="dashboard__stat-description">esta semana</p>
+              <div className="dashboard__stat-value">{stats.summary.newThisWeek}</div>
+              <p className="dashboard__stat-description">novos contatos</p>
             </div>
           </div>
 
@@ -304,16 +270,13 @@ const EnhancedDashboard: React.FC = () => {
             </div>
             <div className="dashboard__stat-content">
               <div className="dashboard__stat-header">
-                <h3 className="dashboard__stat-title">Receita Mensal</h3>
+                <h3 className="dashboard__stat-title">Taxa de Conversão</h3>
                 <div className="dashboard__stat-trend">
-                  {getTrendIcon(stats.trends.revenue)}
-                  <span className={stats.trends.revenue > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
-                    {Math.abs(stats.trends.revenue)}%
-                  </span>
+                  <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{formatCurrency(stats.monthlyRevenue)}</div>
-              <p className="dashboard__stat-description">este mês</p>
+              <div className="dashboard__stat-value">{(stats.summary.conversionRate * 100).toFixed(1)}%</div>
+              <p className="dashboard__stat-description">taxa de conversão</p>
             </div>
           </div>
 
@@ -325,16 +288,13 @@ const EnhancedDashboard: React.FC = () => {
             </div>
             <div className="dashboard__stat-content">
               <div className="dashboard__stat-header">
-                <h3 className="dashboard__stat-title">Satisfação</h3>
+                <h3 className="dashboard__stat-title">Receita</h3>
                 <div className="dashboard__stat-trend">
-                  {getTrendIcon(stats.trends.satisfaction)}
-                  <span className={stats.trends.satisfaction > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
-                    {Math.abs(stats.trends.satisfaction)}%
-                  </span>
+                  <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{stats.satisfaction}/5</div>
-              <p className="dashboard__stat-description">avaliação média</p>
+              <div className="dashboard__stat-value">{formatCurrency(parseFloat(stats.summary.revenue || '0'))}</div>
+              <p className="dashboard__stat-description">receita total</p>
             </div>
           </div>
         </div>

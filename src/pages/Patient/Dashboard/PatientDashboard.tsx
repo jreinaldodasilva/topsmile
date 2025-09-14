@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
-import { apiService } from '../../../services/apiService';
+import { useAppointments } from '../../../hooks/useApiState';
 import PatientNavigation from '../../../components/PatientNavigation';
 import './PatientDashboard.css';
 
@@ -24,35 +24,32 @@ interface Appointment {
 const PatientDashboard: React.FC = function PatientDashboard() {
   const { patientUser, isAuthenticated } = usePatientAuth();
   const navigate = useNavigate();
+  const { appointments: allAppointments, loading, error, fetchAppointments } = useAppointments();
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const fetchUpcomingAppointments = useCallback(async () => {
     try {
-      setLoading(true);
-      setError(null);
-
-      // Get appointments for the current patient
-      const response = await apiService.appointments.getAll({
+      // Get all appointments for the current patient
+      await fetchAppointments({
         patient: patientUser?.patient._id,
-        status: 'scheduled,confirmed',
-        limit: 5,
         sort: 'scheduledStart'
       });
-
-      if (response.success && response.data) {
-        setUpcomingAppointments(response.data as Appointment[]);
-      } else {
-        setError('Erro ao carregar agendamentos');
-      }
     } catch (err: any) {
       console.error('Error fetching appointments:', err);
-      setError('Erro ao carregar agendamentos');
-    } finally {
-      setLoading(false);
     }
-  }, [patientUser?.patient._id]);
+  }, [patientUser?.patient._id, fetchAppointments]);
+
+  // Filter upcoming appointments when allAppointments changes
+  useEffect(() => {
+    if (allAppointments) {
+      const upcoming = allAppointments
+        .filter(a => new Date(a.scheduledStart) > new Date())
+        .slice(0, 5);
+      setUpcomingAppointments(upcoming);
+    }
+  }, [allAppointments]);
+
+  const fetchAllAppointments = fetchUpcomingAppointments;
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -60,8 +57,14 @@ const PatientDashboard: React.FC = function PatientDashboard() {
       return;
     }
 
-    fetchUpcomingAppointments();
-  }, [isAuthenticated, navigate, fetchUpcomingAppointments]);
+    fetchAllAppointments();
+
+    const interval = setInterval(() => {
+      fetchAllAppointments();
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [isAuthenticated, navigate, fetchAllAppointments]);
 
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -92,6 +95,10 @@ const PatientDashboard: React.FC = function PatientDashboard() {
         return status;
     }
   };
+
+  const totalAppointments = allAppointments?.length || 0;
+  const completedAppointments = allAppointments?.filter(a => a.status === 'completed').length || 0;
+  const pendingAppointments = totalAppointments - completedAppointments;
 
   if (!patientUser) {
     return (
@@ -266,30 +273,32 @@ const PatientDashboard: React.FC = function PatientDashboard() {
                   </svg>
                 </div>
                 <div className="health-content">
-                  <h3>Próxima Consulta</h3>
-                  <p>
-                    {upcomingAppointments.length > 0
-                      ? formatDateTime(upcomingAppointments[0].scheduledStart).date
-                      : 'Nenhuma agendada'
-                    }
-                  </p>
+                  <h3>Total de Consultas</h3>
+                  <p>{totalAppointments}</p>
                 </div>
               </div>
 
               <div className="health-card">
                 <div className="health-icon">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
                 <div className="health-content">
-                  <h3>Seu Dentista</h3>
-                  <p>
-                    {upcomingAppointments.length > 0
-                      ? `Dr. ${upcomingAppointments[0].provider.name}`
-                      : 'Nenhum agendado'
-                    }
-                  </p>
+                  <h3>Consultas Realizadas</h3>
+                  <p>{completedAppointments}</p>
+                </div>
+              </div>
+
+              <div className="health-card">
+                <div className="health-icon">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div className="health-content">
+                  <h3>Consultas Pendentes</h3>
+                  <p>{pendingAppointments}</p>
                 </div>
               </div>
             </div>
@@ -330,24 +339,25 @@ const PatientDashboard: React.FC = function PatientDashboard() {
                 </div>
               )}
 
-              {/* Standard reminders */}
-              <div className="reminder-card reminder-appointment">
-                <div className="reminder-icon">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+{upcomingAppointments.length === 0 && (
+                <div className="reminder-card reminder-appointment">
+                  <div className="reminder-icon">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="reminder-content">
+                    <h3>Agende sua próxima consulta</h3>
+                    <p>Não encontramos nenhuma consulta futura. Mantenha sua saúde bucal em dia.</p>
+                    <button
+                      onClick={() => navigate('/patient/appointments/new')}
+                      className="schedule-button"
+                    >
+                      Agendar Consulta
+                    </button>
+                  </div>
                 </div>
-                <div className="reminder-content">
-                  <h3>Consulta de Rotina</h3>
-                  <p>Próxima consulta preventiva recomendada a cada 6 meses</p>
-                  <span className="reminder-date">
-                    {upcomingAppointments.length > 0
-                      ? `Próxima: ${formatDateTime(upcomingAppointments[0].scheduledStart).date}`
-                      : 'Agende sua consulta'
-                    }
-                  </span>
-                </div>
-              </div>
+              )}
 
               <div className="reminder-card reminder-cleaning">
                 <div className="reminder-icon">
@@ -362,18 +372,28 @@ const PatientDashboard: React.FC = function PatientDashboard() {
                 </div>
               </div>
 
-              <div className="reminder-card reminder-profile">
-                <div className="reminder-icon">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
+              {(!patientUser?.patient?.medicalHistory ||
+                !patientUser.patient.medicalHistory.allergies ||
+                !patientUser.patient.medicalHistory.medications ||
+                !patientUser.patient.medicalHistory.conditions) && (
+                <div className="reminder-card reminder-profile">
+                  <div className="reminder-icon">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="reminder-content">
+                    <h3>Complete seu Perfil de Saúde</h3>
+                    <p>Manter seu histórico médico atualizado nos ajuda a oferecer um melhor atendimento.</p>
+                    <button
+                      onClick={() => navigate('/patient/profile')}
+                      className="schedule-button"
+                    >
+                      Completar Perfil
+                    </button>
+                  </div>
                 </div>
-                <div className="reminder-content">
-                  <h3>Perfil de Saúde</h3>
-                  <p>Mantenha suas informações médicas atualizadas</p>
-                  <span className="reminder-date">Ação recomendada</span>
-                </div>
-              </div>
+              )}
             </div>
           </section>
         </div>

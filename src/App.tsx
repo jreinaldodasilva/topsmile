@@ -7,6 +7,7 @@ import { ErrorProvider } from './contexts/ErrorContext';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import { NotificationContainer } from './components/Notifications';
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
+import PatientProtectedRoute from './components/Auth/PatientProtectedRoute/PatientProtectedRoute';
 import Skeleton from './components/UI/Skeleton/Skeleton';
 import CalendarPage from "./pages/Calendar/CalendarPage";
 import FormRendererPage from "./pages/FormRenderer/FormRendererPage";
@@ -53,6 +54,8 @@ const PricingPage = React.lazy(() => import('./pages/Pricing/PricingPage'));
 const ContactPage = React.lazy(() => import('./pages/Contact/ContactPage'));
 const LoginPage = React.lazy(() => import('./pages/Login/LoginPage'));
 const RegisterPage = React.lazy(() => import('./pages/Login/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/Login/ForgotPasswordPage'));
+const ResetPasswordPage = React.lazy(() => import('./pages/Login/ResetPasswordPage'));
 const TestComponents = React.lazy(() => import('./pages/TestComponents/TestComponents'));
 
 // Admin pages
@@ -130,6 +133,22 @@ const App: React.FC = () => (
                     } 
                   />
                   <Route 
+                    path="/forgot-password" 
+                    element={
+                      <ErrorBoundary level="page" context="forgot-password-page">
+                        <ForgotPasswordPage />
+                      </ErrorBoundary>
+                    } 
+                  />
+                  <Route 
+                    path="/reset-password" 
+                    element={
+                      <ErrorBoundary level="page" context="reset-password-page">
+                        <ResetPasswordPage />
+                      </ErrorBoundary>
+                    } 
+                  />
+                  <Route 
                     path="/calendar" 
                     element={
                       <ErrorBoundary level="page" context="calendar-page">
@@ -176,27 +195,33 @@ const App: React.FC = () => (
                   <Route
                     path="/patient/dashboard"
                     element={
-                      <ErrorBoundary level="page" context="patient-dashboard">
-                        <PatientDashboard />
-                      </ErrorBoundary>
+                      <PatientProtectedRoute>
+                        <ErrorBoundary level="page" context="patient-dashboard">
+                          <PatientDashboard />
+                        </ErrorBoundary>
+                      </PatientProtectedRoute>
                     }
                   />
 
                   <Route
                     path="/patient/appointments"
                     element={
-                      <ErrorBoundary level="page" context="patient-appointments">
-                        <PatientAppointmentsList />
-                      </ErrorBoundary>
+                      <PatientProtectedRoute>
+                        <ErrorBoundary level="page" context="patient-appointments">
+                          <PatientAppointmentsList />
+                        </ErrorBoundary>
+                      </PatientProtectedRoute>
                     }
                   />
 
                   <Route
                     path="/patient/appointments/new"
                     element={
-                      <ErrorBoundary level="page" context="patient-appointment-booking">
-                        <PatientAppointmentBooking />
-                      </ErrorBoundary>
+                      <PatientProtectedRoute>
+                        <ErrorBoundary level="page" context="patient-appointment-booking">
+                          <PatientAppointmentBooking />
+                        </ErrorBoundary>
+                      </PatientProtectedRoute>
                     }
                   />
 
@@ -277,18 +302,22 @@ const App: React.FC = () => (
                   <Route
                     path="/patient/appointments/:id"
                     element={
-                      <ErrorBoundary level="page" context="patient-appointment-detail">
-                        <PatientAppointmentDetail />
-                      </ErrorBoundary>
-                  }
-                />
+                      <PatientProtectedRoute>
+                        <ErrorBoundary level="page" context="patient-appointment-detail">
+                          <PatientAppointmentDetail />
+                        </ErrorBoundary>
+                      </PatientProtectedRoute>
+                    }
+                  />
 
                   <Route
                     path="/patient/profile"
                     element={
-                      <ErrorBoundary level="page" context="patient-profile">
-                        <PatientProfile />
-                      </ErrorBoundary>
+                      <PatientProtectedRoute>
+                        <ErrorBoundary level="page" context="patient-profile">
+                          <PatientProfile />
+                        </ErrorBoundary>
+                      </PatientProtectedRoute>
                     }
                   />
 

@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
     clearError();
 
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await login(formData.email, formData.password, rememberMe);
       
       if (result.success) {
         // Navigation is handled by the auth context
@@ -174,9 +174,9 @@ const LoginPage: React.FC = () => {
                 </label>
               </div>
 
-              <button type="button" className="forgot-password" onClick={() => alert('Funcionalidade em desenvolvimento')}>
+              <Link to="/forgot-password" className="forgot-password">
                 Esqueceu a senha?
-              </button>
+              </Link>
             </div>
           </div>
 
