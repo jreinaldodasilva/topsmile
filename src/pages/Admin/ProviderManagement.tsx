@@ -71,8 +71,8 @@ const ProviderManagement: React.FC = () => {
       const result = await apiService.providers.getAll(queryParams);
 
       if (result.success && result.data) {
-        setProviders(result.data);
-        setTotal(result.data.length); // Note: Backend should return total count in pagination
+        setProviders(Array.isArray(result.data) ? result.data : result.data.providers);
+        setTotal(Array.isArray(result.data) ? result.data.length : result.data.total);
       } else {
         setError(result.message || 'Erro ao carregar profissionais');
         setProviders([]);
@@ -369,7 +369,7 @@ const ProviderManagement: React.FC = () => {
                     </button>
                     <button
                       className="btn btn-sm btn-outline btn-danger"
-                      onClick={() => handleDeleteProvider(provider._id)}
+                      onClick={() => provider._id && handleDeleteProvider(provider._id)}
                       title="Excluir"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -82,7 +82,7 @@ const AppointmentCalendar: React.FC = () => {
       }
 
       if (providersResult.success && providersResult.data) {
-        setProviders(providersResult.data);
+        setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data.providers);
       } else {
         // Don't set error for providers, just use empty array
         setProviders([]);

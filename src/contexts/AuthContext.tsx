@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, hasTokens, getRefreshToken } from '../services/http';
+import { logout as httpLogout, hasTokens, getRefreshToken, getAccessToken } from '../services/http';
 import type { User } from '../types/api';
 
 const ACCESS_KEY = 'topsmile_access_token';
@@ -19,7 +19,7 @@ export interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (email: string, password: string) => Promise<AuthResult>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<AuthResult>;
   register: (data: RegisterData) => Promise<AuthResult>;
   logout: (reason?: string) => Promise<void>;
   clearError: () => void;
