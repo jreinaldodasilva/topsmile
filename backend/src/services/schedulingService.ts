@@ -366,7 +366,8 @@ class SchedulingService {
                 newDate: newStart,
                 reason,
                 rescheduleBy,
-                timestamp: new Date()
+                timestamp: new Date(),
+                rescheduleCount: appointment.rescheduleHistory.length + 1
             });
 
             appointment.scheduledStart = newStart;

@@ -183,10 +183,11 @@ class AppointmentService {
         }
         appointment.rescheduleHistory.push({
           oldDate: appointment.scheduledStart,
-          newDate: appointment.scheduledEnd,
+          newDate: data.scheduledStart,
           reason: data.rescheduleHistory?.[0]?.reason || 'Reagendamento',
           rescheduleBy: 'clinic',
-          timestamp: new Date()
+          timestamp: new Date(),
+          rescheduleCount: appointment.rescheduleHistory.length + 1
         });
 
         appointment.scheduledStart = data.scheduledStart;
@@ -333,10 +334,11 @@ class AppointmentService {
 
       appointment.rescheduleHistory.push({
         oldDate: appointment.scheduledStart,
-        newDate: appointment.scheduledEnd,
+        newDate: newStart,
         reason,
         rescheduleBy: 'clinic',
-        timestamp: new Date()
+        timestamp: new Date(),
+        rescheduleCount: appointment.rescheduleHistory.length + 1
       });
 
       appointment.scheduledStart = newStart;
