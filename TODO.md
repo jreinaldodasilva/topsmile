@@ -1,4 +1,6 @@
 
+# Todo
+
 ## 🔒 Patch 1 — Secure reset-password flow
 
 **Files:** `src/services/authService.ts` (main), new helper for email sending assumed (`emailService`).
@@ -104,4 +106,3 @@ Apply the same logic to **reschedule** and **update** methods wherever overlap c
 
 * Reset-password flow no longer leaks a temporary password; instead it follows secure token-email flow.
 * Appointment booking logic uses a canonical, correct overlap check that covers all cases (adjacent vs. overlapping).
-

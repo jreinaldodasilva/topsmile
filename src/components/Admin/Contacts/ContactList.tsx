@@ -5,6 +5,8 @@ import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import ViewContactModal from './ViewContactModal';
 import CreateContactModal from './CreateContactModal';
+import Modal from '../../UI/Modal/Modal';
+import Button from '../../UI/Button/Button';
 import './ContactList.css';
 
 interface ContactListProps {
@@ -32,6 +34,12 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     count: number;
   }>>([]);
   const [showDuplicates, setShowDuplicates] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    message: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+  } | null>(null);
 
   const handleViewContact = (contact: Contact) => {
     setSelectedContact(contact);
@@ -89,13 +97,18 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   };
 
   const handleDeleteContact = async (contactId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este contato?')) {
-      try {
-        await deleteContact(contactId);
-      } catch (error) {
-        console.error('Failed to delete contact:', error);
-      }
-    }
+    setConfirmDialog({
+      isOpen: true,
+      message: 'Tem certeza que deseja excluir este contato?',
+      onConfirm: async () => {
+        try {
+          await deleteContact(contactId);
+        } catch (error) {
+          console.error('Failed to delete contact:', error);
+        }
+        setConfirmDialog(null);
+      },
+    });
   };
 
   const handlePageChange = (page: number) => {
@@ -155,27 +168,30 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       return;
     }
 
-    if (!confirm(`Tem certeza que deseja marcar ${selectedContacts.size} contato(s) como "${status}"?`)) {
-      return;
-    }
-
-    setBatchLoading(true);
-    try {
-      const result = await apiService.contacts.batchUpdate(Array.from(selectedContacts), status as any);
-      if (result.success) {
-        alert(`${result.data?.modifiedCount} contato(s) atualizado(s) com sucesso`);
-        setSelectedContacts(new Set());
-        // Refresh the list
-        fetchContacts(filters, sort);
-      } else {
-        alert('Erro ao atualizar contatos: ' + result.message);
-      }
-    } catch (error) {
-      console.error('Batch update error:', error);
-      alert('Erro ao atualizar contatos');
-    } finally {
-      setBatchLoading(false);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      message: `Tem certeza que deseja marcar ${selectedContacts.size} contato(s) como "${status}"?`,
+      onConfirm: async () => {
+        setBatchLoading(true);
+        try {
+          const result = await apiService.contacts.batchUpdate(Array.from(selectedContacts), status as any);
+          if (result.success) {
+            alert(`${result.data?.modifiedCount} contato(s) atualizado(s) com sucesso`);
+            setSelectedContacts(new Set());
+            // Refresh the list
+            fetchContacts(filters, sort);
+          } else {
+            alert('Erro ao atualizar contatos: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Batch update error:', error);
+          alert('Erro ao atualizar contatos');
+        } finally {
+          setBatchLoading(false);
+        }
+        setConfirmDialog(null);
+      },
+    });
   };
 
   const handleFindDuplicates = async () => {
@@ -194,23 +210,26 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   };
 
   const handleMergeDuplicates = async (primaryId: string, duplicateIds: string[]) => {
-    if (!confirm('Tem certeza que deseja mesclar estes contatos? Os duplicados serão marcados como mesclados.')) {
-      return;
-    }
-
-    try {
-      const result = await apiService.contacts.mergeDuplicates(primaryId, duplicateIds);
-      if (result.success) {
-        alert('Contatos mesclados com sucesso');
-        setShowDuplicates(false);
-        fetchContacts(filters, sort);
-      } else {
-        alert('Erro ao mesclar contatos: ' + result.message);
-      }
-    } catch (error) {
-      console.error('Merge duplicates error:', error);
-      alert('Erro ao mesclar contatos');
-    }
+    setConfirmDialog({
+      isOpen: true,
+      message: 'Tem certeza que deseja mesclar estes contatos? Os duplicados serão marcados como mesclados.',
+      onConfirm: async () => {
+        try {
+          const result = await apiService.contacts.mergeDuplicates(primaryId, duplicateIds);
+          if (result.success) {
+            alert('Contatos mesclados com sucesso');
+            setShowDuplicates(false);
+            fetchContacts(filters, sort);
+          } else {
+            alert('Erro ao mesclar contatos: ' + result.message);
+          }
+        } catch (error) {
+          console.error('Merge duplicates error:', error);
+          alert('Erro ao mesclar contatos');
+        }
+        setConfirmDialog(null);
+      },
+    });
   };
 
   return (
@@ -558,6 +577,24 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
           )}
         </>
       ) : null}
+
+      {confirmDialog && (
+        <Modal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          title="Confirmar"
+          description={confirmDialog.message}
+        >
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            <Button variant="outline" onClick={() => setConfirmDialog(null)}>
+              Cancelar
+            </Button>
+            <Button variant="destructive" onClick={() => confirmDialog.onConfirm()}>
+              Confirmar
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
