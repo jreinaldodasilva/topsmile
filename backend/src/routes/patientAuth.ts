@@ -7,10 +7,14 @@ import { isAppError } from '../types/errors';
 
 const router = express.Router();
 
-const standardResponse = (data: any, message?: string) => ({
+const standardResponse = (data: any, message?: string, req?: express.Request) => ({
     success: true,
     data,
-    ...(message && { message })
+    ...(message && { message }),
+    meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any)?.requestId
+    }
 });
 
 const enhancedRegisterValidation = [
@@ -83,7 +87,7 @@ router.post('/register',
                 accessToken: result.data.accessToken,
                 expiresIn: result.data.expiresIn,
                 requiresEmailVerification: result.data.requiresEmailVerification
-            }, 'Conta criada com sucesso'));
+            }, 'Conta criada com sucesso', req));
 
         } catch (error) {
             console.error('Patient registration error:', error);
@@ -128,7 +132,7 @@ router.post('/login',
                 accessToken: result.data.accessToken,
                 expiresIn: result.data.expiresIn,
                 requiresEmailVerification: result.data.requiresEmailVerification
-            }, 'Login realizado com sucesso'));
+            }, 'Login realizado com sucesso', req));
 
         } catch (error) {
             console.error('Patient login error:', error);
@@ -157,8 +161,7 @@ router.patch('/profile',
         body('birthDate').optional().isISO8601(),
     ],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
-        // Update patient profile logic
-        res.json({success: true, message: "Not implemented yet"})
+        res.json(standardResponse(null, "Not implemented yet", req))
     }
 );
 
@@ -171,8 +174,7 @@ router.patch('/change-password',
             .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     ],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
-        // Change password logic
-        res.json({success: true, message: "Not implemented yet"})
+        res.json(standardResponse(null, "Not implemented yet", req))
     }
 );
 
@@ -180,8 +182,7 @@ router.post('/resend-verification',
     patientAuthLimiter,
     [body('email').isEmail().normalizeEmail()],
     async (req: express.Request, res: express.Response) => {
-        // Resend verification email logic
-        res.json({success: true, message: "Not implemented yet"})
+        res.json(standardResponse(null, "Not implemented yet", req))
     }
 );
 
@@ -191,7 +192,7 @@ router.delete('/account',
     [body('password').notEmpty()],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
         // Delete account logic with confirmation
-        res.json({success: true, message: "Not implemented yet"})
+        res.json(standardResponse(null, "Not implemented yet", req))
     }
 );
 

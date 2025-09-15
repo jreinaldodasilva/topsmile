@@ -9,7 +9,7 @@ const getDatabaseConfig = (): DatabaseConfig => {
   const uri = process.env.DATABASE_URL || 'mongodb://localhost:27017/topsmile';
   
   const options: mongoose.ConnectOptions = {
-    maxPoolSize: 10, // Maintain up to 10 socket connections
+    maxPoolSize: 50, // Increased for production workloads (recommended 20-50)
     serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     bufferCommands: false // Disable mongoose buffering

@@ -238,7 +238,13 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
 
     const result = await authService.register(req.body);
 
-    return res.status(201).json(result);
+    return res.status(201).json({
+      ...result,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
+    });
   } catch (error) {
     console.error('Register error:', error);
 
@@ -302,7 +308,13 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
 
     const result = await authService.login(req.body, deviceInfo);
 
-    return res.json(result);
+    return res.json({
+      ...result,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
+    });
   } catch (error) {
     console.error('Login error:', error);
 
@@ -343,7 +355,11 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
 
     return res.json({
       success: true,
-      data: user
+      data: user,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     if (error instanceof NotFoundError) {
@@ -409,7 +425,11 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
 
     return res.json({
       success: true,
-      message: 'Senha alterada com sucesso'
+      message: 'Senha alterada com sucesso',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     return res.status(400).json({
@@ -460,7 +480,14 @@ router.post('/refresh', async (req: Request, res: Response) => {
 
     const tokens = await authService.refreshAccessToken(refreshToken);
 
-    return res.json({ success: true, data: tokens });
+    return res.json({
+      success: true,
+      data: tokens,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
+    });
   } catch (error) {
     return res.status(401).json({
       success: false,
@@ -505,7 +532,11 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
     
     return res.json({ 
       success: true, 
-      message: 'Logout realizado com sucesso' 
+      message: 'Logout realizado com sucesso',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     return res.status(500).json({ 
@@ -535,7 +566,11 @@ router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: 
     await authService.logoutAllDevices(req.user!.id);
     return res.json({ 
       success: true, 
-      message: 'Logout realizado em todos os dispositivos' 
+      message: 'Logout realizado em todos os dispositivos',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     return res.status(500).json({ 
@@ -606,7 +641,11 @@ router.post('/forgot-password', [
 
     return res.json({
       success: true,
-      message: 'Se o e-mail estiver registrado, um link de redefinição de senha foi enviado.'
+      message: 'Se o e-mail estiver registrado, um link de redefinição de senha foi enviado.',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     console.error('Forgot password error:', error);
@@ -691,7 +730,11 @@ router.post('/reset-password/:token', [
 
     return res.json({
       success: true,
-      message: 'Senha redefinida com sucesso.'
+      message: 'Senha redefinida com sucesso.',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error) {
     console.error('Reset password error:', error);

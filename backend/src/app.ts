@@ -15,6 +15,7 @@ import { Contact } from './models/Contact'; // FIXED: Replaced require with impo
 
 // Authentication imports
 import { authenticate, authorize, AuthenticatedRequest } from './middleware/auth';
+import { v4 as uuidv4 } from 'uuid';
 import authRoutes from './routes/auth';
 import calendarRoutes from "./routes/calendar";
 import appointmentsRoutes from "./routes/appointments";
@@ -291,6 +292,13 @@ app.use('/api/auth', authLimiter);
 app.use('/api/auth/forgot-password', passwordResetLimiter);
 app.use('/api/auth/reset-password', passwordResetLimiter);
 app.use('/api', apiLimiter);
+
+// ADDED: Request ID tracking middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  (req as any).requestId = uuidv4(); // Generate a unique request ID
+  res.setHeader('X-Request-ID', (req as any).requestId); // Add to response headers
+  next();
+});
 
 // IMPROVED: Body parser with security limits
 app.use(express.json({ 

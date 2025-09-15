@@ -62,16 +62,23 @@ router.get("/", async (req: Request, res: Response) => {
     // In a real app, fetch events from DB
     const patientId = req.headers["x-patient-id"];
     res.json({
+      success: true,
       message: "Calendar events fetched successfully",
-      patientId,
-      events: [
-        {
-          id: 1,
-          title: "Dental Checkup",
-          start: new Date(),
-          end: new Date(),
-        },
-      ],
+      data: {
+        patientId,
+        events: [
+          {
+            id: 1,
+            title: "Dental Checkup",
+            start: new Date(),
+            end: new Date(),
+          },
+        ],
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch events" });
@@ -122,8 +129,15 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     const { title, start, end } = req.body;
     res.json({
+      success: true,
       message: "Event created successfully",
-      event: { id: Date.now(), title, start, end },
+      data: {
+        event: { id: Date.now(), title, start, end },
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err) {
     res.status(500).json({ error: "Failed to create event" });

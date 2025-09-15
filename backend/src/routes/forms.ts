@@ -246,7 +246,11 @@ router.get('/templates', async (req: AuthenticatedRequest, res) => {
     
     return res.json({
       success: true,
-      data: templates
+      data: templates,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error: any) {
     console.error('Error fetching form templates:', error);
@@ -306,7 +310,11 @@ router.get('/templates/:id', async (req: AuthenticatedRequest, res) => {
     
     return res.json({
       success: true,
-      data: template
+      data: template,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error: any) {
     console.error('Error fetching form template:', error);
@@ -379,7 +387,11 @@ router.post('/templates',
       return res.status(201).json({
         success: true,
         message: 'Template de formulário criado com sucesso',
-        data: newTemplate
+        data: newTemplate,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error creating form template:', error);
@@ -467,7 +479,11 @@ router.patch('/templates/:id',
       return res.json({
         success: true,
         message: 'Template de formulário atualizado com sucesso',
-        data: mockFormTemplates[templateIndex]
+        data: mockFormTemplates[templateIndex],
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error updating form template:', error);
@@ -530,7 +546,11 @@ router.delete('/templates/:id',
       
       return res.json({
         success: true,
-        message: 'Template de formulário excluído com sucesso'
+        message: 'Template de formulário excluído com sucesso',
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error deleting form template:', error);
@@ -622,7 +642,11 @@ router.get('/responses', async (req: AuthenticatedRequest, res) => {
     
     return res.json({
       success: true,
-      data: responses
+      data: responses,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error: any) {
     console.error('Error fetching form responses:', error);
@@ -679,7 +703,11 @@ router.get('/responses/:id', async (req: AuthenticatedRequest, res) => {
     
     return res.json({
       success: true,
-      data: response
+      data: response,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (error: any) {
     console.error('Error fetching form response:', error);
@@ -759,7 +787,11 @@ router.post('/responses',
       return res.status(201).json({
         success: true,
         message: 'Resposta de formulário salva com sucesso',
-        data: newResponse
+        data: newResponse,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error creating form response:', error);
@@ -846,7 +878,11 @@ router.patch('/responses/:id',
       return res.json({
         success: true,
         message: 'Resposta de formulário atualizada com sucesso',
-        data: mockFormResponses[responseIndex]
+        data: mockFormResponses[responseIndex],
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error updating form response:', error);
@@ -908,7 +944,11 @@ router.delete('/responses/:id',
       
       return res.json({
         success: true,
-        message: 'Resposta de formulário excluída com sucesso'
+        message: 'Resposta de formulário excluída com sucesso',
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error deleting form response:', error);
@@ -986,7 +1026,11 @@ router.get('/stats',
       
       return res.json({
         success: true,
-        data: stats
+        data: stats,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (error: any) {
       console.error('Error fetching form stats:', error);

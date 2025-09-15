@@ -23,6 +23,10 @@ export const errorHandler = (
     const errorResponse: ErrorResponse = {
       success: false,
       message: error.message,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId // Assuming requestId is attached to req
+      }
     };
 
     return res.status(error.statusCode).json(errorResponse);
@@ -32,6 +36,10 @@ export const errorHandler = (
   const errorResponse: ErrorResponse = {
     success: false,
     message: 'Erro interno do servidor',
+    meta: {
+      timestamp: new Date().toISOString(),
+      requestId: (req as any).requestId // Assuming requestId is attached to req
+    }
   };
 
   // In development, provide more details for debugging purposes, but not in production.

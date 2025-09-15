@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
-import DOMPurify from 'isomorphic-dompurify';
+
 import { contactService } from '../services/contactService';
 import { emailService } from '../services/emailService';
 
@@ -55,15 +55,7 @@ interface ContactFormData {
   phone: string;
 }
 
-const sanitizeContactData = (data: ContactFormData): ContactFormData => {
-  return {
-    name: DOMPurify.sanitize(data.name?.trim() || ''),
-    email: DOMPurify.sanitize(data.email?.trim().toLowerCase() || ''),
-    clinic: DOMPurify.sanitize(data.clinic?.trim() || ''),
-    specialty: DOMPurify.sanitize(data.specialty?.trim() || ''),
-    phone: DOMPurify.sanitize(data.phone?.trim() || '')
-  };
-};
+
 
 // POST /api/contact
 router.post('/', contactLimiter, contactValidation, async (req: Request, res: Response) => {
@@ -74,20 +66,15 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
       return res.status(400).json({
         success: false,
         message: 'Dados inválidos',
-        errors: errors.array()
+        errors: errors.array(),
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     }
 
-    // Sanitize and validate data
-    const sanitizedData = sanitizeContactData(req.body);
-    const { name, email, clinic, specialty, phone } = sanitizedData;
-
-    if (!name || !email || !clinic || !specialty || !phone) {
-      return res.status(400).json({
-        success: false,
-        message: 'Todos os campos são obrigatórios'
-      });
-    }
+    const { name, email, clinic, specialty, phone } = req.body;
 
     // Extract UTM parameters and metadata from request
     const metadata = {
@@ -131,6 +118,10 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
         id: contact.id,
         protocol: contact.id,
         estimatedResponse: '24 horas'
+      },
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
       }
     });
 
@@ -143,7 +134,11 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
     return res.status(500).json({
       success: false,
       message: 'Erro ao processar solicitação. Tente novamente mais tarde.',
-      ...(isDevelopment && { debug: errorMessage })
+      errors: isDevelopment && error instanceof Error ? [errorMessage] : undefined,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   }
 });

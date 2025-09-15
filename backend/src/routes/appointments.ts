@@ -100,7 +100,11 @@ router.get("/providers/:providerId/availability", async (req: AuthenticatedReque
 
     return res.json({ 
       success: true, 
-      data: slots 
+      data: slots,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error('Error fetching availability:', err);
@@ -226,7 +230,11 @@ router.post("/", bookingValidation, async (req: AuthenticatedRequest, res: any) 
 
     return res.status(201).json({ 
       success: true, 
-      data: appointment 
+      data: appointment,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error("Appointment creation error:", err);
@@ -264,7 +272,11 @@ router.post("/book", bookingValidation, async (req: AuthenticatedRequest, res: a
 
     return res.status(201).json({ 
       success: true, 
-      data: appointment 
+      data: appointment,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error("Booking error:", err);
@@ -361,7 +373,11 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
 
     return res.json({
       success: true,
-      data: appointments
+      data: appointments,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error("Error fetching appointments:", err);
@@ -434,7 +450,11 @@ router.get("/:id", async (req: AuthenticatedRequest, res) => {
 
     return res.json({
       success: true,
-      data: appointment
+      data: appointment,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error("Error fetching appointment:", err);
@@ -573,7 +593,11 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
 
     return res.json({
       success: true,
-      data: updatedAppointment
+      data: updatedAppointment,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
     });
   } catch (err: any) {
     console.error("Error updating appointment:", err);
@@ -679,7 +703,11 @@ router.patch("/:id/status",
         );
         return res.json({
           success: true,
-          data: updatedAppointment
+          data: updatedAppointment,
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: (req as any).requestId
+          }
         });
       } else {
         appointment.status = status;
@@ -692,7 +720,11 @@ router.patch("/:id/status",
         const updatedAppointment = await appointment.save();
         return res.json({
           success: true,
-          data: updatedAppointment
+          data: updatedAppointment,
+          meta: {
+            timestamp: new Date().toISOString(),
+            requestId: (req as any).requestId
+          }
         });
       }
     } catch (err: any) {
@@ -794,7 +826,11 @@ router.patch("/:id/reschedule",
 
       return res.json({
         success: true,
-        data: updatedAppointment
+        data: updatedAppointment,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (err: any) {
       console.error("Error rescheduling appointment:", err);
@@ -831,10 +867,14 @@ router.delete("/:id",
 
       return res.json({
         success: true,
-        message: 'Agendamento excluído com sucesso'
+        message: 'Agendamento excluído com sucesso',
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
       });
     } catch (err: any) {
-      console.error("Error deleting appointment:,", err);
+      console.error("Error deleting appointment:", err);
       return res.status(500).json({
         success: false,
         error: err.message

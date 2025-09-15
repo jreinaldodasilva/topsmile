@@ -346,7 +346,11 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
         return res.status(201).json({
             success: true,
             message: 'Paciente criado com sucesso',
-            data: patient
+            data: patient,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error creating patient:', error);
@@ -478,7 +482,11 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 
         return res.json({
             success: true,
-            data: transformedResult
+            data: transformedResult,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error searching patients:', error);
@@ -541,7 +549,11 @@ router.get('/stats', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            data: stats
+            data: stats,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting patient stats:', error);
@@ -607,7 +619,11 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            data: patient
+            data: patient,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting patient:', error);
@@ -695,7 +711,11 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
         return res.json({
             success: true,
             message: 'Paciente atualizado com sucesso',
-            data: patient
+            data: patient,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error updating patient:', error);
@@ -804,7 +824,11 @@ router.patch('/:id/medical-history',
             return res.json({
                 success: true,
                 message: 'Histórico médico atualizado com sucesso',
-                data: patient
+                data: patient,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error updating medical history:', error);
@@ -872,7 +896,11 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
         return res.json({
             success: true,
             message: 'Paciente reativado com sucesso',
-            data: patient
+            data: patient,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error reactivating patient:', error);
@@ -944,7 +972,11 @@ router.delete('/:id', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            message: 'Paciente excluído com sucesso'
+            message: 'Paciente excluído com sucesso',
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error deleting patient:', error);

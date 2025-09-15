@@ -78,14 +78,21 @@ export interface ErrorResponse {
   success: false;
   message: string;
   errors?: string[];
-  debug?: string;
-  stack?: string | undefined;
+  meta?: {
+    timestamp: string;
+    requestId?: string;
+  };
 }
 
 export interface SuccessResponse<T = any> {
   success: true;
   message?: string;
   data?: T;
+  meta?: {
+    pagination?: any; // Placeholder for PaginationInfo
+    timestamp: string;
+    requestId?: string;
+  };
 }
 
 export type ApiResponse<T = any> = SuccessResponse<T> | ErrorResponse;

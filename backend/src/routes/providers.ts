@@ -412,7 +412,11 @@ router.post('/',
             return res.status(201).json({
                 success: true,
                 message: 'Profissional criado com sucesso',
-                data: provider
+                data: provider,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error creating provider:', error);
@@ -563,7 +567,11 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 
         return res.json({
             success: true,
-            data: transformedResult
+            data: transformedResult,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error searching providers:', error);
@@ -627,7 +635,11 @@ router.get('/stats',
 
             return res.json({
                 success: true,
-                data: stats
+                data: stats,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error getting provider stats:', error);
@@ -695,7 +707,11 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            data: provider
+            data: provider,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting provider:', error);
@@ -789,7 +805,11 @@ router.patch('/:id',
             return res.json({
                 success: true,
                 message: 'Profissional atualizado com sucesso',
-                data: provider
+                data: provider,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error updating provider:', error);
@@ -948,7 +968,11 @@ router.patch('/:id/working-hours',
             return res.json({
                 success: true,
                 message: 'Horários de trabalho atualizados com sucesso',
-                data: provider
+                data: provider,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error updating working hours:', error);
@@ -1049,7 +1073,11 @@ router.patch('/:id/appointment-types',
             return res.json({
                 success: true,
                 message: 'Tipos de agendamento atualizados com sucesso',
-                data: provider
+                data: provider,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error updating appointment types:', error);
@@ -1122,7 +1150,11 @@ router.patch('/:id/reactivate',
             return res.json({
                 success: true,
                 message: 'Profissional reativado com sucesso',
-                data: provider
+                data: provider,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error reactivating provider:', error);
@@ -1192,7 +1224,11 @@ router.delete('/:id',
 
             return res.json({
                 success: true,
-                message: 'Profissional excluído com sucesso'
+                message: 'Profissional excluído com sucesso',
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error deleting provider:', error);

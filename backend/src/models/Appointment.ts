@@ -167,18 +167,21 @@ const AppointmentSchema = new Schema<IAppointment>({
         customReminder: { type: Boolean, default: false }
     },
     cancellationReason: String,
-    rescheduleHistory: [{
-        oldDate: { type: Date, required: true },
-        newDate: { type: Date, required: true },
-        reason: { type: String, required: true },
-        rescheduleBy: { 
-            type: String, 
-            enum: ['patient', 'clinic'], 
-            required: true 
-        },
-        timestamp: { type: Date, default: Date.now },
-        rescheduleCount: { type: Number, default: 1 }
-    }],
+    rescheduleHistory: {
+        type: [{
+            oldDate: { type: Date, required: true },
+            newDate: { type: Date, required: true },
+            reason: { type: String, required: true },
+            rescheduleBy: { 
+                type: String, 
+                enum: ['patient', 'clinic'], 
+                required: true 
+            },
+            timestamp: { type: Date, default: Date.now },
+            rescheduleCount: { type: Number, default: 1 }
+        }],
+        maxlength: 10 // Limit to 10 entries
+    },
     
     // Enhanced tracking fields
     checkedInAt: Date,
@@ -484,26 +487,93 @@ AppointmentSchema.statics.findByTimeRange = function(
         includeCompleted?: boolean;
     } = {}
 ) {
-    const query: any = {
-        clinic: clinicId,
+    const matchStage: any = {
+        clinic: new Types.ObjectId(clinicId),
         scheduledStart: { $gte: startDate },
         scheduledEnd: { $lte: endDate }
     };
     
-    if (options.providerId) query.provider = options.providerId;
-    if (options.status) query.status = options.status;
-    if (options.room) query.room = options.room;
-    if (options.priority) query.priority = options.priority;
+    if (options.providerId) matchStage.provider = new Types.ObjectId(options.providerId);
+    if (options.status) matchStage.status = options.status;
+    if (options.room) matchStage.room = options.room;
+    if (options.priority) matchStage.priority = options.priority;
     
     if (!options.includeCompleted) {
-        query.status = { $nin: ['completed', 'cancelled', 'no_show'] };
+        matchStage.status = { $nin: ['completed', 'cancelled', 'no_show'] };
     }
     
-    return this.find(query)
-        .populate('patient', 'name phone email preferredLanguage')
-        .populate('provider', 'name specialties')
-        .populate('appointmentType', 'name duration color category')
-        .sort({ scheduledStart: 1 });
+    return this.aggregate([
+        { $match: matchStage },
+        {
+            $lookup: {
+                from: 'patients',
+                localField: 'patient',
+                foreignField: '_id',
+                as: 'patientInfo'
+            }
+        },
+        { $unwind: { path: '$patientInfo', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'providers',
+                localField: 'provider',
+                foreignField: '_id',
+                as: 'providerInfo'
+            }
+        },
+        { $unwind: { path: '$providerInfo', preserveNullAndEmptyArrays: true } },
+        {
+            $lookup: {
+                from: 'appointmenttypes',
+                localField: 'appointmentType',
+                foreignField: '_id',
+                as: 'appointmentTypeInfo'
+            }
+        },
+        { $unwind: { path: '$appointmentTypeInfo', preserveNullAndEmptyArrays: true } },
+        {
+            $project: {
+                _id: 1,
+                patient: '$patientInfo',
+                clinic: 1,
+                provider: '$providerInfo',
+                appointmentType: '$appointmentTypeInfo',
+                scheduledStart: 1,
+                scheduledEnd: 1,
+                actualStart: 1,
+                actualEnd: 1,
+                status: 1,
+                priority: 1,
+                notes: 1,
+                privateNotes: 1,
+                remindersSent: 1,
+                cancellationReason: 1,
+                rescheduleHistory: 1,
+                checkedInAt: 1,
+                completedAt: 1,
+                duration: 1,
+                waitTime: 1,
+                room: 1,
+                equipment: 1,
+                followUpRequired: 1,
+                followUpDate: 1,
+                billingStatus: 1,
+                billingAmount: 1,
+                insuranceInfo: 1,
+                preferredContactMethod: 1,
+                languagePreference: 1,
+                patientSatisfactionScore: 1,
+                patientFeedback: 1,
+                noShowReason: 1,
+                externalId: 1,
+                syncStatus: 1,
+                createdBy: 1,
+                createdAt: 1,
+                updatedAt: 1
+            }
+        },
+        { $sort: { scheduledStart: 1 } }
+    ]);
 };
 
 AppointmentSchema.statics.findAvailabilityConflicts = async function(

@@ -298,7 +298,11 @@ router.post('/',
             return res.status(201).json({
                 success: true,
                 message: 'Tipo de agendamento criado com sucesso',
-                data: appointmentType
+                data: appointmentType,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error creating appointment type:', error);
@@ -435,7 +439,11 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 
         return res.json({
             success: true,
-            data: result
+            data: result,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error searching appointment types:', error);
@@ -501,7 +509,11 @@ router.get('/stats',
 
             return res.json({
                 success: true,
-                data: stats
+                data: stats,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error getting appointment type stats:', error);
@@ -570,14 +582,13 @@ router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const appointmentTypes = await appointmentTypeService.getAppointmentTypesByCategory(
-            req.user.clinicId, 
-            category
-        );
-
         return res.json({
             success: true,
-            data: appointmentTypes
+            data: appointmentTypes,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting appointment types by category:', error);
@@ -630,7 +641,11 @@ router.get('/online-booking', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            data: appointmentTypes
+            data: appointmentTypes,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting online booking types:', error);
@@ -700,7 +715,11 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 
         return res.json({
             success: true,
-            data: appointmentType
+            data: appointmentType,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (req as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error getting appointment type:', error);
@@ -794,7 +813,11 @@ router.put('/:id',
             return res.json({
                 success: true,
                 message: 'Tipo de agendamento atualizado com sucesso',
-                data: appointmentType
+                data: appointmentType,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error updating appointment type:', error);
@@ -888,7 +911,11 @@ router.post('/:id/duplicate',
             return res.status(201).json({
                 success: true,
                 message: 'Tipo de agendamento duplicado com sucesso',
-                data: duplicatedType
+                data: duplicatedType,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error duplicating appointment type:', error);
@@ -964,7 +991,11 @@ router.patch('/:id/reactivate',
             return res.json({
                 success: true,
                 message: 'Tipo de agendamento reativado com sucesso',
-                data: appointmentType
+                data: appointmentType,
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error reactivating appointment type:', error);
@@ -1037,7 +1068,11 @@ router.delete('/:id',
 
             return res.json({
                 success: true,
-                message: 'Tipo de agendamento excluído com sucesso'
+                message: 'Tipo de agendamento excluído com sucesso',
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (req as any).requestId
+                }
             });
         } catch (error: any) {
             console.error('Error deleting appointment type:', error);
