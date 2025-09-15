@@ -1,5 +1,8 @@
 // src/services/http.ts - Updated for Backend Integration
+import { tokenStore } from './tokenStore';
+
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+export const LOGOUT_EVENT = 'topsmile-logout';
 
 export interface HttpResponse<T = any> {
   ok: boolean;
@@ -8,10 +11,14 @@ export interface HttpResponse<T = any> {
   message?: string;
 }
 
-const ACCESS_KEY = 'topsmile_access_token';
-const REFRESH_KEY = 'topsmile_refresh_token';
-
 type RequestOptions = RequestInit & { auth?: boolean };
+
+function getTokenKey(endpoint: string): string {
+  if (endpoint.startsWith('/api/patient-auth')) {
+    return 'patient';
+  }
+  return 'default';
+}
 
 /** Parse response to match backend format */
 async function parseResponse(res: Response): Promise<HttpResponse> {
@@ -26,7 +33,6 @@ async function parseResponse(res: Response): Promise<HttpResponse> {
     }
   }
 
-  // UPDATED: Handle backend response format
   if (!res.ok) {
     return { 
       ok: false, 
@@ -39,39 +45,35 @@ async function parseResponse(res: Response): Promise<HttpResponse> {
   return { 
     ok: true, 
     status: res.status, 
-    data: payload?.data || payload, // Backend sometimes wraps data, sometimes not
+    data: payload?.data || payload,
     message: payload?.message 
   };
 }
 
-let refreshingPromise: Promise<void> | null = null;
+const refreshingPromise: { [key: string]: Promise<void> | null } = {
+  default: null,
+  patient: null,
+};
 
-/** UPDATED: Perform token refresh using backend endpoint */
-async function performRefresh(): Promise<void> {
-  const refreshToken = getRefreshToken();
+/** Perform token refresh for a given context */
+async function performRefresh(tokenKey: string): Promise<void> {
+  const refreshToken = tokenStore.getRefreshToken(tokenKey);
   if (!refreshToken) throw new Error('No refresh token available');
 
-  const url = `${API_BASE_URL}/api/auth/refresh`;
+  const refreshUrl = tokenKey === 'patient' ? '/api/patient-auth/refresh' : '/api/auth/refresh';
+  const url = `${API_BASE_URL}${refreshUrl}`;
+  
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ refreshToken }) // Backend expects { refreshToken }
+    body: JSON.stringify({ refreshToken })
   });
 
   const parsedResponse = await parseResponse(res);
 
   if (!parsedResponse.ok) {
-    // Clear tokens on refresh failure
-    localStorage.removeItem(ACCESS_KEY);
-    localStorage.removeItem(REFRESH_KEY);
-    
-    // Trigger storage event to logout across tabs
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: ACCESS_KEY,
-      newValue: null,
-      oldValue: localStorage.getItem(ACCESS_KEY)
-    }));
-    
+    tokenStore.clear(tokenKey);
+    window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: tokenKey } }));
     throw new Error(parsedResponse.message || 'Failed to refresh token');
   }
 
@@ -80,17 +82,16 @@ async function performRefresh(): Promise<void> {
     throw new Error('Refresh response missing tokens');
   }
 
-  // Store new tokens
-  localStorage.setItem(ACCESS_KEY, data.accessToken);
-  localStorage.setItem(REFRESH_KEY, data.refreshToken);
+  tokenStore.setTokens(data.accessToken, data.refreshToken, tokenKey);
 }
 
-/** UPDATED: Enhanced request function with better error handling */
+/** Enhanced request function with multi-context auth */
 export async function request<T = any>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<HttpResponse<T>> {
   const { auth = true, ...restOfOptions } = options;
+  const tokenKey = getTokenKey(endpoint);
 
   const makeRequest = async (token?: string | null) => {
     const headers = new Headers({
@@ -114,100 +115,91 @@ export async function request<T = any>(
       const res = await fetch(url, config);
       return res;
     } catch (networkError) {
-      // Handle network errors (no internet, server down, etc.)
       throw new Error('Network error - please check your connection');
     }
   };
 
   try {
-    const accessToken = getAccessToken();
+    let accessToken = tokenStore.getAccessToken(tokenKey);
+
+    if (!accessToken && tokenStore.getRefreshToken(tokenKey)) {
+      await performRefresh(tokenKey);
+      accessToken = tokenStore.getAccessToken(tokenKey);
+    }
+
     const res = await makeRequest(accessToken);
     
-    // If not 401, return the response
     if (res.status !== 401) {
       return (await parseResponse(res)) as HttpResponse<T>;
     }
 
-    // Handle 401 - try refresh flow
-    if (!refreshingPromise) {
-      refreshingPromise = performRefresh()
+    if (!refreshingPromise[tokenKey]) {
+      refreshingPromise[tokenKey] = performRefresh(tokenKey)
         .catch((err) => {
-          refreshingPromise = null;
+          refreshingPromise[tokenKey] = null;
           throw err;
         })
         .finally(() => {
-          refreshingPromise = null;
+          refreshingPromise[tokenKey] = null;
         });
     }
 
-    await refreshingPromise;
+    await refreshingPromise[tokenKey];
 
-    // Retry original request with new access token
-    const newAccess = localStorage.getItem(ACCESS_KEY);
+    const newAccess = tokenStore.getAccessToken(tokenKey);
     const retryRes = await makeRequest(newAccess);
     return (await parseResponse(retryRes)) as HttpResponse<T>;
     
   } catch (err: any) {
-    // Handle specific error types
     if (err instanceof TypeError && err.message.includes('fetch')) {
       throw new Error('Unable to connect to server. Please check your internet connection.');
     }
-    
     if (err instanceof Error) {
       throw err;
     }
-
     throw new Error('An unknown network error occurred');
   }
 }
 
-/** UPDATED: Logout function to call backend endpoint */
-export async function logout(refreshToken?: string): Promise<void> {
-  const token = refreshToken || getRefreshToken();
+/** Logout function for a given context */
+export async function logout(tokenKey: string = 'default'): Promise<void> {
+  const refreshToken = tokenStore.getRefreshToken(tokenKey);
   
-  // Clear local tokens first
-  localStorage.removeItem(ACCESS_KEY);
-  localStorage.removeItem(REFRESH_KEY);
-  sessionStorage.removeItem(ACCESS_KEY);
-  sessionStorage.removeItem(REFRESH_KEY);
+  tokenStore.clear(tokenKey);
   
-  // Notify backend about logout (don't wait for response)
-  if (token) {
+  const logoutUrl = tokenKey === 'patient' ? '/api/patient-auth/logout' : '/api/auth/logout';
+
+  if (refreshToken) {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      await fetch(`${API_BASE_URL}${logoutUrl}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken: token })
+        body: JSON.stringify({ refreshToken })
       });
     } catch (error) {
-      // Ignore logout errors - tokens are already cleared locally
       console.warn('Failed to notify backend about logout:', error);
     }
   }
   
-  // Trigger storage event for cross-tab logout
-  window.dispatchEvent(new StorageEvent('storage', {
-    key: ACCESS_KEY,
-    newValue: null,
-    oldValue: null
-  }));
+  window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: tokenKey } }));
 }
 
-function getToken(key: string): string | null {
-  return localStorage.getItem(key) || sessionStorage.getItem(key);
+/** Checks if a refresh token exists for a given context */
+export function hasTokens(tokenKey: string = 'default'): boolean {
+  return !!tokenStore.getRefreshToken(tokenKey);
 }
 
-/** ADDED: Check if tokens exist */
-export function hasTokens(): boolean {
-  return !!(getToken(ACCESS_KEY) && getToken(REFRESH_KEY));
+/** Get access token for a given context */
+export function getAccessToken(tokenKey: string = 'default'): string | null {
+  return tokenStore.getAccessToken(tokenKey);
 }
 
-/** ADDED: Get current access token */
-export function getAccessToken(): string | null {
-  return getToken(ACCESS_KEY);
+/** Get refresh token for a given context */
+export function getRefreshToken(tokenKey: string = 'default'): string | null {
+  return tokenStore.getRefreshToken(tokenKey);
 }
 
-/** ADDED: Get current refresh token */
-export function getRefreshToken(): string | null {
-  return getToken(REFRESH_KEY);
+/** Set tokens for a given context */
+export function setTokens(accessToken: string, refreshToken: string, tokenKey: string = 'default'): void {
+  tokenStore.setTokens(accessToken, refreshToken, tokenKey);
 }

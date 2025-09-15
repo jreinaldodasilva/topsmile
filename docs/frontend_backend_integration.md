@@ -75,16 +75,16 @@ graph TB
 
 ### Endpoint Mapping Table
 
-| Frontend Service | Backend Route | HTTP Method | Auth Required | Validation | Error Handling |
-|-----------------|---------------|-------------|---------------|------------|----------------|
-| `auth.login` | `/api/auth/login` | POST | ❌ | ✅ Client + Server | ✅ Rate limited |
-| `auth.register` | `/api/auth/register` | POST | ❌ | ✅ Client + Server | ✅ Sanitized |
-| `auth.me` | `/api/auth/me` | GET | ✅ JWT | ✅ Token verified | ✅ Auto-refresh |
-| `auth.refreshToken` | `/api/auth/refresh` | POST | ❌ | ✅ Valid refresh token | ✅ Token rotation |
-| `contacts.getAll` | `/api/admin/contacts` | GET | ✅ JWT + Role | ✅ Query params | ⚠️ No pagination caching |
-| `appointments.create` | `/api/appointments` | POST | ✅ JWT | ⚠️ Field mapping needed | ✅ Conflict detection |
-| `patients.create` | `/api/patients` | POST | ✅ JWT | ⚠️ Name field mismatch | ✅ CPF validation |
-| `public.sendContactForm` | `/api/contact` | POST | ❌ | ✅ DOMPurify + regex | ✅ Rate limited |
+| Frontend Service         | Backend Route         | HTTP Method | Auth Required | Validation             | Error Handling          |
+| ------------------------ | --------------------- | ----------- | ------------- | ---------------------- | ----------------------- |
+| `auth.login`             | `/api/auth/login`     | POST        | ❌             | ✅ Client + Server      | ✅ Rate limited          |
+| `auth.register`          | `/api/auth/register`  | POST        | ❌             | ✅ Client + Server      | ✅ Sanitized             |
+| `auth.me`                | `/api/auth/me`        | GET         | ✅ JWT         | ✅ Token verified       | ✅ Auto-refresh          |
+| `auth.refreshToken`      | `/api/auth/refresh`   | POST        | ❌             | ✅ Valid refresh token  | ✅ Token rotation        |
+| `contacts.getAll`        | `/api/admin/contacts` | GET         | ✅ JWT + Role  | ✅ Query params         | ⚠️ No pagination caching |
+| `appointments.create`    | `/api/appointments`   | POST        | ✅ JWT         | ⚠️ Field mapping needed | ✅ Conflict detection    |
+| `patients.create`        | `/api/patients`       | POST        | ✅ JWT         | ⚠️ Name field mismatch  | ✅ CPF validation        |
+| `public.sendContactForm` | `/api/contact`        | POST        | ❌             | ✅ DOMPurify + regex    | ✅ Rate limited          |
 
 ### Key Integration Issues Found
 

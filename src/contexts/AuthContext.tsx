@@ -2,11 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, hasTokens, getRefreshToken, getAccessToken } from '../services/http';
+import { logout as httpLogout, hasTokens, getRefreshToken, getAccessToken, setTokens, LOGOUT_EVENT } from '../services/http';
 import type { User } from '../types/api';
-
-const ACCESS_KEY = 'topsmile_access_token';
-const REFRESH_KEY = 'topsmile_refresh_token';
 
 interface AuthResult {
   success: boolean;
@@ -57,14 +54,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const performLogout = useCallback(async (reason?: string) => {
     try {
-      const refreshToken = getRefreshToken();
-
       // Clear local state first
       setAccessToken(null);
       setUser(null);
 
-      // Notify backend and clear tokens
-      await httpLogout(refreshToken || undefined);
+      // Notify backend and clear tokens for the default context
+      await httpLogout('default');
 
       if (reason) {
         setLogoutReason(reason);
@@ -82,27 +77,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // Check if tokens exist in storage
-        if (!hasTokens()) {
+        // Check if a refresh token exists for the default context.
+        if (!hasTokens('default')) {
           setLoading(false);
           return;
         }
 
-        const token = getAccessToken();
-        if (!token) {
-          setLoading(false);
-          return;
-        }
-
-        // Verify token with backend and get user data
+        // The request function in http.ts will handle automatic token refresh
         const userResponse = await apiService.auth.me();
 
         if (userResponse.success && userResponse.data) {
-          setAccessToken(token);
+          // After a successful request, the new access token is in our store.
+          setAccessToken(getAccessToken('default'));
           setUser(userResponse.data);
         } else {
-          // Token invalid, clear storage
-          await performLogout('Sessão expirada. Faça login novamente.');
+          // If fetching user fails, logout
+          await performLogout('Sessão inválida. Faça login novamente.');
         }
       } catch (err) {
         console.error('Initial auth check failed:', err);
@@ -115,7 +105,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     verifyAuth();
   }, [performLogout]);
 
-  // UPDATED: Enhanced login function with validation error handling
+  // UPDATED: Enhanced login function with secure token storage
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
     try {
       setError(null);
@@ -126,10 +116,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.success && response.data) {
         const { user, accessToken, refreshToken } = response.data;
 
-        // Store tokens
-        const storage = rememberMe ? localStorage : sessionStorage;
-        storage.setItem(ACCESS_KEY, accessToken);
-        storage.setItem(REFRESH_KEY, refreshToken);
+        // Store tokens using our secure mechanism for the default context
+        setTokens(accessToken, refreshToken, 'default');
 
         // Update state
         setAccessToken(accessToken);
@@ -142,9 +130,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         return { success: true };
       } else {
-        // Handle validation errors array from backend
         let errorMsg = response.message || 'E-mail ou senha inválidos';
-        // Check if response has error details (when success is false, data might contain error info)
         const errorData = response as any;
         if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
           errorMsg = errorData.data.errors.map((err: any) => err.msg || err.message).join(', ');
@@ -161,7 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ADDED: Register function with enhanced error handling
+  // ADDED: Register function with secure token storage
   const register = async (data: RegisterData): Promise<AuthResult> => {
     try {
       setError(null);
@@ -172,9 +158,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.success && response.data) {
         const { user, accessToken, refreshToken } = response.data;
 
-        // Store tokens
-        sessionStorage.setItem(ACCESS_KEY, accessToken);
-        sessionStorage.setItem(REFRESH_KEY, refreshToken);
+        // Store tokens using our secure mechanism for the default context
+        setTokens(accessToken, refreshToken, 'default');
 
         // Update state
         setAccessToken(accessToken);
@@ -185,7 +170,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         return { success: true, message: 'Conta criada com sucesso!' };
       } else {
-        // Handle validation errors array from backend
         let errorMsg = response.message || 'Erro ao criar conta';
         const errorData = response as any;
         if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
@@ -224,25 +208,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error('Failed to refresh user data:', error);
-      // Don't logout on user data refresh failure
     }
   };
 
-  // UPDATED: Cross-tab sync with proper cleanup
+  // UPDATED: Cross-tab sync using custom event
   useEffect(() => {
-    const onStorageChange = (e: StorageEvent) => {
-      if (e.key === ACCESS_KEY && e.newValue === null) {
-        // Another tab logged out
+    const onLogout = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail.key === 'default' && isAuthenticated) {
         setAccessToken(null);
         setUser(null);
-        setLogoutReason('Você foi desconectado em outra aba.');
+        setLogoutReason('Sua sessão expirou ou você foi desconectado em outra aba.');
         navigate('/login');
       }
     };
 
-    window.addEventListener('storage', onStorageChange);
-    return () => window.removeEventListener('storage', onStorageChange);
-  }, [navigate, performLogout]);
+    window.addEventListener(LOGOUT_EVENT, onLogout);
+    return () => window.removeEventListener(LOGOUT_EVENT, onLogout);
+  }, [navigate, isAuthenticated]);
 
   // Show logout reason after redirect
   useEffect(() => {
@@ -264,8 +247,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         await apiService.auth.me();
       } catch (error) {
-        console.warn('Token validation failed:', error);
-        await performLogout('Sessão expirada.');
+        console.warn('Periodic token validation failed:', error);
       }
     }, 5 * 60 * 1000); // Check every 5 minutes
 
@@ -300,7 +282,6 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// ADDED: Helper function to determine redirect path based on role
 function getRedirectPath(role?: string): string {
   switch (role) {
     case 'super_admin':

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
+import { logout as httpLogout, hasTokens, getAccessToken, setTokens, LOGOUT_EVENT } from '../services/http';
 
 interface PatientUser {
   _id: string;
@@ -49,9 +50,6 @@ export interface PatientAuthContextType {
   refreshPatientData: () => Promise<void>;
 }
 
-const ACCESS_KEY = 'topsmile_patient_access_token';
-const REFRESH_KEY = 'topsmile_patient_refresh_token';
-
 export const PatientAuthContext = createContext<PatientAuthContextType | undefined>(undefined);
 
 export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
@@ -68,10 +66,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       setAccessToken(null);
       setPatientUser(null);
 
-      localStorage.removeItem(ACCESS_KEY);
-      localStorage.removeItem(REFRESH_KEY);
-
-      await apiService.patientAuth.logout();
+      await httpLogout('patient');
       navigate('/patient/login');
     } catch (error) {
       console.error('Patient logout error:', error);
@@ -83,8 +78,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        const token = localStorage.getItem(ACCESS_KEY);
-        if (!token) {
+        if (!hasTokens('patient')) {
           setLoading(false);
           return;
         }
@@ -92,7 +86,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
         const userResponse = await apiService.patientAuth.me();
 
         if (userResponse.success && userResponse.data?.patientUser) {
-          setAccessToken(token);
+          setAccessToken(getAccessToken('patient'));
           setPatientUser(userResponse.data.patientUser);
         } else {
           await performLogout();
@@ -118,8 +112,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       if (response.success && response.data) {
         const { patientUser, accessToken, refreshToken } = response.data;
 
-        localStorage.setItem(ACCESS_KEY, accessToken);
-        localStorage.setItem(REFRESH_KEY, refreshToken);
+        setTokens(accessToken, refreshToken, 'patient');
 
         setAccessToken(accessToken);
         setPatientUser(patientUser);
@@ -127,7 +120,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
         navigate('/patient/dashboard');
         return { success: true };
       } else {
-        // Handle validation errors array from backend
         let errorMsg = response.message || 'E-mail ou senha inválidos';
         const errorData = response as any;
         if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
@@ -156,13 +148,11 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
         const { patientUser, accessToken, refreshToken } = response.data;
 
         if (accessToken && refreshToken) {
-          localStorage.setItem(ACCESS_KEY, accessToken);
-          localStorage.setItem(REFRESH_KEY, refreshToken);
+          setTokens(accessToken, refreshToken, 'patient');
           setAccessToken(accessToken);
           setPatientUser(patientUser);
           navigate('/patient/dashboard');
         } else {
-          // Registration successful but email verification required
           navigate('/patient/login', {
             state: { message: 'Conta criada! Verifique seu e-mail para ativar a conta.' }
           });
@@ -170,7 +160,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
 
         return { success: true, message: response.message };
       } else {
-        // Handle validation errors array from backend
         let errorMsg = response.message || 'Erro ao criar conta';
         const errorData = response as any;
         if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
@@ -211,17 +200,18 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Cross-tab sync
   useEffect(() => {
-    const onStorageChange = (e: StorageEvent) => {
-      if (e.key === ACCESS_KEY && e.newValue === null) {
+    const onLogout = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      if (customEvent.detail.key === 'patient' && isAuthenticated) {
         setAccessToken(null);
         setPatientUser(null);
         navigate('/patient/login');
       }
     };
 
-    window.addEventListener('storage', onStorageChange);
-    return () => window.removeEventListener('storage', onStorageChange);
-  }, [navigate]);
+    window.addEventListener(LOGOUT_EVENT, onLogout);
+    return () => window.removeEventListener(LOGOUT_EVENT, onLogout);
+  }, [navigate, isAuthenticated]);
 
   const value: PatientAuthContextType = {
     isAuthenticated,
