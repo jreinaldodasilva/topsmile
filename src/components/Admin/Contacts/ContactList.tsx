@@ -1,6 +1,6 @@
-// src/components/Admin/Contacts/ContactList.tsx - Updated for Backend Integration
-import React, { useEffect, useState } from 'react';
-import { useContacts } from '../../../hooks/useApiState';
+// src/components/Admin/Contacts/ContactList.tsx - Updated for React Query
+import React, { useState } from 'react';
+import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '../../../hooks/useApiState';
 import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import ViewContactModal from './ViewContactModal';
@@ -14,9 +14,6 @@ interface ContactListProps {
 }
 
 const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
-  const { contactsData, loading, error, fetchContacts, updateContact, deleteContact, createContact } = useContacts();
-  
-  // UPDATED: Use 'limit' instead of 'pageSize' to match backend
   const [filters, setFilters] = useState<ContactFilters>({ 
     page: 1, 
     limit: 10, 
@@ -41,30 +38,28 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     onCancel?: () => void;
   } | null>(null);
 
+  const { data: contactsData, isLoading, error, refetch } = useContacts({ ...filters, ...sort });
+  const createContactMutation = useCreateContact();
+  const updateContactMutation = useUpdateContact();
+  const deleteContactMutation = useDeleteContact();
+
   const handleViewContact = (contact: Contact) => {
     setSelectedContact(contact);
   };
 
   const handleCreateContact = async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await createContact(contact);
+      await createContactMutation.mutateAsync(contact);
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Failed to create contact:', error);
     }
   };
 
-  useEffect(() => {
-    // Fetch on filters change
-    (async () => {
-      await fetchContacts(filters, sort);
-    })();
-  }, [fetchContacts, filters, sort]);
-
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     setFilters(prev => ({
-      ...(prev ?? {}),
+      ...prev,
       search: query || undefined,
       page: 1
     }));
@@ -72,7 +67,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
 
   const handleStatusFilter = (status: string) => {
     setFilters(prev => ({
-      ...(prev ?? {}),
+      ...prev,
       status: status === 'all' ? undefined : (status as Contact['status']),
       page: 1
     }));
@@ -80,7 +75,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
 
   const handlePriorityFilter = (priority: string) => {
     setFilters(prev => ({
-      ...(prev ?? {}),
+      ...prev,
       priority: priority === 'all' ? undefined : (priority as 'low' | 'medium' | 'high'),
       page: 1
     }));
@@ -89,7 +84,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const handleStatusUpdate = async (contactId: string, newStatus: Contact['status']) => {
     try {
       if (newStatus) {
-        await updateContact(contactId, { status: newStatus });
+        await updateContactMutation.mutateAsync({ id: contactId, data: { status: newStatus } });
       }
     } catch (error) {
       console.error('Failed to update contact status:', error);
@@ -102,7 +97,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       message: 'Tem certeza que deseja excluir este contato?',
       onConfirm: async () => {
         try {
-          await deleteContact(contactId);
+          await deleteContactMutation.mutateAsync(contactId);
         } catch (error) {
           console.error('Failed to delete contact:', error);
         }
@@ -112,10 +107,9 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   };
 
   const handlePageChange = (page: number) => {
-    setFilters(prev => ({ ...(prev ?? {}), page }));
+    setFilters(prev => ({ ...prev, page }));
   };
 
-  // UPDATED: Better handling of ContactListResponse vs Contact[]
   const isContactListResponse = (data: any): data is ContactListResponse => {
     return data && typeof data === 'object' && 'contacts' in data && Array.isArray(data.contacts);
   };
@@ -178,8 +172,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
           if (result.success) {
             alert(`${result.data?.modifiedCount} contato(s) atualizado(s) com sucesso`);
             setSelectedContacts(new Set());
-            // Refresh the list
-            fetchContacts(filters, sort);
+            refetch();
           } else {
             alert('Erro ao atualizar contatos: ' + result.message);
           }
@@ -219,7 +212,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
           if (result.success) {
             alert('Contatos mesclados com sucesso');
             setShowDuplicates(false);
-            fetchContacts(filters, sort);
+            refetch();
           } else {
             alert('Erro ao mesclar contatos: ' + result.message);
           }
@@ -335,13 +328,13 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       {/* Error banner */}
       {error && (
         <div className="error-banner">
-          <span>⚠️ {error}</span>
-          <button onClick={() => fetchContacts(filters)}>Tentar novamente</button>
+          <span>⚠️ {error.message}</span>
+          <button onClick={() => refetch()}>Tentar novamente</button>
         </div>
       )}
 
       {/* Loading state */}
-      {loading && !contactsData && (
+      {isLoading && !contactsData && (
         <div className="contact-list-loading">
           <div className="loading-spinner">Carregando contatos...</div>
         </div>
@@ -416,14 +409,14 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       )}
 
       {/* Loading overlay for updates */}
-      {loading && contactsData && (
+      {(isLoading || createContactMutation.isPending || updateContactMutation.isPending || deleteContactMutation.isPending) && (
         <div className="loading-overlay">
           <div className="loading-spinner">Atualizando...</div>
         </div>
       )}
 
       {/* Contact table */}
-      {!loading || contactsData ? (
+      {!isLoading || contactsData ? (
         <>
           <div className="contact-table-container">
             {contactsList.length > 0 ? (

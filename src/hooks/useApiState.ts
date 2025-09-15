@@ -1,644 +1,382 @@
-// src/hooks/useApiState.ts
-import { useState, useCallback } from 'react';
-import type { Contact } from '../types/api';
+import { useQuery, useMutation, useQueryClient, UseQueryOptions, UseMutationOptions } from '@tanstack/react-query';
+import { apiService } from '../services/apiService';
+import type { Contact, ContactFilters, ContactListResponse, Appointment, AppointmentType, Patient, Provider, FormTemplate, FormResponse } from '../services/apiService';
+import type { CalendarEvent } from '../types/api';
 
-/**
- * Lightweight reusable API state hook.
- * - execute takes an apiCall function and manages loading / error / data
- * - Designed to be simple and composable for specialized hooks below
- */
+/* ---------- React Query Hooks ---------- */
 
-interface ApiState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-}
-
-interface UseApiStateReturn<T> extends ApiState<T> {
-  execute: (apiCall: () => Promise<T>) => Promise<T | null>;
-  reset: () => void;
-  setData: (data: T | null) => void;
-  setError: (error: string | null) => void;
-}
-
-export function useApiState<T = any>(initialData: T | null = null): UseApiStateReturn<T> {
-  const [state, setState] = useState<ApiState<T>>({
-    data: initialData,
-    loading: false,
-    error: null
+// Contacts
+export function useContacts(filters?: ContactFilters, options?: Omit<UseQueryOptions<ContactListResponse | null, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['contacts', filters],
+    queryFn: async () => {
+      const response = await apiService.contacts.getAll(filters);
+      if (response.success) {
+        return response.data || null;
+      }
+      throw new Error(response.message || 'Failed to fetch contacts');
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    ...options,
   });
-
-  const execute = useCallback(async (apiCall: () => Promise<T>): Promise<T | null> => {
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const result = await apiCall();
-      setState(prev => ({ ...prev, data: result, loading: false }));
-      return result;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-      setState(prev => ({ ...prev, error: errorMessage, loading: false }));
-      console.error('API Error:', error);
-      return null;
-    }
-  }, []);
-
-  const reset = useCallback(() => {
-    setState({ data: initialData, loading: false, error: null });
-  }, [initialData]);
-
-  const setData = useCallback((data: T | null) => {
-    setState(prev => ({ ...prev, data }));
-  }, []);
-
-  const setError = useCallback((error: string | null) => {
-    setState(prev => ({ ...prev, error }));
-  }, []);
-
-  return {
-    ...state,
-    execute,
-    reset,
-    setData,
-    setError
-  };
 }
 
-/* ---------- Specialized hooks that use the `apiService` shape ---------- */
+export function useCreateContact(options?: UseMutationOptions<any, Error, Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newContact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => apiService.contacts.create(newContact),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
+    },
+    ...options,
+  });
+}
 
-export function useDashboard() {
-  const { data: stats, loading, error, execute, reset, setData } = useApiState<any>(null);
+export function useUpdateContact(options?: UseMutationOptions<any, Error, { id: string; data: Partial<Contact> }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Contact> }) =>
+      apiService.contacts.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
+    },
+    ...options,
+  });
+}
 
-  const fetchDashboardData = useCallback(async () => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.dashboard.getStats();
-      // UPDATED: Handle new backend response format
-      if (response.success && response.data) {
-        setData(response.data);
+export function useDeleteContact(options?: UseMutationOptions<any, Error, string, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiService.contacts.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contacts'] });
+    },
+    ...options,
+  });
+}
+
+// Dashboard
+export function useDashboard(options?: Omit<UseQueryOptions<any, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      const response = await apiService.dashboard.getStats();
+      if (response.success) {
         return response.data;
       }
       throw new Error(response.message || 'Erro ao buscar dados do dashboard');
-    });
-  }, [execute, setData]);
-
-  return {
-    stats,
-    loading,
-    error,
-    fetchDashboardData,
-    reset
-  };
+    },
+    ...options,
+  });
 }
 
-export function useContacts() {
-  // contactsData can be either an array of contacts or an envelope { contacts: Contact[], total?: number }
-  type ContactsState = Contact[] | { contacts: Contact[]; total?: number } | null;
+// Appointment Types
+export function useAppointmentTypes(filters?: Record<string, any>, options?: Omit<UseQueryOptions<AppointmentType[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['appointmentTypes', filters],
+    queryFn: async () => {
+      const response = await apiService.appointmentTypes.getAll(filters);
+      if (response.success) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to fetch appointment types');
+    },
+    ...options,
+  });
+}
 
-  const { data: contactsData, loading, error, execute, setData, setError } = useApiState<ContactsState>(null);
+export function useCreateAppointmentType(options?: UseMutationOptions<any, Error, Partial<AppointmentType>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newType: Partial<AppointmentType>) => apiService.appointmentTypes.create(newType),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointmentTypes'] });
+    },
+    ...options,
+  });
+}
 
-  const fetchContacts = useCallback(async (filters: Record<string, any> = {}, sort: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.contacts.getAll({ ...filters, ...sort });
-      // normalize: if server returns array, keep array; else if returns envelope, return envelope
-      return response.data ?? null;
-    });
-  }, [execute]);
+export function useUpdateAppointmentType(options?: UseMutationOptions<any, Error, { id: string; data: Partial<AppointmentType> }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<AppointmentType> }) => apiService.appointmentTypes.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointmentTypes'] });
+    },
+    ...options,
+  });
+}
 
-  const updateContact = useCallback(async (id: string, updates: Partial<Contact>) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.contacts.update(id, updates);
-      const updated = response.data ?? null;
+export function useDeleteAppointmentType(options?: UseMutationOptions<any, Error, string, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiService.appointmentTypes.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointmentTypes'] });
+    },
+    ...options,
+  });
+}
 
-      // Update local state if present
-      if (contactsData) {
-        if (Array.isArray(contactsData)) {
-          const updatedArr = (contactsData as Contact[]).map(c => ((c._id === id || (c as any).id === id) ? { ...c, ...(updated ?? {}) } : c));
-          setData(updatedArr as unknown as ContactsState);
-        } else if ('contacts' in (contactsData as any) && Array.isArray((contactsData as any).contacts)) {
-          const env = contactsData as { contacts: Contact[]; total?: number };
-          const updatedArr = env.contacts.map(c => ((c._id === id || (c as any).id === id) ? { ...c, ...(updated ?? {}) } : c));
-          setData({ ...env, contacts: updatedArr } as ContactsState);
+// Appointments
+export function useAppointments(filters?: Record<string, any>, options?: Omit<UseQueryOptions<Appointment[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['appointments', filters],
+    queryFn: async () => {
+      const response = await apiService.appointments.getAll(filters);
+      if (response.success) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to fetch appointments');
+    },
+    ...options,
+  });
+}
+
+export function useCreateAppointment(options?: UseMutationOptions<any, Error, Partial<Appointment>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newAppointment: Partial<Appointment>) => apiService.appointments.create(newAppointment),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+    },
+    ...options,
+  });
+}
+
+export function useUpdateAppointment(options?: UseMutationOptions<any, Error, { id: string; data: Partial<Appointment> }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Appointment> }) => apiService.appointments.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+    },
+    ...options,
+  });
+}
+
+export function useDeleteAppointment(options?: UseMutationOptions<any, Error, string, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiService.appointments.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['appointments'] });
+    },
+    ...options,
+  });
+}
+
+// Patients
+export function usePatients(filters?: Record<string, any>, options?: Omit<UseQueryOptions<Patient[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['patients', filters],
+    queryFn: async () => {
+      const response = await apiService.patients.getAll(filters);
+      if (response.success) {
+        if (Array.isArray(response.data!)) {
+          return response.data!;
+        } else {
+          return response.data!.patients;
         }
       }
+      throw new Error(response.message || 'Failed to fetch patients');
+    },
+    ...options,
+  });
+}
 
-      return updated;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar contato';
-      setError(msg);
-      throw err;
-    }
-  }, [contactsData, setData, setError]);
+export function usePatient(id: string, options?: Omit<UseQueryOptions<Patient | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['patient', id],
+    queryFn: async () => {
+      const response = await apiService.patients.getOne(id);
+      if (response.success) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to fetch patient');
+    },
+    enabled: !!id,
+    ...options,
+  });
+}
 
-  const deleteContact = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      await svc.contacts.delete(id);
+export function useCreatePatient(options?: UseMutationOptions<any, Error, Partial<Patient>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newPatient: Partial<Patient>) => apiService.patients.create(newPatient),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+    ...options,
+  });
+}
 
-      if (contactsData) {
-        if (Array.isArray(contactsData)) {
-          const updatedArr = (contactsData as Contact[]).filter(c => (c._id !== id && (c as any).id !== id));
-          setData(updatedArr as unknown as ContactsState);
-        } else if ('contacts' in (contactsData as any) && Array.isArray((contactsData as any).contacts)) {
-          const env = contactsData as { contacts: Contact[]; total?: number };
-          const updatedArr = env.contacts.filter(c => (c._id !== id && (c as any).id !== id));
-          setData({ ...env, contacts: updatedArr, total: typeof env.total === 'number' ? Math.max(0, env.total - 1) : env.total } as ContactsState);
+export function useUpdatePatient(options?: UseMutationOptions<any, Error, { id: string; data: Partial<Patient> }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Patient> }) => apiService.patients.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patient', id] });
+    },
+    ...options,
+  });
+}
+
+export function useDeletePatient(options?: UseMutationOptions<any, Error, string, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiService.patients.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+    },
+    ...options,
+  });
+}
+
+// Providers
+export function useProviders(filters?: Record<string, any>, options?: Omit<UseQueryOptions<Provider[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['providers', filters],
+    queryFn: async () => {
+      const response = await apiService.providers.getAll(filters);
+      if (response.success) {
+        if (Array.isArray(response.data!)) {
+          return response.data!;
+        } else {
+          return response.data!.providers;
         }
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao excluir contato';
-      setError(msg);
-      throw err;
-    }
-  }, [contactsData, setData, setError]);
-
-  const createContact = useCallback(async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.contacts.create(contact);
-      const newContact = response.data ?? null;
-
-      if (newContact && contactsData) {
-        if (Array.isArray(contactsData)) {
-          setData([newContact, ...contactsData] as unknown as ContactsState);
-        } else if ('contacts' in (contactsData as any) && Array.isArray((contactsData as any).contacts)) {
-          const env = contactsData as { contacts: Contact[]; total?: number };
-          setData({ ...env, contacts: [newContact, ...env.contacts], total: typeof env.total === 'number' ? env.total + 1 : env.total } as ContactsState);
-        }
-      }
-
-      return newContact;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar contato';
-      setError(msg);
-      throw err;
-    }
-  }, [contactsData, setData, setError]);
-
-  return {
-    contactsData,
-    loading,
-    error,
-    fetchContacts,
-    updateContact,
-    deleteContact,
-    createContact
-  };
+      throw new Error(response.message || 'Failed to fetch providers');
+    },
+    ...options,
+  });
 }
 
-export function useAppointmentTypes() {
-  const { data: appointmentTypes, loading, error, execute, setData, setError } = useApiState<any[]>([]);
-
-  const fetchAppointmentTypes = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.appointmentTypes.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [execute]);
-
-  const createAppointmentType = useCallback(async (appointmentType: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.appointmentTypes.create(appointmentType);
-      const newType = response.data ?? null;
-
-      if (newType && appointmentTypes) {
-        setData([newType, ...appointmentTypes]);
+export function useProvider(id: string, options?: Omit<UseQueryOptions<Provider | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['provider', id],
+    queryFn: async () => {
+      const response = await apiService.providers.getOne(id);
+      if (response.success) {
+        return response.data;
       }
-
-      return newType;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar tipo de agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointmentTypes, setData, setError]);
-
-  const updateAppointmentType = useCallback(async (id: string, updates: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.appointmentTypes.update(id, updates);
-      const updated = response.data ?? null;
-
-      if (appointmentTypes) {
-        const updatedArr = appointmentTypes.map((at: any) => (at._id === id || at.id === id ? { ...at, ...updated } : at));
-        setData(updatedArr);
-      }
-
-      return updated;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar tipo de agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointmentTypes, setData, setError]);
-
-  const deleteAppointmentType = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      await svc.appointmentTypes.delete(id);
-
-      if (appointmentTypes) {
-        const updatedArr = appointmentTypes.filter((at: any) => at._id !== id && at.id !== id);
-        setData(updatedArr);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao excluir tipo de agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointmentTypes, setData, setError]);
-
-  return {
-    appointmentTypes,
-    loading,
-    error,
-    fetchAppointmentTypes,
-    createAppointmentType,
-    updateAppointmentType,
-    deleteAppointmentType
-  };
+      throw new Error(response.message || 'Failed to fetch provider');
+    },
+    enabled: !!id,
+    ...options,
+  });
 }
 
-export function useAppointments() {
-  const { data: appointments, loading, error, execute, setData, setError } = useApiState<any[]>([]);
-
-  const fetchAppointments = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.appointments.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [execute]);
-
-  const createAppointment = useCallback(async (appointment: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.appointments.create(appointment);
-      const newAppointment = response.data ?? null;
-
-      if (newAppointment && appointments) {
-        setData([newAppointment, ...appointments]);
-      }
-
-      return newAppointment;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointments, setData, setError]);
-
-  const updateAppointment = useCallback(async (id: string, updates: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.appointments.update(id, updates);
-      const updated = response.data ?? null;
-
-      if (appointments) {
-        const updatedArr = appointments.map((appt: any) => (appt._id === id || appt.id === id ? { ...appt, ...updated } : appt));
-        setData(updatedArr);
-      }
-
-      return updated;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointments, setData, setError]);
-
-  const deleteAppointment = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      await svc.appointments.delete(id);
-
-      if (appointments) {
-        const updatedArr = appointments.filter((appt: any) => appt._id !== id && appt.id !== id);
-        setData(updatedArr);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao excluir agendamento';
-      setError(msg);
-      throw err;
-    }
-  }, [appointments, setData, setError]);
-
-  return {
-    appointments,
-    loading,
-    error,
-    fetchAppointments,
-    createAppointment,
-    updateAppointment,
-    deleteAppointment
-  };
+export function useCreateProvider(options?: UseMutationOptions<any, Error, Partial<Provider>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newProvider: Partial<Provider>) => apiService.providers.create(newProvider),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['providers'] });
+    },
+    ...options,
+  });
 }
 
-export function usePatients() {
-  const { data: patients, loading, error, execute, setData, setError } = useApiState<any[]>([]);
-
-  const fetchPatients = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.patients.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [execute]);
-
-  const getPatient = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.patients.getOne(id);
-      return response.data ?? null;
-    });
-  }, [execute]);
-
-  const createPatient = useCallback(async (patient: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.patients.create(patient);
-      const newPatient = response.data ?? null;
-
-      if (newPatient && patients) {
-        setData([newPatient, ...patients]);
-      }
-
-      return newPatient;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar paciente';
-      setError(msg);
-      throw err;
-    }
-  }, [patients, setData, setError]);
-
-  const updatePatient = useCallback(async (id: string, updates: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.patients.update(id, updates);
-      const updated = response.data ?? null;
-
-      if (patients) {
-        const updatedArr = patients.map((pt: any) => (pt._id === id || pt.id === id ? { ...pt, ...updated } : pt));
-        setData(updatedArr);
-      }
-
-      return updated;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar paciente';
-      setError(msg);
-      throw err;
-    }
-  }, [patients, setData, setError]);
-
-  const deletePatient = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      await svc.patients.delete(id);
-
-      if (patients) {
-        const updatedArr = patients.filter((pt: any) => pt._id !== id && pt.id !== id);
-        setData(updatedArr);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao excluir paciente';
-      setError(msg);
-      throw err;
-    }
-  }, [patients, setData, setError]);
-
-  return {
-    patients,
-    loading,
-    error,
-    fetchPatients,
-    getPatient,
-    createPatient,
-    updatePatient,
-    deletePatient
-  };
+export function useUpdateProvider(options?: UseMutationOptions<any, Error, { id: string; data: Partial<Provider> }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<Provider> }) => apiService.providers.update(id, data),
+    onSuccess: (_, { id }) => {
+      queryClient.invalidateQueries({ queryKey: ['providers'] });
+      queryClient.invalidateQueries({ queryKey: ['provider', id] });
+    },
+    ...options,
+  });
 }
 
-export function useProviders() {
-  const { data: providers, loading, error, execute, setData, setError } = useApiState<any[]>([]);
-
-  const fetchProviders = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.providers.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [execute]);
-
-  const getProvider = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.providers.getOne(id);
-      return response.data ?? null;
-    });
-  }, [execute]);
-
-  const createProvider = useCallback(async (provider: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.providers.create(provider);
-      const newProvider = response.data ?? null;
-
-      if (newProvider && providers) {
-        setData([newProvider, ...providers]);
-      }
-
-      return newProvider;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar profissional';
-      setError(msg);
-      throw err;
-    }
-  }, [providers, setData, setError]);
-
-  const updateProvider = useCallback(async (id: string, updates: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.providers.update(id, updates);
-      const updated = response.data ?? null;
-
-      if (providers) {
-        const updatedArr = providers.map((prov: any) => (prov._id === id || prov.id === id ? { ...prov, ...updated } : prov));
-        setData(updatedArr);
-      }
-
-      return updated;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao atualizar profissional';
-      setError(msg);
-      throw err;
-    }
-  }, [providers, setData, setError]);
-
-  const deleteProvider = useCallback(async (id: string) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      await svc.providers.delete(id);
-
-      if (providers) {
-        const updatedArr = providers.filter((prov: any) => prov._id !== id && prov.id !== id);
-        setData(updatedArr);
-      }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao excluir profissional';
-      setError(msg);
-      throw err;
-    }
-  }, [providers, setData, setError]);
-
-  return {
-    providers,
-    loading,
-    error,
-    fetchProviders,
-    getProvider,
-    createProvider,
-    updateProvider,
-    deleteProvider
-  };
+export function useDeleteProvider(options?: UseMutationOptions<any, Error, string, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => apiService.providers.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['providers'] });
+    },
+    ...options,
+  });
 }
 
-export function useForms() {
-  const { data: formTemplates, loading: templatesLoading, error: templatesError, execute: executeTemplates, setData: setTemplates, setError: setTemplatesError } = useApiState<any[]>([]);
-  const { data: formResponses, loading: responsesLoading, error: responsesError, execute: executeResponses, setData: setResponses, setError: setResponsesError } = useApiState<any[]>([]);
-
-  const fetchFormTemplates = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return executeTemplates(async () => {
-      const response = await svc.forms.templates.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [executeTemplates]);
-
-  const createFormTemplate = useCallback(async (template: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.forms.templates.create(template);
-      const newTemplate = response.data ?? null;
-
-      if (newTemplate && formTemplates) {
-        setTemplates([newTemplate, ...formTemplates]);
+// Forms
+export function useFormTemplates(filters?: Record<string, any>, options?: Omit<UseQueryOptions<FormTemplate[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['formTemplates', filters],
+    queryFn: async () => {
+      const response = await apiService.forms.templates.getAll();
+      if (response.success) {
+        return response.data;
       }
-
-      return newTemplate;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar template de formulário';
-      setTemplatesError(msg);
-      throw err;
-    }
-  }, [formTemplates, setTemplates, setTemplatesError]);
-
-  const fetchFormResponses = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return executeResponses(async () => {
-      const response = await svc.forms.responses.getAll(filters);
-      return response.data ?? [];
-    });
-  }, [executeResponses]);
-
-  const createFormResponse = useCallback(async (response: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const responseData = await svc.forms.responses.create(response);
-      const newResponse = responseData.data ?? null;
-
-      if (newResponse && formResponses) {
-        setResponses([newResponse, ...formResponses]);
-      }
-
-      return newResponse;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao enviar resposta do formulário';
-      setResponsesError(msg);
-      throw err;
-    }
-  }, [formResponses, setResponses, setResponsesError]);
-
-  return {
-    formTemplates,
-    templatesLoading,
-    templatesError,
-    fetchFormTemplates,
-    createFormTemplate,
-    formResponses,
-    responsesLoading,
-    responsesError,
-    fetchFormResponses,
-    createFormResponse
-  };
+      throw new Error(response.message || 'Failed to fetch form templates');
+    },
+    ...options,
+  });
 }
 
-export function useCalendar() {
-  const { data: calendarEvents, loading, error, execute, setData, setError } = useApiState<any[]>([]);
+export function useCreateFormTemplate(options?: UseMutationOptions<any, Error, Partial<FormTemplate>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newTemplate: Partial<FormTemplate>) => apiService.forms.templates.create(newTemplate),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['formTemplates'] });
+    },
+    ...options,
+  });
+}
 
-  const fetchCalendarEvents = useCallback(async (filters: Record<string, any> = {}) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    return execute(async () => {
-      const response = await svc.calendar.getEvents(filters);
-      return response.data ?? [];
-    });
-  }, [execute]);
-
-  const createCalendarEvent = useCallback(async (event: any) => {
-    const mod = await import('../services/apiService');
-    const svc = (mod as any).apiService ?? mod.default;
-    try {
-      const response = await svc.calendar.createEvent(event);
-      const newEvent = response.data ?? null;
-
-      if (newEvent && calendarEvents) {
-        setData([newEvent, ...calendarEvents]);
+export function useFormResponses(filters?: Record<string, any>, options?: Omit<UseQueryOptions<FormResponse[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['formResponses', filters],
+    queryFn: async () => {
+      const response = await apiService.forms.responses.getAll(filters);
+      if (response.success) {
+        return response.data;
       }
+      throw new Error(response.message || 'Failed to fetch form responses');
+    },
+    ...options,
+  });
+}
 
-      return newEvent;
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Erro ao criar evento no calendário';
-      setError(msg);
-      throw err;
-    }
-  }, [calendarEvents, setData, setError]);
+export function useCreateFormResponse(options?: UseMutationOptions<any, Error, { templateId: string; patientId: string; answers: { [key: string]: string } }, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newResponse: { templateId: string; patientId: string; answers: { [key: string]: string } }) => apiService.forms.responses.create(newResponse),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['formResponses'] });
+    },
+    ...options,
+  });
+}
 
-  return {
-    calendarEvents,
-    loading,
-    error,
-    fetchCalendarEvents,
-    createCalendarEvent
-  };
+// Calendar
+export function useCalendarEvents(filters?: Record<string, any>, options?: Omit<UseQueryOptions<CalendarEvent[] | undefined, Error>, 'queryKey' | 'queryFn'>) {
+  return useQuery({
+    queryKey: ['calendarEvents', filters],
+    queryFn: async () => {
+      const response = await apiService.calendar.getEvents(filters);
+      if (response.success) {
+        return response.data;
+      }
+      throw new Error(response.message || 'Failed to fetch calendar events');
+    },
+    ...options,
+  });
+}
+
+export function useCreateCalendarEvent(options?: UseMutationOptions<any, Error, Partial<CalendarEvent>, unknown>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (newEvent: Partial<CalendarEvent>) => apiService.calendar.createEvent(newEvent),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+    },
+    ...options,
+  });
 }

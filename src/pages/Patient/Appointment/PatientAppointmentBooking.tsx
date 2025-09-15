@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
-import { apiService } from '../../../services/apiService';
+import { useAppointmentTypes, useProviders, useCreateAppointment } from '../../../hooks/useApiState';
 import PatientNavigation from '../../../components/PatientNavigation';
 import './PatientAppointmentBooking.css';
 
@@ -28,8 +28,10 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
   const { patientUser, isAuthenticated } = usePatientAuth();
   const navigate = useNavigate();
 
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([]);
+  const { data: providersData, isLoading: isLoadingProviders, error: errorProviders } = useProviders();
+  const { data: appointmentTypesData, isLoading: isLoadingTypes, error: errorTypes } = useAppointmentTypes();
+  const createAppointmentMutation = useCreateAppointment();
+
   const [selectedProvider, setSelectedProvider] = useState<string>('');
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
@@ -37,49 +39,21 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [notes, setNotes] = useState<string>('');
 
-  const [loading, setLoading] = useState(false);
-  const [booking, setBooking] = useState(false);
+  const [loadingSlots, setLoadingSlots] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/patient/login');
-      return;
     }
-
-    fetchProviders();
-    fetchAppointmentTypes();
   }, [isAuthenticated, navigate]);
 
-  const fetchProviders = async () => {
-    try {
-      const response = await apiService.providers.getAll();
-      if (response.success && response.data) {
-        setProviders(response.data as Provider[]);
-      }
-    } catch (error) {
-      console.error('Error fetching providers:', error);
-    }
-  };
-
-  const fetchAppointmentTypes = async () => {
-    try {
-      // Note: This would need to be implemented in apiService
-      // For now, using mock data
-      setAppointmentTypes([
-        { _id: '1', name: 'Consulta Geral', description: 'Consulta odontológica geral', duration: 30, price: 150 },
-        { _id: '2', name: 'Limpeza', description: 'Limpeza e profilaxia dental', duration: 60, price: 200 },
-        { _id: '3', name: 'Tratamento de Canal', description: 'Tratamento endodôntico', duration: 90, price: 500 },
-        { _id: '4', name: 'Extração', description: 'Extração dentária', duration: 45, price: 300 },
-      ]);
-    } catch (error) {
-      console.error('Error fetching appointment types:', error);
-    }
-  };
+  const providers = providersData || [];
+  const appointmentTypes = appointmentTypesData || [];
 
   const fetchAvailableSlots = async (providerId: string, date: string) => {
     try {
-      setLoading(true);
+      setLoadingSlots(true);
       // Mock available time slots - in real implementation, this would call an API
       const slots: TimeSlot[] = [];
       const startHour = 8;
@@ -88,7 +62,6 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
       for (let hour = startHour; hour < endHour; hour++) {
         for (let minute = 0; minute < 60; minute += 30) {
           const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          // Mock availability - randomly mark some as unavailable
           const available = Math.random() > 0.3;
           slots.push({ time: timeString, available });
         }
@@ -99,7 +72,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
       console.error('Error fetching available slots:', error);
       setError('Erro ao carregar horários disponíveis');
     } finally {
-      setLoading(false);
+      setLoadingSlots(false);
     }
   };
 
@@ -126,7 +99,6 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
     }
 
     try {
-      setBooking(true);
       setError(null);
 
       const selectedTypeData = appointmentTypes.find(type => type._id === selectedType);
@@ -134,7 +106,6 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         throw new Error('Tipo de consulta não encontrado');
       }
 
-      // Calculate end time based on duration
       const [hours, minutes] = selectedTime.split(':').map(Number);
       const startDateTime = new Date(selectedDate);
       startDateTime.setHours(hours, minutes, 0, 0);
@@ -152,20 +123,15 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         notes: notes.trim() || undefined
       };
 
-      const response = await apiService.appointments.create(appointmentData);
+      await createAppointmentMutation.mutateAsync(appointmentData);
+      
+      navigate('/patient/appointments', {
+        state: { message: 'Consulta agendada com sucesso!' }
+      });
 
-      if (response.success) {
-        navigate('/patient/appointments', {
-          state: { message: 'Consulta agendada com sucesso!' }
-        });
-      } else {
-        setError(response.message || 'Erro ao agendar consulta');
-      }
     } catch (err: any) {
       console.error('Error booking appointment:', err);
       setError(err.message || 'Erro ao agendar consulta');
-    } finally {
-      setBooking(false);
     }
   };
 
@@ -180,7 +146,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
     return maxDate.toISOString().split('T')[0];
   };
 
-  if (!patientUser) {
+  if (isLoadingProviders || isLoadingTypes) {
     return (
       <div className="appointment-booking">
         <div className="booking-loading">
@@ -189,6 +155,16 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         </div>
       </div>
     );
+  }
+
+  if (errorProviders || errorTypes) {
+    return (
+        <div className="appointment-booking">
+            <div className="booking-loading">
+                <p>Erro ao carregar dados. Tente novamente mais tarde.</p>
+            </div>
+        </div>
+    )
   }
 
   return (
@@ -286,7 +262,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
             {selectedDate && selectedProvider && (
               <div className="form-section">
                 <h2>4. Escolha o Horário</h2>
-                {loading ? (
+                {loadingSlots ? (
                   <div className="loading-state">
                     <div className="loading-spinner"></div>
                     <p>Carregando horários...</p>
@@ -345,7 +321,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                 type="button"
                 onClick={() => navigate('/patient/appointments')}
                 className="cancel-btn"
-                disabled={booking}
+                disabled={createAppointmentMutation.isPending}
               >
                 Cancelar
               </button>
@@ -353,9 +329,9 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                 type="button"
                 onClick={handleBooking}
                 className="book-btn"
-                disabled={booking || !selectedProvider || !selectedType || !selectedDate || !selectedTime}
+                disabled={createAppointmentMutation.isPending || !selectedProvider || !selectedType || !selectedDate || !selectedTime}
               >
-                {booking ? (
+                {createAppointmentMutation.isPending ? (
                   <>
                     <div className="loading-spinner small"></div>
                     Agendando...

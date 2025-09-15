@@ -1,73 +1,37 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { useAppointments } from '../../../hooks/useApiState';
 import PatientNavigation from '../../../components/PatientNavigation';
+import type { Appointment } from '../../../types/api';
 import './PatientDashboard.css';
 
-interface Appointment {
-  _id: string;
-  scheduledStart: string;
-  scheduledEnd: string;
-  status: string;
-  appointmentType: {
-    name: string;
-  };
-  provider: {
-    name: string;
-  };
-  clinic: {
-    name: string;
-  };
-}
+
 
 const PatientDashboard: React.FC = function PatientDashboard() {
   const { patientUser, isAuthenticated } = usePatientAuth();
   const navigate = useNavigate();
-  const { appointments: allAppointments, loading, error, fetchAppointments } = useAppointments();
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
 
-  const fetchUpcomingAppointments = useCallback(async () => {
-    try {
-      // Get all appointments for the current patient
-      await fetchAppointments({
-        patient: patientUser?.patient._id,
-        sort: 'scheduledStart'
-      });
-    } catch (err: any) {
-      console.error('Error fetching appointments:', err);
-    }
-  }, [patientUser?.patient._id, fetchAppointments]);
+  const { data: allAppointments, isLoading, error, refetch } = useAppointments(
+    { patient: patientUser?.patient._id, sort: 'scheduledStart' },
+    { refetchInterval: 30000, enabled: !!patientUser } // Poll every 30 seconds, only enable when patientUser is available
+  );
 
-  // Filter upcoming appointments when allAppointments changes
-  useEffect(() => {
-    if (allAppointments) {
-      const upcoming = allAppointments
-        .filter(a => new Date(a.scheduledStart) > new Date())
-        .slice(0, 5);
-      setUpcomingAppointments(upcoming);
-    }
+  const upcomingAppointments = useMemo(() => {
+    if (!allAppointments) return [];
+    return (allAppointments as Appointment[])
+      .filter(a => new Date(a.scheduledStart) > new Date())
+      .slice(0, 5);
   }, [allAppointments]);
-
-  const fetchAllAppointments = fetchUpcomingAppointments;
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/patient/login');
-      return;
     }
+  }, [isAuthenticated, navigate]);
 
-    fetchAllAppointments();
-
-    const interval = setInterval(() => {
-      fetchAllAppointments();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, navigate, fetchAllAppointments]);
-
-  const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDateTime = (dateInput: string | Date) => {
+    const date = new Date(dateInput);
     return {
       date: date.toLocaleDateString('pt-BR'),
       time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
@@ -97,7 +61,7 @@ const PatientDashboard: React.FC = function PatientDashboard() {
   };
 
   const totalAppointments = allAppointments?.length || 0;
-  const completedAppointments = allAppointments?.filter(a => a.status === 'completed').length || 0;
+  const completedAppointments = allAppointments?.filter((a: Appointment) => a.status === 'completed').length || 0;
   const pendingAppointments = totalAppointments - completedAppointments;
 
   if (!patientUser) {
@@ -198,16 +162,16 @@ const PatientDashboard: React.FC = function PatientDashboard() {
               </button>
             </div>
 
-            {loading ? (
+            {isLoading ? (
               <div className="loading-state">
                 <div className="loading-spinner"></div>
                 <p>Carregando agendamentos...</p>
               </div>
             ) : error ? (
               <div className="error-state">
-                <p>{error}</p>
+                <p>{error.message}</p>
                 <button
-                  onClick={fetchUpcomingAppointments}
+                  onClick={() => refetch()}
                   className="retry-button"
                 >
                   Tentar novamente
@@ -237,9 +201,9 @@ const PatientDashboard: React.FC = function PatientDashboard() {
                     <div key={appointment._id} className="appointment-card">
                       <div className="appointment-info">
                         <div className="appointment-primary">
-                          <h3>{appointment.appointmentType.name}</h3>
+                          <h3>{typeof appointment.appointmentType === 'object' ? appointment.appointmentType.name : appointment.appointmentType}</h3>
                           <p className="appointment-provider">
-                            Dr. {appointment.provider.name}
+                            Dr. {typeof appointment.provider === 'object' ? appointment.provider.name : appointment.provider}
                           </p>
                         </div>
                         <div className="appointment-secondary">
