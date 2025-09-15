@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
+import { AuthenticatedRequest } from './middleware/auth';
 
 // Database imports
 import { connectToDatabase } from './config/database';
@@ -260,6 +261,25 @@ const authLimiter = createRateLimit(
   'Muitas tentativas de autenticação. Tente novamente em 15 minutos.'
 );
 
+const passwordResetLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // 3 password reset requests per hour per user/IP
+  message: {
+    success: false,
+    message: 'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: AuthenticatedRequest, res) => {
+    // Use user ID if authenticated, otherwise use IP address
+    return req.user?.id || req.ip;
+  },
+  handler: (req, res) => {
+    console.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
+    res.status(429).json({ success: false, message: 'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.' });
+  }
+});
+
 const apiLimiter = createRateLimit(
   15 * 60 * 1000, // 15 minutes
   process.env.NODE_ENV === 'production' ? 100 : 1000, // Lower limit in production
@@ -269,6 +289,8 @@ const apiLimiter = createRateLimit(
 // Apply rate limiting
 app.use('/api/contact', contactLimiter);
 app.use('/api/auth', authLimiter);
+app.use('/api/auth/forgot-password', passwordResetLimiter);
+app.use('/api/auth/reset-password', passwordResetLimiter);
 app.use('/api', apiLimiter);
 
 // IMPROVED: Body parser with security limits

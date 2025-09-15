@@ -74,14 +74,16 @@ class AuthService {
 
     // Get JWT secret with runtime environment variable reading
     private getJwtSecret(): string {
-        const secret = process.env.JWT_SECRET || '';
+        const secret = process.env.JWT_SECRET;
+
         if (!secret || secret === 'your-secret-key') {
             if (process.env.NODE_ENV === 'production') {
-                console.error('FATAL: JWT_SECRET is not configured. Set JWT_SECRET env var before starting the app.');
+                console.error('FATAL: JWT_SECRET is not configured. Set a strong JWT_SECRET environment variable before starting the app in production.');
                 process.exit(1);
             } else {
-                // For tests and development, use a consistent fallback
-                return process.env.JWT_SECRET || 'test-jwt-secret-key';
+                // For development and testing, generate a secure, random secret if not provided.
+                // This avoids using a predictable default key.
+                return crypto.randomBytes(32).toString('hex');
             }
         }
         return secret;
@@ -546,34 +548,86 @@ class AuthService {
         }
     }
 
-    // Reset password (for forgot password feature) - IMPROVED
-    async resetPassword(email: string): Promise<string> {
+    // Generate a password reset token
+    async forgotPassword(email: string): Promise<string> {
         try {
             if (!email) {
                 throw new ValidationError('E-mail é obrigatório');
             }
 
-            const user = await User.findOne({ email: email.toLowerCase() });
+            const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
             if (!user) {
-                throw new NotFoundError('Usuário');
+                // To prevent user enumeration, we don't reveal that the user doesn't exist.
+                // We can log this event for monitoring purposes.
+                console.log(`Password reset attempt for non-existent user: ${email}`);
+                return ''; // Return a non-committal response
             }
 
-            // Generate more secure temporary password
-            const tempPassword = crypto.randomBytes(12).toString('base64').slice(0, 12);
-            user.password = tempPassword;
+            // Generate a secure, random token
+            const resetToken = crypto.randomBytes(32).toString('hex');
+
+            // Hash the token before saving it to the database for added security
+            user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+            
+            // Set an expiration time for the token (e.g., 10 minutes)
+            user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
+
             await user.save();
 
-            // Revoke all existing tokens
-            await this.logoutAllDevices((user._id as any).toString());
+            // In a real application, you would send the `resetToken` to the user's email.
+            // For this example, we'll return it.
+            return resetToken;
 
-            return tempPassword;
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;
             }
 
-            console.error('Error resetting password:', error);
-            throw new AppError('Erro ao resetar senha', 500);
+            console.error('Error in forgotPassword:', error);
+            throw new AppError('Erro ao processar a solicitação de redefinição de senha', 500);
+        }
+    }
+
+    // Reset password with a valid token
+    async resetPasswordWithToken(token: string, newPassword: string): Promise<boolean> {
+        try {
+            if (!token || !newPassword) {
+                throw new ValidationError('Token e nova senha são obrigatórios');
+            }
+
+            // Hash the token to find it in the database
+            const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+            const user = await User.findOne({
+                passwordResetToken: hashedToken,
+                passwordResetExpires: { $gt: new Date() } // Check if the token has not expired
+            }).select('+passwordResetToken +passwordResetExpires');
+
+            if (!user) {
+                throw new UnauthorizedError('Token de redefinição de senha inválido ou expirado');
+            }
+
+            // Set the new password
+            user.password = newPassword;
+            
+            // Clear the reset token fields
+            user.passwordResetToken = undefined;
+            user.passwordResetExpires = undefined;
+
+            await user.save();
+
+            // Revoke all existing refresh tokens to force re-login on all devices
+            await this.logoutAllDevices((user._id as any).toString());
+
+            return true;
+
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
+
+            console.error('Error in resetPasswordWithToken:', error);
+            throw new AppError('Erro ao redefinir a senha', 500);
         }
     }
 

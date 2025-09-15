@@ -6,7 +6,7 @@ import { authService } from '../services/authService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response } from 'express';
-import { NotFoundError } from '../types/errors';
+import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
 
 const router = express.Router();
 
@@ -34,15 +34,17 @@ const registerLimiter = rateLimit({
 // Validation rules
 const registerValidation = [
   body('name')
+    .trim()
     .isLength({ min: 2, max: 100 })
     .withMessage('Nome deve ter entre 2 e 100 caracteres')
     .matches(/^[a-zA-ZÀ-ÿ\s]*$/)
-    .withMessage('Nome deve conter apenas letras e espaços'),
+    .withMessage('Nome deve conter apenas letras e espaços')
+    .escape(), // Sanitize name
 
   body('email')
     .isEmail()
     .withMessage('Digite um e-mail válido')
-    .normalizeEmail(),
+    .normalizeEmail(), // Normalizes email and also sanitizes
 
   body('password')
     .isLength({ min: 6 })
@@ -53,33 +55,46 @@ const registerValidation = [
   // Clinic validation (optional)
   body('clinic.name')
     .optional()
+    .trim()
     .isLength({ min: 2, max: 100 })
-    .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres'),
+    .withMessage('Nome da clínica deve ter entre 2 e 100 caracteres')
+    .escape(), // Sanitize clinic name
 
   body('clinic.phone')
     .optional()
+    .trim()
     .matches(/^[\d\s\-()+]{10,20}$/)
-    .withMessage('Telefone da clínica inválido'),
+    .withMessage('Telefone da clínica inválido')
+    .escape(), // Sanitize phone
 
   body('clinic.address.street')
     .optional()
+    .trim()
     .isLength({ min: 5, max: 100 })
-    .withMessage('Endereço deve ter entre 5 e 100 caracteres'),
+    .withMessage('Endereço deve ter entre 5 e 100 caracteres')
+    .escape(), // Sanitize street
 
   body('clinic.address.city')
     .optional()
+    .trim()
     .isLength({ min: 2, max: 50 })
-    .withMessage('Cidade deve ter entre 2 e 50 caracteres'),
+    .withMessage('Cidade deve ter entre 2 e 50 caracteres')
+    .escape(), // Sanitize city
 
   body('clinic.address.state')
     .optional()
+    .trim()
     .isLength({ min: 2, max: 2 })
-    .withMessage('Estado deve ter 2 caracteres'),
+    .withMessage('Estado deve ter 2 caracteres')
+    .toUpperCase() // Convert state to uppercase
+    .escape(), // Sanitize state
 
   body('clinic.address.zipCode')
     .optional()
+    .trim()
     .matches(/^\d{5}-?\d{3}$/)
     .withMessage('CEP inválido')
+    .escape() // Sanitize zipCode
 ];
 
 /**
@@ -152,41 +167,32 @@ const loginValidation = [
   body('email')
     .isEmail()
     .withMessage('Digite um e-mail válido')
-    .normalizeEmail(),
+    .normalizeEmail(), // Normalizes email and also sanitizes
 
   body('password')
     .isLength({ min: 1 })
     .withMessage('Senha é obrigatória')
+    .trim()
+    .escape() // Sanitize password (though it will be hashed, good practice)
 ];
 
 const changePasswordValidation = [
   body('currentPassword')
     .isLength({ min: 1 })
-    .withMessage('Senha atual é obrigatória'),
+    .withMessage('Senha atual é obrigatória')
+    .trim()
+    .escape(), // Sanitize current password
 
   body('newPassword')
     .isLength({ min: 6 })
     .withMessage('Nova senha deve ter pelo menos 6 caracteres')
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     .withMessage('Nova senha deve conter ao menos uma letra minúscula, uma maiúscula e um número')
+    .trim()
+    .escape() // Sanitize new password
 ];
 
-// Sanitize input data
-const sanitizeAuthData = (data: any) => {
-  const sanitized: any = {};
 
-  for (const key in data) {
-    if (typeof data[key] === 'string') {
-      sanitized[key] = DOMPurify.sanitize(data[key].trim());
-    } else if (typeof data[key] === 'object' && data[key] !== null) {
-      sanitized[key] = sanitizeAuthData(data[key]);
-    } else {
-      sanitized[key] = data[key];
-    }
-  }
-
-  return sanitized;
-};
 
 // Register endpoint
 /**
@@ -230,10 +236,7 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
       });
     }
 
-    // Sanitize input
-    const sanitizedData = sanitizeAuthData(req.body);
-
-    const result = await authService.register(sanitizedData);
+    const result = await authService.register(req.body);
 
     return res.status(201).json(result);
   } catch (error) {
@@ -290,9 +293,6 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
       });
     }
 
-    // Sanitize input
-    const sanitizedData = sanitizeAuthData(req.body);
-
     // Extract device info for refresh token
     const deviceInfo = {
       userAgent: req.headers['user-agent'],
@@ -300,7 +300,7 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
       deviceId: req.headers['x-device-id'] as string
     };
 
-    const result = await authService.login(sanitizedData, deviceInfo);
+    const result = await authService.login(req.body, deviceInfo);
 
     return res.json(result);
   } catch (error) {
@@ -541,6 +541,169 @@ router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: 
     return res.status(500).json({ 
       success: false, 
       message: 'Erro ao fazer logout' 
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Solicitar redefinição de senha
+ *     description: Envia um e-mail com um link para redefinir a senha do usuário.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: E-mail do usuário para redefinição de senha.
+ *     responses:
+ *       200:
+ *         description: Se o e-mail existir, um link de redefinição de senha será enviado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 'Se o e-mail estiver registrado, um link de redefinição de senha foi enviado.'
+ *       400:
+ *         description: E-mail inválido.
+ *       500:
+ *         description: Erro interno do servidor.
+ */
+router.post('/forgot-password', [
+  body('email').isEmail().withMessage('E-mail inválido').normalizeEmail()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        errors: errors.array()
+      });
+    }
+
+    const { email } = req.body;
+    const resetToken = await authService.forgotPassword(email);
+
+    // In a real application, you would send an email here.
+    // For now, we'll just log the token and send a generic success message.
+    console.log(`Password reset token for ${email}: ${resetToken}`);
+
+    return res.json({
+      success: true,
+      message: 'Se o e-mail estiver registrado, um link de redefinição de senha foi enviado.'
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : 'Erro ao solicitar redefinição de senha'
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/reset-password/{token}:
+ *   post:
+ *     summary: Redefinir senha
+ *     description: Redefine a senha do usuário usando um token válido.
+ *     tags: [Authentication]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Token de redefinição de senha.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newPassword
+ *             properties:
+ *               newPassword:
+ *                 type: string
+ *                 minLength: 8
+ *                 description: Nova senha do usuário.
+ *     responses:
+ *       200:
+ *         description: Senha redefinida com sucesso.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: 'Senha redefinida com sucesso.'
+ *       400:
+ *         description: Dados inválidos ou token expirado/inválido.
+ *       401:
+ *         description: Token inválido ou expirado.
+ *       500: 
+ *         description: Erro interno do servidor.
+ */
+router.post('/reset-password/:token', [
+  body('newPassword')
+    .isLength({ min: 6 })
+    .withMessage('Nova senha deve ter pelo menos 6 caracteres')
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage('Nova senha deve conter ao menos uma letra minúscula, uma maiúscula e um número')
+    .trim()
+    .escape()
+], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        errors: errors.array()
+      });
+    }
+
+    const { token } = req.params;
+    const { newPassword } = req.body;
+
+    await authService.resetPasswordWithToken(token, newPassword);
+
+    return res.json({
+      success: true,
+      message: 'Senha redefinida com sucesso.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    if (error instanceof UnauthorizedError) {
+      return res.status(401).json({
+        success: false,
+        message: error.message
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: (error instanceof AppError || error instanceof Error) ? error.message : 'Erro ao redefinir senha'
     });
   }
 });

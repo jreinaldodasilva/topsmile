@@ -50,21 +50,23 @@ class PatientAuthService {
 
   // FIXED: Separate JWT secret for patients
   private getPatientJwtSecret(): string {
-    const secret = process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || '';
-    
+    const secret = process.env.PATIENT_JWT_SECRET;
+
     if (!secret || secret === 'your-secret-key') {
       if (process.env.NODE_ENV === 'production') {
-        console.error('FATAL: Patient JWT secret not configured');
+        console.error('FATAL: PATIENT_JWT_SECRET must be set in production and be a strong, unique secret.');
         process.exit(1);
       }
-      return 'test-patient-jwt-secret';
+      // For development, generate a temporary secret if not provided.
+      return process.env.PATIENT_JWT_SECRET || crypto.randomBytes(32).toString('hex');
     }
-    
-    // SECURITY WARNING: Same secret as staff
-    if (secret === process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-      console.error('SECURITY WARNING: Patient and staff JWT secrets should be different!');
+
+    // Ensure patient and staff secrets are different in production
+    if (process.env.NODE_ENV === 'production' && secret === process.env.JWT_SECRET) {
+      console.error('FATAL: PATIENT_JWT_SECRET must be different from JWT_SECRET in production.');
+      process.exit(1);
     }
-    
+
     return secret;
   }
 

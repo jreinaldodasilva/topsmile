@@ -15,7 +15,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
       message: 'JSON malformado'
     });
   }
-  next(err);
+  return next(err); // Explicitly return next(err)
 });
 
 app.use('/api/auth', authRoutes);
