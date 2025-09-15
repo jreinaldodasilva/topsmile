@@ -19,6 +19,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/mod
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/models/RefreshToken.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/models/User.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/routes/admin/contacts.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/routes/admin/index.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/routes/appointmentTypes.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/routes/appointments.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/routes/auth.ts
