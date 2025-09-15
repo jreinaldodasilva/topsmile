@@ -1,5 +1,6 @@
 // src/services/apiService.ts - Updated for Backend Integration
 import { request } from './http';
+import { toBackendPatient } from '../utils/mappers';
 import type {
   ApiResult,
   Contact,
@@ -13,7 +14,8 @@ export type { ApiResult, Contact, ContactFilters, ContactListResponse, Dashboard
 
 // ADDED: New types for appointments, forms, patients, and providers
 export interface Appointment {
-  _id: string;
+  id?: string;
+  _id?: string;
   patient: string | Patient;
   clinic: string | Clinic;
   provider: string | Provider;
@@ -25,24 +27,50 @@ export interface Appointment {
   status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
   priority?: 'routine' | 'urgent' | 'emergency';
   notes?: string;
+  cancellationReason?: string;
+  noShowReason?: string;
+  rescheduleHistory?: Array<{
+    oldDate: Date;
+    newDate: Date;
+    reason: string;
+    rescheduleBy: 'patient' | 'clinic';
+    timestamp: Date;
+  }>;
+  reminders?: Array<{
+    type: 'sms' | 'email' | 'whatsapp';
+    sentAt: Date;
+    status: 'sent' | 'delivered' | 'failed';
+  }>;
+  treatmentPlan?: string;
+  invoice?: string;
+  createdBy?: string | User;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  [key: string]: any;
 }
 
 export interface AppointmentType {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   description?: string;
   duration: number;
   price?: number;
   color?: string;
   category?: string;
+  bufferBefore?: number;
+  bufferAfter?: number;
+  requiresApproval?: boolean;
   isActive: boolean;
   clinic: string | Clinic;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+  [key: string]: any;
 }
 
 export interface Patient {
-  _id: string;
+  id?: string;
+  _id?: string;
   firstName: string;
   lastName?: string;
   fullName?: string;
@@ -51,6 +79,7 @@ export interface Patient {
   dateOfBirth?: string | Date;
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   cpf?: string;
+  rg?: string;
   address?: {
     street?: string;
     number?: string;
@@ -74,10 +103,12 @@ export interface Patient {
   isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  [key: string]: any;
 }
 
 export interface Provider {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -98,6 +129,7 @@ export interface Provider {
   isActive: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  [key: string]: any;
 }
 
 export interface Clinic {
@@ -607,18 +639,7 @@ async function getPatient(id: string): Promise<ApiResult<Patient>> {
 }
 
 async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patient>> {
-    // Map frontend fields to backend fields
-    const backendPayload = {
-        name: payload.firstName ? `${payload.firstName} ${payload.lastName || ''}`.trim() : payload.fullName,
-        email: payload.email,
-        phone: payload.phone,
-        birthDate: payload.dateOfBirth,
-        gender: payload.gender === 'prefer_not_to_say' ? undefined : payload.gender,
-        cpf: payload.cpf,
-        address: payload.address,
-        emergencyContact: payload.emergencyContact,
-        medicalHistory: payload.medicalHistory
-    };
+    const backendPayload = toBackendPatient(payload);
     
     const res = await request<Patient>(`/api/patients`, {
         method: 'POST',
@@ -628,18 +649,7 @@ async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patie
 }
 
 async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
-    // Map frontend fields to backend fields
-    const backendPayload = {
-        name: payload.firstName ? `${payload.firstName} ${payload.lastName || ''}`.trim() : payload.fullName,
-        email: payload.email,
-        phone: payload.phone,
-        birthDate: payload.dateOfBirth,
-        gender: payload.gender === 'prefer_not_to_say' ? undefined : payload.gender,
-        cpf: payload.cpf,
-        address: payload.address,
-        emergencyContact: payload.emergencyContact,
-        medicalHistory: payload.medicalHistory
-    };
+    const backendPayload = toBackendPatient(payload);
     
     const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
         method: 'PATCH',

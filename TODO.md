@@ -1,21 +1,13 @@
-# Fix TypeScript Errors
-
-## Completed
-- [x] Analyze errors and plan fixes
-- [x] Update useApiState.ts for React Query v5 compatibility
-  - [x] Change cacheTime to gcTime
-  - [x] Fix queryFn return types to handle undefined
-  - [x] Fix API method signatures (forms.getAll)
-  - [x] Fix type mismatches in mutations
-
-## Completed
-- [x] Update ContactList.tsx: change isLoading to isPending
-- [x] Update PatientAppointmentBooking.tsx: change isLoading to isPending
-- [x] Update PatientDashboard.tsx: remove conflicting Appointment interface
-- [x] Update useApiState.test.ts: fix import
-
-## Completed
-- [x] Run tsc --noEmit to verify fixes (no errors remaining)
-
-## Pending
-- [ ] Test application functionality
+- [x] Fix FrontendPatient interface in mappers.ts to not extend Patient and make fields optional
+- [x] Update toBackendPatient to handle dateOfBirth as string | Date
+- [x] Update Patient interface in apiService.ts to match types/api.ts (add id?, rg?, [key: string]: any)
+- [x] Update Appointment interface in apiService.ts to match types/api.ts (add id?, extra fields, [key: string]: any)
+- [x] Update AppointmentType interface in apiService.ts to match types/api.ts (add id?, extra fields, [key: string]: any)
+- [x] Update Provider interface in apiService.ts to match types/api.ts (add id?, [key: string]: any)
+- [ ] Update Clinic interface in apiService.ts to match types/api.ts (add id?, subscription?, settings?, [key: string]: any)
+- [x] Fix jest.spyOn in apiService.test.ts
+- [x] Update mock data in patients.create test to use firstName, lastName, fullName
+- [x] Update expect in patients.create test to check fullName
+- [x] Update mock data in patients.update test to use firstName, lastName, fullName
+- [x] Update expect in patients.update test to check fullName
+- [x] Run tsc --noEmit to verify no errors

@@ -3,15 +3,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import AppointmentCalendar from '../../pages/Admin/AppointmentCalendar';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 describe('AppointmentCalendar', () => {
+  const queryClient = new QueryClient();
   const setup = () => {
     render(
-      <BrowserRouter>
-        <AuthProvider>
-          <AppointmentCalendar />
-        </AuthProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <AppointmentCalendar />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     );
   };
 

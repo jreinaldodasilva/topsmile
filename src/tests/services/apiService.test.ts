@@ -1,10 +1,16 @@
 import { apiService } from '../../services/apiService';
+import * as tokenStore from '../../services/tokenStore';
 
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe('apiService', () => {
   beforeEach(() => {
     mockFetch.mockClear();
+    (tokenStore as any).getAccessToken = jest.fn().mockReturnValue('mock-access-token');
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe('auth methods', () => {
@@ -28,6 +34,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.auth.login('admin@topsmile.com', 'SecurePass123!');
@@ -38,17 +45,15 @@ describe('apiService', () => {
         expect(result.data?.accessToken).toBe('mock-access-token');
         expect(result.data?.refreshToken).toBe('mock-refresh-token');
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/auth/login'),
-          expect.objectContaining({
+          'http://localhost:5000/api/auth/login',
+          {
             method: 'POST',
-            headers: expect.objectContaining({
-              'Content-Type': 'application/json',
-            }),
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               email: 'admin@topsmile.com',
               password: 'SecurePass123!'
             })
-          })
+          }
         );
       });
 
@@ -62,6 +67,7 @@ describe('apiService', () => {
           ok: false,
           status: 401,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.auth.login('invalid@example.com', 'wrongpassword');
@@ -99,6 +105,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const registerData = {
@@ -131,6 +138,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.auth.me();
@@ -166,6 +174,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.patients.getAll();
@@ -185,12 +194,13 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         await apiService.patients.getAll({ search: 'João', page: 1, limit: 10 });
 
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/patients?search=João&page=1&limit=10'),
+          'http://localhost:5000/api/patients?search=Jo%C3%A3o&page=1&limit=10',
           expect.any(Object)
         );
       });
@@ -212,6 +222,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.patients.getOne('patient123');
@@ -232,6 +243,7 @@ describe('apiService', () => {
           ok: false,
           status: 404,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.patients.getOne('non-existent-id');
@@ -249,6 +261,7 @@ describe('apiService', () => {
             _id: 'new-patient-id',
             firstName: 'New',
             lastName: 'Patient',
+            fullName: 'New Patient',
             email: 'new.patient@example.com',
             phone: '(11) 99999-9999'
           }
@@ -257,6 +270,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const patientData = {
@@ -270,13 +284,17 @@ describe('apiService', () => {
 
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
-        expect(result.data?.firstName).toBe(patientData.firstName);
+        expect(result.data?.fullName).toBe('New Patient');
         expect(result.data?.email).toBe(patientData.email);
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/patients'),
+          'http://localhost:5000/api/patients',
           expect.objectContaining({
             method: 'POST',
-            body: JSON.stringify(patientData)
+            body: JSON.stringify({ 
+              name: 'New Patient',
+              email: 'new.patient@example.com',
+              phone: '(11) 99999-9999'
+            })
           })
         );
       });
@@ -288,7 +306,9 @@ describe('apiService', () => {
           success: true,
           data: {
             _id: 'patient123',
-            firstName: 'Updated Name',
+            firstName: 'Updated',
+            lastName: 'Name',
+            fullName: 'Updated Name',
             phone: '(11) 88888-8888'
           }
         };
@@ -296,10 +316,12 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const updateData = {
-          firstName: 'Updated Name',
+          firstName: 'Updated',
+          lastName: 'Name',
           phone: '(11) 88888-8888'
         };
 
@@ -307,12 +329,15 @@ describe('apiService', () => {
 
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
-        expect(result.data?.firstName).toBe(updateData.firstName);
+        expect(result.data?.fullName).toBe('Updated Name');
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/patients/patient123'),
+          'http://localhost:5000/api/patients/patient123',
           expect.objectContaining({
-            method: 'PUT',
-            body: JSON.stringify(updateData)
+            method: 'PATCH',
+            body: JSON.stringify({ 
+              name: 'Updated Name',
+              phone: '(11) 88888-8888'
+            })
           })
         );
       });
@@ -328,6 +353,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.patients.delete('patient123');
@@ -335,7 +361,7 @@ describe('apiService', () => {
         expect(result.success).toBe(true);
         expect(result.message).toContain('Paciente removido com sucesso');
         expect(mockFetch).toHaveBeenCalledWith(
-          expect.stringContaining('/patients/patient123'),
+          'http://localhost:5000/api/patients/patient123',
           expect.objectContaining({
             method: 'DELETE'
           })
@@ -361,6 +387,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.contacts.getAll();
@@ -387,6 +414,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const contactData = {
@@ -424,6 +452,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.appointments.getAll();
@@ -449,6 +478,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const appointmentData = {
@@ -487,6 +517,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.dashboard.getStats();
@@ -516,6 +547,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const contactData = {
@@ -555,6 +587,7 @@ describe('apiService', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           json: async () => mockResponse,
+          text: async () => JSON.stringify(mockResponse),
         } as Response);
 
         const result = await apiService.system.health();

@@ -6,7 +6,7 @@ import PatientAppointmentBooking from '../../../../pages/Patient/Appointment/Pat
 import { apiService } from '../../../../services/apiService';
 
 // Mocks
-jest.mock('../../../../../services/apiService');
+jest.mock('../../../../services/apiService');
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),

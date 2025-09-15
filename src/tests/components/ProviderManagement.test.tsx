@@ -3,15 +3,19 @@ import { render, screen, waitFor } from '@testing-library/react';
 import ProviderManagement from '../../pages/Admin/ProviderManagement';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 describe('ProviderManagement', () => {
+  const queryClient = new QueryClient();
   const setup = () => {
     render(
-      <BrowserRouter>
-        <AuthProvider>
-          <ProviderManagement />
-        </AuthProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <AuthProvider>
+            <ProviderManagement />
+          </AuthProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     );
   };
 
