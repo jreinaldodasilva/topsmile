@@ -1,14 +1,19 @@
+# Prompt
+
 Thoroughly and meticulously analyze the backend of the TopSmile project.  
+
 The files `backend_raw_links.txt` and `backend_tests_raw_links` contains raw GitHub URLs to every backend source file (direct links to raw.githubusercontent.com).  
 Do not execute any code or use private credentials — perform a static/code review only.
 
 Context:
+
 - Project type: Node.js + Express + TypeScript API
 - Database: MongoDB with Mongoose ODM
 - Organization: Controllers/routes → Services → Mongoose models
 - Goal of analysis: Identify security risks, correctness/logic bugs, performance bottlenecks, and maintainability issues.
 
 Deliverables (produce as Markdown with code snippets, file paths, and diffs where useful):
+
 1. **Executive Summary** – one paragraph describing overall backend health and high-level risks.
 2. **Architecture Overview** – describe how controllers, services, and models interact. Include a simple Mermaid or ASCII diagram of the data flow.
 3. **Security Review** – enumerate each issue with severity (Critical/High/Medium/Low), the file and line number, reproduction scenario, and a recommended fix (patch or diff if possible).
@@ -23,16 +28,19 @@ Deliverables (produce as Markdown with code snippets, file paths, and diffs wher
 12. **Files Examined** – provide a short list of all files reviewed and note any assumptions made.
 
 Constraints:
+
 - Do not run the project or attempt to access secrets (e.g., `.env` values). Instead, flag potential secret usage.
 - If encountering auto-generated or third-party code, note and skip deep review.
 - If something is ambiguous, provide a best-effort recommendation and mark it as “assumption.”
 
 Output format:
+
 - Markdown report with clear section headers.
 - Use code fences for inline diffs or code snippets.
 - Include a concise summary table of issues with severity for quick scanning.
 
 Artifacts to use (if available):
+
 - `backend_raw_links.txt` and `backend_tests_raw_links` (list of backend source files)  
 - `README.md`  
 - `Dockerfile` / `docker-compose.yml`  
