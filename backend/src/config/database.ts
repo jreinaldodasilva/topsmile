@@ -18,11 +18,14 @@ const getDatabaseConfig = (): DatabaseConfig => {
   return { uri, options };
 };
 
-export const connectToDatabase = async (): Promise<void> => {
+const MAX_RETRIES = 5;
+const INITIAL_RETRY_DELAY = 1000; // 1 second
+
+export const connectToDatabase = async (retries = 0): Promise<void> => {
   try {
     const { uri, options } = getDatabaseConfig();
     
-    console.log('🔄 Connecting to MongoDB...');
+    console.log(`🔄 Connecting to MongoDB (attempt ${retries + 1}/${MAX_RETRIES})...`);
     
     await mongoose.connect(uri, options);
     
@@ -60,8 +63,15 @@ export const connectToDatabase = async (): Promise<void> => {
       console.error('Error stack:', error.stack);
     }
     
-    // Exit process on connection failure
-    process.exit(1);
+    if (retries < MAX_RETRIES - 1) {
+      const delay = INITIAL_RETRY_DELAY * Math.pow(2, retries);
+      console.log(`Retrying connection in ${delay / 1000} seconds...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      await connectToDatabase(retries + 1);
+    } else {
+      console.error('❌ Max MongoDB connection retries reached. Exiting process.');
+      process.exit(1);
+    }
   }
 };
 

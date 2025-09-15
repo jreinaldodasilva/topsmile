@@ -105,6 +105,56 @@ class SchedulingService {
     }
 
     /**
+     * Get provider appointments for a specific date
+     */
+    private async getProviderAppointments(
+        providerId: string,
+        date: Date,
+        excludeAppointmentId?: string
+    ): Promise<IAppointment[]> {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const query: any = {
+            provider: providerId,
+            scheduledStart: { $gte: startOfDay, $lte: endOfDay },
+            status: { $nin: ['cancelled', 'no_show'] }
+        };
+
+        if (excludeAppointmentId) {
+            query._id = { $ne: excludeAppointmentId };
+        }
+
+        return await Appointment.find(query).lean();
+    }
+
+    /**
+     * Check if a time slot has conflicts with existing appointments
+     */
+    private hasTimeConflict(
+        start: Date,
+        end: Date,
+        appointments: IAppointment[],
+        bufferBefore: number,
+        bufferAfter: number
+    ): { conflict: boolean; reason?: string } {
+        for (const apt of appointments) {
+            const aptStart = addMinutes(apt.scheduledStart, -bufferBefore);
+            const aptEnd = addMinutes(apt.scheduledEnd, bufferAfter);
+
+            if (start < aptEnd && end > aptStart) {
+                return {
+                    conflict: true,
+                    reason: `Conflicts with appointment at ${format(apt.scheduledStart, 'HH:mm')}`
+                };
+            }
+        }
+        return { conflict: false };
+    }
+
+    /**
      * IMPROVED: Get available slots for a specific provider with better error handling
      */
     private async getProviderAvailableSlots(
@@ -233,6 +283,7 @@ class SchedulingService {
             // CRITICAL: Check availability within transaction to prevent race conditions
             const availabilityCheck = await (session
                 ? this.isTimeSlotAvailableWithSession(
+                    clinicId, // Pass clinicId
                     providerId,
                     scheduledStart,
                     scheduledEnd,
@@ -241,6 +292,7 @@ class SchedulingService {
                     undefined // excludeAppointmentId
                 )
                 : this.isTimeSlotAvailable(
+                    clinicId, // Pass clinicId
                     providerId,
                     scheduledStart,
                     scheduledEnd,
@@ -338,6 +390,7 @@ class SchedulingService {
             // Check availability for new time (excluding current appointment)
             const isAvailable = await (session
                 ? this.isTimeSlotAvailableWithSession(
+                    appointment.clinic.toString(), // Pass clinicId
                     appointment.provider.toString(),
                     newStart,
                     newEnd,
@@ -346,6 +399,7 @@ class SchedulingService {
                     appointmentId
                 )
                 : this.isTimeSlotAvailable(
+                    appointment.clinic.toString(), // Pass clinicId
                     appointment.provider.toString(),
                     newStart,
                     newEnd,
@@ -471,6 +525,7 @@ class SchedulingService {
      * IMPROVED: Check if time slot is available with session support
      */
     private async isTimeSlotAvailableWithSession(
+        clinicId: string, // Added clinicId
         providerId: string,
         start: Date,
         end: Date,
@@ -500,27 +555,36 @@ class SchedulingService {
                 return { available: false, reason: 'Fora do horário de trabalho' };
             }
 
-            // Get existing appointments with session
-            const existingAppointments = await this.getProviderAppointmentsWithSession(
-                providerId,
-                start,
-                session,
-                excludeAppointmentId
-            );
+            // Check for conflicting appointments
+            const bufferBefore = appointmentType.bufferBefore || provider.bufferTimeBefore || 0;
+            const bufferAfter = appointmentType.bufferAfter || provider.bufferTimeAfter || 0;
 
-            // Check conflicts with buffer times
-            const bufferBefore = appointmentType.bufferBefore || provider.bufferTimeBefore;
-            const bufferAfter = appointmentType.bufferAfter || provider.bufferTimeAfter;
-            
-            const conflict = this.hasTimeConflict(
-                addMinutes(start, -bufferBefore),
-                addMinutes(end, bufferAfter),
-                existingAppointments,
-                0, // Buffer already applied
-                0
-            );
+            const conflictQuery: any = {
+                clinic: clinicId,
+                provider: providerId,
+                status: { $nin: ['cancelled', 'no_show'] },
+                $or: [
+                    {
+                        scheduledStart: { $lt: addMinutes(end, bufferAfter), $gte: addMinutes(start, -bufferBefore) }
+                    },
+                    {
+                        scheduledEnd: { $gt: addMinutes(start, -bufferBefore), $lte: addMinutes(end, bufferAfter) }
+                    }
+                ]
+            };
 
-            return { available: !conflict.conflict, reason: conflict.reason };
+            if (excludeAppointmentId) {
+                conflictQuery._id = { $ne: excludeAppointmentId };
+            }
+
+            const conflicts = await Appointment.find(conflictQuery).session(session);
+
+            if (conflicts.length > 0) {
+                const conflictReason = `Conflito com agendamento às ${format(conflicts[0].scheduledStart, 'HH:mm')}`;
+                return { available: false, reason: conflictReason };
+            }
+
+            return { available: true };
             
         } catch (error) {
             console.error('Error checking availability:', error);
@@ -532,6 +596,7 @@ class SchedulingService {
      * IMPROVED: Legacy method for backward compatibility
      */
     private async isTimeSlotAvailable(
+        clinicId: string, // Added clinicId
         providerId: string,
         start: Date,
         end: Date,
@@ -542,7 +607,7 @@ class SchedulingService {
         const session = await mongoose.startSession();
         try {
             const result = await this.isTimeSlotAvailableWithSession(
-                providerId, start, end, appointmentType, session, excludeAppointmentId
+                clinicId, providerId, start, end, appointmentType, session, excludeAppointmentId
             );
             return result;
         } finally {
@@ -550,95 +615,9 @@ class SchedulingService {
         }
     }
 
-    /**
-     * IMPROVED: Get provider appointments with session support
-     */
-    private async getProviderAppointmentsWithSession(
-        providerId: string,
-        date: Date,
-        session: mongoose.ClientSession,
-        excludeAppointmentId?: string
-    ): Promise<IAppointment[]> {
-        const query: any = {
-            provider: providerId,
-            scheduledStart: {
-                $gte: startOfDay(date),
-                $lt: endOfDay(date)
-            },
-            status: { $nin: ['cancelled', 'no_show'] }
-        };
 
-        if (excludeAppointmentId) {
-            query._id = { $ne: excludeAppointmentId };
-        }
 
-        return await Appointment.find(query)
-            .sort({ scheduledStart: 1 })
-            .session(session);
-    }
 
-    /**
-     * IMPROVED: Get provider appointments (legacy method)
-     */
-    private async getProviderAppointments(
-        providerId: string,
-        date: Date,
-        excludeAppointmentId?: string
-    ): Promise<IAppointment[]> {
-        const query: any = {
-            provider: providerId,
-            scheduledStart: {
-                $gte: startOfDay(date),
-                $lt: endOfDay(date)
-            },
-            status: { $nin: ['cancelled', 'no_show'] }
-        };
-
-        if (excludeAppointmentId) {
-            query._id = { $ne: excludeAppointmentId };
-        }
-
-        return await Appointment.find(query)
-            .select('scheduledStart scheduledEnd status')
-            .sort({ scheduledStart: 1 })
-            .lean();
-    }
-
-    /**
-     * IMPROVED: More efficient conflict detection
-     */
-    private hasTimeConflict(
-        proposedStart: Date,
-        proposedEnd: Date,
-        existingAppointments: IAppointment[],
-        bufferBefore: number,
-        bufferAfter: number
-    ): { conflict: boolean; reason?: string } {
-        
-        if (!existingAppointments.length) {
-            return { conflict: false };
-        }
-        
-        const proposedStartTime = proposedStart.getTime();
-        const proposedEndTime = proposedEnd.getTime();
-        
-        for (const appointment of existingAppointments) {
-            const existingStartTime = addMinutes(appointment.scheduledStart, -bufferBefore).getTime();
-            const existingEndTime = addMinutes(appointment.scheduledEnd, bufferAfter).getTime();
-
-            // Check for overlap using time comparison
-            const hasOverlap = !(proposedEndTime <= existingStartTime || proposedStartTime >= existingEndTime);
-
-            if (hasOverlap) {
-                return {
-                    conflict: true,
-                    reason: `Conflito com agendamento às ${format(appointment.scheduledStart, 'HH:mm')}`
-                };
-            }
-        }
-
-        return { conflict: false };
-    }
 
     /**
      * IMPROVED: Parse time string with better error handling

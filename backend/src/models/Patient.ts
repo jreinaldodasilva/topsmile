@@ -37,46 +37,55 @@ export interface IPatient extends Document {
 const validateCPF = (cpf: string | undefined): boolean => {
   if (cpf == null) return true; // Optional field
 
-  // Remove formatting
-  const c = cpf as string;
-  const cleanCPF = c.replace(/[^\d]/g, '');
+  const cleanCPF = (cpf as string).replace(/[^\d]/g, '');
 
-  // Check basic format
-  if (cleanCPF.length !== 11) return false;
+  if (cleanCPF.length !== 11 || /^(\d)\1{10}$/.test(cleanCPF)) {
+    return false;
+  }
 
-  // Check for repeated numbers (invalid CPFs)
-  if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
+  let sum = 0;
+  let remainder: number;
 
-  // Algorithm validation
-  const calculateDigit = (cpf: string, position: number): number => {
-    let sum = 0;
-    let multiplier = position + 1;
+  for (let i = 1; i <= 9; i++) {
+    sum = sum + parseInt(cleanCPF.substring(i - 1, i)) * (11 - i);
+  }
+  remainder = (sum * 10) % 11;
 
-    for (let i = 0; i < position; i++) {
-      sum += parseInt(cpf[i] || '0') * multiplier--;
-    }
+  if ((remainder === 10) || (remainder === 11)) {
+    remainder = 0;
+  }
+  if (remainder !== parseInt(cleanCPF.substring(9, 10))) {
+    return false;
+  }
 
-    const remainder = sum % 11;
-    return remainder < 2 ? 0 : 11 - remainder;
-  };
+  sum = 0;
+  for (let i = 1; i <= 10; i++) {
+    sum = sum + parseInt(cleanCPF.substring(i - 1, i)) * (12 - i);
+  }
+  remainder = (sum * 10) % 11;
 
-  const digit1 = calculateDigit(cleanCPF, 9);
-  const digit2 = calculateDigit(cleanCPF, 10);
+  if ((remainder === 10) || (remainder === 11)) {
+    remainder = 0;
+  }
+  if (remainder !== parseInt(cleanCPF.substring(10, 11))) {
+    return false;
+  }
 
-  return digit1 === parseInt(cleanCPF.substring(9, 10)) && digit2 === parseInt(cleanCPF.substring(10, 11));
+  return true;
 };
 
 const validateBrazilianPhone = (phone: string | undefined): boolean => {
   if (phone == null) return false;
 
-  // Remove formatting
-  const p = phone as string;
-  const cleanPhone = p.replace(/[^\d]/g, '');
+  const cleanPhone = (phone as string).replace(/[^\d]/g, '');
 
   // Brazilian phone formats:
-  // Mobile: (11) 9XXXX-XXXX (11 digits with area code)
-  // Landline: (11) XXXX-XXXX (10 digits with area code)
-  return /^(\d{10}|\d{11})$/.test(cleanPhone) &&
+  // Mobile: (XX) 9XXXX-XXXX (11 digits, starts with 9 after area code)
+  // Landline: (XX) XXXX-XXXX (10 digits)
+  const isMobile = cleanPhone.length === 11 && cleanPhone.startsWith('9', 2); // Check for 9 after area code
+  const isLandline = cleanPhone.length === 10;
+
+  return (isMobile || isLandline) &&
          parseInt(cleanPhone.substring(0, 2)) >= 11 &&
          parseInt(cleanPhone.substring(0, 2)) <= 99;
 };

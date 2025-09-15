@@ -506,7 +506,8 @@ AppointmentSchema.statics.findByTimeRange = function(
         .sort({ scheduledStart: 1 });
 };
 
-AppointmentSchema.statics.findAvailabilityConflicts = function(
+AppointmentSchema.statics.findAvailabilityConflicts = async function(
+    clinicId: string, // Added clinicId to ensure room conflicts are within the same clinic
     providerId: string,
     startTime: Date,
     endTime: Date,
@@ -516,49 +517,44 @@ AppointmentSchema.statics.findAvailabilityConflicts = function(
         checkEquipment?: string[];
     } = {}
 ) {
-    const baseQuery: any = {
-        provider: providerId,
-        status: { $nin: ['cancelled', 'no_show'] },
+    const commonOverlapCondition = {
         $or: [
-            {
-                scheduledStart: { $lt: endTime },
-                scheduledEnd: { $gt: startTime }
-            }
-        ]
+            { scheduledStart: { $lt: endTime, $gte: startTime } }, // Starts during existing appointment
+            { scheduledEnd: { $gt: startTime, $lte: endTime } },   // Ends during existing appointment
+            { scheduledStart: { $lte: startTime }, scheduledEnd: { $gte: endTime } } // Existing appointment spans new one
+        ],
+        status: { $nin: ['cancelled', 'no_show'] }
     };
-    
+
+    const providerConflictQuery: any = {
+        provider: providerId,
+        ...commonOverlapCondition
+    };
+
     if (options.excludeAppointmentId) {
-        baseQuery._id = { $ne: options.excludeAppointmentId };
+        providerConflictQuery._id = { $ne: options.excludeAppointmentId };
     }
-    
-    // Check room conflicts separately if specified
-    let queries = [this.find(baseQuery)];
 
-    if (options.checkRoom) {
-        const roomQuery: any = {
-            clinic: { $exists: true }, // Will be filled by caller
-            room: options.checkRoom,
-            status: { $nin: ['cancelled', 'no_show'] },
-            $or: [
-                {
-                    scheduledStart: { $lt: endTime },
-                    scheduledEnd: { $gt: startTime }
-                }
-            ]
-        };
+    const roomConflictQuery: any = {
+        clinic: clinicId,
+        room: options.checkRoom,
+        ...commonOverlapCondition
+    };
 
-        if (options.excludeAppointmentId) {
-            roomQuery._id = { $ne: options.excludeAppointmentId };
-        }
-
-        queries.push(this.find(roomQuery));
+    if (options.excludeAppointmentId) {
+        roomConflictQuery._id = { $ne: options.excludeAppointmentId };
     }
-    
-    return Promise.all(queries).then(results => {
-        return results.flat().sort((a, b) => 
-            new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime()
-        );
-    });
+
+    // Find conflicts for the provider OR conflicts for the room (if specified)
+    const combinedQuery = options.checkRoom
+        ? { $or: [providerConflictQuery, roomConflictQuery] }
+        : providerConflictQuery;
+
+    return this.find(combinedQuery)
+        .populate('patient', 'name')
+        .populate('provider', 'name')
+        .populate('appointmentType', 'name')
+        .sort({ scheduledStart: 1 });
 };
 
 // NEW: Advanced query methods

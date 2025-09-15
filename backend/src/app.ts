@@ -6,7 +6,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from './middleware/auth';
 
 // Database imports
 import { connectToDatabase } from './config/database';
@@ -272,7 +271,7 @@ const passwordResetLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (req: AuthenticatedRequest, res) => {
     // Use user ID if authenticated, otherwise use IP address
-    return req.user?.id || req.ip;
+    return req.user?.id || req.ip || 'unknown';
   },
   handler: (req, res) => {
     console.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
