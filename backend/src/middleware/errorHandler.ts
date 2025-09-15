@@ -25,25 +25,19 @@ export const errorHandler = (
       message: error.message,
     };
 
-  // Add debug info in development
-  if (process.env.NODE_ENV !== 'production') {
-    errorResponse.debug = error.message;
-    errorResponse.stack = error.stack;
-  }
-
     return res.status(error.statusCode).json(errorResponse);
   }
 
   // Handle unknown errors
-  const isDevelopment = process.env.NODE_ENV !== 'production';
   const errorResponse: ErrorResponse = {
     success: false,
     message: 'Erro interno do servidor',
   };
 
-  if (isDevelopment) {
-    errorResponse.debug = error.message;
-    errorResponse.stack = error.stack;
+  // In development, provide more details for debugging purposes, but not in production.
+  if (process.env.NODE_ENV !== 'production') {
+    (errorResponse as any).debug = error.message;
+    (errorResponse as any).stack = error.stack;
   }
 
   return res.status(500).json(errorResponse);

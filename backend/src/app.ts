@@ -47,8 +47,8 @@ const validateEnv = () => {
     {
       name: 'JWT_SECRET',
       message: 'JWT_SECRET is required in production',
-      validate: (value: string) => value && value !== 'your-secret-key' && value.length >= 32,
-      errorMsg: 'JWT_SECRET must be at least 32 characters long and not use default value'
+      validate: (value: string) => value && value !== 'your-secret-key' && value.length >= 64, // 32 bytes in hex is 64 chars
+      errorMsg: 'JWT_SECRET must be at least 64 characters long (32-byte hex string) and not use default value'
     },
     {
       name: 'DATABASE_URL',
@@ -158,7 +158,7 @@ const configureSecurityMiddleware = () => {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for development
+        styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for development - REMOVE IN PRODUCTION
         scriptSrc: ["'self'"],
         imgSrc: ["'self'", "data:", "https:"],
         connectSrc: ["'self'"],

@@ -159,18 +159,32 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
 
 // Account lockout methods
 UserSchema.methods.incLoginAttempts = async function (): Promise<void> {
-    // If we have a previous lock that has expired, restart at 1
+    // If we have a previous lock that has expired, reset attempts
     if (this.lockUntil && this.lockUntil < new Date()) {
-        return this.resetLoginAttempts();
+        this.loginAttempts = 0;
+        this.lockUntil = undefined;
     }
-
-    const MAX_LOGIN_ATTEMPTS = 5;
-    const LOCK_TIME = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
 
     this.loginAttempts += 1;
 
-    if (this.loginAttempts >= MAX_LOGIN_ATTEMPTS) {
-        this.lockUntil = new Date(Date.now() + LOCK_TIME);
+    let lockTime = 0; // in milliseconds
+    const MAX_ATTEMPTS_SHORT_LOCK = 5;
+    const MAX_ATTEMPTS_MEDIUM_LOCK = 10;
+    const MAX_ATTEMPTS_LONG_LOCK = 15;
+
+    if (this.loginAttempts >= MAX_ATTEMPTS_LONG_LOCK) {
+        lockTime = 7 * 24 * 60 * 60 * 1000; // 7 days (effectively permanent for most cases)
+        console.warn(`User ${this.email} locked out for 7 days due to ${this.loginAttempts} failed attempts.`);
+    } else if (this.loginAttempts >= MAX_ATTEMPTS_MEDIUM_LOCK) {
+        lockTime = 24 * 60 * 60 * 1000; // 24 hours
+        console.warn(`User ${this.email} locked out for 24 hours due to ${this.loginAttempts} failed attempts.`);
+    } else if (this.loginAttempts >= MAX_ATTEMPTS_SHORT_LOCK) {
+        lockTime = 1 * 60 * 60 * 1000; // 1 hour
+        console.warn(`User ${this.email} locked out for 1 hour due to ${this.loginAttempts} failed attempts.`);
+    }
+
+    if (lockTime > 0) {
+        this.lockUntil = new Date(Date.now() + lockTime);
     }
 
     await this.save();
