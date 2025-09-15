@@ -136,4 +136,85 @@ router.delete('/:id', authenticate, authorize('super_admin', 'admin'), async (re
   }
 });
 
+// POST /api/admin/contacts/batch/status - Batch update contact status
+router.post('/batch/status', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { contactIds, status, assignedTo } = req.body;
+
+    if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'IDs dos contatos são obrigatórios'
+      });
+    }
+
+    if (!status || !['new', 'contacted', 'qualified', 'converted', 'lost', 'deleted'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status inválido'
+      });
+    }
+
+    const result = await contactService.updateContactStatus(contactIds, status, assignedTo);
+
+    return res.json({
+      success: true,
+      message: `${result.modifiedCount} contatos atualizados com sucesso`,
+      data: result
+    });
+  } catch (error) {
+    console.error('Error batch updating contacts:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao atualizar contatos em lote'
+    });
+  }
+});
+
+// GET /api/admin/contacts/duplicates - Find duplicate contacts
+router.get('/duplicates', authenticate, authorize('super_admin', 'admin'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const duplicates = await contactService.findDuplicateContacts();
+
+    return res.json({
+      success: true,
+      data: duplicates
+    });
+  } catch (error) {
+    console.error('Error finding duplicate contacts:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao buscar contatos duplicados'
+    });
+  }
+});
+
+// POST /api/admin/contacts/merge - Merge duplicate contacts
+router.post('/merge', authenticate, authorize('super_admin', 'admin'), async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { primaryContactId, duplicateContactIds } = req.body;
+
+    if (!primaryContactId || !duplicateContactIds || !Array.isArray(duplicateContactIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'ID do contato principal e IDs dos duplicados são obrigatórios'
+      });
+    }
+
+    const mergedContact = await contactService.mergeDuplicateContacts(primaryContactId, duplicateContactIds);
+
+    return res.json({
+      success: true,
+      message: 'Contatos mesclados com sucesso',
+      data: mergedContact
+    });
+  } catch (error) {
+    console.error('Error merging contacts:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Erro ao mesclar contatos'
+    });
+  }
+});
+
 export default router;

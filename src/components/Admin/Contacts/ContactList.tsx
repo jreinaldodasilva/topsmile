@@ -1,6 +1,7 @@
 // src/components/Admin/Contacts/ContactList.tsx - Updated for Backend Integration
 import React, { useEffect, useState } from 'react';
 import { useContacts } from '../../../hooks/useApiState';
+import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import ViewContactModal from './ViewContactModal';
 import CreateContactModal from './CreateContactModal';
@@ -23,6 +24,14 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
+  const [batchLoading, setBatchLoading] = useState(false);
+  const [duplicates, setDuplicates] = useState<Array<{
+    email: string;
+    contacts: Contact[];
+    count: number;
+  }>>([]);
+  const [showDuplicates, setShowDuplicates] = useState(false);
 
   const handleViewContact = (contact: Contact) => {
     setSelectedContact(contact);
@@ -61,6 +70,14 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     }));
   };
 
+  const handlePriorityFilter = (priority: string) => {
+    setFilters(prev => ({
+      ...(prev ?? {}),
+      priority: priority === 'all' ? undefined : (priority as 'low' | 'medium' | 'high'),
+      page: 1
+    }));
+  };
+
   const handleStatusUpdate = async (contactId: string, newStatus: Contact['status']) => {
     try {
       if (newStatus) {
@@ -85,6 +102,20 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     setFilters(prev => ({ ...(prev ?? {}), page }));
   };
 
+  // UPDATED: Better handling of ContactListResponse vs Contact[]
+  const isContactListResponse = (data: any): data is ContactListResponse => {
+    return data && typeof data === 'object' && 'contacts' in data && Array.isArray(data.contacts);
+  };
+
+  const contactsList: Contact[] = isContactListResponse(contactsData)
+    ? contactsData.contacts
+    : (Array.isArray(contactsData) ? contactsData : []);
+
+  const total = isContactListResponse(contactsData) ? contactsData.total : contactsList.length;
+  const pages = isContactListResponse(contactsData) ? contactsData.pages : 1;
+  const currentPage = isContactListResponse(contactsData) ? contactsData.page : (filters.page || 1);
+  const limit = isContactListResponse(contactsData) ? contactsData.limit : (filters.limit || 10);
+
   const handleSort = (field: string) => {
     setSort(prev => {
       const newSort: Record<string, any> = {};
@@ -97,26 +128,100 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     });
   };
 
-  // UPDATED: Better handling of ContactListResponse vs Contact[] 
-  const isContactListResponse = (data: any): data is ContactListResponse => {
-    return data && typeof data === 'object' && 'contacts' in data && Array.isArray(data.contacts);
+  const handleSelectContact = (contactId: string | undefined, selected: boolean) => {
+    if (!contactId) return;
+    setSelectedContacts(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(contactId);
+      } else {
+        newSet.delete(contactId);
+      }
+      return newSet;
+    });
   };
 
-  const contactsList: Contact[] = isContactListResponse(contactsData) 
-    ? contactsData.contacts 
-    : (Array.isArray(contactsData) ? contactsData : []);
+  const handleSelectAll = (selected: boolean) => {
+    if (selected) {
+      setSelectedContacts(new Set(contactsList.map(c => c._id || c.id || '').filter(id => id)));
+    } else {
+      setSelectedContacts(new Set());
+    }
+  };
 
-  const total = isContactListResponse(contactsData) ? contactsData.total : contactsList.length;
-  const pages = isContactListResponse(contactsData) ? contactsData.pages : 1;
-  const currentPage = isContactListResponse(contactsData) ? contactsData.page : (filters.page || 1);
-  const limit = isContactListResponse(contactsData) ? contactsData.limit : (filters.limit || 10);
+  const handleBatchStatusUpdate = async (status: Contact['status']) => {
+    if (selectedContacts.size === 0) {
+      alert('Selecione pelo menos um contato');
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja marcar ${selectedContacts.size} contato(s) como "${status}"?`)) {
+      return;
+    }
+
+    setBatchLoading(true);
+    try {
+      const result = await apiService.contacts.batchUpdate(Array.from(selectedContacts), status as any);
+      if (result.success) {
+        alert(`${result.data?.modifiedCount} contato(s) atualizado(s) com sucesso`);
+        setSelectedContacts(new Set());
+        // Refresh the list
+        fetchContacts(filters, sort);
+      } else {
+        alert('Erro ao atualizar contatos: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Batch update error:', error);
+      alert('Erro ao atualizar contatos');
+    } finally {
+      setBatchLoading(false);
+    }
+  };
+
+  const handleFindDuplicates = async () => {
+    try {
+      const result = await apiService.contacts.findDuplicates();
+      if (result.success) {
+        setDuplicates(result.data || []);
+        setShowDuplicates(true);
+      } else {
+        alert('Erro ao buscar duplicados: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Find duplicates error:', error);
+      alert('Erro ao buscar contatos duplicados');
+    }
+  };
+
+  const handleMergeDuplicates = async (primaryId: string, duplicateIds: string[]) => {
+    if (!confirm('Tem certeza que deseja mesclar estes contatos? Os duplicados serão marcados como mesclados.')) {
+      return;
+    }
+
+    try {
+      const result = await apiService.contacts.mergeDuplicates(primaryId, duplicateIds);
+      if (result.success) {
+        alert('Contatos mesclados com sucesso');
+        setShowDuplicates(false);
+        fetchContacts(filters, sort);
+      } else {
+        alert('Erro ao mesclar contatos: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Merge duplicates error:', error);
+      alert('Erro ao mesclar contatos');
+    }
+  };
 
   return (
     <div className="contact-list">
       {/* Header with filters */}
       <div className="contact-list-header">
         <h2>Gerenciar Contatos</h2>
-        <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>Criar Contato</button>
+        <div className="header-actions">
+          <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>Criar Contato</button>
+          <button className="btn btn-secondary" onClick={handleFindDuplicates}>Buscar Duplicados</button>
+        </div>
         <div className="contact-filters">
           <div className="search-box">
             <input 
@@ -159,11 +264,39 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
             >
               Convertidos
             </button>
-            <button 
+            <button
               className={`filter-button ${filters.status === 'closed' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('closed')}
             >
               Fechados
+            </button>
+          </div>
+
+          <div className="priority-filters">
+            <label>Prioridade:</label>
+            <button
+              className={`filter-button ${(!filters.priority || filters.priority === 'all') ? 'active' : ''}`}
+              onClick={() => handlePriorityFilter('all')}
+            >
+              Todas
+            </button>
+            <button
+              className={`filter-button ${filters.priority === 'high' ? 'active' : ''}`}
+              onClick={() => handlePriorityFilter('high')}
+            >
+              Alta
+            </button>
+            <button
+              className={`filter-button ${filters.priority === 'medium' ? 'active' : ''}`}
+              onClick={() => handlePriorityFilter('medium')}
+            >
+              Média
+            </button>
+            <button
+              className={`filter-button ${filters.priority === 'low' ? 'active' : ''}`}
+              onClick={() => handlePriorityFilter('low')}
+            >
+              Baixa
             </button>
           </div>
         </div>
@@ -195,6 +328,74 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         </div>
       )}
 
+      {/* Batch actions */}
+      {selectedContacts.size > 0 && (
+        <div className="batch-actions">
+          <span>{selectedContacts.size} contato(s) selecionado(s)</span>
+          <div className="batch-buttons">
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => handleBatchStatusUpdate('contacted')}
+              disabled={batchLoading}
+            >
+              Marcar como Contatado
+            </button>
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => handleBatchStatusUpdate('qualified')}
+              disabled={batchLoading}
+            >
+              Marcar como Qualificado
+            </button>
+            <button
+              className="btn btn-sm btn-outline"
+              onClick={() => handleBatchStatusUpdate('converted')}
+              disabled={batchLoading}
+            >
+              Marcar como Convertido
+            </button>
+            <button
+              className="btn btn-sm btn-danger"
+              onClick={() => handleBatchStatusUpdate('closed')}
+              disabled={batchLoading}
+            >
+              Marcar como Fechado
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Duplicates section */}
+      {showDuplicates && duplicates.length > 0 && (
+        <div className="duplicates-section">
+          <h3>Contatos Duplicados Encontrados</h3>
+          {duplicates.map((duplicate, index) => (
+            <div key={index} className="duplicate-group">
+              <h4>Email: {duplicate.email} ({duplicate.count} contatos)</h4>
+              <div className="duplicate-contacts">
+                {duplicate.contacts.map((contact, idx) => (
+                  <div key={contact._id || idx} className="duplicate-contact">
+                    <span>{contact.name} - {contact.clinic} - {contact.createdAt ? new Date(contact.createdAt).toLocaleDateString('pt-BR') : ''}</span>
+                    {idx === 0 && (
+                      <button
+                        className="btn btn-sm btn-primary"
+                        onClick={() => handleMergeDuplicates(
+                          contact._id || '',
+                          duplicate.contacts.slice(1).map(c => c._id || '').filter(id => id)
+                        )}
+                      >
+                        Manter este e mesclar outros
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+          <button className="btn btn-secondary" onClick={() => setShowDuplicates(false)}>Fechar</button>
+        </div>
+      )}
+
       {/* Loading overlay for updates */}
       {loading && contactsData && (
         <div className="loading-overlay">
@@ -210,6 +411,13 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
               <table className="contact-table">
                 <thead>
                   <tr>
+                    <th>
+                      <input
+                        type="checkbox"
+                        checked={selectedContacts.size === contactsList.length && contactsList.length > 0}
+                        onChange={(e) => handleSelectAll(e.target.checked)}
+                      />
+                    </th>
                     <th onClick={() => handleSort('name')}>
                       Nome {sort.name && (sort.name === 1 ? '▲' : '▼')}
                     </th>
@@ -237,6 +445,13 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
                     const contactId = contact._id || contact.id || '';
                     return (
                       <tr key={contactId} className="contact-row">
+                        <td>
+                          <input
+                            type="checkbox"
+                            checked={selectedContacts.has(contactId)}
+                            onChange={(e) => handleSelectContact(contactId, e.target.checked)}
+                          />
+                        </td>
                         <td>
                           <div className="contact-name">{contact.name}</div>
                         </td>

@@ -115,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     verifyAuth();
   }, [performLogout]);
 
-  // UPDATED: Enhanced login function
+  // UPDATED: Enhanced login function with validation error handling
   const login = async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
     try {
       setError(null);
@@ -125,24 +125,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.success && response.data) {
         const { user, accessToken, refreshToken } = response.data;
-        
+
         // Store tokens
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem(ACCESS_KEY, accessToken);
         storage.setItem(REFRESH_KEY, refreshToken);
-        
+
         // Update state
         setAccessToken(accessToken);
         setUser(user);
         setLogoutReason(null);
-        
+
         // Navigate to appropriate page based on user role
         const redirectPath = getRedirectPath(user.role);
         navigate(redirectPath);
-        
+
         return { success: true };
       } else {
-        const errorMsg = response.message || 'E-mail ou senha inválidos';
+        // Handle validation errors array from backend
+        let errorMsg = response.message || 'E-mail ou senha inválidos';
+        // Check if response has error details (when success is false, data might contain error info)
+        const errorData = response as any;
+        if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
+          errorMsg = errorData.data.errors.map((err: any) => err.msg || err.message).join(', ');
+        }
         setError(errorMsg);
         return { success: false, message: errorMsg };
       }
@@ -155,7 +161,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // ADDED: Register function
+  // ADDED: Register function with enhanced error handling
   const register = async (data: RegisterData): Promise<AuthResult> => {
     try {
       setError(null);
@@ -165,21 +171,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.success && response.data) {
         const { user, accessToken, refreshToken } = response.data;
-        
+
         // Store tokens
         sessionStorage.setItem(ACCESS_KEY, accessToken);
         sessionStorage.setItem(REFRESH_KEY, refreshToken);
-        
+
         // Update state
         setAccessToken(accessToken);
         setUser(user);
-        
+
         // Navigate to dashboard
         navigate('/admin');
-        
+
         return { success: true, message: 'Conta criada com sucesso!' };
       } else {
-        const errorMsg = response.message || 'Erro ao criar conta';
+        // Handle validation errors array from backend
+        let errorMsg = response.message || 'Erro ao criar conta';
+        const errorData = response as any;
+        if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
+          errorMsg = errorData.data.errors.map((err: any) => err.msg || err.message).join(', ');
+        }
         setError(errorMsg);
         return { success: false, message: errorMsg };
       }

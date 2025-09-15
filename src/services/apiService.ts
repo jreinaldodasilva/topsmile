@@ -378,11 +378,12 @@ async function sendContactForm(payload: {
 // ADDED: Batch contact operations
 async function batchUpdateContacts(
   contactIds: string[],
-  updates: { status?: string; assignedTo?: string }
+  status: string,
+  assignedTo?: string
 ): Promise<ApiResult<{ modifiedCount: number; matchedCount: number }>> {
-  const res = await request('/api/admin/contacts/batch', {
-    method: 'PATCH',
-    body: JSON.stringify({ contactIds, updates })
+  const res = await request('/api/admin/contacts/batch/status', {
+    method: 'POST',
+    body: JSON.stringify({ contactIds, status, assignedTo })
   });
   return { success: res.ok, data: res.data, message: res.message };
 }

@@ -127,7 +127,12 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
         navigate('/patient/dashboard');
         return { success: true };
       } else {
-        const errorMsg = response.message || 'E-mail ou senha inválidos';
+        // Handle validation errors array from backend
+        let errorMsg = response.message || 'E-mail ou senha inválidos';
+        const errorData = response as any;
+        if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
+          errorMsg = errorData.data.errors.map((err: any) => err.msg || err.message).join(', ');
+        }
         setError(errorMsg);
         return { success: false, message: errorMsg };
       }
@@ -165,7 +170,12 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
 
         return { success: true, message: response.message };
       } else {
-        const errorMsg = response.message || 'Erro ao criar conta';
+        // Handle validation errors array from backend
+        let errorMsg = response.message || 'Erro ao criar conta';
+        const errorData = response as any;
+        if (errorData.data?.errors && Array.isArray(errorData.data.errors)) {
+          errorMsg = errorData.data.errors.map((err: any) => err.msg || err.message).join(', ');
+        }
         setError(errorMsg);
         return { success: false, message: errorMsg };
       }

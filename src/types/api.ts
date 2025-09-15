@@ -47,6 +47,23 @@ export type Contact = {
   followUpDate?: string | Date | null;
   // ADDED: Backend-specific fields
   leadScore?: number;
+  lastContactedAt?: string | Date;
+  conversionDetails?: {
+    convertedAt?: string | Date;
+    convertedBy?: string | User;
+    conversionNotes?: string;
+    conversionValue?: number;
+  };
+  metadata?: {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    referrer?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  };
   tags?: string[];
   customFields?: Record<string, any>;
   deletedAt?: string | Date;

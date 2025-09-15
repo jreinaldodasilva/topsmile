@@ -89,6 +89,18 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
       });
     }
 
+    // Extract UTM parameters and metadata from request
+    const metadata = {
+      utmSource: req.query.utm_source as string,
+      utmMedium: req.query.utm_medium as string,
+      utmCampaign: req.query.utm_campaign as string,
+      utmTerm: req.query.utm_term as string,
+      utmContent: req.query.utm_content as string,
+      referrer: req.get('Referer'),
+      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent')
+    };
+
     // Create contact record
     const contact = await contactService.createContact({
       name,
@@ -96,7 +108,8 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
       clinic,
       specialty,
       phone,
-      source: 'website_contact_form'
+      source: 'website_contact_form',
+      metadata
     });
 
     // Send emails asynchronously (don't block response)

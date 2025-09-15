@@ -18,6 +18,22 @@ export interface IContact extends Document {
     priority: 'low' | 'medium' | 'high';
     leadScore?: number; // 0-100 scoring system
     lastContactedAt?: Date;
+    conversionDetails?: {
+        convertedAt?: Date;
+        convertedBy?: mongoose.Types.ObjectId;
+        conversionNotes?: string;
+        conversionValue?: number;
+    };
+    metadata?: {
+        utmSource?: string;
+        utmMedium?: string;
+        utmCampaign?: string;
+        utmTerm?: string;
+        utmContent?: string;
+        referrer?: string;
+        ipAddress?: string;
+        userAgent?: string;
+    };
     // Soft delete fields
     deletedAt?: Date;
     deletedBy?: mongoose.Types.ObjectId;
@@ -116,6 +132,31 @@ const ContactSchema = new Schema<IContact>({
     lastContactedAt: {
         type: Date,
         index: true
+    },
+    conversionDetails: {
+        convertedAt: Date,
+        convertedBy: {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        conversionNotes: {
+            type: String,
+            maxlength: [500, 'Notas de conversão devem ter no máximo 500 caracteres']
+        },
+        conversionValue: {
+            type: Number,
+            min: 0
+        }
+    },
+    metadata: {
+        utmSource: String,
+        utmMedium: String,
+        utmCampaign: String,
+        utmTerm: String,
+        utmContent: String,
+        referrer: String,
+        ipAddress: String,
+        userAgent: String
     },
     // Soft delete fields
     deletedAt: Date,

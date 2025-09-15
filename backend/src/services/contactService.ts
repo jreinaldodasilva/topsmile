@@ -8,6 +8,18 @@ export interface CreateContactData {
   specialty: string;
   phone: string;
   source?: string;
+  priority?: 'low' | 'medium' | 'high';
+  leadScore?: number;
+  metadata?: {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    referrer?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  };
 }
 
 export interface ContactFilters {
@@ -50,7 +62,10 @@ class ContactService {
             specialty: data.specialty,
             phone: data.phone,
             status: 'new', // Reset status to new for existing contacts
-            source: data.source || 'website_contact_form'
+            source: data.source || 'website_contact_form',
+            priority: data.priority || 'medium',
+            leadScore: data.leadScore || 50,
+            metadata: data.metadata || {}
           }
         },
         { 
