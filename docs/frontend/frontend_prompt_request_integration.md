@@ -1,5 +1,6 @@
-Thoroughly and meticulously analyze the frontend of the TopSmile project, with a strong focus on how it integrates with the backend API.  
-The file `frontend_raw_links.txt` contains raw GitHub URLs to every frontend source file (direct links to raw.githubusercontent.com).  
+Thoroughly and meticulously analyze the frontend and the backend of the TopSmile project, with a strong focus on how frontend integrates with the backend.  
+The file `frontend_raw_links.txt` contains raw GitHub URLs to every frontend source file (direct links to raw.githubusercontent.com).
+The file `backend_raw_links.txt` contains raw GitHub URLs to every backend source file (direct links to raw.githubusercontent.com).   
 Do not execute any code or use private credentials — perform a static/code review only.
 
 Context:
@@ -60,6 +61,9 @@ Deliverables (produce as Markdown with file paths, snippets, and diffs where use
     - Component reusability and adherence to design patterns.
 12. **Prioritized TODO List** – top 5 fixes or improvements with justifications.
 13. **Files Examined** – list of files reviewed and any assumptions.
+14. **Implementation Roadmap** – A implementation roadmap from critical to low issues.
+15. **Improvements and New Features** 
+
 
 Constraints:
 - Do not run the project or attempt to access private credentials.
