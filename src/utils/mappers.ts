@@ -48,17 +48,27 @@ type BackendPatient = Omit<FrontendPatient, 'firstName' | 'lastName' | 'dateOfBi
 };
 
 export const toBackendPatient = (patient: FrontendPatient): Partial<BackendPatient> => {
+  const dateValue = patient.dateOfBirth || patient.birthDate;
+  let birthDate: string | undefined;
+  if (dateValue) {
+    if (typeof dateValue === 'string') {
+      birthDate = dateValue;
+    } else {
+      birthDate = dateValue.toISOString();
+    }
+  }
+
   const backendPatient: Partial<BackendPatient> = {
     ...patient,
     name: patient.fullName || `${patient.firstName || ''} ${patient.lastName || ''}`.trim(),
-    birthDate: (patient.dateOfBirth || patient.birthDate) ? (typeof (patient.dateOfBirth || patient.birthDate) === 'string' ? (patient.dateOfBirth || patient.birthDate) : (patient.dateOfBirth || patient.birthDate).toISOString()) : undefined,
+    birthDate,
   };
 
   delete (backendPatient as Partial<FrontendPatient>).firstName;
   delete (backendPatient as Partial<FrontendPatient>).lastName;
   delete (backendPatient as Partial<FrontendPatient>).dateOfBirth;
   delete (backendPatient as Partial<FrontendPatient>).fullName;
-  delete (backendPatient as any).birthDate;
+
 
 
   return backendPatient;

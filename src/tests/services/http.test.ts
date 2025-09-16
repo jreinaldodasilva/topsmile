@@ -1,4 +1,4 @@
-import { request, logout, hasTokens, getAccessToken, getRefreshToken, API_BASE_URL } from '../../services/http';
+import { request, logout, API_BASE_URL } from '../../services/http';
 
 // Mock localStorage
 const localStorageMock = (() => {
@@ -240,11 +240,7 @@ describe('http service', () => {
   });
 
   describe('logout function', () => {
-    it('should clear local tokens and notify backend', async () => {
-      const refreshToken = 'test-refresh-token';
-      localStorageMock.setItem('topsmile_access_token', 'access-token');
-      localStorageMock.setItem('topsmile_refresh_token', refreshToken);
-
+    it('should notify backend about logout', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
@@ -253,92 +249,22 @@ describe('http service', () => {
 
       await logout();
 
-      expect(localStorageMock.getItem('topsmile_access_token')).toBeNull();
-      expect(localStorageMock.getItem('topsmile_refresh_token')).toBeNull();
       expect(mockFetch).toHaveBeenCalledWith(
         `${API_BASE_URL}/api/auth/logout`,
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify({ refreshToken })
-        })
-      );
-    });
-
-    it('should handle logout with provided refresh token', async () => {
-      const customRefreshToken = 'custom-refresh';
-      localStorageMock.setItem('topsmile_access_token', 'access-token');
-      localStorageMock.setItem('topsmile_refresh_token', 'local-refresh');
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        text: async () => JSON.stringify({ success: true })
-      } as any);
-
-      await logout(customRefreshToken);
-
-      expect(localStorageMock.getItem('topsmile_access_token')).toBeNull();
-      expect(localStorageMock.getItem('topsmile_refresh_token')).toBeNull();
-      expect(mockFetch).toHaveBeenCalledWith(
-        expect.any(String),
-        expect.objectContaining({
-          body: JSON.stringify({ refreshToken: customRefreshToken })
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' }
         })
       );
     });
 
     it('should handle backend logout failure gracefully', async () => {
-      localStorageMock.setItem('topsmile_access_token', 'access-token');
-      localStorageMock.setItem('topsmile_refresh_token', 'refresh-token');
-
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       // Should not throw
       await expect(logout()).resolves.not.toThrow();
-
-      // Tokens should still be cleared
-      expect(localStorageMock.getItem('topsmile_access_token')).toBeNull();
-      expect(localStorageMock.getItem('topsmile_refresh_token')).toBeNull();
     });
   });
 
-  describe('token utility functions', () => {
-    it('hasTokens should return true when both tokens exist', () => {
-      localStorageMock.setItem('topsmile_access_token', 'access');
-      localStorageMock.setItem('topsmile_refresh_token', 'refresh');
-
-      expect(hasTokens()).toBe(true);
-    });
-
-    it('hasTokens should return false when access token is missing', () => {
-      localStorageMock.setItem('topsmile_refresh_token', 'refresh');
-
-      expect(hasTokens()).toBe(false);
-    });
-
-    it('hasTokens should return false when refresh token is missing', () => {
-      localStorageMock.setItem('topsmile_access_token', 'access');
-
-      expect(hasTokens()).toBe(false);
-    });
-
-    it('getAccessToken should return the access token', () => {
-      const token = 'test-access-token';
-      localStorageMock.setItem('topsmile_access_token', token);
-
-      expect(getAccessToken()).toBe(token);
-    });
-
-    it('getRefreshToken should return the refresh token', () => {
-      const token = 'test-refresh-token';
-      localStorageMock.setItem('topsmile_refresh_token', token);
-
-      expect(getRefreshToken()).toBe(token);
-    });
-
-    it('should return null when tokens do not exist', () => {
-      expect(getAccessToken()).toBeNull();
-      expect(getRefreshToken()).toBeNull();
-    });
-  });
 });

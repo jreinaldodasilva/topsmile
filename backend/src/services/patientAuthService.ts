@@ -279,6 +279,112 @@ class PatientAuthService {
       throw error;
     }
   }
+
+  async updateProfile(patientId: string, updates: { name?: string; phone?: string; birthDate?: Date }): Promise<IPatient> {
+    try {
+      const patient = await Patient.findById(patientId);
+
+      if (!patient) {
+        throw new NotFoundError('Paciente não encontrado');
+      }
+
+      if (updates.name) {
+        patient.name = updates.name;
+      }
+      if (updates.phone) {
+        patient.phone = updates.phone;
+      }
+      if (updates.birthDate) {
+        patient.birthDate = updates.birthDate;
+      }
+
+      return await patient.save();
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error('Error updating patient profile:', error);
+      throw new AppError('Erro ao atualizar perfil do paciente', 500);
+    }
+  }
+
+  async changePassword(patientUserId: string, currentPassword: string, newPassword: string): Promise<void> {
+    try {
+      const patientUser = await PatientUser.findById(patientUserId).select('+password');
+
+      if (!patientUser) {
+        throw new NotFoundError('Usuário do paciente não encontrado');
+      }
+
+      const isMatch = await patientUser.comparePassword(currentPassword);
+      if (!isMatch) {
+        throw new UnauthorizedError('Senha atual incorreta');
+      }
+
+      patientUser.password = newPassword;
+      await patientUser.save();
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error('Error changing patient password:', error);
+      throw new AppError('Erro ao alterar senha do paciente', 500);
+    }
+  }
+
+  async resendVerificationEmail(email: string): Promise<void> {
+    try {
+      const patientUser = await PatientUser.findOne({ email: email.toLowerCase() });
+
+      if (!patientUser) {
+        // To prevent email enumeration, we don't throw an error here.
+        // We just log it and return.
+        console.log(`Verification email resend attempt for non-existent user: ${email}`);
+        return;
+      }
+
+      if (patientUser.emailVerified) {
+        throw new ConflictError('Este e-mail já foi verificado.');
+      }
+
+      // Generate a new verification token
+      const verificationToken = crypto.randomBytes(32).toString('hex');
+      patientUser.verificationToken = verificationToken;
+      await patientUser.save();
+
+      // TODO: Send verification email
+      console.log(`New email verification token for ${email}: ${verificationToken}`);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error('Error resending verification email:', error);
+      throw new AppError('Erro ao reenviar e-mail de verificação', 500);
+    }
+  }
+
+  async deleteAccount(patientUserId: string, password: string): Promise<void> {
+    try {
+      const patientUser = await PatientUser.findById(patientUserId).select('+password');
+
+      if (!patientUser) {
+        throw new NotFoundError('Usuário do paciente não encontrado');
+      }
+
+      const isMatch = await patientUser.comparePassword(password);
+      if (!isMatch) {
+        throw new UnauthorizedError('Senha incorreta');
+      }
+
+      await PatientUser.findByIdAndDelete(patientUserId);
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error;
+      }
+      console.error('Error deleting patient account:', error);
+      throw new AppError('Erro ao deletar conta do paciente', 500);
+    }
+  }
 }
 
 export const patientAuthService = new PatientAuthService();

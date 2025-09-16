@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, hasTokens, getRefreshToken, getAccessToken, setTokens, LOGOUT_EVENT } from '../services/http';
-import type { User } from '../types/api';
+import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
+import type { User, RegisterRequest } from '../types/api';
 
 interface AuthResult {
   success: boolean;
@@ -12,54 +12,34 @@ interface AuthResult {
 
 export interface AuthContextType {
   isAuthenticated: boolean;
-  accessToken: string | null;
   user: User | null;
   loading: boolean;
   error: string | null;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<AuthResult>;
-  register: (data: RegisterData) => Promise<AuthResult>;
+  register: (data: RegisterRequest) => Promise<AuthResult>;
   logout: (reason?: string) => Promise<void>;
   clearError: () => void;
   refreshUserData: () => Promise<void>;
-}
-
-interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  clinic?: {
-    name: string;
-    phone: string;
-    address: {
-      street: string;
-      number?: string;
-      city?: string;
-      state?: string;
-      zipCode?: string;
-    };
-  };
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
 
-  const isAuthenticated = !loading && !!accessToken && !!user;
+  const isAuthenticated = !loading && !!user;
 
   const performLogout = useCallback(async (reason?: string) => {
     try {
       // Clear local state first
-      setAccessToken(null);
       setUser(null);
 
       // Notify backend and clear tokens for the default context
-      await httpLogout('default');
+      await httpLogout();
 
       if (reason) {
         setLogoutReason(reason);
@@ -77,18 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        // Check if a refresh token exists for the default context.
-        if (!hasTokens('default')) {
-          setLoading(false);
-          return;
-        }
-
-        // The request function in http.ts will handle automatic token refresh
         const userResponse = await apiService.auth.me();
 
         if (userResponse.success && userResponse.data) {
-          // After a successful request, the new access token is in our store.
-          setAccessToken(getAccessToken('default'));
           setUser(userResponse.data);
         } else {
           // If fetching user fails, logout
@@ -114,13 +85,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.login(email, password);
 
       if (response.success && response.data) {
-        const { user, accessToken, refreshToken } = response.data;
-
-        // Store tokens using our secure mechanism for the default context
-        setTokens(accessToken, refreshToken, 'default');
+        const { user } = response.data;
 
         // Update state
-        setAccessToken(accessToken);
         setUser(user);
         setLogoutReason(null);
 
@@ -148,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   // ADDED: Register function with secure token storage
-  const register = async (data: RegisterData): Promise<AuthResult> => {
+  const register = async (data: RegisterRequest): Promise<AuthResult> => {
     try {
       setError(null);
       setLoading(true);
@@ -156,13 +123,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.register(data);
 
       if (response.success && response.data) {
-        const { user, accessToken, refreshToken } = response.data;
-
-        // Store tokens using our secure mechanism for the default context
-        setTokens(accessToken, refreshToken, 'default');
+        const { user } = response.data;
 
         // Update state
-        setAccessToken(accessToken);
         setUser(user);
 
         // Navigate to dashboard
@@ -200,8 +163,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // ADDED: Refresh user data function
   const refreshUserData = async () => {
     try {
-      if (!accessToken) return;
-      
       const response = await apiService.auth.me();
       if (response.success && response.data) {
         setUser(response.data);
@@ -216,7 +177,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const onLogout = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail.key === 'default' && isAuthenticated) {
-        setAccessToken(null);
         setUser(null);
         setLogoutReason('Sua sessão expirou ou você foi desconectado em outra aba.');
         navigate('/login');
@@ -239,24 +199,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [logoutReason, loading, isAuthenticated]);
 
-  // ADDED: Periodic token validation (optional)
-  useEffect(() => {
-    if (!isAuthenticated) return;
 
-    const interval = setInterval(async () => {
-      try {
-        await apiService.auth.me();
-      } catch (error) {
-        console.warn('Periodic token validation failed:', error);
-      }
-    }, 5 * 60 * 1000); // Check every 5 minutes
-
-    return () => clearInterval(interval);
-  }, [isAuthenticated, performLogout]);
 
   const value: AuthContextType = { 
     isAuthenticated, 
-    accessToken, 
     user,
     loading, 
     error,

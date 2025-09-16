@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, hasTokens, getAccessToken, setTokens, LOGOUT_EVENT } from '../services/http';
+import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
 
 interface PatientUser {
   _id: string;
@@ -39,7 +39,6 @@ interface PatientAuthResult {
 
 export interface PatientAuthContextType {
   isAuthenticated: boolean;
-  accessToken: string | null;
   patientUser: PatientUser | null;
   loading: boolean;
   error: string | null;
@@ -54,19 +53,17 @@ export const PatientAuthContext = createContext<PatientAuthContextType | undefin
 
 export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
-  const [accessToken, setAccessToken] = useState<string | null>(null);
   const [patientUser, setPatientUser] = useState<PatientUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isAuthenticated = !loading && !!accessToken && !!patientUser;
+  const isAuthenticated = !loading && !!patientUser;
 
   const performLogout = useCallback(async () => {
     try {
-      setAccessToken(null);
       setPatientUser(null);
 
-      await httpLogout('patient');
+      await httpLogout();
       navigate('/patient/login');
     } catch (error) {
       console.error('Patient logout error:', error);
@@ -78,15 +75,9 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const verifyAuth = async () => {
       try {
-        if (!hasTokens('patient')) {
-          setLoading(false);
-          return;
-        }
-
         const userResponse = await apiService.patientAuth.me();
 
         if (userResponse.success && userResponse.data?.patientUser) {
-          setAccessToken(getAccessToken('patient'));
           setPatientUser(userResponse.data.patientUser);
         } else {
           await performLogout();
@@ -110,11 +101,8 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.patientAuth.login(email, password);
 
       if (response.success && response.data) {
-        const { patientUser, accessToken, refreshToken } = response.data;
+        const { patientUser } = response.data;
 
-        setTokens(accessToken, refreshToken, 'patient');
-
-        setAccessToken(accessToken);
         setPatientUser(patientUser);
 
         navigate('/patient/dashboard');
@@ -145,11 +133,9 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.patientAuth.register(data);
 
       if (response.success && response.data) {
-        const { patientUser, accessToken, refreshToken } = response.data;
+        const { patientUser } = response.data;
 
-        if (accessToken && refreshToken) {
-          setTokens(accessToken, refreshToken, 'patient');
-          setAccessToken(accessToken);
+        if (patientUser) {
           setPatientUser(patientUser);
           navigate('/patient/dashboard');
         } else {
@@ -187,8 +173,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const refreshPatientData = async () => {
     try {
-      if (!accessToken) return;
-
       const response = await apiService.patientAuth.me();
       if (response.success && response.data?.patientUser) {
         setPatientUser(response.data.patientUser);
@@ -203,7 +187,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     const onLogout = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail.key === 'patient' && isAuthenticated) {
-        setAccessToken(null);
         setPatientUser(null);
         navigate('/patient/login');
       }
@@ -215,7 +198,6 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value: PatientAuthContextType = {
     isAuthenticated,
-    accessToken,
     patientUser,
     loading,
     error,

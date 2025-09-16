@@ -24,11 +24,11 @@ class ApiErrorBoundary extends Component<Props, State> {
     if (error.message.toLowerCase().includes('network error') || error.message.toLowerCase().includes('failed to fetch')) {
       return { hasError: true, errorType: 'network' };
     }
-    if ('status' in error && typeof error.status === 'number') {
-        if (error.status === 401 || error.status === 403) {
+    if ('status' in (error as any) && typeof (error as any).status === 'number') {
+        if ((error as any).status === 401 || (error as any).status === 403) {
             return { hasError: true, errorType: 'auth' };
         }
-        if (error.status >= 500) {
+        if ((error as any).status >= 500) {
             return { hasError: true, errorType: 'api' };
         }
     }

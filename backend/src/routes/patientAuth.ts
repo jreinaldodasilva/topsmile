@@ -161,7 +161,34 @@ router.patch('/profile',
         body('birthDate').optional().isISO8601(),
     ],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
-        res.json(standardResponse(null, "Not implemented yet", req))
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            const updatedPatient = await patientAuthService.updateProfile(req.patient!.id, req.body);
+
+            return res.json(standardResponse(updatedPatient, 'Perfil atualizado com sucesso', req));
+        } catch (error) {
+            console.error('Patient profile update error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
 );
 
@@ -174,7 +201,36 @@ router.patch('/change-password',
             .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     ],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
-        res.json(standardResponse(null, "Not implemented yet", req))
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            const { currentPassword, newPassword } = req.body;
+
+            await patientAuthService.changePassword(req.patientUser!.id, currentPassword, newPassword);
+
+            return res.json(standardResponse(null, 'Senha alterada com sucesso', req));
+        } catch (error) {
+            console.error('Patient change password error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
 );
 
@@ -182,7 +238,34 @@ router.post('/resend-verification',
     patientAuthLimiter,
     [body('email').isEmail().normalizeEmail()],
     async (req: express.Request, res: express.Response) => {
-        res.json(standardResponse(null, "Not implemented yet", req))
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            await patientAuthService.resendVerificationEmail(req.body.email);
+
+            return res.json(standardResponse(null, 'Se o e-mail estiver registrado, um novo link de verificação foi enviado.', req));
+        } catch (error) {
+            console.error('Resend verification email error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
 );
 
@@ -191,8 +274,34 @@ router.delete('/account',
     requirePatientEmailVerification,
     [body('password').notEmpty()],
     async (req: PatientAuthenticatedRequest, res: express.Response) => {
-        // Delete account logic with confirmation
-        res.json(standardResponse(null, "Not implemented yet", req))
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            await patientAuthService.deleteAccount(req.patientUser!.id, req.body.password);
+
+            return res.json(standardResponse(null, 'Conta deletada com sucesso', req));
+        } catch (error) {
+            console.error('Patient account deletion error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
     }
 );
 

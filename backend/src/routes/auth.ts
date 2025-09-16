@@ -238,8 +238,28 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
 
     const result = await authService.register(req.body);
 
+    const { accessToken, refreshToken, expiresIn, user } = result.data;
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     return res.status(201).json({
-      ...result,
+      success: true,
+      data: {
+        user,
+        expiresIn
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: (req as any).requestId
@@ -308,8 +328,28 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
 
     const result = await authService.login(req.body, deviceInfo);
 
+    const { accessToken, refreshToken, expiresIn, user } = result.data;
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     return res.json({
-      ...result,
+      success: true,
+      data: {
+        user,
+        expiresIn
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: (req as any).requestId
@@ -470,7 +510,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
  */
 router.post('/refresh', async (req: Request, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
     if (!refreshToken) {
       return res.status(401).json({ 
         success: false, 
@@ -478,11 +518,20 @@ router.post('/refresh', async (req: Request, res: Response) => {
       });
     }
 
-    const tokens = await authService.refreshAccessToken(refreshToken);
+    const { accessToken, expiresIn } = await authService.refreshAccessToken(refreshToken);
+
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
 
     return res.json({
       success: true,
-      data: tokens,
+      data: {
+        expiresIn
+      },
       meta: {
         timestamp: new Date().toISOString(),
         requestId: (req as any).requestId
@@ -522,11 +571,14 @@ router.post('/refresh', async (req: Request, res: Response) => {
  */
 router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { refreshToken } = req.body;
+    const { refreshToken } = req.cookies;
     if (refreshToken) {
       await authService.logout(refreshToken);
     }
     
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
     // Log for development
     console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
     

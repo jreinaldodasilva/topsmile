@@ -205,7 +205,7 @@ class AuthService {
     }
 
     // FIXED: Rotate and refresh access token with better error handling
-    async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
+    async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; expiresIn: string }> {
         if (!refreshTokenString) {
             throw new ValidationError('Token de atualização é obrigatório');
         }
@@ -248,7 +248,6 @@ class AuthService {
 
         return { 
             accessToken, 
-            refreshToken: newRefreshDoc.token, 
             expiresIn: this.ACCESS_TOKEN_EXPIRES 
         };
     }

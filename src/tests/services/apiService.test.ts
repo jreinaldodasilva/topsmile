@@ -1,12 +1,10 @@
 import { apiService } from '../../services/apiService';
-import * as tokenStore from '../../services/tokenStore';
 
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe('apiService', () => {
   beforeEach(() => {
     mockFetch.mockClear();
-    (tokenStore as any).getAccessToken = jest.fn().mockReturnValue('mock-access-token');
   });
 
   afterEach(() => {

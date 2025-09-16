@@ -582,6 +582,8 @@ router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
             });
         }
 
+        const appointmentTypes = await appointmentTypeService.getAppointmentTypesByCategory(req.user.clinicId, category);
+
         return res.json({
             success: true,
             data: appointmentTypes,

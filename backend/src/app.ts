@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
 
+import cookieParser from 'cookie-parser';
+
 // Database imports
 import { connectToDatabase } from './config/database';
 import { contactService } from './services/contactService';
@@ -311,6 +313,7 @@ app.use(express.urlencoded({
   limit: '10mb',
   parameterLimit: 100 // Prevent parameter pollution
 }));
+app.use(cookieParser());
 
 // Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);
