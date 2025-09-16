@@ -12,6 +12,7 @@
 /dist
 /backend/dist
 /backend/reports
+/topsmile_patches
 
 # production
 /build
