@@ -4,7 +4,7 @@
 - [x] Update Appointment interface in apiService.ts to match types/api.ts (add id?, extra fields, [key: string]: any)
 - [x] Update AppointmentType interface in apiService.ts to match types/api.ts (add id?, extra fields, [key: string]: any)
 - [x] Update Provider interface in apiService.ts to match types/api.ts (add id?, [key: string]: any)
-- [ ] Update Clinic interface in apiService.ts to match types/api.ts (add id?, subscription?, settings?, [key: string]: any)
+- [x] Update Clinic interface in apiService.ts to match types/api.ts (add id?, subscription?, settings?, [key: string]: any)
 - [x] Fix jest.spyOn in apiService.test.ts
 - [x] Update mock data in patients.create test to use firstName, lastName, fullName
 - [x] Update expect in patients.create test to check fullName

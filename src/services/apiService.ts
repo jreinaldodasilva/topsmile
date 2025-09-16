@@ -133,7 +133,8 @@ export interface Provider {
 }
 
 export interface Clinic {
-  _id: string;
+  id?: string;
+  _id?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -146,9 +147,29 @@ export interface Clinic {
     zipCode?: string;
     country?: string;
   };
+  subscription?: {
+    plan: 'basic' | 'professional' | 'premium';
+    status: 'active' | 'inactive' | 'cancelled' | 'past_due';
+    startDate: string | Date;
+    endDate?: string | Date;
+  };
+  settings?: {
+    timezone: string;
+    workingHours: {
+      [key: string]: {
+        start: string;
+        end: string;
+        isWorking: boolean;
+      };
+    };
+    appointmentDuration: number;
+    allowOnlineBooking: boolean;
+    requireApproval: boolean;
+  };
   isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
+  [key: string]: any;
 }
 
 export interface FormTemplate {

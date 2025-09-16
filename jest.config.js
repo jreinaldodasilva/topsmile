@@ -8,6 +8,7 @@ module.exports = {
   ...defaultConfig,
 
   setupFiles: [
+    '<rootDir>/src/textEncoderPolyfill.js',
     '<rootDir>/src/jest-pre-setup.ts'
   ],
 
@@ -31,6 +32,8 @@ module.exports = {
     '^@assets/(.*)$': '<rootDir>/src/assets/$1',
     '^@styles/(.*)$': '<rootDir>/src/styles/$1',
     '^@tests/(.*)$': '<rootDir>/src/tests/$1',
+    // Mock CSS files
+    '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
 
   // Coverage configuration

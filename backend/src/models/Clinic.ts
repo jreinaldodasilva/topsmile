@@ -278,7 +278,6 @@ ClinicSchema.methods.isActiveSubscription = function(): boolean {
 
 // Indexes
 ClinicSchema.index({ email: 1 });
-ClinicSchema.index({ cnpj: 1 });
 ClinicSchema.index({ 'address.city': 1, 'address.state': 1 });
 ClinicSchema.index({ 'subscription.plan': 1 });
 ClinicSchema.index({ createdAt: -1 });

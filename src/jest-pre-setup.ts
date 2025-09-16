@@ -1,9 +1,11 @@
 import 'whatwg-fetch';
 import 'web-streams-polyfill/dist/polyfill';
-import { TextEncoder, TextDecoder } from 'util';
 
+// Polyfill TextEncoder and TextDecoder for MSW
+const { TextEncoder, TextDecoder } = require('util');
 global.TextEncoder = TextEncoder;
-(global as any).TextDecoder = TextDecoder;
+global.TextDecoder = TextDecoder;
+
 (global as any).BroadcastChannel = function () {
   return {
     postMessage: () => {},

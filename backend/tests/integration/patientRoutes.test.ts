@@ -59,7 +59,7 @@ beforeEach(async () => {
   testClinic = await Clinic.create({
     name: 'Test Clinic',
     email: 'clinic@test.com',
-    phone: '+5511999999999',
+    phone: '11999999999',
     address: {
       street: 'Test Street',
       number: '123',
@@ -67,6 +67,17 @@ beforeEach(async () => {
       city: 'Test City',
       state: 'TS',
       zipCode: '12345-678'
+    settings: {
+      workingHours: {
+        monday: { start: '08:00', end: '18:00', isWorking: true },
+        tuesday: { start: '08:00', end: '18:00', isWorking: true },
+        wednesday: { start: '08:00', end: '18:00', isWorking: true },
+        thursday: { start: '08:00', end: '18:00', isWorking: true },
+        friday: { start: '08:00', end: '18:00', isWorking: true },
+        saturday: { start: '08:00', end: '12:00', isWorking: true },
+        sunday: { start: '00:00', end: '00:00', isWorking: false }
+      }
+    }
     }
   });
 
@@ -104,7 +115,7 @@ describe('Patient Routes Integration Tests', () => {
     it('should create a patient successfully', async () => {
       const patientData = {
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         email: 'joao@example.com',
         birthDate: '1990-01-01',
         gender: 'male',
@@ -212,7 +223,7 @@ describe('Patient Routes Integration Tests', () => {
       const patients = [
         {
           name: 'João Silva',
-          phone: '+5511999999999',
+          phone: '11999999999',
           email: 'joao@example.com',
           clinicId: testClinic._id.toString()
         },
@@ -328,7 +339,7 @@ describe('Patient Routes Integration Tests', () => {
       // Create test patients
       await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         clinic: testClinic._id,
         status: 'active',
         medicalHistory: {
@@ -373,7 +384,7 @@ describe('Patient Routes Integration Tests', () => {
     beforeEach(async () => {
       testPatient = await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         email: 'joao@example.com',
         clinic: testClinic._id,
         status: 'active'
@@ -411,7 +422,7 @@ describe('Patient Routes Integration Tests', () => {
     beforeEach(async () => {
       testPatient = await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         email: 'joao@example.com',
         clinic: testClinic._id,
         status: 'active'
@@ -473,7 +484,7 @@ describe('Patient Routes Integration Tests', () => {
     beforeEach(async () => {
       testPatient = await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         clinic: testClinic._id,
         status: 'active'
       });
@@ -526,7 +537,7 @@ describe('Patient Routes Integration Tests', () => {
     beforeEach(async () => {
       inactivePatient = await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         clinic: testClinic._id,
         status: 'inactive'
       });
@@ -567,7 +578,7 @@ describe('Patient Routes Integration Tests', () => {
     beforeEach(async () => {
       testPatient = await Patient.create({
         name: 'João Silva',
-        phone: '+5511999999999',
+        phone: '11999999999',
         clinic: testClinic._id,
         status: 'active'
       });

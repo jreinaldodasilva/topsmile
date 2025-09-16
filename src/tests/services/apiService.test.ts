@@ -1,14 +1,16 @@
 import { apiService } from '../../services/apiService';
-
-const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
+import { server } from '../../mocks/server';
+import { rest } from 'msw';
 
 describe('apiService', () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    // Reset handlers to default
+    server.resetHandlers();
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    // Reset handlers after each test
+    server.resetHandlers();
   });
 
   describe('auth methods', () => {
