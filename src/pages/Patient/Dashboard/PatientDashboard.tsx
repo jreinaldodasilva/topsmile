@@ -18,9 +18,9 @@ const PatientDashboard: React.FC = function PatientDashboard() {
   );
 
   const upcomingAppointments = useMemo(() => {
-    if (!allAppointments) return [];
-    return (allAppointments as Appointment[])
-      .filter(a => new Date(a.scheduledStart) > new Date())
+    if (!allAppointments?.data) return [];
+    return allAppointments.data
+      .filter((a: Appointment) => new Date(a.scheduledStart) > new Date())
       .slice(0, 5);
   }, [allAppointments]);
 
@@ -60,8 +60,8 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     }
   };
 
-  const totalAppointments = allAppointments?.length || 0;
-  const completedAppointments = allAppointments?.filter((a: Appointment) => a.status === 'completed').length || 0;
+  const totalAppointments = allAppointments?.data?.length || 0;
+  const completedAppointments = allAppointments?.data?.filter((a: Appointment) => a.status === 'completed').length || 0;
   const pendingAppointments = totalAppointments - completedAppointments;
 
   if (!patientUser) {
@@ -195,7 +195,7 @@ const PatientDashboard: React.FC = function PatientDashboard() {
               </div>
             ) : (
               <div className="appointments-list">
-                {upcomingAppointments.map((appointment) => {
+                {upcomingAppointments.map((appointment: Appointment) => {
                   const { date, time } = formatDateTime(appointment.scheduledStart);
                   return (
                     <div key={appointment._id} className="appointment-card">

@@ -3,6 +3,49 @@ import React, { Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
+// Contexts
+import { ErrorProvider } from './contexts/ErrorContext';
+import { AuthProvider } from './contexts/AuthContext';
+import { PatientAuthProvider } from './contexts/PatientAuthContext';
+
+// Error Boundaries
+import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
+import ApiErrorBoundary from './components/ErrorBoundary/ApiErrorBoundary';
+
+// UI Components
+import Loading from './components/UI/Loading/Loading';
+import NotificationContainer from './components/Notifications/NotificationContainer';
+
+// Pages
+import Home from './pages/Home/Home';
+import FeaturesPage from './pages/Features/FeaturesPage';
+import PricingPage from './pages/Pricing/PricingPage';
+import ContactPage from './pages/Contact/ContactPage';
+import LoginPage from './pages/Login/LoginPage';
+import RegisterPage from './pages/Login/RegisterPage';
+import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Login/ResetPasswordPage';
+import CalendarPage from './pages/Calendar/CalendarPage';
+import FormRendererPage from './pages/FormRenderer/FormRendererPage';
+import TestComponents from './pages/TestComponents/TestComponents';
+import PatientLoginPage from './pages/Patient/Login/PatientLoginPage';
+import PatientRegisterPage from './pages/Patient/Register/PatientRegisterPage';
+import PatientDashboard from './pages/Patient/Dashboard/PatientDashboard';
+import PatientAppointmentsList from './pages/Patient/Appointment/PatientAppointmentsList';
+import PatientAppointmentBooking from './pages/Patient/Appointment/PatientAppointmentBooking';
+import PatientAppointmentDetail from './pages/Patient/Appointment/PatientAppointmentDetail';
+import PatientProfile from './pages/Patient/Profile/PatientProfile';
+import AdminPage from './pages/Login/AdminPage';
+import ContactManagement from './pages/Admin/ContactManagement';
+import PatientManagement from './pages/Admin/PatientManagement';
+import ProviderManagement from './pages/Admin/ProviderManagement';
+import AppointmentCalendar from './pages/Admin/AppointmentCalendar';
+import UnauthorizedPage from './pages/Unauthorized/UnauthorizedPage';
+
+// Route Protection
+import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
+import PatientProtectedRoute from './components/Auth/PatientProtectedRoute';
+
 const queryClient = new QueryClient();
 
 const App: React.FC = () => (

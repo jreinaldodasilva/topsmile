@@ -48,8 +48,9 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
     }
   }, [isAuthenticated, navigate]);
 
-  const providers = providersData || [];
-  const appointmentTypes = appointmentTypesData || [];
+  const providersDataInner = providersData?.data;
+  const providers = Array.isArray(providersDataInner) ? providersDataInner : providersDataInner?.providers || [];
+  const appointmentTypes = appointmentTypesData?.data || [];
 
   const fetchAvailableSlots = async (providerId: string, date: string) => {
     try {
