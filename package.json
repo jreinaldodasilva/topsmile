@@ -23,6 +23,7 @@
     "web-vitals": "^3.5.0"
   },
   "scripts": {
+    "prepare": "cd backend && npm install",
     "start": "react-scripts start",
     "dev": "concurrently \"npm run server\" \"npm run start\"",
     "server": "cd ./backend && npm run dev",
