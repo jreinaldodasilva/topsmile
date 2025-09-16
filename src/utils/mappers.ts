@@ -12,6 +12,7 @@ interface FrontendPatient {
   email?: string;
   phone?: string;
   dateOfBirth?: string | Date;
+  birthDate?: string | Date;
   gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
   cpf?: string;
   rg?: string;
@@ -41,7 +42,7 @@ interface FrontendPatient {
   [key: string]: any;
 }
 
-type BackendPatient = Omit<FrontendPatient, 'firstName' | 'lastName' | 'dateOfBirth' | 'fullName'> & {
+type BackendPatient = Omit<FrontendPatient, 'firstName' | 'lastName' | 'dateOfBirth' | 'fullName' | 'birthDate'> & {
   name: string;
   birthDate: string;
 };
@@ -50,13 +51,15 @@ export const toBackendPatient = (patient: FrontendPatient): Partial<BackendPatie
   const backendPatient: Partial<BackendPatient> = {
     ...patient,
     name: patient.fullName || `${patient.firstName || ''} ${patient.lastName || ''}`.trim(),
-    birthDate: patient.dateOfBirth ? (typeof patient.dateOfBirth === 'string' ? patient.dateOfBirth : patient.dateOfBirth.toISOString()) : undefined,
+    birthDate: (patient.dateOfBirth || patient.birthDate) ? (typeof (patient.dateOfBirth || patient.birthDate) === 'string' ? (patient.dateOfBirth || patient.birthDate) : (patient.dateOfBirth || patient.birthDate).toISOString()) : undefined,
   };
 
   delete (backendPatient as Partial<FrontendPatient>).firstName;
   delete (backendPatient as Partial<FrontendPatient>).lastName;
   delete (backendPatient as Partial<FrontendPatient>).dateOfBirth;
   delete (backendPatient as Partial<FrontendPatient>).fullName;
+  delete (backendPatient as any).birthDate;
+
 
   return backendPatient;
 };

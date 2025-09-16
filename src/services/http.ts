@@ -85,6 +85,24 @@ async function performRefresh(tokenKey: string): Promise<void> {
   tokenStore.setTokens(data.accessToken, data.refreshToken, tokenKey);
 }
 
+// Add request interceptor
+const requestInterceptor = (config: RequestInit): RequestInit => {
+  // Add correlation ID for tracking
+  const correlationId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  config.headers = {
+    ...config.headers,
+    'X-Correlation-ID': correlationId,
+    'X-Client-Version': process.env.REACT_APP_VERSION || '1.0.0'
+  };
+  
+  // Log request in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[API Request] ${correlationId}:`, config);
+  }
+  
+  return config;
+};
+
 /** Enhanced request function with multi-context auth */
 export async function request<T = any>(
   endpoint: string,
@@ -103,11 +121,13 @@ export async function request<T = any>(
       headers.set('Authorization', `Bearer ${token}`);
     }
 
-    const config: RequestInit = {
+    let config: RequestInit = {
       ...restOfOptions,
       headers,
       body: restOfOptions.body ?? undefined
     };
+
+    config = requestInterceptor(config);
 
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     
