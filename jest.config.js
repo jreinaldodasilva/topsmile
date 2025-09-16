@@ -9,7 +9,8 @@ module.exports = {
 
   setupFiles: [
     '<rootDir>/src/textEncoderPolyfill.js',
-    '<rootDir>/src/jest-pre-setup.ts'
+    '<rootDir>/src/jest-pre-setup.ts',
+    '<rootDir>/src/transformStreamPolyfill.js'
   ],
 
   // Custom setup files

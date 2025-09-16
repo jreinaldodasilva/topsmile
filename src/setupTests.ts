@@ -1,8 +1,19 @@
+// Polyfills must be loaded before any other imports
+import './textEncoderPolyfill';
+
+// Additional polyfills for MSW
+if (typeof TransformStream === 'undefined') {
+  const { TransformStream } = require('web-streams-polyfill');
+  global.TransformStream = TransformStream;
+}
+
 // jest-dom adds custom jest matchers for asserting on DOM nodes.
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+
+// Import server after polyfills
 import { server } from './mocks/server';
 
 // Establish API mocking before all tests.
