@@ -7,6 +7,11 @@ import reportWebVitals from './reportWebVitals';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
+if (process.env.NODE_ENV === 'development') {
+  const { worker } = require('./mocks/browser');
+  worker.start();
+}
+
 document.documentElement.style.scrollBehavior = 'smooth';
 
 const queryClient = new QueryClient();

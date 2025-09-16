@@ -1,11 +1,15 @@
 const defaultConfig = require('react-scripts/scripts/utils/createJestConfig')(
-  (p) => require.resolve('react-scripts/scripts/test.js'),
-  null,
+  (p) => require.resolve('react-scripts/config/jest/babelTransform.js'),
+  __dirname,
   false
 );
 
 module.exports = {
   ...defaultConfig,
+
+  setupFiles: [
+    '<rootDir>/src/jest-pre-setup.ts'
+  ],
 
   // Custom setup files
   setupFilesAfterEnv: [
@@ -71,4 +75,8 @@ module.exports = {
 
   // Verbose output
   verbose: true,
+  testEnvironment: 'jsdom',
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@bundled-es-modules/|msw/))'
+  ],
 };

@@ -1,6 +1,6 @@
 // src/components/Admin/Contacts/ContactList.tsx - Updated for React Query
 import React, { useState } from 'react';
-import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '../../../hooks/useApiState';
+import { useContacts, useMutateContact, useDeleteContact } from '../../../hooks/useContacts';
 import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import ViewContactModal from './ViewContactModal';
@@ -39,8 +39,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   } | null>(null);
 
   const { data: contactsData, isLoading, error, refetch } = useContacts({ ...filters, ...sort });
-  const createContactMutation = useCreateContact();
-  const updateContactMutation = useUpdateContact();
+  const contactMutation = useMutateContact();
   const deleteContactMutation = useDeleteContact();
 
   const handleViewContact = (contact: Contact) => {
@@ -49,7 +48,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
 
   const handleCreateContact = async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await createContactMutation.mutateAsync(contact);
+      await contactMutation.mutateAsync(contact);
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Failed to create contact:', error);
@@ -84,7 +83,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const handleStatusUpdate = async (contactId: string, newStatus: Contact['status']) => {
     try {
       if (newStatus) {
-        await updateContactMutation.mutateAsync({ id: contactId, data: { status: newStatus } });
+        await contactMutation.mutateAsync({ id: contactId, status: newStatus });
       }
     } catch (error) {
       console.error('Failed to update contact status:', error);
@@ -409,7 +408,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       )}
 
       {/* Loading overlay for updates */}
-      {(isLoading || createContactMutation.isPending || updateContactMutation.isPending || deleteContactMutation.isPending) && (
+      {(isLoading || contactMutation.isPending || deleteContactMutation.isPending) && (
         <div className="loading-overlay">
           <div className="loading-spinner">Atualizando...</div>
         </div>
