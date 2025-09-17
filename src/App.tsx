@@ -20,6 +20,8 @@ import NotificationContainer from './components/Notifications/NotificationContai
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
 import PatientProtectedRoute from './components/Auth/PatientProtectedRoute';
 
+import './styles/global.css';
+
 const Home = lazy(() => import('./pages/Home/Home'));
 const FeaturesPage = lazy(() => import('./pages/Features/FeaturesPage'));
 const PricingPage = lazy(() => import('./pages/Pricing/PricingPage'));

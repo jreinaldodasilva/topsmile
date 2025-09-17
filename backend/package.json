@@ -4,7 +4,7 @@
   "description": "TopSmile Clinical Management System - Backend API",
   "main": "dist/app.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec \"ts-node -r tsconfig-paths/register\" src/app.ts",
+    "dev": "nodemon src/app.ts",
     "build": "tsc",
     "start": "node dist/app.js",
     "test": "jest",
