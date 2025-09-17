@@ -17,6 +17,9 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     { refetchInterval: 30000, enabled: !!patientUser } // Poll every 30 seconds, only enable when patientUser is available
   );
 
+  // For now, keep using the admin appointments API. In a full implementation,
+  // we'd create a custom hook for patient appointments that uses the patient-specific endpoints
+
   const upcomingAppointments = useMemo(() => {
     if (!allAppointments?.data) return [];
     return allAppointments.data

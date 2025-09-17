@@ -224,9 +224,12 @@ async function patientLogin(email: string, password: string): Promise<ApiResult<
 }
 
 async function patientRegister(data: {
-  patientId: string;
+  patientId?: string;
+  name: string;
   email: string;
+  phone: string;
   password: string;
+  clinicId: string;
 }): Promise<ApiResult<{
   patientUser: any;
   accessToken?: string;
@@ -535,6 +538,40 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
   return { success: res.ok, data: res.data, message: res.message };
 }
 
+// ADDED: Patient-specific appointment methods
+async function getPatientAppointments(query?: Record<string, any>): Promise<ApiResult<{ appointments: Appointment[]; pagination: any }>> {
+  const qs = query
+    ? '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+    : '';
+
+  const res = await request<{ appointments: Appointment[]; pagination: any }>(`/api/appointments/patient${qs}`);
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createPatientAppointment(data: {
+  providerId: string;
+  appointmentTypeId: string;
+  scheduledStart: string;
+  notes?: string;
+  priority?: string;
+}): Promise<ApiResult<Appointment>> {
+  const res = await request<Appointment>('/api/appointments/patient/book', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function cancelPatientAppointment(id: string, reason?: string): Promise<ApiResult<Appointment>> {
+  const res = await request<Appointment>(`/api/appointments/patient/${encodeURIComponent(id)}/cancel`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason })
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
 async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
   const res = await request<Appointment>(`/api/appointments/${encodeURIComponent(id)}`);
   return { success: res.ok, data: res.data, message: res.message };
@@ -791,7 +828,10 @@ export const apiService = {
     getOne: getAppointment,
     create: createAppointment,
     update: updateAppointment,
-    delete: deleteAppointment
+    delete: deleteAppointment,
+    getPatientAppointments,
+    createPatientAppointment,
+    cancelPatientAppointment
   },
   appointmentTypes: {
     getAll: getAppointmentTypes,

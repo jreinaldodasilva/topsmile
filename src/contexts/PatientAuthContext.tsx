@@ -43,7 +43,7 @@ export interface PatientAuthContextType {
   loading: boolean;
   error: string | null;
   login: (email: string, password: string) => Promise<PatientAuthResult>;
-  register: (data: { patientId: string; email: string; password: string }) => Promise<PatientAuthResult>;
+  register: (data: { patientId?: string; name: string; email: string; phone: string; password: string; clinicId: string }) => Promise<PatientAuthResult>;
   logout: () => Promise<void>;
   clearError: () => void;
   refreshPatientData: () => Promise<void>;
@@ -125,7 +125,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (data: { patientId: string; email: string; password: string }): Promise<PatientAuthResult> => {
+  const register = async (data: { patientId?: string; name: string; email: string; phone: string; password: string; clinicId: string }): Promise<PatientAuthResult> => {
     try {
       setError(null);
       setLoading(true);

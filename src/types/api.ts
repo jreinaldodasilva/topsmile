@@ -34,10 +34,10 @@ export type Contact = {
   id?: string;
   _id?: string;
   name: string;
-  email: string;
-  clinic: string;
-  specialty: string;
-  phone: string;
+  email?: string;
+  clinic?: string;
+  specialty?: string;
+  phone?: string;
   status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
   source?: 'website_contact_form' | 'phone' | 'email' | 'referral' | 'social_media' | 'advertisement' | string;
   priority?: 'low' | 'normal' | 'high' | 'urgent';
@@ -102,11 +102,11 @@ export type ContactListResponse = {
 export type Clinic = {
   id?: string;
   _id?: string;
-  name: string;
+  name?: string;
   email?: string;
   phone?: string;
   address?: {
-    street: string;
+    street?: string;
     number?: string;
     neighborhood?: string;
     city?: string;
@@ -144,7 +144,7 @@ export type Clinic = {
 export type Patient = {
   id?: string;
   _id?: string;
-  firstName: string;
+  firstName?: string;
   lastName?: string;
   fullName?: string; // Computed field
   email?: string;
@@ -173,7 +173,7 @@ export type Patient = {
     conditions?: string[];
     notes?: string;
   };
-  clinic: string | Clinic;
+  clinic?: string | Clinic;
   isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -184,35 +184,57 @@ export type Patient = {
 export type Appointment = {
   id?: string;
   _id?: string;
-  patient: string | Patient;
-  clinic: string | Clinic;
-  provider: string | Provider;
-  appointmentType: string | AppointmentType;
-  scheduledStart: string | Date;
-  scheduledEnd: string | Date;
+  patient?: string | Patient;
+  clinic?: string | Clinic;
+  provider?: string | Provider;
+  appointmentType?: string | AppointmentType;
+  scheduledStart?: string | Date;
+  scheduledEnd?: string | Date;
   actualStart?: string | Date;
   actualEnd?: string | Date;
-  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  status?: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
   priority?: 'routine' | 'urgent' | 'emergency';
   notes?: string;
-  // ADDED: Backend-specific fields
+  privateNotes?: string;
+  remindersSent?: {
+    confirmation: boolean;
+    reminder24h: boolean;
+    reminder2h: boolean;
+    customReminder?: boolean;
+  };
   cancellationReason?: string;
-  noShowReason?: string;
   rescheduleHistory?: Array<{
     oldDate: Date;
     newDate: Date;
     reason: string;
     rescheduleBy: 'patient' | 'clinic';
     timestamp: Date;
+    rescheduleCount: number;
   }>;
-  reminders?: Array<{
-    type: 'sms' | 'email' | 'whatsapp';
-    sentAt: Date;
-    status: 'sent' | 'delivered' | 'failed';
-  }>;
-  treatmentPlan?: string;
-  invoice?: string;
-  createdBy?: string | User;
+  checkedInAt?: Date;
+  completedAt?: Date;
+  duration?: number;
+  waitTime?: number;
+  room?: string;
+  equipment?: string[];
+  followUpRequired?: boolean;
+  followUpDate?: Date;
+  billingStatus?: 'pending' | 'billed' | 'paid' | 'insurance_pending' | 'insurance_approved' | 'insurance_denied';
+  billingAmount?: number;
+  insuranceInfo?: {
+    provider: string;
+    policyNumber: string;
+    groupNumber?: string;
+    copayAmount?: number;
+  };
+  preferredContactMethod?: 'phone' | 'email' | 'sms' | 'whatsapp';
+  languagePreference?: string;
+  patientSatisfactionScore?: number;
+  patientFeedback?: string;
+  noShowReason?: string;
+  externalId?: string;
+  syncStatus?: 'synced' | 'pending' | 'error';
+  createdBy?: User;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
@@ -222,25 +244,25 @@ export type Appointment = {
 export type Provider = {
   id?: string;
   _id?: string;
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
   phone?: string;
-  specialties: string[];
+  specialties?: string[];
   license?: string;
-  clinic: string | Clinic;
+  clinic?: string | Clinic;
   // ADDED: Working hours and availability
-  workingHours: {
+  workingHours?: {
     [key: string]: {
       start: string;
       end: string;
       isWorking: boolean;
     };
   };
-  timeZone: string;
-  bufferTimeBefore: number;
-  bufferTimeAfter: number;
-  appointmentTypes: string[];
-  isActive: boolean;
+  timeZone?: string;
+  bufferTimeBefore?: number;
+  bufferTimeAfter?: number;
+  appointmentTypes?: string[];
+  isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
@@ -250,9 +272,9 @@ export type Provider = {
 export type AppointmentType = {
   id?: string;
   _id?: string;
-  name: string;
+  name?: string;
   description?: string;
-  duration: number; // in minutes
+  duration?: number; // in minutes
   price?: number;
   color?: string;
   category?: string;
@@ -260,8 +282,8 @@ export type AppointmentType = {
   bufferBefore?: number;
   bufferAfter?: number;
   requiresApproval?: boolean;
-  isActive: boolean;
-  clinic: string | Clinic;
+  isActive?: boolean;
+  clinic?: string | Clinic;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;

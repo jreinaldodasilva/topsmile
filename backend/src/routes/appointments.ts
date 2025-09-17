@@ -1,6 +1,7 @@
 // backend/src/routes/appointments.ts
 import express from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../middleware/patientAuth";
 import { schedulingService } from "../services/schedulingService";
 
 import { Appointment } from "../models/Appointment";
@@ -876,6 +877,188 @@ router.delete("/:id",
     } catch (err: any) {
       console.error("Error deleting appointment:", err);
       return res.status(500).json({
+        success: false,
+        error: err.message
+      });
+    }
+  }
+);
+
+// Patient-specific appointment endpoints
+router.get("/patient",
+  authenticatePatient,
+  requirePatientEmailVerification,
+  async (req: PatientAuthenticatedRequest, res) => {
+    try {
+      const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
+
+      // Default to current month if no dates provided
+      const start = startDate ? new Date(startDate as string) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+      const end = endDate ? new Date(endDate as string) : new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0);
+
+      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid date format'
+        });
+      }
+
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = parseInt(limit as string, 10);
+
+      if (pageNum < 1 || limitNum < 1 || limitNum > 100) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid pagination parameters'
+        });
+      }
+
+      // Get appointments for this patient
+      const appointments = await Appointment.find({
+        patient: (req.patient!._id as any).toString(),
+        clinic: req.patient!.clinic,
+        scheduledStart: { $gte: start, $lte: end }
+      })
+        .populate('patient', 'name phone email')
+        .populate('provider', 'name specialties')
+        .populate('appointmentType', 'name duration color category')
+        .populate('clinic', 'name')
+        .sort({ scheduledStart: -1 })
+        .limit(limitNum)
+        .skip((pageNum - 1) * limitNum);
+
+      const total = await Appointment.countDocuments({
+        patient: (req.patient!._id as any).toString(),
+        clinic: req.patient!.clinic,
+        scheduledStart: { $gte: start, $lte: end }
+      });
+
+      return res.json({
+        success: true,
+        data: {
+          appointments,
+          pagination: {
+            page: pageNum,
+            limit: limitNum,
+            total,
+            pages: Math.ceil(total / limitNum),
+            hasNext: pageNum * limitNum < total,
+            hasPrev: pageNum > 1
+          }
+        },
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
+      });
+    } catch (err: any) {
+      console.error("Error fetching patient appointments:", err);
+      return res.status(500).json({
+        success: false,
+        error: err.message
+      });
+    }
+  }
+);
+
+// Patient can create their own appointments
+router.post("/patient/book",
+  authenticatePatient,
+  requirePatientEmailVerification,
+  bookingValidation,
+  async (req: PatientAuthenticatedRequest, res: any) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados inválidos',
+          errors: errors.array()
+        });
+      }
+
+      const { providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
+
+      // Ensure the patient can only book for themselves
+      const appointment = await schedulingService.createAppointment({
+        clinicId: req.patient!.clinic.toString(),
+        patientId: (req.patient!._id as any).toString(),
+        providerId,
+        appointmentTypeId,
+        scheduledStart: new Date(scheduledStart),
+        notes,
+        priority,
+        createdBy: (req.patientUser!._id as any).toString()
+      });
+
+      return res.status(201).json({
+        success: true,
+        data: appointment,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
+      });
+    } catch (err: any) {
+      console.error("Patient booking error:", err);
+      return res.status(400).json({
+        success: false,
+        error: err.message
+      });
+    }
+  }
+);
+
+// Patient can cancel their own appointments
+router.patch("/patient/:id/cancel",
+  authenticatePatient,
+  requirePatientEmailVerification,
+  [body('reason').optional().isLength({ max: 500 })],
+  async (req: PatientAuthenticatedRequest, res: any) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados inválidos',
+          errors: errors.array()
+        });
+      }
+
+      const appointment = await Appointment.findById(req.params.id!);
+      if (!appointment) {
+        return res.status(404).json({
+          success: false,
+          message: 'Agendamento não encontrado'
+        });
+      }
+
+      // Check if appointment belongs to this patient
+      if (appointment.patient.toString() !== (req.patient!._id as any).toString()) {
+        return res.status(403).json({
+          success: false,
+          message: 'Acesso negado'
+        });
+      }
+
+      const { reason } = req.body;
+
+      const updatedAppointment = await schedulingService.cancelAppointment(
+        req.params.id!,
+        reason || 'Cancelado pelo paciente'
+      );
+
+      return res.json({
+        success: true,
+        data: updatedAppointment,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: (req as any).requestId
+        }
+      });
+    } catch (err: any) {
+      console.error("Error cancelling patient appointment:", err);
+      return res.status(400).json({
         success: false,
         error: err.message
       });

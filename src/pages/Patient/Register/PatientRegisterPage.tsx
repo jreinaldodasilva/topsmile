@@ -9,9 +9,12 @@ const PatientRegisterPage: React.FC = () => {
 
   const [formData, setFormData] = useState({
     patientId: '',
+    name: '',
     email: '',
+    phone: '',
     password: '',
     confirmPassword: '',
+    clinicId: '', // Will be set from environment or selection
   });
 
   // Clear errors when component mounts
@@ -41,9 +44,12 @@ const PatientRegisterPage: React.FC = () => {
 
     try {
       const result = await register({
-        patientId: formData.patientId,
+        patientId: formData.patientId || undefined,
+        name: formData.name,
         email: formData.email,
+        phone: formData.phone,
         password: formData.password,
+        clinicId: formData.clinicId || '507f1f77bcf86cd799439011', // Default clinic ID for now
       });
 
       if (result.success) {
@@ -63,16 +69,39 @@ const PatientRegisterPage: React.FC = () => {
         <form className="patient-register-form" onSubmit={handleSubmit}>
           {error && <div className="error-message">{error}</div>}
 
-          <label htmlFor="patientId">ID do Paciente</label>
+          <label htmlFor="patientId">ID do Paciente (Opcional)</label>
           <input
             id="patientId"
             name="patientId"
             type="text"
-            required
             value={formData.patientId}
             onChange={handleInputChange}
             disabled={loading}
-            placeholder="Digite seu ID de paciente"
+            placeholder="Digite seu ID de paciente se já possui"
+          />
+
+          <label htmlFor="name">Nome Completo</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            required
+            value={formData.name}
+            onChange={handleInputChange}
+            disabled={loading}
+            placeholder="Seu nome completo"
+          />
+
+          <label htmlFor="phone">Telefone</label>
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            required
+            value={formData.phone}
+            onChange={handleInputChange}
+            disabled={loading}
+            placeholder="(11) 99999-9999"
           />
 
           <label htmlFor="email">E-mail</label>
@@ -96,7 +125,7 @@ const PatientRegisterPage: React.FC = () => {
             value={formData.password}
             onChange={handleInputChange}
             disabled={loading}
-            placeholder="Sua senha"
+            placeholder="Sua senha (mínimo 8 caracteres)"
           />
 
           <label htmlFor="confirmPassword">Confirmar Senha</label>

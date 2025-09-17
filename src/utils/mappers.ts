@@ -69,7 +69,21 @@ export const toBackendPatient = (patient: FrontendPatient): Partial<BackendPatie
   delete (backendPatient as Partial<FrontendPatient>).dateOfBirth;
   delete (backendPatient as Partial<FrontendPatient>).fullName;
 
-
-
   return backendPatient;
+};
+
+export const fromBackendPatient = (backendPatient: BackendPatient): FrontendPatient => {
+  const fullName = backendPatient.name;
+  const nameParts = fullName?.split(' ') || [];
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.slice(1).join(' ') || '';
+
+  return {
+    ...backendPatient,
+    id: backendPatient._id,
+    firstName,
+    lastName,
+    fullName,
+    dateOfBirth: backendPatient.birthDate ? new Date(backendPatient.birthDate) : undefined,
+  };
 };
