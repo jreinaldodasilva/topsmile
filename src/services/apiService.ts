@@ -35,6 +35,7 @@ export interface Appointment {
     reason: string;
     rescheduleBy: 'patient' | 'clinic';
     timestamp: Date;
+    rescheduleCount: number;
   }>;
   reminders?: Array<{
     type: 'sms' | 'email' | 'whatsapp';
@@ -580,9 +581,9 @@ async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
 async function createAppointment(payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
   // Map frontend fields to backend fields
   const backendPayload = {
-    patient: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
-    provider: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
-    appointmentType: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
+    patientId: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
+    providerId: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
+    appointmentTypeId: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
     scheduledStart: payload.scheduledStart,
     scheduledEnd: payload.scheduledEnd,
     status: payload.status,
@@ -600,9 +601,9 @@ async function createAppointment(payload: Partial<Appointment>): Promise<ApiResu
 async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
   // Map frontend fields to backend fields
   const backendPayload = {
-    patient: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
-    provider: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
-    appointmentType: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
+    patientId: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
+    providerId: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
+    appointmentTypeId: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
     scheduledStart: payload.scheduledStart,
     scheduledEnd: payload.scheduledEnd,
     status: payload.status,

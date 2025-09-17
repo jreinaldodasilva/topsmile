@@ -79,7 +79,7 @@ const EnhancedDashboard: React.FC = () => {
           const mappedAppointments: Appointment[] = (appointmentsRes.data as ApiAppointment[]).slice(0, 5).map(apiApt => ({
             id: apiApt._id || apiApt.id || '',
             patientName: typeof apiApt.patient === 'string' ? apiApt.patient : apiApt.patient?.fullName || `${apiApt.patient?.firstName} ${apiApt.patient?.lastName || ''}`.trim() || 'Unknown',
-            time: new Date(apiApt.scheduledStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+            time: apiApt.scheduledStart ? new Date(apiApt.scheduledStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A',
             type: typeof apiApt.appointmentType === 'string' ? apiApt.appointmentType : apiApt.appointmentType?.name || 'Consulta',
             status: apiApt.status === 'scheduled' ? 'scheduled' : apiApt.status === 'in_progress' ? 'in-progress' : apiApt.status === 'completed' ? 'completed' : 'cancelled'
           }));

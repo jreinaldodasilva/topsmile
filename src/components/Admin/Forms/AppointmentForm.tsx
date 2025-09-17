@@ -70,7 +70,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         }
 
         if (providersResult.success && providersResult.data) {
-          setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data.providers);
+          setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data?.providers || []);
         }
 
         // For now, we'll use a default set of appointment types
@@ -95,16 +95,16 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
   // Set initial form data
   useEffect(() => {
     if (appointment) {
-      const start = new Date(appointment.scheduledStart);
-      const end = new Date(appointment.scheduledEnd);
+      const start = appointment.scheduledStart ? new Date(appointment.scheduledStart) : null;
+      const end = appointment.scheduledEnd ? new Date(appointment.scheduledEnd) : null;
       
       setFormData({
-        patientId: typeof appointment.patient === 'string' ? appointment.patient : appointment.patient._id || '',
-        providerId: typeof appointment.provider === 'string' ? appointment.provider : appointment.provider._id || '',
-        appointmentTypeId: typeof appointment.appointmentType === 'string' ? appointment.appointmentType : appointment.appointmentType._id || '',
-        scheduledStart: start.toISOString().slice(0, 16),
-        scheduledEnd: end.toISOString().slice(0, 16),
-        status: appointment.status,
+        patientId: (typeof appointment.patient === 'object' && appointment.patient?._id) ? appointment.patient._id : (typeof appointment.patient === 'string' ? appointment.patient : ''),
+        providerId: (typeof appointment.provider === 'object' && appointment.provider?._id) ? appointment.provider._id : (typeof appointment.provider === 'string' ? appointment.provider : ''),
+        appointmentTypeId: (typeof appointment.appointmentType === 'object' && appointment.appointmentType?._id) ? appointment.appointmentType._id : (typeof appointment.appointmentType === 'string' ? appointment.appointmentType : ''),
+        scheduledStart: start ? start.toISOString().slice(0, 16) : '',
+        scheduledEnd: end ? end.toISOString().slice(0, 16) : '',
+        status: appointment.status || 'scheduled',
         priority: appointment.priority || 'routine',
         notes: appointment.notes || ''
       });
@@ -130,38 +130,27 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
 
-    // Auto-calculate end time when appointment type changes
-    if (name === 'appointmentTypeId') {
-      const selectedType = appointmentTypes.find(type => type._id === value);
-      if (selectedType && formData.scheduledStart) {
-        const start = new Date(formData.scheduledStart);
-        const end = new Date(start);
-        end.setMinutes(end.getMinutes() + selectedType.duration);
-        setFormData(prev => ({
-          ...prev,
-          scheduledEnd: end.toISOString().slice(0, 16)
-        }));
-      }
-    }
+    setFormData(prev => {
+      const newFormData = { ...prev, [name]: value };
 
-    // Auto-calculate end time when start time changes
-    if (name === 'scheduledStart' && formData.appointmentTypeId) {
-      const selectedType = appointmentTypes.find(type => type._id === formData.appointmentTypeId);
-      if (selectedType) {
-        const start = new Date(value);
-        const end = new Date(start);
-        end.setMinutes(end.getMinutes() + selectedType.duration);
-        setFormData(prev => ({
-          ...prev,
-          scheduledEnd: end.toISOString().slice(0, 16)
-        }));
+      if (name === 'appointmentTypeId' || name === 'scheduledStart') {
+        const typeId = name === 'appointmentTypeId' ? value : newFormData.appointmentTypeId;
+        const startTime = name === 'scheduledStart' ? value : newFormData.scheduledStart;
+
+        const selectedType = appointmentTypes.find(type => type._id === typeId);
+
+        if (selectedType && startTime) {
+          const start = new Date(startTime);
+          if (!isNaN(start.getTime())) { // Check if date is valid
+            const end = new Date(start);
+            end.setMinutes(end.getMinutes() + (selectedType.duration || 30));
+            newFormData.scheduledEnd = end.toISOString().slice(0, 16);
+          }
+        }
       }
-    }
+      return newFormData;
+    });
 
     // Clear error when user starts typing
     if (errors[name]) {
@@ -200,7 +189,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         newErrors.scheduledEnd = 'Hora de fim deve ser posterior à hora de início';
       }
 
-      if (start < new Date()) {
+      if (!appointment && start < new Date()) {
         newErrors.scheduledStart = 'Não é possível agendar no passado';
       }
     }
@@ -304,7 +293,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
               <option value="">Selecione um profissional</option>
               {providers.map(provider => (
                 <option key={provider._id} value={provider._id}>
-                  {provider.name} - {provider.specialties.join(', ')}
+                  {provider.name} - {provider.specialties?.join(', ')}
                 </option>
               ))}
             </select>

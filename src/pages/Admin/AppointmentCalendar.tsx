@@ -82,7 +82,7 @@ const AppointmentCalendar: React.FC = () => {
       }
 
       if (providersResult.success && providersResult.data) {
-        setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data.providers);
+        setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data?.providers || []);
       } else {
         // Don't set error for providers, just use empty array
         setProviders([]);
@@ -102,7 +102,8 @@ const AppointmentCalendar: React.FC = () => {
     setFilters(prev => ({ ...prev, [key]: value }));
   };
 
-  const formatDateTime = (dateString: string | Date) => {
+  const formatDateTime = (dateString?: string | Date) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -112,14 +113,15 @@ const AppointmentCalendar: React.FC = () => {
     });
   };
 
-  const formatTime = (dateString: string | Date) => {
+  const formatTime = (dateString?: string | Date) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
     });
   };
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status?: string) => {
     const labels: Record<string, string> = {
       'scheduled': 'Agendado',
       'confirmed': 'Confirmado',
@@ -132,7 +134,7 @@ const AppointmentCalendar: React.FC = () => {
     return labels[status] || status;
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     const colors: Record<string, string> = {
       'scheduled': '#6b7280',
       'confirmed': '#3b82f6',
@@ -145,7 +147,7 @@ const AppointmentCalendar: React.FC = () => {
     return colors[status] || '#6b7280';
   };
 
-  const getPriorityLabel = (priority: string) => {
+  const getPriorityLabel = (priority?: string) => {
     const labels: Record<string, string> = {
       'routine': 'Rotina',
       'urgent': 'Urgente',
@@ -366,21 +368,21 @@ const AppointmentCalendar: React.FC = () => {
 
                 <div className="appointment-info">
                   <div className="patient-info">
-                    <h4>{(appointment.patient as Patient).fullName}</h4>
-                    <p>{(appointment.patient as Patient).phone}</p>
+                    <h4>{typeof appointment.patient === 'object' && appointment.patient.fullName}</h4>
+                    <p>{typeof appointment.patient === 'object' && appointment.patient.phone}</p>
                   </div>
                   
                   <div className="appointment-details">
                     <div className="appointment-type">
                       <span 
                         className="type-indicator"
-                        style={{ backgroundColor: (appointment.appointmentType as any)?.color || '#6b7280' }}
+                        style={{ backgroundColor: (typeof appointment.appointmentType === 'object' && appointment.appointmentType.color) || '#6b7280' }}
                       ></span>
-                      {(appointment.appointmentType as any)?.name || 'Consulta'}
+                      {typeof appointment.appointmentType === 'object' ? appointment.appointmentType.name : 'Consulta'}
                     </div>
                     
                     <div className="provider-name">
-                      {(appointment.provider as Provider).name}
+                      {typeof appointment.provider === 'object' && appointment.provider.name}
                     </div>
                   </div>
                 </div>
@@ -389,11 +391,11 @@ const AppointmentCalendar: React.FC = () => {
                   <span 
                     className="status-badge"
                     style={{ 
-                      backgroundColor: getStatusColor(appointment.status),
+                      backgroundColor: getStatusColor(appointment.status || 'scheduled'),
                       color: 'white'
                     }}
                   >
-                    {getStatusLabel(appointment.status)}
+                    {getStatusLabel(appointment.status || 'scheduled')}
                   </span>
                   
                   {appointment.priority !== 'routine' && (
@@ -441,84 +443,83 @@ const AppointmentCalendar: React.FC = () => {
             
             <div className="modal-body">
               <div className="appointment-details-modal">
-                <div className="detail-section">
-                  <h3>Informações da Consulta</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Tipo:</label>
-                      <span>{(selectedAppointment.appointmentType as any)?.name || 'Consulta'}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Data/Hora Agendada:</label>
-                      <span>
-                        {formatDateTime(selectedAppointment.scheduledStart)} - {formatTime(selectedAppointment.scheduledEnd)}
-                      </span>
-                    </div>
-                    {selectedAppointment.actualStart && (
-                      <div className="detail-item">
-                        <label>Data/Hora Real:</label>
-                        <span>
-                          {formatDateTime(selectedAppointment.actualStart)} - {selectedAppointment.actualEnd ? formatTime(selectedAppointment.actualEnd) : 'Em andamento'}
-                        </span>
-                      </div>
-                    )}
-                    <div className="detail-item">
-                      <label>Status:</label>
-                      <span 
-                        className="status-badge"
-                        style={{ 
-                          backgroundColor: getStatusColor(selectedAppointment.status),
-                          color: 'white'
-                        }}
-                      >
-                        {getStatusLabel(selectedAppointment.status)}
-                      </span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Prioridade:</label>
-                      <span className={`priority-badge ${selectedAppointment.priority}`}>
-                        {getPriorityLabel(selectedAppointment.priority || 'routine')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="detail-section">
-                  <h3>Paciente</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Nome:</label>
-                      <span>{(selectedAppointment.patient as Patient).fullName}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Email:</label>
-                      <span>{(selectedAppointment.patient as Patient).email}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Telefone:</label>
-                      <span>{(selectedAppointment.patient as Patient).phone}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="detail-section">
-                  <h3>Profissional</h3>
-                  <div className="detail-grid">
-                    <div className="detail-item">
-                      <label>Nome:</label>
-                      <span>{(selectedAppointment.provider as Provider).name}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Email:</label>
-                      <span>{(selectedAppointment.provider as Provider).email}</span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Especialidades:</label>
-                      <span>{(selectedAppointment.provider as Provider).specialties?.join(', ')}</span>
-                    </div>
-                  </div>
-                </div>
-
+                                <div className="detail-section">
+                                  <h3>Informações da Consulta</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <label>Tipo:</label>
+                                      <span>{typeof selectedAppointment.appointmentType === 'object' ? selectedAppointment.appointmentType.name : 'Consulta'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Data/Hora Agendada:</label>
+                                      <span>
+                                        {formatDateTime(selectedAppointment.scheduledStart)} - {formatTime(selectedAppointment.scheduledEnd)}
+                                      </span>
+                                    </div>
+                                    {selectedAppointment.actualStart && (
+                                      <div className="detail-item">
+                                        <label>Data/Hora Real:</label>
+                                        <span>
+                                          {formatDateTime(selectedAppointment.actualStart)} - {selectedAppointment.actualEnd ? formatTime(selectedAppointment.actualEnd) : 'Em andamento'}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="detail-item">
+                                      <label>Status:</label>
+                                      <span 
+                                        className="status-badge"
+                                        style={{
+                                          backgroundColor: getStatusColor(selectedAppointment.status || 'scheduled'),
+                                          color: 'white'
+                                        }}
+                                      >
+                                        {getStatusLabel(selectedAppointment.status || 'scheduled')}
+                                      </span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Prioridade:</label>
+                                      <span className={`priority-badge ${selectedAppointment.priority}`}>
+                                        {getPriorityLabel(selectedAppointment.priority || 'routine')}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                
+                                <div className="detail-section">
+                                  <h3>Paciente</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <label>Nome:</label>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.fullName}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Email:</label>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.email}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Telefone:</label>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.phone}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                
+                                <div className="detail-section">
+                                  <h3>Profissional</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <label>Nome:</label>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.name}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Email:</label>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.email}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <label>Especialidades:</label>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.specialties?.join(', ')}</span>
+                                    </div>
+                                  </div>
+                                </div>
                 {selectedAppointment.notes && (
                   <div className="detail-section">
                     <h3>Observações</h3>
@@ -537,7 +538,10 @@ const AppointmentCalendar: React.FC = () => {
               </button>
               <button 
                 className="btn btn-primary"
-                onClick={() => {/* TODO: Edit appointment */}}
+                onClick={() => {
+                  setEditingAppointment(selectedAppointment);
+                  setSelectedAppointment(null);
+                }}
               >
                 Editar Consulta
               </button>
