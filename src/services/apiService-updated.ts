@@ -94,7 +94,9 @@ async function updateAppointment(id: string, payload: Partial<Appointment>): Pro
 async function getContact(id: string): Promise<ApiResult<Contact>> {
   const res = await request<any>(`/api/admin/contacts/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    const contact = fromBackendContact(res.data);
+    if (!contact.name) throw new Error('Contact name is required');
+    return { success: true, data: contact as Contact, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -106,7 +108,9 @@ async function createContact(payload: Partial<Contact>): Promise<ApiResult<Conta
     body: JSON.stringify(backendPayload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    const contact = fromBackendContact(res.data);
+    if (!contact.name) throw new Error('Invalid contact data received from server');
+    return { success: true, data: contact as Contact, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -118,7 +122,9 @@ async function updateContact(id: string, payload: Partial<Contact>): Promise<Api
     body: JSON.stringify(backendPayload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    const contact = fromBackendContact(res.data);
+    if (!contact.name) throw new Error('Invalid contact data received from server');
+    return { success: true, data: contact as Contact, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -168,7 +174,7 @@ async function getPatient(id: string): Promise<ApiResult<Patient>> {
 async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patient>> {
   const backendPayload = toBackendPatient(payload);
 
-  const res = await request<Patient>(`/api/patients`, {
+  const res = await request<any>(`/api/patients`, {
     method: 'POST',
     body: JSON.stringify(backendPayload),
   });
@@ -181,7 +187,7 @@ async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patie
 async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
   const backendPayload = toBackendPatient(payload);
 
-  const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
+  const res = await request<any>(`/api/patients/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(backendPayload),
   });

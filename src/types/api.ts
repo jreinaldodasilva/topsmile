@@ -368,6 +368,13 @@ export type FormResponse = {
   [key: string]: any;
 };
 
+// ADDED: Create form response payload type
+export type CreateFormResponse = {
+  templateId: string;
+  patientId: string;
+  answers: Record<string, any>;
+};
+
 // ADDED: Authentication-related types
 export type LoginRequest = {
   email: string;
@@ -394,6 +401,24 @@ export type RegisterRequest = {
       city?: string;
       state?: string;
       zipCode?: string;
+    };
+  };
+};
+
+export type RegisterFormData = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  clinic: {
+    name: string;
+    phone: string;
+    address: {
+      street: string;
+      number: string;
+      city: string;
+      state: string;
+      zipCode: string;
     };
   };
 };

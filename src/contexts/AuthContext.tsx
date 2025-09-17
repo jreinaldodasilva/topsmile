@@ -10,11 +10,14 @@ interface AuthResult {
   message?: string;
 }
 
-export interface AuthContextType {
+export interface AuthStateContextType {
   isAuthenticated: boolean;
   user: User | null;
   loading: boolean;
   error: string | null;
+}
+
+export interface AuthActionsContextType {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<AuthResult>;
   register: (data: RegisterRequest) => Promise<AuthResult>;
   logout: (reason?: string) => Promise<void>;
@@ -22,7 +25,8 @@ export interface AuthContextType {
   refreshUserData: () => Promise<void>;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthStateContext = createContext<AuthStateContextType | undefined>(undefined);
+export const AuthActionsContext = createContext<AuthActionsContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
@@ -77,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [performLogout]);
 
   // UPDATED: Enhanced login function with secure token storage
-  const login = async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
+  const login = useCallback(async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
     try {
       setError(null);
       setLoading(true);
@@ -112,10 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   // ADDED: Register function with secure token storage
-  const register = async (data: RegisterRequest): Promise<AuthResult> => {
+  const register = useCallback(async (data: RegisterRequest): Promise<AuthResult> => {
     try {
       setError(null);
       setLoading(true);
@@ -148,20 +152,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   // UPDATED: Enhanced logout with backend notification
-  const logout = async (reason?: string) => {
+  const logout = useCallback(async (reason?: string) => {
     await performLogout(reason);
-  };
+  }, [performLogout]);
 
   // ADDED: Clear error function
-  const clearError = () => {
+  const clearError = useCallback(() => {
     setError(null);
-  };
+  }, []);
 
   // ADDED: Refresh user data function
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     try {
       const response = await apiService.auth.me();
       if (response.success && response.data) {
@@ -170,7 +174,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('Failed to refresh user data:', error);
     }
-  };
+  }, []);
 
   // UPDATED: Cross-tab sync using custom event
   useEffect(() => {
@@ -199,13 +203,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [logoutReason, loading, isAuthenticated]);
 
-
-
-  const value: AuthContextType = { 
+  const stateValue: AuthStateContextType = { 
     isAuthenticated, 
     user,
     loading, 
-    error,
+    error
+  };
+
+  const actionsValue: AuthActionsContextType = { 
     login, 
     register,
     logout,
@@ -214,16 +219,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+    <AuthStateContext.Provider value={stateValue}>
+      <AuthActionsContext.Provider value={actionsValue}>
+        {children}
+      </AuthActionsContext.Provider>
+    </AuthStateContext.Provider>
   );
 };
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
+export const useAuthState = (): AuthStateContextType => {
+  const context = useContext(AuthStateContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuthState must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export const useAuthActions = (): AuthActionsContextType => {
+  const context = useContext(AuthActionsContext);
+  if (!context) {
+    throw new Error('useAuthActions must be used within an AuthProvider');
   }
   return context;
 };

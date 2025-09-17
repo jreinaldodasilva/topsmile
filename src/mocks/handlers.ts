@@ -3,7 +3,7 @@ import { http, HttpResponse } from 'msw';
 export const handlers = [
   // Auth endpoints
   http.post('*/api/auth/login', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { email: string; password: string };
     if (body.email === 'admin@topsmile.com' && body.password === 'SecurePass123!') {
       return HttpResponse.json({
         success: true,
@@ -28,7 +28,7 @@ export const handlers = [
   }),
 
   http.post('*/api/auth/register', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { name: string; email: string };
     return HttpResponse.json({
       success: true,
       data: {
@@ -57,19 +57,7 @@ export const handlers = [
   }),
 
   // Patients endpoints
-  http.get('*/api/patients', ({ request }) => {
-    const url = new URL(request.url);
-    const search = url.searchParams.get('search');
-    const page = url.searchParams.get('page');
-    const limit = url.searchParams.get('limit');
-
-    if (search || page || limit) {
-      return HttpResponse.json({
-        success: true,
-        data: []
-      });
-    }
-
+  http.get('*/api/patients', () => {
     return HttpResponse.json({
       success: true,
       data: [
@@ -111,7 +99,7 @@ export const handlers = [
   }),
 
   http.post('*/api/patients', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { name: string; email: string; phone: string };
     return HttpResponse.json({
       success: true,
       data: {
@@ -127,7 +115,7 @@ export const handlers = [
   }),
 
   http.patch('*/api/patients/:id', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { name: string; phone: string };
     return HttpResponse.json({
       success: true,
       data: {
@@ -163,7 +151,7 @@ export const handlers = [
   }),
 
   http.post('*/api/admin/contacts', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { name: string; email: string };
     return HttpResponse.json({
       success: true,
       data: {
@@ -190,7 +178,7 @@ export const handlers = [
   }),
 
   http.post('*/api/appointments', async ({ request }) => {
-    const body = await request.json() as any;
+    const body = await request.json() as { patient: string; provider: string; status: string };
     return HttpResponse.json({
       success: true,
       data: {

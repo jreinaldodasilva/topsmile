@@ -136,4 +136,20 @@ export async function logout(): Promise<void> {
   window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
 }
 
+export async function patientLogout(): Promise<void> {
+  const logoutUrl = '/api/patient-auth/logout';
+
+  try {
+    await fetch(`${API_BASE_URL}${logoutUrl}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.warn('Failed to notify patient backend about logout:', error);
+  }
+  
+  window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'patient' } }));
+}
+
 

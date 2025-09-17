@@ -55,4 +55,31 @@ describe('Complete Appointment Flow', () => {
     // Should show conflict warning
     cy.get('[data-cy="conflict-warning"]').should('be.visible');
   });
+
+  it('should allow editing an existing appointment', () => {
+    // Assuming an appointment for João Silva already exists
+    cy.visit('/calendar');
+    cy.get('[data-cy="appointment-item']').contains('João Silva').click();
+    cy.get('[data-cy="edit-appointment"]').click();
+    cy.get('[data-cy="appointment-time"]').clear().type('11:00');
+    cy.get('[data-cy="save-appointment"]').click();
+    cy.get('[data-cy="calendar"]').should('contain', '11:00');
+  });
+
+  it('should allow cancelling an appointment', () => {
+    // Assuming an appointment for João Silva already exists
+    cy.visit('/calendar');
+    cy.get('[data-cy="appointment-item']').contains('João Silva').click();
+    cy.get('[data-cy="cancel-appointment"]').click();
+    cy.get('[data-cy="confirm-cancel-appointment"]').click();
+    cy.get('[data-cy="calendar"]').should('not.contain', 'João Silva');
+  });
+
+  it('should allow viewing appointment details', () => {
+    // Assuming an appointment for João Silva already exists
+    cy.visit('/calendar');
+    cy.get('[data-cy="appointment-item']').contains('João Silva').click();
+    cy.get('[data-cy="appointment-details-modal"]').should('be.visible');
+    cy.get('[data-cy="appointment-details-patient-name"]').should('contain', 'João Silva');
+  });
 });

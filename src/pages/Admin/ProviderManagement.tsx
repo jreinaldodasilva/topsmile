@@ -71,8 +71,9 @@ const ProviderManagement: React.FC = () => {
       const result = await apiService.providers.getAll(queryParams);
 
       if (result.success && result.data) {
-        setProviders(Array.isArray(result.data) ? result.data : result.data.providers);
-        setTotal(Array.isArray(result.data) ? result.data.length : result.data.total);
+        const data = result.data;
+        setProviders(Array.isArray(data) ? data : (data as any)?.providers || []);
+        setTotal(Array.isArray(data) ? data.length : (data as any)?.total || 0);
       } else {
         setError(result.message || 'Erro ao carregar profissionais');
         setProviders([]);
@@ -109,6 +110,7 @@ const ProviderManagement: React.FC = () => {
   };
 
   const formatWorkingHours = (workingHours: Provider['workingHours']) => {
+    if (!workingHours) return 'Não definido';
     const workingDays = Object.entries(workingHours)
       .filter(([_, hours]) => hours.isWorking)
       .map(([day, hours]) => {
@@ -132,8 +134,8 @@ const ProviderManagement: React.FC = () => {
     const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
     const currentTime = now.toTimeString().slice(0, 5);
 
-    const todayHours = provider.workingHours[currentDay as keyof typeof provider.workingHours];
-    
+    const todayHours = provider.workingHours?.[currentDay as keyof typeof provider.workingHours];
+
     if (!todayHours?.isWorking) {
       return { status: 'unavailable', label: 'Indisponível hoje' };
     }
@@ -315,11 +317,11 @@ const ProviderManagement: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                     <div className="specialty-tags">
-                      {provider.specialties.map((specialty, index) => (
+                      {provider.specialties?.map((specialty, index) => (
                         <span key={index} className="specialty-tag">
                           {specialty}
                         </span>
-                      ))}
+                      )) || []}
                     </div>
                   </div>
 
@@ -427,18 +429,18 @@ const ProviderManagement: React.FC = () => {
                 <div className="detail-section">
                   <h3>Especialidades</h3>
                   <div className="specialty-tags">
-                    {selectedProvider.specialties.map((specialty, index) => (
+                    {selectedProvider.specialties?.map((specialty, index) => (
                       <span key={index} className="specialty-tag">
                         {specialty}
                       </span>
-                    ))}
+                    )) || []}
                   </div>
                 </div>
 
                 <div className="detail-section">
                   <h3>Horários de Trabalho</h3>
                   <div className="working-hours-grid">
-                    {Object.entries(selectedProvider.workingHours).map(([day, hours]) => {
+                    {Object.entries(selectedProvider.workingHours || {}).map(([day, hours]) => {
                       const dayNames: Record<string, string> = {
                         monday: 'Segunda-feira',
                         tuesday: 'Terça-feira',
@@ -488,11 +490,11 @@ const ProviderManagement: React.FC = () => {
                 <div className="detail-section">
                   <h3>Tipos de Consulta</h3>
                   <div className="appointment-types">
-                    {selectedProvider.appointmentTypes.map((type, index) => (
+                    {selectedProvider.appointmentTypes?.map((type, index) => (
                       <span key={index} className="appointment-type-tag">
                         {type}
                       </span>
-                    ))}
+                    )) || []}
                   </div>
                 </div>
               </div>

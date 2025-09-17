@@ -70,7 +70,8 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         }
 
         if (providersResult.success && providersResult.data) {
-          setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data?.providers || []);
+          const providersData = (providersResult as any).data;
+          setProviders(Array.isArray(providersData) ? providersData : providersData?.providers || []);
         }
 
         // For now, we'll use a default set of appointment types

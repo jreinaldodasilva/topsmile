@@ -1,6 +1,21 @@
+import { setupServer } from 'msw/node';
 import { apiService } from '../../services/apiService';
-import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
+
+const server = setupServer();
+export const handlers = [
+  http.post('*/api/auth/login', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        user: { id: 'user123', name: 'Admin User' },
+        accessToken: 'mock-access-token',
+        refreshToken: 'mock-refresh-token'
+      }
+    });
+  }),
+  // Add other handlers as needed based on your tests
+];
 
 describe('apiService', () => {
   beforeEach(() => {

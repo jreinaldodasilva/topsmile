@@ -1,0 +1,38 @@
+.contact-list-skeleton .skeleton-row {
+  background-color: #f0f0f0;
+}
+
+.contact-list-skeleton .skeleton-text,
+.contact-list-skeleton .skeleton-checkbox,
+.contact-list-skeleton .skeleton-actions {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  animation: shimmer 1.5s infinite linear;
+  background-image: linear-gradient(to right, #e0e0e0 0%, #f0f0f0 50%, #e0e0e0 100%);
+  background-repeat: no-repeat;
+  background-size: 200% 100%;
+}
+
+.contact-list-skeleton .skeleton-text {
+  height: 20px;
+  width: 80%;
+}
+
+.contact-list-skeleton .skeleton-checkbox {
+  height: 20px;
+  width: 20px;
+}
+
+.contact-list-skeleton .skeleton-actions {
+  height: 20px;
+  width: 50px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

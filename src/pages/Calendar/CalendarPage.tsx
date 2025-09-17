@@ -1,13 +1,14 @@
 // src/pages/Calendar/CalendarPage.tsx
 import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthState } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Patient, Provider, AppointmentType } from '../../types/api';
-import './CalendarPage.css';
+
+// Other imports remain the same
 
 const CalendarPage: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuthState();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +67,7 @@ const CalendarPage: React.FC = () => {
   // Get appointments for a specific date
   const getAppointmentsForDate = (date: Date) => {
     return appointments.filter(appointment => {
+      if (!appointment.scheduledStart) return false;
       const appointmentDate = new Date(appointment.scheduledStart);
       return appointmentDate.toDateString() === date.toDateString();
     });
@@ -78,7 +80,8 @@ const CalendarPage: React.FC = () => {
   };
 
   // Format time
-  const formatTime = (dateString: string | Date) => {
+  const formatTime = (dateString: string | Date | undefined) => {
+    if (!dateString) return '';
     return new Date(dateString).toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
@@ -161,7 +164,7 @@ const CalendarPage: React.FC = () => {
                             key={appointment._id}
                             className="w-2 h-2 rounded-full"
                             style={{ backgroundColor: getAppointmentColor(appointment) }}
-                            title={`${formatTime(appointment.scheduledStart)} - ${(appointment.patient as Patient).fullName}`}
+                            title={`${formatTime(appointment.scheduledStart)} - ${(appointment.patient as Patient)?.fullName || 'Paciente'}`}
                           />
                         ))}
                         {dayAppointments.length > 3 && (
@@ -207,7 +210,11 @@ const CalendarPage: React.FC = () => {
                     </div>
                   ) : (
                     getAppointmentsForDate(selectedDate)
-                      .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
+                      .sort((a, b) => {
+                        const aTime = a.scheduledStart ? new Date(a.scheduledStart).getTime() : 0;
+                        const bTime = b.scheduledStart ? new Date(b.scheduledStart).getTime() : 0;
+                        return aTime - bTime;
+                      })
                       .map(appointment => (
                         <div key={appointment._id} className="border rounded-lg p-3 hover:bg-gray-50 transition-colors">
                           <div className="flex items-start justify-between">
@@ -223,15 +230,15 @@ const CalendarPage: React.FC = () => {
                               </div>
                               
                               <h3 className="font-medium text-gray-900">
-                                {(appointment.patient as Patient).fullName}
+                                {(appointment.patient as Patient)?.fullName || 'Paciente não informado'}
                               </h3>
-                              
+
                               <p className="text-sm text-gray-600">
                                 {(appointment.appointmentType as AppointmentType)?.name || 'Consulta'}
                               </p>
-                              
+
                               <p className="text-sm text-gray-500">
-                                {(appointment.provider as Provider).name}
+                                {(appointment.provider as Provider)?.name || 'Profissional não informado'}
                               </p>
                               
                               {appointment.notes && (
@@ -269,17 +276,24 @@ const CalendarPage: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Próximos Agendamentos</h3>
                 <div className="space-y-2">
                   {appointments
-                    .filter(apt => new Date(apt.scheduledStart) >= new Date())
-                    .sort((a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime())
+                    .filter(apt => {
+                      if (!apt.scheduledStart) return false;
+                      return new Date(apt.scheduledStart) >= new Date();
+                    })
+                    .sort((a, b) => {
+                      const aTime = a.scheduledStart ? new Date(a.scheduledStart).getTime() : 0;
+                      const bTime = b.scheduledStart ? new Date(b.scheduledStart).getTime() : 0;
+                      return aTime - bTime;
+                    })
                     .slice(0, 5)
                     .map(appointment => (
                       <div key={appointment._id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                         <div>
                           <p className="font-medium text-sm">
-                            {(appointment.patient as Patient).fullName}
+                            {(appointment.patient as Patient)?.fullName || 'Paciente não informado'}
                           </p>
                           <p className="text-xs text-gray-500">
-                            {new Date(appointment.scheduledStart).toLocaleDateString('pt-BR')} às {formatTime(appointment.scheduledStart)}
+                            {appointment.scheduledStart ? new Date(appointment.scheduledStart).toLocaleDateString('pt-BR') : ''} às {formatTime(appointment.scheduledStart)}
                           </p>
                         </div>
                         <div

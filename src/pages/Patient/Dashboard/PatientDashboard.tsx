@@ -23,7 +23,7 @@ const PatientDashboard: React.FC = function PatientDashboard() {
   const upcomingAppointments = useMemo(() => {
     if (!allAppointments?.data) return [];
     return allAppointments.data
-      .filter((a: Appointment) => new Date(a.scheduledStart) > new Date())
+      .filter((a: Appointment) => a.scheduledStart && new Date(a.scheduledStart) > new Date())
       .slice(0, 5);
   }, [allAppointments]);
 
@@ -41,7 +41,7 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     };
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'confirmed':
         return '#10b981';
@@ -52,14 +52,14 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status?: string) => {
     switch (status) {
       case 'confirmed':
         return 'Confirmado';
       case 'scheduled':
         return 'Agendado';
       default:
-        return status;
+        return status || 'Agendado';
     }
   };
 
@@ -199,14 +199,14 @@ const PatientDashboard: React.FC = function PatientDashboard() {
             ) : (
               <div className="appointments-list">
                 {upcomingAppointments.map((appointment: Appointment) => {
-                  const { date, time } = formatDateTime(appointment.scheduledStart);
+                  const { date, time } = appointment.scheduledStart ? formatDateTime(appointment.scheduledStart) : { date: '', time: '' };
                   return (
                     <div key={appointment._id} className="appointment-card">
                       <div className="appointment-info">
                         <div className="appointment-primary">
-                          <h3>{typeof appointment.appointmentType === 'object' ? appointment.appointmentType.name : appointment.appointmentType}</h3>
+                          <h3>{typeof appointment.appointmentType === 'object' && appointment.appointmentType?.name ? appointment.appointmentType.name : 'Consulta'}</h3>
                           <p className="appointment-provider">
-                            Dr. {typeof appointment.provider === 'object' ? appointment.provider.name : appointment.provider}
+                            Dr. {typeof appointment.provider === 'object' && appointment.provider?.name ? appointment.provider.name : 'Profissional não informado'}
                           </p>
                         </div>
                         <div className="appointment-secondary">
@@ -216,9 +216,9 @@ const PatientDashboard: React.FC = function PatientDashboard() {
                           </div>
                           <span
                             className="appointment-status"
-                            style={{ backgroundColor: getStatusColor(appointment.status) }}
+                            style={{ backgroundColor: getStatusColor(appointment.status || 'scheduled') }}
                           >
-                            {getStatusText(appointment.status)}
+                            {getStatusText(appointment.status || 'scheduled')}
                           </span>
                         </div>
                       </div>

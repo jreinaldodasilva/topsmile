@@ -3,6 +3,7 @@ import React from 'react';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ContactList from '../../components/Admin/Contacts/ContactList';
+import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import './ContactManagement.css';
 
 const ContactManagement: React.FC = () => {
@@ -40,7 +41,9 @@ const ContactManagement: React.FC = () => {
 
           {/* Contact List Section */}
           <section className="contact-list-section">
-            <ContactList />
+            <ErrorBoundary level="component" context="contact-list">
+              <ContactList />
+            </ErrorBoundary>
           </section>
         </div>
       </main>

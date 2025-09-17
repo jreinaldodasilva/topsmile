@@ -1,177 +1,25 @@
 // src/services/apiService.ts - Updated for Backend Integration
 import { request } from './http';
-import { toBackendPatient } from '../utils/mappers';
+import { toBackendPatient, fromBackendPatient } from '../utils/mappers';
+import { toBackendAppointment, fromBackendAppointment, toBackendContact, fromBackendContact, toBackendProvider, fromBackendProvider } from '../utils/mappers-expanded';
 import type {
   ApiResult,
   Contact,
   ContactFilters,
   ContactListResponse,
   DashboardStats,
-  User
+  User,
+  Patient,
+  Appointment,
+  Provider,
+  Clinic,
+  AppointmentType,
+  CreateFormResponse
 } from '../types/api';
 
-export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User };
+export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
 
-// ADDED: New types for appointments, forms, patients, and providers
-export interface Appointment {
-  id?: string;
-  _id?: string;
-  patient: string | Patient;
-  clinic: string | Clinic;
-  provider: string | Provider;
-  appointmentType: string | AppointmentType;
-  scheduledStart: string | Date;
-  scheduledEnd: string | Date;
-  actualStart?: string | Date;
-  actualEnd?: string | Date;
-  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-  priority?: 'routine' | 'urgent' | 'emergency';
-  notes?: string;
-  cancellationReason?: string;
-  noShowReason?: string;
-  rescheduleHistory?: Array<{
-    oldDate: Date;
-    newDate: Date;
-    reason: string;
-    rescheduleBy: 'patient' | 'clinic';
-    timestamp: Date;
-    rescheduleCount: number;
-  }>;
-  reminders?: Array<{
-    type: 'sms' | 'email' | 'whatsapp';
-    sentAt: Date;
-    status: 'sent' | 'delivered' | 'failed';
-  }>;
-  treatmentPlan?: string;
-  invoice?: string;
-  createdBy?: string | User;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  [key: string]: any;
-}
 
-export interface AppointmentType {
-  id?: string;
-  _id?: string;
-  name: string;
-  description?: string;
-  duration: number;
-  price?: number;
-  color?: string;
-  category?: string;
-  bufferBefore?: number;
-  bufferAfter?: number;
-  requiresApproval?: boolean;
-  isActive: boolean;
-  clinic: string | Clinic;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  [key: string]: any;
-}
-
-export interface Patient {
-  id?: string;
-  _id?: string;
-  firstName: string;
-  lastName?: string;
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  dateOfBirth?: string | Date;
-  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
-  cpf?: string;
-  rg?: string;
-  address?: {
-    street?: string;
-    number?: string;
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-  };
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relationship: string;
-  };
-  medicalHistory?: {
-    allergies?: string[];
-    medications?: string[];
-    conditions?: string[];
-    notes?: string;
-  };
-  clinic: string | Clinic;
-  isActive?: boolean;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  [key: string]: any;
-}
-
-export interface Provider {
-  id?: string;
-  _id?: string;
-  name: string;
-  email: string;
-  phone?: string;
-  specialties: string[];
-  license?: string;
-  clinic: string | Clinic;
-  workingHours: {
-    [key: string]: {
-      start: string;
-      end: string;
-      isWorking: boolean;
-    };
-  };
-  timeZone: string;
-  bufferTimeBefore: number;
-  bufferTimeAfter: number;
-  appointmentTypes: string[];
-  isActive: boolean;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  [key: string]: any;
-}
-
-export interface Clinic {
-  id?: string;
-  _id?: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  address?: {
-    street: string;
-    number?: string;
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    country?: string;
-  };
-  subscription?: {
-    plan: 'basic' | 'professional' | 'premium';
-    status: 'active' | 'inactive' | 'cancelled' | 'past_due';
-    startDate: string | Date;
-    endDate?: string | Date;
-  };
-  settings?: {
-    timezone: string;
-    workingHours: {
-      [key: string]: {
-        start: string;
-        end: string;
-        isWorking: boolean;
-      };
-    };
-    appointmentDuration: number;
-    allowOnlineBooking: boolean;
-    requireApproval: boolean;
-  };
-  isActive?: boolean;
-  createdAt?: string | Date;
-  updatedAt?: string | Date;
-  [key: string]: any;
-}
 
 export interface FormTemplate {
   _id: string;
@@ -194,340 +42,7 @@ export interface FormResponse {
   submittedAt: string;
 }
 
-
-// UPDATED: Authentication methods to match backend endpoints
-async function login(email: string, password: string): Promise<ApiResult<{
-  user: User;
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: string;
-}>> {
-  const res = await request<{ user: User; accessToken: string; refreshToken: string; expiresIn: string }>('/api/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Patient authentication methods - FIXED endpoints to match backend
-async function patientLogin(email: string, password: string): Promise<ApiResult<{
-  patientUser: any;
-  accessToken: string;
-  refreshToken: string;
-}>> {
-  const res = await request('/api/patient-auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientRegister(data: {
-  patientId?: string;
-  name: string;
-  email: string;
-  phone: string;
-  password: string;
-  clinicId: string;
-}): Promise<ApiResult<{
-  patientUser: any;
-  accessToken?: string;
-  refreshToken?: string;
-}>> {
-  const res = await request('/api/patient-auth/register', {
-    method: 'POST',
-    body: JSON.stringify(data),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientMe(): Promise<ApiResult<any>> {
-  const res = await request('/api/patient-auth/me');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientRefreshToken(refreshToken: string): Promise<ApiResult<{
-  accessToken: string;
-  refreshToken: string;
-}>> {
-  const res = await request('/api/patient-auth/refresh', {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientLogout(): Promise<ApiResult<void>> {
-  const res = await request('/api/patient-auth/logout', {
-    method: 'POST'
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientVerifyEmail(token: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient-auth/verify-email', {
-    method: 'POST',
-    body: JSON.stringify({ token }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientForgotPassword(email: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient-auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function patientResetPassword(token: string, password: string): Promise<ApiResult<void>> {
-  const res = await request('/api/patient-auth/reset-password', {
-    method: 'POST',
-    body: JSON.stringify({ token, password }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function register(payload: {
-  name: string;
-  email: string;
-  password: string;
-  clinic?: {
-    name: string;
-    phone: string;
-    address: {
-      street: string;
-      number?: string;
-      city?: string;
-      state?: string;
-      zipCode?: string;
-    };
-  };
-}): Promise<ApiResult<{
-  user: User;
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: string;
-}>> {
-  const res = await request('/api/auth/register', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Get current user info
-async function me(): Promise<ApiResult<User>> {
-  const res = await request<User>('/api/auth/me');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Refresh token endpoint
-async function refreshToken(refreshToken: string): Promise<ApiResult<{
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: string;
-}>> {
-  const res = await request('/api/auth/refresh', {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Logout with refresh token
-async function logout(refreshToken: string): Promise<ApiResult<void>> {
-  const res = await request('/api/auth/logout', {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken }),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Contact management - now uses admin endpoints
-async function getContacts(query?: Record<string, any>): Promise<ApiResult<ContactListResponse>> {
-  const qs = query
-    ? '?' + Object.entries(query)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
-
-  const res = await request<ContactListResponse>(`/api/admin/contacts${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function getContact(id: string): Promise<ApiResult<Contact>> {
-  const res = await request<Contact>(`/api/admin/contacts/${encodeURIComponent(id)}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createContact(payload: Partial<Contact>): Promise<ApiResult<Contact>> {
-  const res = await request('/api/admin/contacts', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
-  const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
-    method: 'PATCH', // Backend uses PATCH, not PUT
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function deleteContact(id: string): Promise<ApiResult<void>> {
-  const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Dashboard stats endpoint
-async function getDashboardStats(): Promise<ApiResult<DashboardStats>> {
-  const res = await request<DashboardStats>('/api/admin/dashboard');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Contact stats endpoint
-async function getContactStats(): Promise<ApiResult<{
-  total: number;
-  byStatus: Array<{ _id: string; count: number }>;
-  bySource: Array<{ _id: string; count: number }>;
-  recentCount: number;
-  monthlyTrend: Array<{ month: string; count: number }>;
-}>> {
-  const res = await request('/api/admin/contacts/stats');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// UPDATED: Public contact form - matches backend validation
-async function sendContactForm(payload: {
-  name: string;
-  email: string;
-  clinic: string;
-  specialty: string;
-  phone: string;
-}): Promise<ApiResult<{
-  id: string;
-  protocol: string;
-  estimatedResponse: string;
-}>> {
-  const res = await request('/api/contact', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-    auth: false
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Batch contact operations
-async function batchUpdateContacts(
-  contactIds: string[],
-  status: string,
-  assignedTo?: string
-): Promise<ApiResult<{ modifiedCount: number; matchedCount: number }>> {
-  const res = await request('/api/admin/contacts/batch/status', {
-    method: 'POST',
-    body: JSON.stringify({ contactIds, status, assignedTo })
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Find duplicate contacts
-async function findDuplicateContacts(): Promise<ApiResult<Array<{
-  email: string;
-  contacts: Contact[];
-  count: number;
-}>>> {
-  const res = await request('/api/admin/contacts/duplicates');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Merge duplicate contacts
-async function mergeDuplicateContacts(
-  primaryContactId: string,
-  duplicateContactIds: string[]
-): Promise<ApiResult<Contact>> {
-  const res = await request('/api/admin/contacts/merge', {
-    method: 'POST',
-    body: JSON.stringify({ primaryContactId, duplicateContactIds })
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Appointment Types API methods
-async function getAppointmentTypes(query?: Record<string, any>): Promise<ApiResult<AppointmentType[]>> {
-  const qs = query
-    ? '?' + Object.entries(query)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
-
-  const res = await request<AppointmentType[]>(`/api/appointment-types${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function getAppointmentType(id: string): Promise<ApiResult<AppointmentType>> {
-  const res = await request<AppointmentType>(`/api/appointment-types/${encodeURIComponent(id)}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createAppointmentType(payload: Partial<AppointmentType>): Promise<ApiResult<AppointmentType>> {
-  const res = await request('/api/appointment-types', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function updateAppointmentType(id: string, payload: Partial<AppointmentType>): Promise<ApiResult<AppointmentType>> {
-  const res = await request(`/api/appointment-types/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function deleteAppointmentType(id: string): Promise<ApiResult<void>> {
-  const res = await request(`/api/appointment-types/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Calendar API methods
-async function getCalendarEvents(query?: Record<string, any>): Promise<ApiResult<any>> {
-  const qs = query
-    ? '?' + Object.entries(query)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
-
-  const res = await request(`/api/calendar${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createCalendarEvent(payload: any): Promise<ApiResult<any>> {
-  const res = await request('/api/calendar', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Appointments API methods
+// UPDATED: Appointments API methods with proper mapping
 async function getAppointments(query?: Record<string, any>): Promise<ApiResult<Appointment[]>> {
   const qs = query
     ? '?' + Object.entries(query)
@@ -536,399 +51,412 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
     : '';
 
   const res = await request<Appointment[]>(`/api/appointments${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Patient-specific appointment methods
-async function getPatientAppointments(query?: Record<string, any>): Promise<ApiResult<{ appointments: Appointment[]; pagination: any }>> {
-  const qs = query
-    ? '?' + Object.entries(query)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
-
-  const res = await request<{ appointments: Appointment[]; pagination: any }>(`/api/appointments/patient${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createPatientAppointment(data: {
-  providerId: string;
-  appointmentTypeId: string;
-  scheduledStart: string;
-  notes?: string;
-  priority?: string;
-}): Promise<ApiResult<Appointment>> {
-  const res = await request<Appointment>('/api/appointments/patient/book', {
-    method: 'POST',
-    body: JSON.stringify(data)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function cancelPatientAppointment(id: string, reason?: string): Promise<ApiResult<Appointment>> {
-  const res = await request<Appointment>(`/api/appointments/patient/${encodeURIComponent(id)}/cancel`, {
-    method: 'PATCH',
-    body: JSON.stringify({ reason })
-  });
+  if (res.ok && res.data) {
+    return { success: true, data: res.data, message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
-  const res = await request<Appointment>(`/api/appointments/${encodeURIComponent(id)}`);
+  const res = await request<any>(`/api/appointments/${encodeURIComponent(id)}`);
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function createAppointment(payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
-  // Map frontend fields to backend fields
-  const backendPayload = {
-    patientId: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
-    providerId: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
-    appointmentTypeId: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
-    scheduledStart: payload.scheduledStart,
-    scheduledEnd: payload.scheduledEnd,
-    status: payload.status,
-    priority: payload.priority,
-    notes: payload.notes
-  };
-  
+  const backendPayload = toBackendAppointment(payload as any);
+
   const res = await request('/api/appointments', {
     method: 'POST',
     body: JSON.stringify(backendPayload)
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
-  // Map frontend fields to backend fields
-  const backendPayload = {
-    patientId: typeof payload.patient === 'string' ? payload.patient : payload.patient?._id,
-    providerId: typeof payload.provider === 'string' ? payload.provider : payload.provider?._id,
-    appointmentTypeId: typeof payload.appointmentType === 'string' ? payload.appointmentType : payload.appointmentType?._id,
-    scheduledStart: payload.scheduledStart,
-    scheduledEnd: payload.scheduledEnd,
-    status: payload.status,
-    priority: payload.priority,
-    notes: payload.notes
-  };
-  
+  const backendPayload = toBackendAppointment(payload as any);
+
   const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(backendPayload)
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function deleteAppointment(id: string): Promise<ApiResult<void>> {
-  const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
+// UPDATED: Contact methods with mapping
+async function getContact(id: string): Promise<ApiResult<any>> {
+  const res = await request<any>(`/api/admin/contacts/${encodeURIComponent(id)}`);
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendContact(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-// ADDED: Form Templates API methods
-async function getFormTemplates(): Promise<ApiResult<FormTemplate[]>> {
-  const res = await request<FormTemplate[]>('/api/forms/templates');
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function getFormTemplate(id: string): Promise<ApiResult<FormTemplate>> {
-  const res = await request<FormTemplate>(`/api/forms/templates/${encodeURIComponent(id)}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createFormTemplate(payload: Partial<FormTemplate>): Promise<ApiResult<FormTemplate>> {
-  const res = await request('/api/forms/templates', {
+async function createContact(payload: Partial<any>): Promise<ApiResult<any>> {
+  const backendPayload = toBackendContact(payload as any);
+  const res = await request('/api/admin/contacts', {
     method: 'POST',
-    body: JSON.stringify(payload)
+    body: JSON.stringify(backendPayload)
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendContact(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function updateFormTemplate(id: string, payload: Partial<FormTemplate>): Promise<ApiResult<FormTemplate>> {
-  const res = await request(`/api/forms/templates/${encodeURIComponent(id)}`, {
+async function updateContact(id: string, payload: Partial<any>): Promise<ApiResult<any>> {
+  const backendPayload = toBackendContact(payload);
+  const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(payload)
+    body: JSON.stringify(backendPayload)
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendContact(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function deleteFormTemplate(id: string): Promise<ApiResult<void>> {
-  const res = await request(`/api/forms/templates/${encodeURIComponent(id)}`, {
-    method: 'DELETE'
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Form Responses API methods
-async function getFormResponses(query?: Record<string, any>): Promise<ApiResult<FormResponse[]>> {
-  const qs = query
-    ? '?' + Object.entries(query)
-        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
-        .join('&')
-    : '';
-
-  const res = await request<FormResponse[]>(`/api/forms/responses${qs}`);
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createFormResponse(payload: {
-  templateId: string;
-  patientId: string;
-  answers: { [key: string]: string };
-}): Promise<ApiResult<FormResponse>> {
-  const res = await request('/api/forms/responses', {
-    method: 'POST',
-    body: JSON.stringify(payload)
-  });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Patients API methods
-async function getPatients(query: Record<string, any> = {}): Promise<ApiResult<{ patients: Patient[]; total: number; page: number; totalPages: number; hasNext: boolean; hasPrev: boolean; } | Patient[]>> {
-    const qs = Object.keys(query).length
-        ? `?${new URLSearchParams(query as any).toString()}`
-        : '';
-    const res = await request(`/api/patients${qs}`);
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function getPatient(id: string): Promise<ApiResult<Patient>> {
-    const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`);
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function createPatient(payload: Partial<Patient>): Promise<ApiResult<Patient>> {
-    const backendPayload = toBackendPatient(payload);
-    
-    const res = await request<Patient>(`/api/patients`, {
-        method: 'POST',
-        body: JSON.stringify(backendPayload),
-    });
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
-    const backendPayload = toBackendPatient(payload);
-    
-    const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
-        method: 'PATCH',
-        body: JSON.stringify(backendPayload),
-    });
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function deletePatient(id: string): Promise<ApiResult<void>> {
-    const res = await request<void>(`/api/patients/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-// ADDED: Providers API methods
-async function getProviders(query: Record<string, any> = {}): Promise<ApiResult<{ providers: Provider[]; total: number; page: number; totalPages: number; hasNext: boolean; hasPrev: boolean; } | Provider[]>> {
-    const qs = Object.keys(query).length
-        ? `?${new URLSearchParams(query as any).toString()}`
-        : '';
-    const res = await request(`/api/providers${qs}`);
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
+// UPDATED: Provider methods with mapping
 async function getProvider(id: string): Promise<ApiResult<Provider>> {
-    const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`);
-    return { success: res.ok, data: res.data, message: res.message };
+  const res = await request<any>(`/api/providers/${encodeURIComponent(id)}`);
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+  }
+  return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function createProvider(payload: Partial<Provider>): Promise<ApiResult<Provider>> {
-    const res = await request<Provider>(`/api/providers`, {
-        method: 'POST',
-        body: JSON.stringify(payload),
-    });
-    return { success: res.ok, data: res.data, message: res.message };
+  const backendPayload = toBackendProvider(payload);
+  const res = await request<Provider>(`/api/providers`, {
+    method: 'POST',
+    body: JSON.stringify(backendPayload),
+  });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+  }
+  return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updateProvider(id: string, payload: Partial<Provider>): Promise<ApiResult<Provider>> {
-    const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`, {
-        method: 'PATCH', // Using PATCH for consistency
-        body: JSON.stringify(payload),
-    });
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function deleteProvider(id: string): Promise<ApiResult<void>> {
-    const res = await request<void>(`/api/providers/${encodeURIComponent(id)}`, { method: 'DELETE' });
-    return { success: res.ok, data: res.data, message: res.message };
-}
-
-
-// ADDED: Health check endpoints
-async function getHealthStatus(): Promise<ApiResult<{
-  timestamp: string;
-  uptime: string;
-  database: { status: string; name: string };
-  memory: { used: string; total: string };
-  environment: string;
-  version: string;
-  nodeVersion: string;
-}>> {
-  const res = await request('/api/health', { auth: false });
-  return { success: res.ok, data: res.data, message: res.message };
-}
-
-async function forgotPassword(email: string): Promise<ApiResult<void>> {
-  const res = await request('/api/auth/forgot-password', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-    auth: false
+  const backendPayload = toBackendProvider(payload);
+  const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(backendPayload),
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function resetPassword(token: string, password: string): Promise<ApiResult<void>> {
-  const res = await request('/api/auth/reset-password', {
+// UPDATED: Patient methods with mapping
+async function getPatient(id: string): Promise<ApiResult<any>> {
+  const res = await request<any>(`/api/patients/${encodeURIComponent(id)}`);
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+  }
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function createPatient(payload: Partial<any>): Promise<ApiResult<any>> {
+  const backendPayload = toBackendPatient(payload);
+
+  const res = await request<any>(`/api/patients`, {
     method: 'POST',
-    body: JSON.stringify({ token, password }),
-    auth: false
+    body: JSON.stringify(backendPayload),
   });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+  }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-/**
- * Main API service object with nested structure
- */
+async function updatePatient(id: string, payload: Partial<any>): Promise<ApiResult<any>> {
+  const backendPayload = toBackendPatient(payload);
+
+  const res = await request<any>(`/api/patients/${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    body: JSON.stringify(backendPayload),
+  });
+  if (res.ok && res.data) {
+    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+  }
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+// Export the updated functions
+export {
+  getAppointments,
+  getAppointment,
+  createAppointment,
+  updateAppointment,
+  getContact,
+  createContact,
+  updateContact,
+  getProvider,
+  createProvider,
+  updateProvider,
+  getPatient,
+  createPatient,
+  updatePatient
+};
+
+// Create the apiService object with hierarchical structure
 export const apiService = {
-  auth: {
-    login,
-    register,
-    me,
-    refreshToken,
-    logout,
-    forgotPassword,
-    resetPassword
-  },
-  patientAuth: {
-    login: patientLogin,
-    register: patientRegister,
-    me: patientMe,
-    refreshToken: patientRefreshToken,
-    logout: patientLogout,
-    verifyEmail: patientVerifyEmail,
-    forgotPassword: patientForgotPassword,
-    resetPassword: patientResetPassword
-  },
-  contacts: {
-    getAll: getContacts,
-    getOne: getContact,
-    create: createContact,
-    update: updateContact,
-    delete: deleteContact,
-    getStats: getContactStats,
-    batchUpdate: batchUpdateContacts,
-    findDuplicates: findDuplicateContacts,
-    mergeDuplicates: mergeDuplicateContacts
-  },
   appointments: {
     getAll: getAppointments,
     getOne: getAppointment,
     create: createAppointment,
     update: updateAppointment,
-    delete: deleteAppointment,
-    getPatientAppointments,
-    createPatientAppointment,
-    cancelPatientAppointment
+  },
+  contacts: {
+    getAll: async (filters?: ContactFilters): Promise<ApiResult<ContactListResponse>> => {
+      const qs = filters
+        ? '?' + Object.entries(filters)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+            .join('&')
+        : '';
+      const res = await request<ContactListResponse>(`/api/admin/contacts${qs}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: getContact,
+    create: createContact,
+    update: updateContact,
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+    batchUpdate: async (contactIds: string[], status: string): Promise<ApiResult<any>> => {
+      const res = await request('/api/admin/contacts/batch-update', {
+        method: 'PATCH',
+        body: JSON.stringify({ contactIds, status })
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    findDuplicates: async (): Promise<ApiResult<any[]>> => {
+      const res = await request('/api/admin/contacts/duplicates');
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    mergeDuplicates: async (primaryId: string, duplicateIds: string[]): Promise<ApiResult<any>> => {
+      const res = await request('/api/admin/contacts/merge', {
+        method: 'POST',
+        body: JSON.stringify({ primaryId, duplicateIds })
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  patients: {
+    getAll: async (query?: Record<string, any>): Promise<ApiResult<Patient[]>> => {
+      const qs = query
+        ? '?' + Object.entries(query)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+            .join('&')
+        : '';
+      const res = await request<Patient[]>(`/api/patients${qs}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: getPatient,
+    create: createPatient,
+    update: updatePatient,
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+  },
+  providers: {
+    getAll: async (query?: Record<string, any>): Promise<ApiResult<Provider[]>> => {
+      const qs = query
+        ? '?' + Object.entries(query)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+            .join('&')
+        : '';
+      const res = await request<Provider[]>(`/api/providers${qs}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: getProvider,
+    create: createProvider,
+    update: updateProvider,
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/providers/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
   },
   appointmentTypes: {
-    getAll: getAppointmentTypes,
-    getOne: getAppointmentType,
-    create: createAppointmentType,
-    update: updateAppointmentType,
-    delete: deleteAppointmentType
+    getAll: async (query?: Record<string, any>): Promise<ApiResult<AppointmentType[]>> => {
+      const qs = query
+        ? '?' + Object.entries(query)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+            .join('&')
+        : '';
+      const res = await request<AppointmentType[]>(`/api/appointment-types${qs}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
   },
-  calendar: {
-    getEvents: getCalendarEvents,
-    createEvent: createCalendarEvent
+  auth: {
+    login: async (email: string, password: string): Promise<ApiResult<User>> => {
+      const res = await request('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    register: async (userData: Partial<User>): Promise<ApiResult<User>> => {
+      const res = await request('/api/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(userData)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    me: async (): Promise<ApiResult<User>> => {
+      const res = await request('/api/auth/me');
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    forgotPassword: async (email: string): Promise<ApiResult<void>> => {
+      const res = await request('/api/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+    resetPassword: async (token: string, password: string): Promise<ApiResult<void>> => {
+      const res = await request('/api/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, password })
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+  },
+  dashboard: {
+    getStats: async (): Promise<ApiResult<DashboardStats>> => {
+      const res = await request('/api/dashboard/stats');
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  public: {
+    sendContactForm: async (contactData: Partial<Contact>): Promise<ApiResult<void>> => {
+      const res = await request('/api/public/contact', {
+        method: 'POST',
+        body: JSON.stringify(contactData)
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+  },
+  system: {
+    health: async (): Promise<ApiResult<{ status: string; timestamp: string }>> => {
+      const res = await request('/api/health');
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  patientAuth: {
+    login: async (email: string, password: string): Promise<ApiResult<any>> => {
+      const res = await request('/api/patient-auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    register: async (data: { patientId?: string; name: string; email: string; phone: string; password: string; clinicId: string }): Promise<ApiResult<any>> => {
+      const res = await request('/api/patient-auth/register', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    me: async (): Promise<ApiResult<any>> => {
+      const res = await request('/api/patient-auth/me');
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
   },
   forms: {
     templates: {
-      getAll: getFormTemplates,
-      getOne: getFormTemplate,
-      create: createFormTemplate,
-      update: updateFormTemplate,
-      delete: deleteFormTemplate
+      getOne: async (id: string): Promise<ApiResult<FormTemplate>> => {
+        const res = await request(`/api/forms/templates/${id}`);
+        if (res.ok && res.data) {
+          return { success: true, data: res.data, message: res.message };
+        }
+        return { success: res.ok, data: res.data, message: res.message };
+      },
     },
     responses: {
-      getAll: getFormResponses,
-      create: createFormResponse
-    }
+      create: async (response: CreateFormResponse): Promise<ApiResult<FormResponse>> => {
+        const res = await request('/api/forms/responses', {
+          method: 'POST',
+          body: JSON.stringify(response)
+        });
+        if (res.ok && res.data) {
+          return { success: true, data: res.data, message: res.message };
+        }
+        return { success: res.ok, data: res.data, message: res.message };
+      },
+    },
+    submit: async (formData: FormResponse): Promise<ApiResult<any>> => {
+      const res = await request('/api/forms/submit', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
   },
-  patients: {
-      getAll: getPatients,
-      getOne: getPatient,
-      create: createPatient,
-      update: updatePatient,
-      delete: deletePatient,
-  },
-  providers: {
-      getAll: getProviders,
-      getOne: getProvider,
-      create: createProvider,
-      update: updateProvider,
-      delete: deleteProvider,
-  },
-  dashboard: {
-    getStats: getDashboardStats
-  },
-  public: {
-    sendContactForm
-  },
-  system: {
-    health: getHealthStatus
-  },
-
-  // Flat exports for backward compatibility
-  login,
-  register,
-  me,
-  refreshToken,
-  logout,
-  getContacts,
-  getContact,
-  createContact,
-  updateContact,
-  deleteContact,
-  getDashboardStats,
-  getContactStats,
-  sendContactForm,
-  batchUpdateContacts,
-  findDuplicateContacts,
-  mergeDuplicateContacts,
-  getAppointments,
-  getAppointment,
-  createAppointment,
-  updateAppointment,
-  deleteAppointment,
-  getAppointmentTypes,
-  getAppointmentType,
-  createAppointmentType,
-  updateAppointmentType,
-  deleteAppointmentType,
-  getCalendarEvents,
-  createCalendarEvent,
-  getFormTemplates,
-  getFormTemplate,
-  createFormTemplate,
-  updateFormTemplate,
-  deleteFormTemplate,
-  getFormResponses,
-  createFormResponse,
-  getHealthStatus,
-  getPatients,
-  getPatient,
-  createPatient,
-  updatePatient,
-  deletePatient,
-  getProviders,
-  getProvider,
-  createProvider,
-  updateProvider,
-  deleteProvider
 };
-
-export default apiService;

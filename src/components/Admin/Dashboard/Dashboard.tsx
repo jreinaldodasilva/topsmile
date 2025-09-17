@@ -89,8 +89,9 @@ const EnhancedDashboard: React.FC = () => {
         }
 
         if (patientsRes.success && patientsRes.data) {
-          const patientsArray = Array.isArray(patientsRes.data) ? patientsRes.data : patientsRes.data.patients || [];
-          const mappedPatients: RecentPatient[] = patientsArray.slice(0, 5).map(apiPatient => ({
+          const patientsData = (patientsRes as any).data;
+          const patientsArray = Array.isArray(patientsData) ? patientsData : patientsData.patients || [];
+          const mappedPatients: RecentPatient[] = patientsArray.slice(0, 5).map((apiPatient: any) => ({
             id: apiPatient._id || '',
             name: apiPatient.fullName || `${apiPatient.firstName} ${apiPatient.lastName || ''}`.trim(),
             lastVisit: new Date(apiPatient.createdAt || Date.now()),

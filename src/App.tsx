@@ -1,5 +1,5 @@
 // src/App.tsx - Updated with Enhanced Error Handling
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
@@ -16,35 +16,34 @@ import ApiErrorBoundary from './components/ErrorBoundary/ApiErrorBoundary';
 import Loading from './components/UI/Loading/Loading';
 import NotificationContainer from './components/Notifications/NotificationContainer';
 
-// Pages
-import Home from './pages/Home/Home';
-import FeaturesPage from './pages/Features/FeaturesPage';
-import PricingPage from './pages/Pricing/PricingPage';
-import ContactPage from './pages/Contact/ContactPage';
-import LoginPage from './pages/Login/LoginPage';
-import RegisterPage from './pages/Login/RegisterPage';
-import ForgotPasswordPage from './pages/Login/ForgotPasswordPage';
-import ResetPasswordPage from './pages/Login/ResetPasswordPage';
-import CalendarPage from './pages/Calendar/CalendarPage';
-import FormRendererPage from './pages/FormRenderer/FormRendererPage';
-import TestComponents from './pages/TestComponents/TestComponents';
-import PatientLoginPage from './pages/Patient/Login/PatientLoginPage';
-import PatientRegisterPage from './pages/Patient/Register/PatientRegisterPage';
-import PatientDashboard from './pages/Patient/Dashboard/PatientDashboard';
-import PatientAppointmentsList from './pages/Patient/Appointment/PatientAppointmentsList';
-import PatientAppointmentBooking from './pages/Patient/Appointment/PatientAppointmentBooking';
-import PatientAppointmentDetail from './pages/Patient/Appointment/PatientAppointmentDetail';
-import PatientProfile from './pages/Patient/Profile/PatientProfile';
-import AdminPage from './pages/Login/AdminPage';
-import ContactManagement from './pages/Admin/ContactManagement';
-import PatientManagement from './pages/Admin/PatientManagement';
-import ProviderManagement from './pages/Admin/ProviderManagement';
-import AppointmentCalendar from './pages/Admin/AppointmentCalendar';
-import UnauthorizedPage from './pages/Unauthorized/UnauthorizedPage';
-
 // Route Protection
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
 import PatientProtectedRoute from './components/Auth/PatientProtectedRoute';
+
+const Home = lazy(() => import('./pages/Home/Home'));
+const FeaturesPage = lazy(() => import('./pages/Features/FeaturesPage'));
+const PricingPage = lazy(() => import('./pages/Pricing/PricingPage'));
+const ContactPage = lazy(() => import('./pages/Contact/ContactPage'));
+const LoginPage = lazy(() => import('./pages/Login/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/Login/RegisterPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/Login/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/Login/ResetPasswordPage'));
+const CalendarPage = lazy(() => import('./pages/Calendar/CalendarPage'));
+const FormRendererPage = lazy(() => import('./pages/FormRenderer/FormRendererPage'));
+const TestComponents = lazy(() => import('./pages/TestComponents/TestComponents'));
+const PatientLoginPage = lazy(() => import('./pages/Patient/Login/PatientLoginPage'));
+const PatientRegisterPage = lazy(() => import('./pages/Patient/Register/PatientRegisterPage'));
+const PatientDashboard = lazy(() => import('./pages/Patient/Dashboard/PatientDashboard'));
+const PatientAppointmentsList = lazy(() => import('./pages/Patient/Appointment/PatientAppointmentsList'));
+const PatientAppointmentBooking = lazy(() => import('./pages/Patient/Appointment/PatientAppointmentBooking'));
+const PatientAppointmentDetail = lazy(() => import('./pages/Patient/Appointment/PatientAppointmentDetail'));
+const PatientProfile = lazy(() => import('./pages/Patient/Profile/PatientProfile'));
+const AdminPage = lazy(() => import('./pages/Login/AdminPage'));
+const ContactManagement = lazy(() => import('./pages/Admin/ContactManagement'));
+const PatientManagement = lazy(() => import('./pages/Admin/PatientManagement'));
+const ProviderManagement = lazy(() => import('./pages/Admin/ProviderManagement'));
+const AppointmentCalendar = lazy(() => import('./pages/Admin/AppointmentCalendar'));
+const UnauthorizedPage = lazy(() => import('./pages/Unauthorized/UnauthorizedPage'));
 
 const queryClient = new QueryClient();
 

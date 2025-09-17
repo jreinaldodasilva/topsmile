@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { http, HttpResponse } from 'msw';
-import { server } from '../../../mocks/server';
+import { setupServer } from 'msw/node';
 import ContactList from './ContactList';
 
 const queryClient = new QueryClient();
@@ -10,6 +10,8 @@ const queryClient = new QueryClient();
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
 );
+
+export const server = setupServer() as ReturnType<typeof setupServer>;
 
 describe('ContactList', () => {
   it('should render a list of contacts', async () => {

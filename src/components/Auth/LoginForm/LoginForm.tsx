@@ -1,10 +1,12 @@
 // frontend/src/components/Auth/LoginForm/LoginForm.tsx
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
-import './LoginForm.css';
+import { useAuthState, useAuthActions } from '../../../contexts/AuthContext';
+
+// Other imports remain the same
 
 const LoginForm: React.FC = () => {
-  const { login, loading, error, clearError } = useAuth();
+  const { loading, error } = useAuthState();
+  const { login, clearError } = useAuthActions();
   const [formData, setFormData] = useState({
     email: '',
     password: '',

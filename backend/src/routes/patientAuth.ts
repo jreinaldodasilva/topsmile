@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
-import { patientAuthService, PatientRegistrationData } from '../services/patientAuthService';
+import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../services/patientAuthService';
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 import { patientAuthLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
 import { isAppError } from '../types/errors';
@@ -79,14 +79,36 @@ router.post('/register',
                 });
             }
 
-            const result = await patientAuthService.register(req.body as PatientRegistrationData);
+            const deviceInfo: DeviceInfo = {
+                userAgent: req.headers['user-agent'],
+                ipAddress: req.ip || req.connection.remoteAddress,
+                deviceId: req.headers['x-device-id'] as string
+            };
+
+            const result = await patientAuthService.register(req.body as PatientRegistrationData, deviceInfo);
+
+            const { accessToken, refreshToken, expiresIn, patient, patientUser, requiresEmailVerification } = result.data;
+
+            res.cookie('patientAccessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            });
+
+            res.cookie('patientRefreshToken', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/api/patient-auth/refresh', // IMPORTANT: Limit scope of refresh token
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
 
             return res.status(201).json(standardResponse({
-                patient: result.data.patient,
-                patientUser: result.data.patientUser,
-                accessToken: result.data.accessToken,
-                expiresIn: result.data.expiresIn,
-                requiresEmailVerification: result.data.requiresEmailVerification
+                patient,
+                patientUser,
+                expiresIn,
+                requiresEmailVerification
             }, 'Conta criada com sucesso', req));
 
         } catch (error) {
@@ -121,17 +143,39 @@ router.post('/login',
                 });
             }
 
+            const deviceInfo: DeviceInfo = {
+                userAgent: req.headers['user-agent'],
+                ipAddress: req.ip || req.connection.remoteAddress,
+                deviceId: req.headers['x-device-id'] as string
+            };
+
             const result = await patientAuthService.login({
                 email: req.body.email,
                 password: req.body.password
+            }, deviceInfo);
+
+            const { accessToken, refreshToken, expiresIn, patient, patientUser, requiresEmailVerification } = result.data;
+
+            res.cookie('patientAccessToken', accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                maxAge: 15 * 60 * 1000 // 15 minutes
+            });
+
+            res.cookie('patientRefreshToken', refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict',
+                path: '/api/patient-auth/refresh', // IMPORTANT: Limit scope of refresh token
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
             return res.json(standardResponse({
-                patient: result.data.patient,
-                patientUser: result.data.patientUser,
-                accessToken: result.data.accessToken,
-                expiresIn: result.data.expiresIn,
-                requiresEmailVerification: result.data.requiresEmailVerification
+                patient,
+                patientUser,
+                expiresIn,
+                requiresEmailVerification
             }, 'Login realizado com sucesso', req));
 
         } catch (error) {
@@ -151,6 +195,57 @@ router.post('/login',
         }
     }
 );
+
+router.post('/refresh', async (req: express.Request, res: express.Response) => {
+    try {
+        const { patientRefreshToken } = req.cookies;
+        if (!patientRefreshToken) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Token de atualização obrigatório' 
+            });
+        }
+
+        const { accessToken, expiresIn } = await patientAuthService.refreshAccessToken(patientRefreshToken);
+
+        res.cookie('patientAccessToken', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000 // 15 minutes
+        });
+
+        return res.json(standardResponse({ expiresIn }, 'Token atualizado com sucesso', req));
+
+    } catch (error) {
+        console.error('Patient refresh token error:', error);
+        if (isAppError(error)) {
+            return res.status(error.statusCode).json({ success: false, message: error.message });
+        }
+        return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    }
+});
+
+router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequest, res: express.Response) => {
+    try {
+        const { patientRefreshToken } = req.cookies;
+        if (patientRefreshToken) {
+            await patientAuthService.logout(patientRefreshToken);
+        }
+        
+        res.clearCookie('patientAccessToken');
+        res.clearCookie('patientRefreshToken', { path: '/api/patient-auth/refresh' });
+
+        return res.json(standardResponse(null, 'Logout realizado com sucesso', req));
+
+    } catch (error) {
+        console.error('Patient logout error:', error);
+        if (isAppError(error)) {
+            return res.status(error.statusCode).json({ success: false, message: error.message });
+        }
+        return res.status(500).json({ success: false, message: 'Erro interno do servidor' });
+    }
+});
 
 router.patch('/profile', 
     authenticatePatient,

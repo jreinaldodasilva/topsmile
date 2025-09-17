@@ -1,18 +1,20 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { AuthContext, AuthContextType } from '../../../contexts/AuthContext';
+import { AuthStateContext, AuthActionsContext, AuthStateContextType, AuthActionsContextType } from '../../../contexts/AuthContext';
 import LoginForm from '../../../components/Auth/LoginForm/LoginForm';
 import { BrowserRouter } from 'react-router-dom';
 
 const mockLogin = jest.fn();
 const mockClearError = jest.fn();
 
-const renderLoginForm = (contextValue: Partial<AuthContextType>) => {
+const renderLoginForm = (stateValue: Partial<AuthStateContextType> = {}, actionsValue: Partial<AuthActionsContextType> = {}) => {
   return render(
     <BrowserRouter>
-      <AuthContext.Provider value={{ login: mockLogin, clearError: mockClearError, ...contextValue } as AuthContextType}>
-        <LoginForm />
-      </AuthContext.Provider>
+      <AuthStateContext.Provider value={{ isAuthenticated: false, user: null, loading: false, error: null, ...stateValue }}>
+        <AuthActionsContext.Provider value={{ login: mockLogin, clearError: mockClearError, logout: jest.fn(), register: jest.fn(), refreshUserData: jest.fn(), ...actionsValue }}>
+          <LoginForm />
+        </AuthActionsContext.Provider>
+      </AuthStateContext.Provider>
     </BrowserRouter>
   );
 };

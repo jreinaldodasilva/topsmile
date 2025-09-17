@@ -1,14 +1,16 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuthState } from '../../../contexts/AuthContext';
 
 interface ProtectedRouteProps {
-  children: JSX.Element;
+  children: React.ReactElement;
   roles?: string[];
 }
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles = [] }) => {
-  const { isAuthenticated, user, loading } = useAuth();
+// Other imports remain the same
+
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
+  const { isAuthenticated, user, loading } = useAuthState();
   const location = useLocation();
 
   if (loading) {
@@ -20,7 +22,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles = [] })
   }
 
   // role check (if roles provided)
-  if (roles.length && user && (user.role && !roles.includes(user.role))) {
+  if (roles && roles.length && user && (user.role && !roles.includes(user.role))) {
     return <Navigate to="/unauthorized" replace />;
   }
 

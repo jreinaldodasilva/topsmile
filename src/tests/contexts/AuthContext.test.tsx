@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
-import { AuthProvider, useAuth } from '../../contexts/AuthContext';
+import { AuthProvider, useAuthState, useAuthActions } from '../../contexts/AuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
 
@@ -48,17 +48,8 @@ describe('AuthContext', () => {
   afterEach(cleanup);
 
   const TestComponent = () => {
-    const {
-      login,
-      register,
-      logout,
-      isAuthenticated,
-      loading,
-      error,
-      user,
-      clearError,
-      refreshUserData
-    } = useAuth();
+    const { isAuthenticated, loading, error, user } = useAuthState();
+    const { login, register, logout, clearError, refreshUserData } = useAuthActions();
 
     return (
       <div>
@@ -488,14 +479,23 @@ describe('AuthContext', () => {
     });
   });
 
-  describe('Context Hook', () => {
-    it('throws error when used outside provider', () => {
+  describe('Context Hooks', () => {
+    it('throws error when useAuthState is used outside provider', () => {
       const TestHook = () => {
-        useAuth();
+        useAuthState();
         return <div>Test</div>;
       };
 
-      expect(() => render(<TestHook />)).toThrow('useAuth must be used within an AuthProvider');
+      expect(() => render(<TestHook />)).toThrow('useAuthState must be used within an AuthProvider');
+    });
+
+    it('throws error when useAuthActions is used outside provider', () => {
+      const TestHook = () => {
+        useAuthActions();
+        return <div>Test</div>;
+      };
+
+      expect(() => render(<TestHook />)).toThrow('useAuthActions must be used within an AuthProvider');
     });
   });
 });

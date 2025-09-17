@@ -201,6 +201,14 @@ const TestComponents: React.FC = () => {
           </div>
         </section>
 
+        {/* Error Boundary Test */}
+        <section className="test-section">
+          <h2>Error Boundary Test</h2>
+          <Button data-cy="crash-button" onClick={() => { throw new Error('This is a test error to check the error boundary.'); }}>
+            Crash Component
+          </Button>
+        </section>
+
         {/* Size Variants */}
         <section className="test-section">
           <h2>Card Size Variants</h2>

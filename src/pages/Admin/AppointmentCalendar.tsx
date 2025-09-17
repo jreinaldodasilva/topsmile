@@ -82,7 +82,8 @@ const AppointmentCalendar: React.FC = () => {
       }
 
       if (providersResult.success && providersResult.data) {
-        setProviders(Array.isArray(providersResult.data) ? providersResult.data : providersResult.data?.providers || []);
+        const providersData = providersResult.data;
+        setProviders(Array.isArray(providersData) ? providersData : (providersData as any)?.providers || []);
       } else {
         // Don't set error for providers, just use empty array
         setProviders([]);
@@ -131,7 +132,7 @@ const AppointmentCalendar: React.FC = () => {
       'cancelled': 'Cancelado',
       'no_show': 'Faltou'
     };
-    return labels[status] || status;
+    return labels[status || ''] || status || '';
   };
 
   const getStatusColor = (status?: string) => {
@@ -144,7 +145,7 @@ const AppointmentCalendar: React.FC = () => {
       'cancelled': '#dc2626',
       'no_show': '#991b1b'
     };
-    return colors[status] || '#6b7280';
+    return colors[status || ''] || '#6b7280';
   };
 
   const getPriorityLabel = (priority?: string) => {
@@ -153,7 +154,7 @@ const AppointmentCalendar: React.FC = () => {
       'urgent': 'Urgente',
       'emergency': 'Emergência'
     };
-    return labels[priority] || priority;
+    return labels[priority || ''] || priority || '';
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
@@ -362,27 +363,27 @@ const AppointmentCalendar: React.FC = () => {
                     {formatTime(appointment.scheduledStart)} - {formatTime(appointment.scheduledEnd)}
                   </div>
                   <div className="appointment-date">
-                    {new Date(appointment.scheduledStart).toLocaleDateString('pt-BR')}
+                    {appointment.scheduledStart ? new Date(appointment.scheduledStart as string | Date).toLocaleDateString('pt-BR') : 'Data não definida'}
                   </div>
                 </div>
 
                 <div className="appointment-info">
                   <div className="patient-info">
-                    <h4>{typeof appointment.patient === 'object' && appointment.patient.fullName}</h4>
-                    <p>{typeof appointment.patient === 'object' && appointment.patient.phone}</p>
+                    <h4>{typeof appointment.patient === 'object' && appointment.patient?.fullName}</h4>
+                    <p>{typeof appointment.patient === 'object' && appointment.patient?.phone}</p>
                   </div>
-                  
+
                   <div className="appointment-details">
                     <div className="appointment-type">
-                      <span 
+                      <span
                         className="type-indicator"
-                        style={{ backgroundColor: (typeof appointment.appointmentType === 'object' && appointment.appointmentType.color) || '#6b7280' }}
+                        style={{ backgroundColor: (typeof appointment.appointmentType === 'object' && appointment.appointmentType?.color) || '#6b7280' }}
                       ></span>
-                      {typeof appointment.appointmentType === 'object' ? appointment.appointmentType.name : 'Consulta'}
+                      {typeof appointment.appointmentType === 'object' && appointment.appointmentType?.name ? appointment.appointmentType.name : 'Consulta'}
                     </div>
-                    
+
                     <div className="provider-name">
-                      {typeof appointment.provider === 'object' && appointment.provider.name}
+                      {typeof appointment.provider === 'object' && appointment.provider?.name}
                     </div>
                   </div>
                 </div>
@@ -448,7 +449,7 @@ const AppointmentCalendar: React.FC = () => {
                                   <div className="detail-grid">
                                     <div className="detail-item">
                                       <label>Tipo:</label>
-                                      <span>{typeof selectedAppointment.appointmentType === 'object' ? selectedAppointment.appointmentType.name : 'Consulta'}</span>
+                                      <span>{typeof selectedAppointment.appointmentType === 'object' && selectedAppointment.appointmentType?.name ? selectedAppointment.appointmentType.name : 'Consulta'}</span>
                                     </div>
                                     <div className="detail-item">
                                       <label>Data/Hora Agendada:</label>
@@ -490,33 +491,33 @@ const AppointmentCalendar: React.FC = () => {
                                   <div className="detail-grid">
                                     <div className="detail-item">
                                       <label>Nome:</label>
-                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.fullName}</span>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient?.fullName}</span>
                                     </div>
                                     <div className="detail-item">
                                       <label>Email:</label>
-                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.email}</span>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient?.email}</span>
                                     </div>
                                     <div className="detail-item">
                                       <label>Telefone:</label>
-                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient.phone}</span>
+                                      <span>{typeof selectedAppointment.patient === 'object' && selectedAppointment.patient?.phone}</span>
                                     </div>
                                   </div>
                                 </div>
-                
+
                                 <div className="detail-section">
                                   <h3>Profissional</h3>
                                   <div className="detail-grid">
                                     <div className="detail-item">
                                       <label>Nome:</label>
-                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.name}</span>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider?.name}</span>
                                     </div>
                                     <div className="detail-item">
                                       <label>Email:</label>
-                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.email}</span>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider?.email}</span>
                                     </div>
                                     <div className="detail-item">
                                       <label>Especialidades:</label>
-                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider.specialties?.join(', ')}</span>
+                                      <span>{typeof selectedAppointment.provider === 'object' && selectedAppointment.provider?.specialties?.join(', ')}</span>
                                     </div>
                                   </div>
                                 </div>

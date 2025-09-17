@@ -2,6 +2,7 @@ import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { PatientUser, IPatientUser } from '../models/PatientUser';
 import { Patient, IPatient } from '../models/Patient';
+import { PatientRefreshToken } from '../models/PatientRefreshToken';
 import { 
   ValidationError, 
   UnauthorizedError, 
@@ -32,6 +33,7 @@ export interface PatientAuthResponse {
     patient: IPatient;
     patientUser: IPatientUser;
     accessToken: string;
+    refreshToken: string;
     expiresIn: string;
     requiresEmailVerification: boolean;
   };
@@ -45,8 +47,16 @@ export interface PatientTokenPayload {
   type: 'patient';
 }
 
+export interface DeviceInfo {
+    userAgent?: string;
+    ipAddress?: string;
+    deviceId?: string;
+}
+
 class PatientAuthService {
-  private readonly ACCESS_TOKEN_EXPIRES = process.env.PATIENT_ACCESS_TOKEN_EXPIRES || '24h';
+  private readonly ACCESS_TOKEN_EXPIRES = process.env.PATIENT_ACCESS_TOKEN_EXPIRES || '15m';
+  private readonly REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.PATIENT_REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
+  private readonly MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
 
   // FIXED: Separate JWT secret for patients
   private getPatientJwtSecret(): string {
@@ -85,8 +95,51 @@ class PatientAuthService {
     } as SignOptions);
   }
 
+  private generateRefreshTokenString(): string {
+    return crypto.randomBytes(48).toString('hex');
+  }
+
+  private async createRefreshToken(patientUserId: string, deviceInfo?: DeviceInfo) {
+    const tokenStr = this.generateRefreshTokenString();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + this.REFRESH_TOKEN_EXPIRES_DAYS);
+
+    await this.cleanupOldRefreshTokens(patientUserId);
+
+    const refreshToken = new PatientRefreshToken({
+        token: tokenStr,
+        patientUserId,
+        expiresAt,
+        deviceInfo: deviceInfo || {}
+    });
+
+    return await refreshToken.save();
+  }
+
+  private async cleanupOldRefreshTokens(patientUserId: string): Promise<void> {
+    try {
+        const tokens = await PatientRefreshToken.find({ 
+            patientUserId, 
+            isRevoked: false 
+        }).sort({ createdAt: -1 });
+        
+        if (tokens.length >= this.MAX_REFRESH_TOKENS_PER_USER) {
+            const toRevoke = tokens.slice(this.MAX_REFRESH_TOKENS_PER_USER - 1);
+            const ids = toRevoke.map(t => t._id);
+            await PatientRefreshToken.updateMany({ 
+                _id: { $in: ids } 
+            }, { 
+                isRevoked: true 
+            });
+        }
+    } catch (error) {
+        console.error('Error cleaning up old refresh tokens:', error);
+        // Don't throw - this is a maintenance operation
+    }
+  }
+
   // FIXED: Complete registration with patient creation or linking
-  async register(data: PatientRegistrationData): Promise<PatientAuthResponse> {
+  async register(data: PatientRegistrationData, deviceInfo?: DeviceInfo): Promise<PatientAuthResponse> {
     try {
       // Validate input
       if (!data.name || !data.email || !data.password || !data.clinicId) {
@@ -162,6 +215,7 @@ class PatientAuthService {
 
       // Generate access token
       const accessToken = this.generateAccessToken(savedPatientUser, patient);
+      const refreshToken = await this.createRefreshToken(savedPatientUser._id as any, deviceInfo);
 
       // TODO: Send verification email
       console.log(`Email verification token for ${email}: ${verificationToken}`);
@@ -172,6 +226,7 @@ class PatientAuthService {
           patient,
           patientUser,
           accessToken,
+          refreshToken: refreshToken.token,
           expiresIn: this.ACCESS_TOKEN_EXPIRES,
           requiresEmailVerification: !patientUser.emailVerified
         }
@@ -187,7 +242,7 @@ class PatientAuthService {
   }
 
   // FIXED: Enhanced login with proper error handling
-  async login(data: PatientLoginData): Promise<PatientAuthResponse> {
+  async login(data: PatientLoginData, deviceInfo?: DeviceInfo): Promise<PatientAuthResponse> {
     try {
       if (!data.email || !data.password) {
         throw new ValidationError('E-mail e senha são obrigatórios');
@@ -235,6 +290,7 @@ class PatientAuthService {
       await patientUser.save();
 
       const accessToken = this.generateAccessToken(patientUser, patient);
+      const refreshToken = await this.createRefreshToken(patientUser._id as any, deviceInfo);
 
       return {
         success: true,
@@ -242,6 +298,7 @@ class PatientAuthService {
           patient,
           patientUser,
           accessToken,
+          refreshToken: refreshToken.token,
           expiresIn: this.ACCESS_TOKEN_EXPIRES,
           requiresEmailVerification: !patientUser.emailVerified
         }
@@ -253,6 +310,80 @@ class PatientAuthService {
       
       console.error('Patient login error:', error);
       throw new AppError('Erro ao fazer login', 500);
+    }
+  }
+
+  async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; expiresIn: string }> {
+    if (!refreshTokenString) {
+        throw new ValidationError('Token de atualização é obrigatório');
+    }
+
+    const stored = await PatientRefreshToken.findOne({
+        token: refreshTokenString,
+        isRevoked: false,
+        expiresAt: { $gt: new Date() }
+    }).populate('patientUserId');
+
+    if (!stored) {
+        throw new UnauthorizedError('Token de atualização inválido ou expirado');
+    }
+
+    const patientUser = stored.patientUserId as any;
+    if (!patientUser || !patientUser.isActive) {
+        // Revoke the token if user is inactive
+        stored.isRevoked = true;
+        await stored.save();
+        throw new UnauthorizedError('Usuário inválido ou inativo');
+    }
+
+    const patient = await Patient.findById(patientUser.patient);
+    if(!patient) {
+        throw new UnauthorizedError('Paciente não encontrado');
+    }
+
+    // Revoke used refresh token (rotation for security)
+    stored.isRevoked = true;
+    await stored.save();
+
+    const accessToken = this.generateAccessToken(patientUser, patient);
+    await this.createRefreshToken(
+        patientUser._id.toString(), 
+        stored.deviceInfo
+    );
+
+    return { 
+        accessToken, 
+        expiresIn: this.ACCESS_TOKEN_EXPIRES 
+    };
+  }
+
+  async logout(refreshTokenString: string): Promise<void> {
+    if (!refreshTokenString) return;
+
+    try {
+        await PatientRefreshToken.findOneAndUpdate(
+            { token: refreshTokenString },
+            { isRevoked: true }
+        );
+    } catch (error) {
+        console.error('Error during logout:', error);
+        // Don't throw - logout should be graceful
+    }
+  }
+
+  async logoutAllDevices(patientUserId: string): Promise<void> {
+    if (!patientUserId) {
+        throw new ValidationError('ID do usuário é obrigatório');
+    }
+
+    try {
+        await PatientRefreshToken.updateMany(
+            { patientUserId, isRevoked: false },
+            { isRevoked: true }
+        );
+    } catch (error) {
+        console.error('Error during logout all devices:', error as Error);
+        throw new AppError('Erro ao fazer logout de todos os dispositivos', 500);
     }
   }
 

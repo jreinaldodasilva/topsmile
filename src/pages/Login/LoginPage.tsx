@@ -1,11 +1,13 @@
 // src/pages/Login/LoginPage.tsx - Updated for Backend Integration
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import './LoginPage.css';
+import { useAuthState, useAuthActions } from '../../contexts/AuthContext';
+
+// Other imports remain the same
 
 const LoginPage: React.FC = () => {
-  const { login, loading, error, clearError, isAuthenticated } = useAuth();
+  const { loading, error, isAuthenticated } = useAuthState();
+  const { login, clearError } = useAuthActions();
   const navigate = useNavigate();
   const location = useLocation();
 

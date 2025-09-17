@@ -5,6 +5,13 @@ export const useContacts = (filters: ContactFilters) => {
   return useQuery({
     queryKey: ['contacts', filters],
     queryFn: () => apiService.contacts.getAll(filters),
+    retry: (failureCount, error) => {
+      if (error instanceof Error && 'status' in error && (error as any).status === 404) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 };
 

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
+import { patientLogout, LOGOUT_EVENT } from '../services/http';
 
 interface PatientUser {
   _id: string;
@@ -63,7 +63,7 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setPatientUser(null);
 
-      await httpLogout();
+      await patientLogout();
       navigate('/patient/login');
     } catch (error) {
       console.error('Patient logout error:', error);

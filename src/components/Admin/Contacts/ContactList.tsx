@@ -1,10 +1,11 @@
 // src/components/Admin/Contacts/ContactList.tsx - Updated for React Query
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useContacts, useMutateContact, useDeleteContact } from '../../../hooks/useContacts';
 import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
 import ViewContactModal from './ViewContactModal';
 import CreateContactModal from './CreateContactModal';
+import ContactListSkeleton from './ContactListSkeleton';
 import Modal from '../../UI/Modal/Modal';
 import Button from '../../UI/Button/Button';
 import './ContactList.css';
@@ -13,7 +14,7 @@ interface ContactListProps {
   initialFilters?: ContactFilters;
 }
 
-const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
+const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) => {
   const [filters, setFilters] = useState<ContactFilters>({ 
     page: 1, 
     limit: 10, 
@@ -42,45 +43,45 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const contactMutation = useMutateContact();
   const deleteContactMutation = useDeleteContact();
 
-  const handleViewContact = (contact: Contact) => {
+  const handleViewContact = useCallback((contact: Contact) => {
     setSelectedContact(contact);
-  };
+  }, []);
 
-  const handleCreateContact = async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
+  const handleCreateContact = useCallback(async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
     try {
       await contactMutation.mutateAsync(contact);
       setIsCreateModalOpen(false);
     } catch (error) {
       console.error('Failed to create contact:', error);
     }
-  };
+  }, [contactMutation, setIsCreateModalOpen]);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
     setFilters(prev => ({
       ...prev,
       search: query || undefined,
       page: 1
     }));
-  };
+  }, [setSearchQuery, setFilters]);
 
-  const handleStatusFilter = (status: string) => {
+  const handleStatusFilter = useCallback((status: string) => {
     setFilters(prev => ({
       ...prev,
       status: status === 'all' ? undefined : (status as Contact['status']),
       page: 1
     }));
-  };
+  }, [setFilters]);
 
-  const handlePriorityFilter = (priority: string) => {
+  const handlePriorityFilter = useCallback((priority: string) => {
     setFilters(prev => ({
       ...prev,
       priority: priority === 'all' ? undefined : (priority as 'low' | 'medium' | 'high'),
       page: 1
     }));
-  };
+  }, [setFilters]);
 
-  const handleStatusUpdate = async (contactId: string, newStatus: Contact['status']) => {
+  const handleStatusUpdate = useCallback(async (contactId: string, newStatus: Contact['status']) => {
     try {
       if (newStatus) {
         await contactMutation.mutateAsync({ id: contactId, status: newStatus });
@@ -88,9 +89,9 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
     } catch (error) {
       console.error('Failed to update contact status:', error);
     }
-  };
+  }, [contactMutation]);
 
-  const handleDeleteContact = async (contactId: string) => {
+  const handleDeleteContact = useCallback(async (contactId: string) => {
     setConfirmDialog({
       isOpen: true,
       message: 'Tem certeza que deseja excluir este contato?',
@@ -103,11 +104,11 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         setConfirmDialog(null);
       },
     });
-  };
+  }, [deleteContactMutation, setConfirmDialog]);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setFilters(prev => ({ ...prev, page }));
-  };
+  }, [setFilters]);
 
   const isContactListResponse = (data: any): data is ContactListResponse => {
     return data && typeof data === 'object' && 'contacts' in data && Array.isArray(data.contacts);
@@ -122,7 +123,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
   const currentPage = isContactListResponse(contactsData) ? contactsData.page : (filters.page || 1);
   const limit = isContactListResponse(contactsData) ? contactsData.limit : (filters.limit || 10);
 
-  const handleSort = (field: string) => {
+  const handleSort = useCallback((field: string) => {
     setSort(prev => {
       const newSort: Record<string, any> = {};
       if (prev[field]) {
@@ -132,9 +133,9 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       }
       return newSort;
     });
-  };
+  }, [setSort]);
 
-  const handleSelectContact = (contactId: string | undefined, selected: boolean) => {
+  const handleSelectContact = useCallback((contactId: string | undefined, selected: boolean) => {
     if (!contactId) return;
     setSelectedContacts(prev => {
       const newSet = new Set(prev);
@@ -145,17 +146,17 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       }
       return newSet;
     });
-  };
+  }, [setSelectedContacts]);
 
-  const handleSelectAll = (selected: boolean) => {
+  const handleSelectAll = useCallback((selected: boolean) => {
     if (selected) {
       setSelectedContacts(new Set(contactsList.map(c => c._id || c.id || '').filter(id => id)));
     } else {
       setSelectedContacts(new Set());
     }
-  };
+  }, [setSelectedContacts, contactsList]);
 
-  const handleBatchStatusUpdate = async (status: Contact['status']) => {
+  const handleBatchStatusUpdate = useCallback(async (status: Contact['status']) => {
     if (selectedContacts.size === 0) {
       alert('Selecione pelo menos um contato');
       return;
@@ -184,9 +185,9 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         setConfirmDialog(null);
       },
     });
-  };
+  }, [selectedContacts, setConfirmDialog, setBatchLoading, refetch, setSelectedContacts]);
 
-  const handleFindDuplicates = async () => {
+  const handleFindDuplicates = useCallback(async () => {
     try {
       const result = await apiService.contacts.findDuplicates();
       if (result.success) {
@@ -199,9 +200,9 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       console.error('Find duplicates error:', error);
       alert('Erro ao buscar contatos duplicados');
     }
-  };
+  }, [setDuplicates, setShowDuplicates]);
 
-  const handleMergeDuplicates = async (primaryId: string, duplicateIds: string[]) => {
+  const handleMergeDuplicates = useCallback(async (primaryId: string, duplicateIds: string[]) => {
     setConfirmDialog({
       isOpen: true,
       message: 'Tem certeza que deseja mesclar estes contatos? Os duplicados serão marcados como mesclados.',
@@ -222,7 +223,7 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         setConfirmDialog(null);
       },
     });
-  };
+  }, [setConfirmDialog, setShowDuplicates, refetch]);
 
   return (
     <div className="contact-list">
@@ -230,8 +231,8 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       <div className="contact-list-header">
         <h2>Gerenciar Contatos</h2>
         <div className="header-actions">
-          <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>Criar Contato</button>
-          <button className="btn btn-secondary" onClick={handleFindDuplicates}>Buscar Duplicados</button>
+          <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)} aria-label="Criar novo contato">Criar Contato</button>
+          <button className="btn btn-secondary" onClick={handleFindDuplicates} aria-label="Encontrar contatos duplicados">Buscar Duplicados</button>
         </div>
         <div className="contact-filters">
           <div className="search-box">
@@ -248,36 +249,42 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
             <button 
               className={`filter-button ${(!filters.status || filters.status === 'all') ? 'active' : ''}`}
               onClick={() => handleStatusFilter('all')}
+              aria-label="Filtrar por todos os status"
             >
               Todos
             </button>
             <button 
               className={`filter-button ${filters.status === 'new' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('new')}
+              aria-label="Filtrar por status: Novo"
             >
               Novos
             </button>
             <button 
               className={`filter-button ${filters.status === 'contacted' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('contacted')}
+              aria-label="Filtrar por status: Contatado"
             >
               Contatados
             </button>
             <button 
               className={`filter-button ${filters.status === 'qualified' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('qualified')}
+              aria-label="Filtrar por status: Qualificado"
             >
               Qualificados
             </button>
             <button 
               className={`filter-button ${filters.status === 'converted' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('converted')}
+              aria-label="Filtrar por status: Convertido"
             >
               Convertidos
             </button>
             <button
               className={`filter-button ${filters.status === 'closed' ? 'active' : ''}`}
               onClick={() => handleStatusFilter('closed')}
+              aria-label="Filtrar por status: Fechado"
             >
               Fechados
             </button>
@@ -288,24 +295,28 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
             <button
               className={`filter-button ${(!filters.priority || filters.priority === 'all') ? 'active' : ''}`}
               onClick={() => handlePriorityFilter('all')}
+              aria-label="Filtrar por todas as prioridades"
             >
               Todas
             </button>
             <button
               className={`filter-button ${filters.priority === 'high' ? 'active' : ''}`}
               onClick={() => handlePriorityFilter('high')}
+              aria-label="Filtrar por prioridade: Alta"
             >
               Alta
             </button>
             <button
               className={`filter-button ${filters.priority === 'medium' ? 'active' : ''}`}
               onClick={() => handlePriorityFilter('medium')}
+              aria-label="Filtrar por prioridade: Média"
             >
               Média
             </button>
             <button
               className={`filter-button ${filters.priority === 'low' ? 'active' : ''}`}
               onClick={() => handlePriorityFilter('low')}
+              aria-label="Filtrar por prioridade: Baixa"
             >
               Baixa
             </button>
@@ -324,9 +335,8 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
         <ViewContactModal contact={selectedContact} onClose={() => setSelectedContact(null)} />
       )}
 
-      {/* Error banner */}
-      {error && (
-        <div className="error-banner">
+{error && (
+        <div className="error-banner" role="alert" aria-live="assertive">
           <span>⚠️ {error.message}</span>
           <button onClick={() => refetch()}>Tentar novamente</button>
         </div>
@@ -334,8 +344,8 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
 
       {/* Loading state */}
       {isLoading && !contactsData && (
-        <div className="contact-list-loading">
-          <div className="loading-spinner">Carregando contatos...</div>
+        <div role="status" aria-live="polite">
+          <ContactListSkeleton />
         </div>
       )}
 
@@ -429,23 +439,23 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
                         onChange={(e) => handleSelectAll(e.target.checked)}
                       />
                     </th>
-                    <th onClick={() => handleSort('name')}>
+                    <th onClick={() => handleSort('name')} aria-sort={sort.name ? (sort.name === 1 ? 'ascending' : 'descending') : 'none'}>
                       Nome {sort.name && (sort.name === 1 ? '▲' : '▼')}
                     </th>
-                    <th onClick={() => handleSort('email')}>
+                    <th onClick={() => handleSort('email')} aria-sort={sort.email ? (sort.email === 1 ? 'ascending' : 'descending') : 'none'}>
                       Email {sort.email && (sort.email === 1 ? '▲' : '▼')}
                     </th>
-                    <th onClick={() => handleSort('clinic')}>
+                    <th onClick={() => handleSort('clinic')} aria-sort={sort.clinic ? (sort.clinic === 1 ? 'ascending' : 'descending') : 'none'}>
                       Clínica {sort.clinic && (sort.clinic === 1 ? '▲' : '▼')}
                     </th>
-                    <th onClick={() => handleSort('specialty')}>
+                    <th onClick={() => handleSort('specialty')} aria-sort={sort.specialty ? (sort.specialty === 1 ? 'ascending' : 'descending') : 'none'}>
                       Especialidade {sort.specialty && (sort.specialty === 1 ? '▲' : '▼')}
                     </th>
                     <th>Telefone</th>
-                    <th onClick={() => handleSort('status')}>
+                    <th onClick={() => handleSort('status')} aria-sort={sort.status ? (sort.status === 1 ? 'ascending' : 'descending') : 'none'}>
                       Status {sort.status && (sort.status === 1 ? '▲' : '▼')}
                     </th>
-                    <th onClick={() => handleSort('createdAt')}>
+                    <th onClick={() => handleSort('createdAt')} aria-sort={sort.createdAt ? (sort.createdAt === 1 ? 'ascending' : 'descending') : 'none'}>
                       Data {sort.createdAt && (sort.createdAt === 1 ? '▲' : '▼')}
                     </th>
                     <th>Ações</th>
@@ -589,6 +599,6 @@ const ContactList: React.FC<ContactListProps> = ({ initialFilters }) => {
       )}
     </div>
   );
-};
+});
 
 export default ContactList;

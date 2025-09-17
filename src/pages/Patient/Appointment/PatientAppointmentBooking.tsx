@@ -49,7 +49,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
   }, [isAuthenticated, navigate]);
 
   const providersDataInner = providersData?.data;
-  const providers = Array.isArray(providersDataInner) ? providersDataInner : providersDataInner?.providers || [];
+  const providers = Array.isArray(providersDataInner) ? providersDataInner : (providersDataInner as any)?.providers || [];
   const appointmentTypes = appointmentTypesData?.data || [];
 
   const fetchAvailableSlots = async (providerId: string, date: string) => {
@@ -103,8 +103,8 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
       setError(null);
 
       const selectedTypeData = appointmentTypes.find(type => type._id === selectedType);
-      if (!selectedTypeData) {
-        throw new Error('Tipo de consulta não encontrado');
+      if (!selectedTypeData || !selectedTypeData.duration) {
+        throw new Error('Tipo de consulta não encontrado ou inválido');
       }
 
       const [hours, minutes] = selectedTime.split(':').map(Number);
@@ -207,9 +207,9 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                   className="form-select"
                 >
                   <option value="">Selecione um dentista</option>
-                  {providers.map((provider) => (
+                  {providers.map((provider: Provider) => (
                     <option key={provider._id} value={provider._id}>
-                      Dr. {provider.name} - {provider.specialties.join(', ')}
+                      Dr. {provider.name} - {provider.specialties?.join(', ') || 'Sem especialidades'}
                     </option>
                   ))}
                 </select>
@@ -306,7 +306,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
               <div className="booking-summary">
                 <h3>Resumo do Agendamento</h3>
                 <div className="summary-details">
-                  <p><strong>Dentista:</strong> Dr. {providers.find(p => p._id === selectedProvider)?.name}</p>
+                  <p><strong>Dentista:</strong> Dr. {providers.find((p: Provider) => p._id === selectedProvider)?.name}</p>
                   <p><strong>Tipo:</strong> {appointmentTypes.find(t => t._id === selectedType)?.name}</p>
                   <p><strong>Data:</strong> {new Date(selectedDate).toLocaleDateString('pt-BR')}</p>
                   <p><strong>Horário:</strong> {selectedTime}</p>

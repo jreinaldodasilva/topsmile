@@ -1,30 +1,15 @@
 // src/pages/Login/RegisterPage.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuthState, useAuthActions } from '../../contexts/AuthContext';
+import { RegisterFormData } from '../../types/api';
 import PasswordStrengthIndicator from '../../components/Auth/PasswordStrengthIndicator';
-import './LoginPage.css';
 
-interface RegisterFormData {
-  name: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  clinic: {
-    name: string;
-    phone: string;
-    address: {
-      street: string;
-      number: string;
-      city: string;
-      state: string;
-      zipCode: string;
-    };
-  };
-}
+// Other imports remain the same
 
 const RegisterPage: React.FC = () => {
-  const { register, loading, error, clearError, isAuthenticated } = useAuth();
+  const { loading, error, isAuthenticated } = useAuthState();
+  const { register, clearError } = useAuthActions();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -159,7 +144,7 @@ const RegisterPage: React.FC = () => {
       const clinicField = name.replace('clinic.', '');
       if (clinicField.startsWith('address.')) {
         const addressField = clinicField.replace('address.', '');
-        setFormData(prev => ({
+        setFormData((prev: RegisterFormData) => ({
           ...prev,
           clinic: {
             ...prev.clinic,
@@ -170,7 +155,7 @@ const RegisterPage: React.FC = () => {
           }
         }));
       } else {
-        setFormData(prev => ({
+        setFormData((prev: RegisterFormData) => ({
           ...prev,
           clinic: {
             ...prev.clinic,
@@ -179,7 +164,7 @@ const RegisterPage: React.FC = () => {
         }));
       }
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev: RegisterFormData) => ({ ...prev, [name]: value }));
     }
     
     // Clear error when user starts typing
@@ -187,7 +172,7 @@ const RegisterPage: React.FC = () => {
       clearError();
     }
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({ ...prev, [name]: '' }));
+      setValidationErrors((prev: Record<string, string>) => ({ ...prev, [name]: '' }));
     }
   };
 

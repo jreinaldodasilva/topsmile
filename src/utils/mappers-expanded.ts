@@ -189,7 +189,7 @@ type BackendProvider = Omit<FrontendProvider, 'id'> & {
   _id?: string;
 };
 
-export const toBackendPatient = (patient: FrontendPatient): Partial<BackendPatient> => {
+export const toBackendPatient = (patient: FrontendPatient | Patient): Partial<BackendPatient> => {
   const dateValue = patient.dateOfBirth || patient.birthDate;
   let birthDate: string | undefined;
   if (dateValue) {
@@ -297,7 +297,7 @@ export const fromBackendContact = (backendContact: BackendContact): FrontendCont
   return {
     ...backendContact,
     id: backendContact._id,
-    name: backendContact.name,
+    name: backendContact.name || 'Contato sem nome',
     followUpDate: backendContact.followUpDate ? new Date(backendContact.followUpDate) : null,
     lastContactedAt: backendContact.lastContactedAt ? new Date(backendContact.lastContactedAt) : undefined,
     conversionDetails: backendContact.conversionDetails ? {
