@@ -1,8 +1,9 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
-import { AuthProvider, useAuthState, useAuthActions } from '../../contexts/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
+import { screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
+import { useAuthState, useAuthActions } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
+import { render } from '../utils/test-utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // Mock the API service
 jest.mock('../../services/apiService', () => ({
@@ -88,19 +89,9 @@ describe('AuthContext', () => {
     );
   };
 
-  const setup = () => {
-    render(
-      <BrowserRouter>
-        <AuthProvider>
-          <TestComponent />
-        </AuthProvider>
-      </BrowserRouter>
-    );
-  };
-
   describe('Initial State', () => {
     it('provides authentication context to children', () => {
-      setup();
+      render(<TestComponent />);
       expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
       expect(screen.getByTestId('loading-status')).toHaveTextContent('Loading'); // Initially loading
       expect(screen.getByTestId('error-message')).toHaveTextContent('No Error');
@@ -108,7 +99,7 @@ describe('AuthContext', () => {
     });
 
     it('renders all action buttons', () => {
-      setup();
+      render(<TestComponent />);
       expect(screen.getByRole('button', { name: /Login/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Register/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Logout/i })).toBeInTheDocument();
@@ -135,7 +126,7 @@ describe('AuthContext', () => {
         }
       });
 
-      setup();
+      render(<TestComponent />);
 
       // Wait for initial loading to complete
       await waitFor(() => {
@@ -172,7 +163,7 @@ describe('AuthContext', () => {
         message: 'Invalid credentials'
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -194,7 +185,7 @@ describe('AuthContext', () => {
     it('handles network errors during login', async () => {
       (apiService.auth.login as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -217,7 +208,7 @@ describe('AuthContext', () => {
         });
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -257,7 +248,7 @@ describe('AuthContext', () => {
           }
         });
 
-        setup();
+        render(<TestComponent />);
 
         await waitFor(() => {
           expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -291,7 +282,7 @@ describe('AuthContext', () => {
         }
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -314,7 +305,7 @@ describe('AuthContext', () => {
         message: 'Email already exists'
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -341,7 +332,7 @@ describe('AuthContext', () => {
         }
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -378,7 +369,7 @@ describe('AuthContext', () => {
         message: 'Login failed'
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -415,7 +406,7 @@ describe('AuthContext', () => {
         data: { _id: 'user123', name: 'Updated User', email: 'test@example.com', role: 'admin' }
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -448,7 +439,7 @@ describe('AuthContext', () => {
         data: { _id: 'user123', name: 'Existing User', email: 'existing@example.com', role: 'admin' }
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
@@ -465,7 +456,7 @@ describe('AuthContext', () => {
         message: 'Invalid token'
       });
 
-      setup();
+      render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
@@ -480,13 +471,14 @@ describe('AuthContext', () => {
   });
 
   describe('Context Hooks', () => {
+    const queryClient = new QueryClient();
     it('throws error when useAuthState is used outside provider', () => {
       const TestHook = () => {
         useAuthState();
         return <div>Test</div>;
       };
-
-      expect(() => render(<TestHook />)).toThrow('useAuthState must be used within an AuthProvider');
+      
+      expect(() => render(<QueryClientProvider client={queryClient}><TestHook /></QueryClientProvider>)).toThrow('useAuthState must be used within an AuthProvider');
     });
 
     it('throws error when useAuthActions is used outside provider', () => {
@@ -495,7 +487,7 @@ describe('AuthContext', () => {
         return <div>Test</div>;
       };
 
-      expect(() => render(<TestHook />)).toThrow('useAuthActions must be used within an AuthProvider');
+      expect(() => render(<QueryClientProvider client={queryClient}><TestHook /></QueryClientProvider>)).toThrow('useAuthActions must be used within an AuthProvider');
     });
   });
 });

@@ -1,36 +1,21 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import AdminDashboard from '../../components/Admin/Dashboard/Dashboard';
-import { AuthProvider } from '../../contexts/AuthContext';
-import { BrowserRouter } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render } from '../utils/test-utils';
 
 describe('AdminDashboard', () => {
-  const queryClient = new QueryClient();
-  const setup = () => {
-    render(
-      <QueryClientProvider client={queryClient}>
-        <BrowserRouter>
-          <AuthProvider>
-            <AdminDashboard />
-          </AuthProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    );
-  };
-
   it('renders dashboard title', () => {
-    setup();
+    render(<AdminDashboard />);
     expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
   });
 
   it('displays loading state initially', () => {
-    setup();
+    render(<AdminDashboard />);
     expect(screen.getByText(/Carregando/i)).toBeInTheDocument();
   });
 
   it('renders stats cards after loading', async () => {
-    setup();
+    render(<AdminDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText(/Total de Pacientes/i)).toBeInTheDocument();
@@ -47,7 +32,7 @@ describe('AdminDashboard', () => {
   });
 
   it('renders upcoming appointments section', async () => {
-    setup();
+    render(<AdminDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText(/Próximas Consultas/i)).toBeInTheDocument();
@@ -55,7 +40,7 @@ describe('AdminDashboard', () => {
   });
 
   it('renders recent patients section', async () => {
-    setup();
+    render(<AdminDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText(/Pacientes Recentes/i)).toBeInTheDocument();
@@ -63,7 +48,7 @@ describe('AdminDashboard', () => {
   });
 
   it('renders pending tasks section', async () => {
-    setup();
+    render(<AdminDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText(/Tarefas Pendentes/i)).toBeInTheDocument();
@@ -71,7 +56,7 @@ describe('AdminDashboard', () => {
   });
 
   it('renders quick actions section', async () => {
-    setup();
+    render(<AdminDashboard />);
 
     await waitFor(() => {
       expect(screen.getByText(/Ações Rápidas/i)).toBeInTheDocument();

@@ -1,7 +1,6 @@
 import { http, HttpResponse } from 'msw';
 
 export const handlers = [
-  // Auth endpoints
   http.post('*/api/auth/login', async ({ request }) => {
     const body = await request.json() as { email: string; password: string };
     if (body.email === 'admin@topsmile.com' && body.password === 'SecurePass123!') {
@@ -56,7 +55,6 @@ export const handlers = [
     });
   }),
 
-  // Patients endpoints
   http.get('*/api/patients', () => {
     return HttpResponse.json({
       success: true,
@@ -136,7 +134,6 @@ export const handlers = [
     });
   }),
 
-  // Contacts endpoints
   http.get('*/api/admin/contacts', () => {
     return HttpResponse.json({
       success: true,
@@ -162,7 +159,6 @@ export const handlers = [
     });
   }),
 
-  // Appointments endpoints
   http.get('*/api/appointments', () => {
     return HttpResponse.json({
       success: true,
@@ -190,8 +186,7 @@ export const handlers = [
     });
   }),
 
-  // Dashboard endpoints
-  http.get('*/api/admin/dashboard', () => {
+  http.get('*/api/dashboard/stats', () => {
     return HttpResponse.json({
       success: true,
       data: {
@@ -203,8 +198,7 @@ export const handlers = [
     });
   }),
 
-  // Public contact form
-  http.post('*/api/contact', async ({ request }) => {
+  http.post('*/api/public/contact', async ({ request }) => {
     const body = await request.json() as any;
     return HttpResponse.json({
       success: true,
@@ -216,7 +210,6 @@ export const handlers = [
     });
   }),
 
-  // Health check
   http.get('*/api/health', () => {
     return HttpResponse.json({
       success: true,
@@ -227,6 +220,23 @@ export const handlers = [
         memory: { used: 100, total: 1000 },
         environment: 'test',
         version: '1.0.0'
+      }
+    });
+  }),
+
+  http.post('*/api/patient-auth/logout', () => {
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.get('*/api/patient-auth/me', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        _id: 'user1',
+        patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
+        email: 'john@example.com',
+        isActive: true,
+        emailVerified: true
       }
     });
   }),

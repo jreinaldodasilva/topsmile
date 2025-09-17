@@ -1,9 +1,8 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
-import { PatientAuthContext, PatientAuthContextType } from '../../../../contexts/PatientAuthContext';
+import { screen, waitFor } from '@testing-library/react';
 import PatientDashboard from '../../../../pages/Patient/Dashboard/PatientDashboard';
 import { apiService } from '../../../../services/apiService';
+import { render } from '../../../utils/test-utils';
 
 // Mocks
 jest.mock('../../../../services/apiService');
@@ -33,16 +32,6 @@ const mockAppointments = [
   }
 ];
 
-const renderDashboard = (contextValue: Partial<PatientAuthContextType>) => {
-  return render(
-    <PatientAuthContext.Provider value={contextValue as PatientAuthContextType}>
-      <MemoryRouter>
-        <PatientDashboard />
-      </MemoryRouter>
-    </PatientAuthContext.Provider>
-  );
-};
-
 describe('PatientDashboard', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -50,14 +39,14 @@ describe('PatientDashboard', () => {
   });
 
   it('redirects to login if not authenticated', async () => {
-    renderDashboard({ isAuthenticated: false });
+    render(<PatientDashboard />, { wrapperProps: { patientAuth: { isAuthenticated: false } } });
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/patient/login'));
   });
 
   it('loads and displays dashboard data', async () => {
-    renderDashboard({ isAuthenticated: true, patientUser: mockPatientUser });
+    render(<PatientDashboard />, { wrapperProps: { patientAuth: { isAuthenticated: true, patientUser: mockPatientUser } } });
     await waitFor(() => {
-      expect(screen.getByText('Olá, John!')).toBeInTheDocument();
+      expect(screen.getByText('Olá, John Doe!')).toBeInTheDocument();
     });
     await waitFor(() => {
       expect(screen.getByText('Check-up')).toBeInTheDocument();
@@ -68,13 +57,13 @@ describe('PatientDashboard', () => {
   });
 
   it('shows loading state initially', () => {
-    renderDashboard({ isAuthenticated: true, patientUser: mockPatientUser });
+    render(<PatientDashboard />, { wrapperProps: { patientAuth: { isAuthenticated: true, patientUser: mockPatientUser } } });
     expect(screen.getByText('Carregando agendamentos...')).toBeInTheDocument();
   });
 
   it('shows error message if loading fails', async () => {
     (apiService.appointments.getAll as jest.Mock).mockResolvedValue({ success: false, message: 'Failed to load' });
-    renderDashboard({ isAuthenticated: true, patientUser: mockPatientUser });
+    render(<PatientDashboard />, { wrapperProps: { patientAuth: { isAuthenticated: true, patientUser: mockPatientUser } } });
     await waitFor(() => {
       expect(screen.getByText('Erro ao carregar agendamentos')).toBeInTheDocument();
     });

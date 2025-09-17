@@ -1,9 +1,8 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
-import { PatientAuthContext, PatientAuthContextType } from '../../../../contexts/PatientAuthContext';
+import { screen, waitFor } from '@testing-library/react';
 import PatientAppointmentDetail from '../../../../pages/Patient/Appointment/PatientAppointmentDetail';
 import { apiService } from '../../../../services/apiService';
+import { render } from '../../../utils/test-utils';
 
 // Mocks
 jest.mock('../../../../services/apiService');
@@ -21,18 +20,7 @@ const mockAppointment = {
   provider: { name: 'Dr. Smith' },
   appointmentType: { name: 'Check-up' },
   notes: 'Annual check-up',
-};
-
-const renderDetail = (contextValue: Partial<PatientAuthContextType>) => {
-  return render(
-    <PatientAuthContext.Provider value={contextValue as PatientAuthContextType}>
-      <MemoryRouter initialEntries={['/patient/appointments/appt1']}>
-        <Routes>
-          <Route path="/patient/appointments/:appointmentId" element={<PatientAppointmentDetail />} />
-        </Routes>
-      </MemoryRouter>
-    </PatientAuthContext.Provider>
-  );
+  clinic: { name: 'Test Clinic' },
 };
 
 describe('PatientAppointmentDetail', () => {
@@ -42,12 +30,12 @@ describe('PatientAppointmentDetail', () => {
   });
 
   it('redirects to login if not authenticated', async () => {
-    renderDetail({ isAuthenticated: false });
+    render(<PatientAppointmentDetail />, { wrapperProps: { auth: { isAuthenticated: false } } });
     await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/patient/login'));
   });
 
   it('loads and displays appointment details', async () => {
-    renderDetail({ isAuthenticated: true });
+    render(<PatientAppointmentDetail />, { wrapperProps: { auth: { isAuthenticated: true } } });
     await waitFor(() => {
       expect(screen.getByText('Check-up with Dr. Smith')).toBeInTheDocument();
     });
@@ -60,15 +48,15 @@ describe('PatientAppointmentDetail', () => {
   });
 
   it('shows loading state initially', () => {
-    renderDetail({ isAuthenticated: true });
-    expect(screen.getByText('Loading appointment details...')).toBeInTheDocument();
+    render(<PatientAppointmentDetail />, { wrapperProps: { auth: { isAuthenticated: true } } });
+    expect(screen.getByText('Carregando...')).toBeInTheDocument();
   });
 
   it('shows error message if loading fails', async () => {
     (apiService.appointments.getOne as jest.Mock).mockResolvedValue({ success: false, message: 'Failed to load' });
-    renderDetail({ isAuthenticated: true });
+    render(<PatientAppointmentDetail />, { wrapperProps: { auth: { isAuthenticated: true } } });
     await waitFor(() => {
-      expect(screen.getByText('Failed to load appointment details.')).toBeInTheDocument();
+      expect(screen.getByText('Erro ao carregar os detalhes da consulta')).toBeInTheDocument();
     });
   });
 });

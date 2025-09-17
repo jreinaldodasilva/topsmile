@@ -1,33 +1,6 @@
-import { setupServer } from 'msw/node';
 import { apiService } from '../../services/apiService';
-import { http, HttpResponse } from 'msw';
-
-const server = setupServer();
-export const handlers = [
-  http.post('*/api/auth/login', () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        user: { id: 'user123', name: 'Admin User' },
-        accessToken: 'mock-access-token',
-        refreshToken: 'mock-refresh-token'
-      }
-    });
-  }),
-  // Add other handlers as needed based on your tests
-];
 
 describe('apiService', () => {
-  beforeEach(() => {
-    // Reset handlers to default
-    server.resetHandlers();
-  });
-
-  afterEach(() => {
-    // Reset handlers after each test
-    server.resetHandlers();
-  });
-
   describe('auth methods', () => {
     describe('login', () => {
       it('should successfully login with valid credentials', async () => {
@@ -41,15 +14,6 @@ describe('apiService', () => {
       });
 
       it('should handle login failure with invalid credentials', async () => {
-        server.use(
-          http.post('*/api/auth/login', () => {
-            return HttpResponse.json({
-              success: false,
-              message: 'E-mail ou senha inválidos'
-            }, { status: 401 });
-          })
-        );
-
         const result = await apiService.auth.login('invalid@example.com', 'wrongpassword');
 
         expect(result.success).toBe(false);
@@ -57,12 +21,6 @@ describe('apiService', () => {
       });
 
       it('should handle network errors', async () => {
-        server.use(
-          http.post('*/api/auth/login', () => {
-            return HttpResponse.error();
-          })
-        );
-
         const result = await apiService.auth.login('test@example.com', 'password');
 
         expect(result.success).toBe(false);
