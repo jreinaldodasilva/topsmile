@@ -2,11 +2,18 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/tsconfig.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress.config.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress/e2e/appointment.cy.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress/e2e/error_handling.cy.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress/e2e/login.cy.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/jest.config.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/public/service-worker.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/msw-polyfills.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/textEncoderPolyfill.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/transformStreamPolyfill.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/App.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/App.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ContactList.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ContactList.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ContactListSkeleton.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/CreateContactModal.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ViewContactModal.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Dashboard/Dashboard.tsx
@@ -15,6 +22,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Forms/ProviderForm.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Auth/LoginForm/LoginForm.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Auth/PasswordStrengthIndicator.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Auth/PatientProtectedRoute.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Auth/PatientProtectedRoute/PatientProtectedRoute.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Auth/ProtectedRoute/ProtectedRoute.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/ContactForm/ContactForm.tsx
@@ -45,6 +53,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Form/RadioGroup.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Form/Textarea.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Input/Input.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Loading/Loading.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Modal/Modal.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Select/Select.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Skeleton/Skeleton.tsx
@@ -102,6 +111,8 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/pages
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/pages/Patient/Dashboard/PatientDashboard.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/pages/Patient/Profile/PatientProfile.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils/testHelpers.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/__mocks__/msw.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/__mocks__/server.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/ContactForm/index.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/ErrorBoundary/index.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Features/FeatureCard/index.ts
@@ -113,8 +124,14 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Select/index.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/UI/Skeleton/index.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useApiState.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useContacts.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/jest-pre-setup.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/mocks/browser.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/mocks/handlers.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/mocks/server.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/react-app-env.d.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/reportWebVitals.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/apiService-updated.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/apiService.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/http.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/paymentService.ts
@@ -129,4 +146,5 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils/mockData.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/types/api.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/logger.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/mappers-expanded.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/mappers.ts
