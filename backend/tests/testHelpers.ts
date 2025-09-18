@@ -21,10 +21,13 @@ async function ensureFaker(): Promise<Faker> {
   return fakerInstance;
 }
 
+let userCounter = 0;
+
 export const createTestUser = async (overrides = {}): Promise<IUser> => {
+  userCounter++;
   const defaultUser = {
     name: 'Test User',
-    email: 'test@example.com',
+    email: `test${userCounter}@example.com`,
     password: 'TestPassword123!',
     role: 'admin' as const,
   };
@@ -75,9 +78,10 @@ export const createTestClinic = async (overrides = {}): Promise<IClinic> => {
 
 export const createTestUserWithClinic = async (overrides = {}): Promise<IUser> => {
   const clinic = await createTestClinic();
+  userCounter++;
   const defaultUser = {
     name: 'Test User',
-    email: 'test@example.com',
+    email: `test${userCounter}@example.com`,
     password: 'TestPassword123!',
     role: 'admin' as const,
     clinic: clinic._id,

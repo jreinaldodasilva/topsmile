@@ -88,7 +88,7 @@ const ContactSchema = new Schema<IContact>({
     },
     status: {
         type: String,
-        enum: ['new', 'contacted', 'qualified', 'converted', 'closed'],
+        enum: ['new', 'contacted', 'qualified', 'converted', 'closed', 'deleted', 'merged'],
         default: 'new',
         index: true // IMPROVED: Add index for frequent queries
     },

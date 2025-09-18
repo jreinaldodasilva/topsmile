@@ -25,7 +25,7 @@ module.exports = {
   testTimeout: 30000,
   // Handle MongoDB Memory Server
   detectOpenHandles: true,
-  forceExit: true,
+
     reporters: [
     'default',
     ['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],

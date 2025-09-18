@@ -616,7 +616,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result!.appointmentTypes).toHaveLength(1);
-      expect(result!.appointmentTypes![0]!.toString()).toBe(testAppointmentType._id.toString());
+      expect(result!.appointmentTypes![0]!._id.toString()).toBe(testAppointmentType._id.toString());
     });
 
     it('should throw error for invalid appointment type ID', async () => {
@@ -745,27 +745,26 @@ describe('ProviderService', () => {
     });
 
     it('should throw error for duplicate email when reactivating', async () => {
-      // Create first provider
+      // Create and deactivate a provider
+      const inactiveProvider = await providerService.createProvider({
+        name: 'Dr. Inactive',
+        email: 'conflict@example.com',
+        specialties: ['general_dentistry'],
+        clinicId: testClinic._id.toString()
+      });
+      await providerService.deleteProvider((inactiveProvider._id as any).toString(), testClinic._id.toString());
+
+      // Create an active provider with the same email
       await providerService.createProvider({
-        name: 'Dr. First',
+        name: 'Dr. Active',
         email: 'conflict@example.com',
         specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
 
-      // Create and deactivate second provider with same email
-      const secondProvider = await providerService.createProvider({
-        name: 'Dr. Second',
-        email: 'conflict@example.com',
-        specialties: ['general_dentistry'],
-        clinicId: testClinic._id.toString()
-      });
-
-      await providerService.deleteProvider((secondProvider._id as any).toString(), testClinic._id.toString());
-
-      // Try to reactivate second provider
+      // Try to reactivate the first provider
       await expect(
-        providerService.reactivateProvider((secondProvider._id as any).toString(), testClinic._id.toString())
+        providerService.reactivateProvider((inactiveProvider._id as any).toString(), testClinic._id.toString())
       ).rejects.toThrow('Já existe um profissional ativo com este e-mail nesta clínica');
     });
   });

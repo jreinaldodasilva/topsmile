@@ -187,7 +187,7 @@ class ProviderService {
             });
 
             if (!provider) {
-                throw new Error('Profissional não encontrado');
+                return null;
             }
 
             // Check for duplicate email if email is being updated

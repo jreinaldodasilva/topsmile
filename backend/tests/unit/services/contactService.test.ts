@@ -1,12 +1,14 @@
 import { contactService } from '../../../src/services/contactService';
 import { Contact } from '../../../src/models/Contact';
-import { createTestClinic } from '../../testHelpers';
+import { createTestClinic, createTestUser } from '../../testHelpers';
 
 describe('ContactService', () => {
   let testClinic: any;
+  let testUser: any;
 
   beforeEach(async () => {
     testClinic = await createTestClinic();
+    testUser = await createTestUser({ clinic: testClinic._id });
   });
 
   describe('createContact', () => {
@@ -560,12 +562,12 @@ describe('ContactService', () => {
       const createdContact = await contactService.createContact(contactData);
       const contactId = createdContact.id;
 
-      const result = await contactService.softDeleteContact(contactId, 'user123');
+      const result = await contactService.softDeleteContact(contactId, testUser._id.toString());
 
       expect(result).toBeDefined();
       expect(result!.status).toBe('deleted');
       expect(result!.deletedAt).toBeDefined();
-      expect(result!.deletedBy).toBe('user123');
+      expect(result!.deletedBy!.toString()).toBe(testUser._id.toString());
     });
 
     it('should return null for non-existent contact', async () => {
@@ -642,7 +644,7 @@ describe('ContactService', () => {
   describe('findDuplicateContacts', () => {
     beforeEach(async () => {
       // Create contacts with duplicate emails
-      await contactService.createContact({
+      await Contact.create({
         name: 'João Silva',
         email: 'duplicate@example.com',
         clinic: testClinic._id.toString(),
@@ -650,7 +652,7 @@ describe('ContactService', () => {
         phone: '(11) 99999-9999'
       });
 
-      await contactService.createContact({
+      await Contact.create({
         name: 'João Silva 2',
         email: 'duplicate@example.com',
         clinic: testClinic._id.toString(),
@@ -658,7 +660,7 @@ describe('ContactService', () => {
         phone: '(11) 88888-8888'
       });
 
-      await contactService.createContact({
+      await Contact.create({
         name: 'Unique Contact',
         email: 'unique@example.com',
         clinic: testClinic._id.toString(),
@@ -678,11 +680,8 @@ describe('ContactService', () => {
     });
 
     it('should return empty array when no duplicates', async () => {
-      // Delete duplicates first
-      const duplicates = await contactService.findDuplicateContacts();
-      for (const dup of duplicates) {
-        await contactService.deleteContact(dup.contacts[1].id);
-      }
+      // Clear all contacts
+      await Contact.deleteMany({});
 
       const result = await contactService.findDuplicateContacts();
 
@@ -694,7 +693,7 @@ describe('ContactService', () => {
   describe('mergeDuplicateContacts', () => {
     it('should merge duplicate contacts successfully', async () => {
       // Create duplicate contacts
-      const contact1 = await contactService.createContact({
+      const contact1 = await Contact.create({
         name: 'João Silva',
         email: 'merge@example.com',
         clinic: testClinic._id.toString(),
@@ -703,7 +702,7 @@ describe('ContactService', () => {
         source: 'website'
       });
 
-      const contact2 = await contactService.createContact({
+      const contact2 = await Contact.create({
         name: 'João Silva Atualizado',
         email: 'merge@example.com',
         clinic: testClinic._id.toString(),
