@@ -222,12 +222,14 @@ const configureSecurityMiddleware = () => {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
-      'X-Requested-With', 
-      'Content-Type', 
-      'Accept', 
+      'X-Requested-With',
+      'Content-Type',
+      'Accept',
       'Authorization',
       'X-Device-ID',
-      'X-Patient-ID'
+      'X-Patient-ID',
+      'x-correlation-id',
+      'x-client-version'
     ]
   }));
 };

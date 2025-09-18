@@ -384,14 +384,14 @@ router.delete('/account',
             return res.json(standardResponse(null, 'Conta deletada com sucesso', req));
         } catch (error) {
             console.error('Patient account deletion error:', error);
-            
+
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
                     success: false,
                     message: error.message
                 });
             }
-            
+
             return res.status(500).json({
                 success: false,
                 message: 'Erro interno do servidor'
@@ -399,5 +399,28 @@ router.delete('/account',
         }
     }
 );
+
+router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, res: express.Response) => {
+    try {
+        return res.json(standardResponse({
+            patient: req.patient,
+            patientUser: req.patientUser
+        }, 'Perfil obtido com sucesso', req));
+    } catch (error) {
+        console.error('Patient get me error:', error);
+
+        if (isAppError(error)) {
+            return res.status(error.statusCode).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: 'Erro interno do servidor'
+        });
+    }
+});
 
 export default router;
