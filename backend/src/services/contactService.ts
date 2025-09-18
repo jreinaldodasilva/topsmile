@@ -1,5 +1,6 @@
 import { Contact, IContact } from '../models/Contact';
 import { FilterQuery } from 'mongoose';
+import { AuthenticatedRequest } from '../middleware/auth';
 
 export interface CreateContactData {
   name: string;
@@ -171,9 +172,13 @@ class ContactService {
     return results;
   }
 
-  async getContactById(id: string): Promise<IContact | null> {
+  async getContactById(user: AuthenticatedRequest['user'], id: string): Promise<IContact | null> {
     try {
-      return await Contact.findById(id).populate('assignedTo', 'name email') as IContact | null;
+      const contact = await Contact.findById(id).populate('assignedTo', 'name email') as IContact | null;
+      if (contact && user?.role !== 'super_admin' && String(contact.assignedToClinic) !== user?.clinicId) {
+        return null;
+      }
+      return contact;
     } catch (error) {
       console.error('Error fetching contact:', error);
       throw error;
@@ -198,6 +203,7 @@ class ContactService {
   }
 
   async getContacts(
+    user: AuthenticatedRequest['user'],
     filters: ContactFilters = {},
     pagination: PaginationOptions
   ): Promise<ContactListResponse> {
@@ -207,6 +213,10 @@ class ContactService {
 
       // Build query
       const query: FilterQuery<IContact> = {};
+
+      if (user?.role !== 'super_admin') {
+        query.assignedToClinic = user?.clinicId;
+      }
 
       if (filters.status) {
         query.status = filters.status;
@@ -349,7 +359,7 @@ class ContactService {
   /**
    * IMPROVED: Get contact stats with better aggregation
    */
-  async getContactStats(): Promise<{
+  async getContactStats(user: AuthenticatedRequest['user']): Promise<{
     total: number;
     byStatus: Array<{ _id: string; count: number }>;
     bySource: Array<{ _id: string; count: number }>;
@@ -361,36 +371,41 @@ class ContactService {
       const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
       const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
 
+      const matchQuery: FilterQuery<IContact> = { status: { $ne: 'deleted' } };
+      if (user?.role !== 'super_admin') {
+        matchQuery.assignedToClinic = user?.clinicId;
+      }
+
       const [total, byStatus, bySource, recentCount, monthlyTrend] = await Promise.all([
         // Total contacts (excluding deleted)
-        Contact.countDocuments({ status: { $ne: 'deleted' } }),
+        Contact.countDocuments(matchQuery),
         
         // By status
         Contact.aggregate([
-          { $match: { status: { $ne: 'deleted' } } },
+          { $match: matchQuery },
           { $group: { _id: '$status', count: { $sum: 1 } } },
           { $sort: { count: -1 } }
         ]),
         
         // By source
         Contact.aggregate([
-          { $match: { status: { $ne: 'deleted' } } },
+          { $match: matchQuery },
           { $group: { _id: '$source', count: { $sum: 1 } } },
           { $sort: { count: -1 } }
         ]),
         
         // Recent count (last week)
         Contact.countDocuments({ 
-          createdAt: { $gte: lastWeek },
-          status: { $ne: 'deleted' }
+          ...matchQuery,
+          createdAt: { $gte: lastWeek }
         }),
         
         // Monthly trend (last 12 months)
         Contact.aggregate([
-          { 
-            $match: { 
-              createdAt: { $gte: lastYear },
-              status: { $ne: 'deleted' }
+          {
+            $match: {
+              ...matchQuery,
+              createdAt: { $gte: lastYear }
             }
           },
           {

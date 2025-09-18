@@ -311,6 +311,15 @@ AppointmentSchema.index({
     background: true
 });
 
+// Prevent double-booking
+AppointmentSchema.index(
+    { provider: 1, scheduledStart: 1, scheduledEnd: 1 },
+    {
+        unique: true,
+        partialFilterExpression: { status: { $nin: ['cancelled', 'no_show'] } }
+    }
+);
+
 // 3. Patient appointment history - HIGH FREQUENCY
 AppointmentSchema.index({ 
     patient: 1, 

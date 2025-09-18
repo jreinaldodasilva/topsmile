@@ -12,7 +12,7 @@ router.use('/contacts', contactRoutes);
 router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manager'), async (req, res) => {
   try {
     // Get contact statistics
-    const contactStats = await contactService.getContactStats();
+    const contactStats = await contactService.getContactStats(req.user);
 
     // Calculate summary metrics
     const totalContacts = contactStats.total;

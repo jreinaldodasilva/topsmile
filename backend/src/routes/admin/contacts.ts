@@ -18,7 +18,7 @@ router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), asyn
     if (status) filters.status = status;
     if (search) filters.search = search;
 
-    const result = await contactService.getContacts(filters, {
+    const result = await contactService.getContacts(req.user, filters, {
       page,
       limit,
       sortBy,
@@ -41,7 +41,7 @@ router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), asyn
 // GET /api/admin/contacts/stats - Get contact statistics
 router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const stats = await contactService.getContactStats();
+    const stats = await contactService.getContactStats(req.user);
     return res.json({
       success: true,
       data: stats
@@ -58,7 +58,7 @@ router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'),
 // GET /api/admin/contacts/:id - Get single contact
 router.get('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const contact = await contactService.getContactById(req.params.id!);
+    const contact = await contactService.getContactById(req.user, req.params.id!);
     if (!contact) {
       return res.status(404).json({
         success: false,
