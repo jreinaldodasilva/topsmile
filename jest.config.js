@@ -7,6 +7,14 @@ const defaultConfig = require('react-scripts/scripts/utils/createJestConfig')(
 module.exports = {
   ...defaultConfig,
 
+  reporters: [
+    'default',
+    ['jest-junit', {
+      outputDirectory: './reports',
+      outputName: 'junit-frontend.xml',
+    }],
+  ],
+
   setupFiles: [
     '<rootDir>/src/textEncoderPolyfill.js',
     '<rootDir>/src/jest-pre-setup.ts',
@@ -14,13 +22,11 @@ module.exports = {
     '<rootDir>/src/msw-polyfills.js'
   ],
 
-  // Custom setup files
   setupFilesAfterEnv: [
     ...defaultConfig.setupFilesAfterEnv,
     '<rootDir>/src/setupTests.ts'
   ],
 
-  // Module name mapping for imports
   moduleNameMapper: {
     ...defaultConfig.moduleNameMapper,
     '^@/(.*)$': '<rootDir>/src/$1',
@@ -34,11 +40,9 @@ module.exports = {
     '^@assets/(.*)$': '<rootDir>/src/assets/$1',
     '^@styles/(.*)$': '<rootDir>/src/styles/$1',
     '^@tests/(.*)$': '<rootDir>/src/tests/$1',
-    // Mock CSS files
     '\\.(css|scss|sass)$': 'identity-obj-proxy',
   },
 
-  // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.(ts|tsx)',
     '!src/**/*.d.ts',
@@ -53,7 +57,6 @@ module.exports = {
   coverageDirectory: 'coverage/frontend',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
 
-  // Coverage thresholds
   coverageThreshold: {
     global: {
       branches: 80,
@@ -63,24 +66,13 @@ module.exports = {
     },
   },
 
-  // Timeout for async tests
   testTimeout: 10000,
-
-  // Clear mocks between tests
   clearMocks: true,
-
-  // Restore mocks between tests
   restoreMocks: true,
-
-  // Detect open handles
   detectOpenHandles: true,
-
-  // Force exit to prevent hanging
-  forceExit: true,
-
-  // Verbose output
   verbose: true,
   testEnvironment: 'jsdom',
+
   transformIgnorePatterns: [
     '/node_modules/(?!(@bundled-es-modules/|msw/))'
   ],

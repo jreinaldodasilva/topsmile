@@ -9,7 +9,6 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
-  // Handle ES modules from node_modules
   transformIgnorePatterns: [
     'node_modules/(?!(supertest|@faker-js/faker)/)'
   ],
@@ -19,15 +18,22 @@ module.exports = {
     '!src/app.ts',
     '!src/config/**',
   ],
-  coverageDirectory: 'coverage',
-  coverageReporters: ['text', 'lcov', 'html'],
+  coverageDirectory: 'coverage/backend',
+  coverageReporters: ['text', 'lcov', 'html', 'json'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.ts'],
   testTimeout: 30000,
-  // Handle MongoDB Memory Server
   detectOpenHandles: true,
 
-    reporters: [
+  reporters: [
     'default',
-    ['jest-junit', { outputDirectory: 'reports', outputName: 'junit.xml' }],
+    ['jest-junit', { outputDirectory: 'reports', outputName: 'junit-backend.xml' }],
   ],
 };
