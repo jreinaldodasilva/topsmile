@@ -80,18 +80,17 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
         if (userResponse.success && userResponse.data?.patientUser) {
           setPatientUser(userResponse.data.patientUser);
         } else {
-          await performLogout();
+          setPatientUser(null);
         }
       } catch (err) {
-        console.error('Patient auth check failed:', err);
-        await performLogout();
+        setPatientUser(null);
       } finally {
         setLoading(false);
       }
     };
 
     verifyAuth();
-  }, [performLogout]);
+  }, []);
 
   const login = async (email: string, password: string): Promise<PatientAuthResult> => {
     try {

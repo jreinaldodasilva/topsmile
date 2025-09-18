@@ -66,19 +66,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (userResponse.success && userResponse.data) {
           setUser(userResponse.data);
         } else {
-          // If fetching user fails, logout
-          await performLogout('Sessão inválida. Faça login novamente.');
+          setUser(null);
         }
       } catch (err) {
-        console.error('Initial auth check failed:', err);
-        await performLogout('Erro na verificação de autenticação.');
+        setUser(null);
       } finally {
         setLoading(false);
       }
     };
 
     verifyAuth();
-  }, [performLogout]);
+  }, []);
 
   // UPDATED: Enhanced login function with secure token storage
   const login = useCallback(async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {

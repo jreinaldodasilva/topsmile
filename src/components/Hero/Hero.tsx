@@ -12,15 +12,15 @@ const Hero: React.FC = () => (
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <h1 className="text-5xl font-extrabold leading-tight mb-4">
+        <h1 className="hero-title">
           Transforme sua clínica com um sistema completo e intuitivo
         </h1>
-        <p className="text-lg text-gray-700 mb-6">
+        <p className="hero-subtitle">
           Gestão inteligente de agendamentos, prontuários digitais, controle financeiro e CRM — tudo em um único lugar, seguro e acessível.
         </p>
         <a
           href="#pricing"
-          className="hero-button px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white text-lg rounded-xl shadow-lg transition-all duration-300"
+          className="hero-button"
         >
           Experimente Gratuitamente
         </a>
