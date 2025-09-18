@@ -1,3 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="0" failures="0" errors="0" time="7.213">
+<testsuites name="jest tests" tests="16" failures="0" errors="0" time="30.361">
+  <testsuite name="SchedulingService" errors="0" failures="0" skipped="0" timestamp="2025-09-18T17:26:49" time="30.007" tests="16">
+    <testcase classname="SchedulingService createAppointment should create appointment successfully" name="SchedulingService createAppointment should create appointment successfully" time="5.654">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for invalid appointment type" name="SchedulingService createAppointment should return error for invalid appointment type" time="1.151">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for inactive provider" name="SchedulingService createAppointment should return error for inactive provider" time="1.578">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for time conflict" name="SchedulingService createAppointment should return error for time conflict" time="1.705">
+    </testcase>
+    <testcase classname="SchedulingService rescheduleAppointment should reschedule appointment successfully" name="SchedulingService rescheduleAppointment should reschedule appointment successfully" time="1.004">
+    </testcase>
+    <testcase classname="SchedulingService rescheduleAppointment should return error for non-existent appointment" name="SchedulingService rescheduleAppointment should return error for non-existent appointment" time="1.178">
+    </testcase>
+    <testcase classname="SchedulingService cancelAppointment should cancel appointment successfully" name="SchedulingService cancelAppointment should cancel appointment successfully" time="0.942">
+    </testcase>
+    <testcase classname="SchedulingService cancelAppointment should prevent cancelling completed appointment" name="SchedulingService cancelAppointment should prevent cancelling completed appointment" time="0.741">
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return available time slots" name="SchedulingService getAvailableSlots should return available time slots" time="0.642">
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return empty array for non-existent appointment type" name="SchedulingService getAvailableSlots should return empty array for non-existent appointment type" time="0.581">
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return empty array when no providers available" name="SchedulingService getAvailableSlots should return empty array when no providers available" time="0.549">
+    </testcase>
+    <testcase classname="SchedulingService getAppointments should return appointments within date range" name="SchedulingService getAppointments should return appointments within date range" time="0.642">
+    </testcase>
+    <testcase classname="SchedulingService getAppointments should filter by provider and status" name="SchedulingService getAppointments should filter by provider and status" time="0.638">
+    </testcase>
+    <testcase classname="SchedulingService getAppointmentConflicts should return no conflicts when slot is available" name="SchedulingService getAppointmentConflicts should return no conflicts when slot is available" time="0.544">
+    </testcase>
+    <testcase classname="SchedulingService getAppointmentConflicts should return conflicts when appointments overlap" name="SchedulingService getAppointmentConflicts should return conflicts when appointments overlap" time="0.592">
+    </testcase>
+    <testcase classname="SchedulingService getProviderUtilization should calculate provider utilization correctly" name="SchedulingService getProviderUtilization should calculate provider utilization correctly" time="0.624">
+    </testcase>
+  </testsuite>
 </testsuites>

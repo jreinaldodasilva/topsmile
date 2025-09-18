@@ -278,7 +278,7 @@ describe('SchedulingService', () => {
         clinicId: testClinic._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        date: new Date('2024-01-15')
+        date: new Date('2025-01-15')
       };
 
       const result = await schedulingService.getAvailableSlots(query);
@@ -343,7 +343,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T14:00:00Z'),
+        scheduledStart: new Date('2024-01-15T15:00:00Z'),
         createdBy: testUser._id.toString()
       };
 
@@ -445,7 +445,7 @@ describe('SchedulingService', () => {
         patientId: testPatient._id.toString(),
         providerId: testProvider._id.toString(),
         appointmentTypeId: testAppointmentType._id.toString(),
-        scheduledStart: new Date('2024-01-15T14:00:00Z'),
+        scheduledStart: new Date('2024-01-15T15:00:00Z'),
         createdBy: testUser._id.toString()
       };
 
@@ -453,7 +453,9 @@ describe('SchedulingService', () => {
       const secondResult = await schedulingService.createAppointment(appointmentData2);
 
       // Mark one as completed
-      await Appointment.findByIdAndUpdate(secondResult.data!._id, { status: 'completed' });
+      if (secondResult.success) {
+        await Appointment.findByIdAndUpdate(secondResult.data!._id, { status: 'completed' });
+      }
 
       const startDate = new Date('2024-01-15T00:00:00Z');
       const endDate = new Date('2024-01-15T23:59:59Z');

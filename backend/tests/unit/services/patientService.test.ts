@@ -18,10 +18,10 @@ describe('PatientService', () => {
       const patientData = {
         name: 'João Silva',
         email: 'joao.silva@example.com',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         birthDate: new Date('1990-01-15'),
         gender: 'male' as const,
-        cpf: '123.456.789-00',
+        cpf: '123.456.789-09',
         address: {
           street: 'Rua das Flores',
           number: '123',
@@ -32,8 +32,8 @@ describe('PatientService', () => {
         },
         emergencyContact: {
           name: 'Maria Silva',
-          phone: '(11) 88888-8888',
-          relationship: 'Esposa'
+        phone: '(11) 98765-4321',
+        relationship: 'Esposa'
         },
         medicalHistory: {
           allergies: ['Penicilina'],
@@ -56,7 +56,7 @@ describe('PatientService', () => {
     it('should create patient without optional fields', async () => {
       const minimalPatientData = {
         name: 'Ana Costa',
-        phone: '(11) 77777-7777',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
@@ -72,13 +72,13 @@ describe('PatientService', () => {
     it('should throw error for duplicate phone', async () => {
       const patientData1 = {
         name: 'João Silva',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
       const patientData2 = {
         name: 'Maria Silva',
-        phone: '(11) 99999-9999', // Same phone
+        phone: '(11) 91234-5678', // Same phone
         clinicId: testClinic._id.toString()
       };
 
@@ -92,7 +92,7 @@ describe('PatientService', () => {
     it('should validate required fields', async () => {
       const invalidPatientData = {
         email: 'test@example.com',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
         // Missing required 'name'
       };
@@ -107,7 +107,7 @@ describe('PatientService', () => {
     it('should return patient by ID', async () => {
       const patientData = {
         name: 'Test Patient',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         email: 'test@example.com',
         clinicId: testClinic._id.toString()
       };
@@ -134,21 +134,21 @@ describe('PatientService', () => {
       // Create multiple test patients
       await patientService.createPatient({
         name: 'João Silva',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         email: 'joao@example.com',
         clinicId: testClinic._id.toString()
       });
 
       await patientService.createPatient({
         name: 'Maria Santos',
-        phone: '(11) 88888-8888',
+        phone: '(11) 98765-4321',
         email: 'maria@example.com',
         clinicId: testClinic._id.toString()
       });
 
       await patientService.createPatient({
         name: 'Pedro Costa',
-        phone: '(11) 77777-7777',
+        phone: '(11) 91234-5679',
         email: 'pedro@example.com',
         clinicId: testClinic._id.toString()
       });
@@ -180,7 +180,7 @@ describe('PatientService', () => {
     it('should update patient successfully', async () => {
       const patientData = {
         name: 'Original Name',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         email: 'original@example.com',
         clinicId: testClinic._id.toString()
       };
@@ -212,7 +212,7 @@ describe('PatientService', () => {
     it('should update medical history', async () => {
       const patientData = {
         name: 'Medical Test',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
@@ -240,7 +240,7 @@ describe('PatientService', () => {
     it('should delete patient successfully', async () => {
       const patientData = {
         name: 'Delete Test',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
@@ -267,17 +267,17 @@ describe('PatientService', () => {
     beforeEach(async () => {
       await patientService.createPatient({
         name: 'João Silva Santos',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         email: 'joao.santos@example.com',
-        cpf: '123.456.789-00',
+        cpf: '123.456.789-09',
         clinicId: testClinic._id.toString()
       });
 
       await patientService.createPatient({
         name: 'Maria Silva',
-        phone: '(11) 88888-8888',
+        phone: '(11) 98765-4321',
         email: 'maria.silva@example.com',
-        cpf: '987.654.321-00',
+        cpf: '529.982.247-25',
         clinicId: testClinic._id.toString()
       });
     });
@@ -295,7 +295,7 @@ describe('PatientService', () => {
     it('should search patients by phone', async () => {
       const result = await patientService.searchPatients({
         clinicId: testClinic._id.toString(),
-        search: '99999'
+        search: '91234'
       });
 
       expect(result).toBeDefined();
@@ -343,26 +343,26 @@ describe('PatientService', () => {
     beforeEach(async () => {
       // Create patients with different statuses
       await patientService.createPatient({
-        name: 'Active Patient 1',
-        phone: '(11) 99999-9999',
+        name: 'João Silva',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       });
 
       await patientService.createPatient({
-        name: 'Active Patient 2',
-        phone: '(11) 88888-8888',
+        name: 'Maria Santos',
+        phone: '(11) 98765-4321',
         clinicId: testClinic._id.toString()
       });
 
       await patientService.createPatient({
-        name: 'Inactive Patient',
-        phone: '(11) 77777-7777',
+        name: 'Pedro Costa',
+        phone: '(11) 91234-5679',
         clinicId: testClinic._id.toString()
       });
 
       // Make one patient inactive
       const patients = await patientService.getPatientsByClinic(testClinic._id.toString());
-      const inactivePatient = patients.find(p => p.name === 'Inactive Patient');
+      const inactivePatient = patients.find(p => p.name === 'Pedro Costa');
       if (inactivePatient) {
         await patientService.deletePatient((inactivePatient._id as any).toString(), testClinic._id.toString());
       }
@@ -382,7 +382,7 @@ describe('PatientService', () => {
     it('should update medical history successfully', async () => {
       const patientData = {
         name: 'Medical Update Test',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
@@ -414,7 +414,7 @@ describe('PatientService', () => {
     it('should reactivate inactive patient', async () => {
       const patientData = {
         name: 'Reactivate Test',
-        phone: '(11) 99999-9999',
+        phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };
 
