@@ -1,5 +1,12 @@
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/block-navigation.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/block-navigation.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/prettify.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/sorter.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/prettify.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/sorter.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/jest.config.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package.json
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tsconfig.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/app.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/database.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/swagger.ts
@@ -61,10 +68,4 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/u
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/patientService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/providerService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/schedulingService.test.ts
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/block-navigation.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/block-navigation.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/prettify.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/lcov-report/sorter.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/prettify.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/sorter.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/jest.config.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tsconfig.json
