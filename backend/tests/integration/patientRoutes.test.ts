@@ -66,7 +66,7 @@ beforeEach(async () => {
       neighborhood: 'Test Neighborhood',
       city: 'Test City',
       state: 'TS',
-      zipCode: '12345-678'
+      zipCode: '12345-678',
     settings: {
       workingHours: {
         monday: { start: '08:00', end: '18:00', isWorking: true },
@@ -119,7 +119,7 @@ describe('Patient Routes Integration Tests', () => {
         email: 'joao@example.com',
         birthDate: '1990-01-01',
         gender: 'male',
-        cpf: '123.456.789-00',
+        cpf: '529.982.247-25',
         address: {
           street: 'Rua das Flores',
           number: '123',
@@ -130,7 +130,7 @@ describe('Patient Routes Integration Tests', () => {
         },
         emergencyContact: {
           name: 'Maria Silva',
-          phone: '+5511988888888',
+          phone: '11988888888',
           relationship: 'Esposa'
         },
         medicalHistory: {
@@ -150,7 +150,7 @@ describe('Patient Routes Integration Tests', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.message).toBe('Paciente criado com sucesso');
       expect(response.body.data.name).toBe('João Silva');
-      expect(response.body.data.phone).toBe('+5511999999999');
+      expect(response.body.data.phone).toBe('(11) 99999-9999');
       expect(response.body.data.email).toBe('joao@example.com');
       expect(response.body.data.status).toBe('active');
     });
@@ -175,7 +175,7 @@ describe('Patient Routes Integration Tests', () => {
       // Create first patient
       const patientData1 = {
         name: 'João Silva',
-        phone: '+5511999999999'
+        phone: '11999999999'
       };
 
       await request(app)
@@ -186,7 +186,7 @@ describe('Patient Routes Integration Tests', () => {
       // Try to create second patient with same phone
       const patientData2 = {
         name: 'Maria Silva',
-        phone: '+5511999999999'
+        phone: '11999999999'
       };
 
       const response = await request(app)
@@ -202,7 +202,7 @@ describe('Patient Routes Integration Tests', () => {
     it('should create patient with minimal required data', async () => {
       const minimalData = {
         name: 'João Silva',
-        phone: '+5511999999999'
+        phone: '11999999999'
       };
 
       const response = await request(app)
@@ -213,7 +213,7 @@ describe('Patient Routes Integration Tests', () => {
       expect(response.status).toBe(201);
       expect(response.body.success).toBe(true);
       expect(response.body.data.name).toBe('João Silva');
-      expect(response.body.data.phone).toBe('+5511999999999');
+      expect(response.body.data.phone).toBe('(11) 99999-9999');
     });
   });
 
@@ -229,13 +229,13 @@ describe('Patient Routes Integration Tests', () => {
         },
         {
           name: 'Maria Santos',
-          phone: '+5511988888888',
+          phone: '11988888888',
           email: 'maria@example.com',
           clinicId: testClinic._id.toString()
         },
         {
           name: 'Pedro Oliveira',
-          phone: '+5511977777777',
+          phone: '11977777777',
           email: 'pedro@example.com',
           clinicId: testClinic._id.toString()
         }
@@ -283,7 +283,7 @@ describe('Patient Routes Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data.patients).toHaveLength(1);
-      expect(response.body.data.patients[0].phone).toBe('+5511999999999');
+      expect(response.body.data.patients[0].phone).toBe('(11) 99999-9999');
     });
 
     it('should search patients by email', async () => {
@@ -350,7 +350,7 @@ describe('Patient Routes Integration Tests', () => {
 
       await Patient.create({
         name: 'Maria Santos',
-        phone: '+5511988888888',
+        phone: '11988888888',
         clinic: testClinic._id,
         status: 'active'
       });
@@ -358,7 +358,7 @@ describe('Patient Routes Integration Tests', () => {
       // Create inactive patient
       await Patient.create({
         name: 'Pedro Oliveira',
-        phone: '+5511977777777',
+        phone: '11977777777',
         clinic: testClinic._id,
         status: 'inactive'
       });
@@ -399,7 +399,7 @@ describe('Patient Routes Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data.name).toBe('João Silva');
-      expect(response.body.data.phone).toBe('+5511999999999');
+      expect(response.body.data.phone).toBe('(11) 99999-9999');
       expect(response.body.data.email).toBe('joao@example.com');
     });
 
@@ -557,7 +557,7 @@ describe('Patient Routes Integration Tests', () => {
     it('should return 404 for active patient', async () => {
       const activePatient = await Patient.create({
         name: 'Maria Silva',
-        phone: '+5511988888888',
+        phone: '11988888888',
         clinic: testClinic._id,
         status: 'active'
       });

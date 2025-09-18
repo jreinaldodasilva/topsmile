@@ -50,7 +50,8 @@ describe('Patient Portal Integration Tests', () => {
       .send({
         patientId: patient._id.toString(),
         email: 'testpatient@example.com',
-        password: 'TestPassword123!'
+        password: 'TestPassword123!',
+        clinicId: patient.clinic.toString()
       });
 
     const res = await request(app)
