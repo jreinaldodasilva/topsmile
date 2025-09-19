@@ -42,6 +42,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear local state first
       setUser(null);
 
+      // Remove tokens from localStorage
+      localStorage.removeItem('topsmile_access_token');
+      localStorage.removeItem('topsmile_refresh_token');
+
       // Notify backend and clear tokens for the default context
       await httpLogout();
 
@@ -60,6 +64,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // UPDATED: Enhanced initial authentication check
   useEffect(() => {
     const verifyAuth = async () => {
+      const hadTokens = !!localStorage.getItem('topsmile_access_token');
       try {
         const userResponse = await apiService.auth.me();
 
@@ -67,16 +72,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(userResponse.data);
         } else {
           setUser(null);
+          // Clear invalid tokens
+          localStorage.removeItem('topsmile_access_token');
+          localStorage.removeItem('topsmile_refresh_token');
+          // Navigate to login if tokens were present but invalid
+          if (hadTokens) navigate('/login');
         }
       } catch (err) {
         setUser(null);
+        // Clear invalid tokens on error
+        localStorage.removeItem('topsmile_access_token');
+        localStorage.removeItem('topsmile_refresh_token');
+        // Navigate to login if tokens were present but invalid
+        if (hadTokens) navigate('/login');
       } finally {
         setLoading(false);
       }
     };
 
     verifyAuth();
-  }, []);
+  }, [navigate]);
 
   // UPDATED: Enhanced login function with secure token storage
   const login = useCallback(async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
@@ -87,7 +102,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.login(email, password);
 
       if (response.success && response.data) {
-        const { user } = response.data;
+        const { user, accessToken, refreshToken } = response.data;
+
+        // Store tokens securely
+        localStorage.setItem('topsmile_access_token', accessToken);
+        localStorage.setItem('topsmile_refresh_token', refreshToken);
 
         // Update state
         setUser(user);
@@ -125,7 +144,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.register(data);
 
       if (response.success && response.data) {
-        const { user } = response.data;
+        const { user, accessToken, refreshToken } = response.data;
+
+        // Store tokens securely
+        localStorage.setItem('topsmile_access_token', accessToken);
+        localStorage.setItem('topsmile_refresh_token', refreshToken);
 
         // Update state
         setUser(user);
@@ -251,7 +274,9 @@ function getRedirectPath(role?: string): string {
       return '/admin/appointments';
     case 'assistant':
       return '/admin/appointments';
+    case 'patient':
+      return '/patient/dashboard';
     default:
-      return '/admin';
+      return '/login';
   }
 }

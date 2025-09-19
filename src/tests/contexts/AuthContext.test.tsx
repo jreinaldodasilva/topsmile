@@ -1,6 +1,6 @@
 import React from 'react';
-import { screen, waitFor, fireEvent, cleanup } from '@testing-library/react';
-import { useAuthState, useAuthActions } from '../../contexts/AuthContext';
+import { screen, waitFor, fireEvent, cleanup, render as rtlRender } from '@testing-library/react';
+import { AuthProvider, useAuthState, useAuthActions } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import { render } from '../utils/test-utils';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -260,6 +260,7 @@ describe('AuthContext', () => {
         await waitFor(() => {
           expect(mockNavigate).toHaveBeenCalledWith(expectedPath);
         });
+        cleanup();
       }
     });
   });
@@ -391,6 +392,12 @@ describe('AuthContext', () => {
 
   describe('User Data Refresh', () => {
     it('refreshes user data successfully', async () => {
+      // Mock initial auth check to fail
+      (apiService.auth.me as jest.Mock).mockResolvedValueOnce({
+        success: false,
+        message: 'No token'
+      });
+
       // First login
       (apiService.auth.login as jest.Mock).mockResolvedValueOnce({
         success: true,
@@ -401,12 +408,13 @@ describe('AuthContext', () => {
         }
       });
 
+      // Mock refresh user data
       (apiService.auth.me as jest.Mock).mockResolvedValueOnce({
         success: true,
         data: { _id: 'user123', name: 'Updated User', email: 'test@example.com', role: 'admin' }
       });
 
-      render(<TestComponent />);
+      const { rerender } = render(<TestComponent />);
 
       await waitFor(() => {
         expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
@@ -471,14 +479,13 @@ describe('AuthContext', () => {
   });
 
   describe('Context Hooks', () => {
-    const queryClient = new QueryClient();
     it('throws error when useAuthState is used outside provider', () => {
       const TestHook = () => {
         useAuthState();
         return <div>Test</div>;
       };
-      
-      expect(() => render(<QueryClientProvider client={queryClient}><TestHook /></QueryClientProvider>)).toThrow('useAuthState must be used within an AuthProvider');
+
+      expect(() => rtlRender(<TestHook />)).toThrow('useAuthState must be used within an AuthProvider');
     });
 
     it('throws error when useAuthActions is used outside provider', () => {
@@ -487,7 +494,7 @@ describe('AuthContext', () => {
         return <div>Test</div>;
       };
 
-      expect(() => render(<QueryClientProvider client={queryClient}><TestHook /></QueryClientProvider>)).toThrow('useAuthActions must be used within an AuthProvider');
+      expect(() => rtlRender(<TestHook />)).toThrow('useAuthActions must be used within an AuthProvider');
     });
   });
 });
