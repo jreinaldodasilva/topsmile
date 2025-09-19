@@ -22,7 +22,7 @@ export type User = {
   role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
   clinic?: string | Clinic;
   clinicId?: string; // Added for easier access
-  isActive?: boolean;
+  isActive: boolean;
   lastLogin?: string | Date;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -34,13 +34,13 @@ export type Contact = {
   id?: string;
   _id?: string;
   name: string;
-  email?: string;
-  clinic?: string;
+  email: string;
+  clinic: string;
   specialty?: string;
   phone?: string;
   status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
   source?: 'website_contact_form' | 'phone' | 'email' | 'referral' | 'social_media' | 'advertisement' | string;
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  priority?: 'low' | 'medium' | 'high';
   notes?: string;
   assignedTo?: string | User;
   assignedToClinic?: string;
@@ -150,7 +150,7 @@ export type Patient = {
   email?: string;
   phone?: string;
   dateOfBirth?: string | Date;
-  gender?: 'male' | 'female' | 'other' | 'prefer_not_to_say';
+  gender?: 'male' | 'female' | 'other';
   // ADDED: Backend-specific fields
   cpf?: string;
   rg?: string;
@@ -174,6 +174,7 @@ export type Patient = {
     notes?: string;
   };
   clinic?: string | Clinic;
+  status?: 'active' | 'inactive';
   isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -184,10 +185,10 @@ export type Patient = {
 export type Appointment = {
   id?: string;
   _id?: string;
-  patient?: string | Patient;
-  clinic?: string | Clinic;
-  provider?: string | Provider;
-  appointmentType?: string | AppointmentType;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  appointmentType: string | AppointmentType;
   scheduledStart?: string | Date;
   scheduledEnd?: string | Date;
   actualStart?: string | Date;

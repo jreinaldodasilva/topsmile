@@ -1,6 +1,24 @@
 // backend/src/models/Contact.ts - FIXED VERSION
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IConversionDetails {
+    convertedAt?: Date;
+    convertedBy?: mongoose.Types.ObjectId;
+    conversionNotes?: string;
+    conversionValue?: number;
+}
+
+export interface IMetadata {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    referrer?: string;
+    ipAddress?: string;
+    userAgent?: string;
+}
+
 export interface IContact extends Document {
     name: string;
     email: string;
@@ -18,22 +36,8 @@ export interface IContact extends Document {
     priority: 'low' | 'medium' | 'high';
     leadScore?: number; // 0-100 scoring system
     lastContactedAt?: Date;
-    conversionDetails?: {
-        convertedAt?: Date;
-        convertedBy?: mongoose.Types.ObjectId;
-        conversionNotes?: string;
-        conversionValue?: number;
-    };
-    metadata?: {
-        utmSource?: string;
-        utmMedium?: string;
-        utmCampaign?: string;
-        utmTerm?: string;
-        utmContent?: string;
-        referrer?: string;
-        ipAddress?: string;
-        userAgent?: string;
-    };
+    conversionDetails?: IConversionDetails;
+    metadata?: IMetadata;
     // Soft delete fields
     deletedAt?: Date;
     deletedBy?: mongoose.Types.ObjectId;
@@ -42,6 +46,33 @@ export interface IContact extends Document {
     createdAt: Date;
     updatedAt: Date;
 }
+
+const ConversionDetailsSchema = new Schema<IConversionDetails>({
+    convertedAt: Date,
+    convertedBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    conversionNotes: {
+        type: String,
+        maxlength: [500, 'Notas de conversão devem ter no máximo 500 caracteres']
+    },
+    conversionValue: {
+        type: Number,
+        min: 0
+    }
+}, { _id: false });
+
+const MetadataSchema = new Schema<IMetadata>({
+    utmSource: String,
+    utmMedium: String,
+    utmCampaign: String,
+    utmTerm: String,
+    utmContent: String,
+    referrer: String,
+    ipAddress: String,
+    userAgent: String
+}, { _id: false });
 
 const ContactSchema = new Schema<IContact>({
     name: {
@@ -133,31 +164,8 @@ const ContactSchema = new Schema<IContact>({
         type: Date,
         index: true
     },
-    conversionDetails: {
-        convertedAt: Date,
-        convertedBy: {
-            type: Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        conversionNotes: {
-            type: String,
-            maxlength: [500, 'Notas de conversão devem ter no máximo 500 caracteres']
-        },
-        conversionValue: {
-            type: Number,
-            min: 0
-        }
-    },
-    metadata: {
-        utmSource: String,
-        utmMedium: String,
-        utmCampaign: String,
-        utmTerm: String,
-        utmContent: String,
-        referrer: String,
-        ipAddress: String,
-        userAgent: String
-    },
+    conversionDetails: ConversionDetailsSchema,
+    metadata: MetadataSchema,
     // Soft delete fields
     deletedAt: Date,
     deletedBy: {

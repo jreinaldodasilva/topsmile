@@ -115,13 +115,13 @@ interface FrontendContact {
   _id?: string;
   id?: string;
   name?: string;
-  email?: string;
-  clinic?: string | Clinic;
+  email: string;
+  clinic: string | Clinic;
   specialty?: string;
   phone?: string;
   status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
   source?: 'website_contact_form' | 'phone' | 'email' | 'referral' | 'social_media' | 'advertisement' | string;
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
+  priority?: 'low' | 'medium' | 'high';
   notes?: string;
   assignedTo?: string | User;
   assignedToClinic?: string;
@@ -298,6 +298,8 @@ export const fromBackendContact = (backendContact: BackendContact): FrontendCont
     ...backendContact,
     id: backendContact._id,
     name: backendContact.name || 'Contato sem nome',
+    email: backendContact.email || '',
+    clinic: backendContact.clinic || '',
     followUpDate: backendContact.followUpDate ? new Date(backendContact.followUpDate) : null,
     lastContactedAt: backendContact.lastContactedAt ? new Date(backendContact.lastContactedAt) : undefined,
     conversionDetails: backendContact.conversionDetails ? {
