@@ -9,7 +9,7 @@ export type ApiResult<T = any> = {
 export type Pagination = {
   page?: number;
   limit?: number; // Changed from pageSize to match backend
-  total?: number;
+  total: number;
   pages?: number;
 };
 
