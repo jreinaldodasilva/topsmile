@@ -68,8 +68,8 @@ describe('PatientAppointmentsList', () => {
   it('loads and displays appointments', async () => {
     renderWithAuth(<PatientAppointmentsList />);
     await waitFor(() => {
-      expect(screen.getByText('Check-up with Dr. Smith')).toBeInTheDocument();
-      expect(screen.getByText('Cleaning with Dr. Jones')).toBeInTheDocument();
+      expect(screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')).toBeInTheDocument();
+      expect(screen.getByText((content, element) => element?.textContent === 'CleaningDr. Dr. JonesTest Clinic')).toBeInTheDocument();
     });
   });
 
@@ -89,10 +89,11 @@ describe('PatientAppointmentsList', () => {
   it('navigates to appointment detail on click', async () => {
     renderWithAuth(<PatientAppointmentsList />);
     await waitFor(() => {
-      expect(screen.getByText('Check-up with Dr. Smith')).toBeInTheDocument();
+      expect(screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')).toBeInTheDocument();
     });
-    const appointmentLink = screen.getByText('Check-up with Dr. Smith');
-    fireEvent.click(appointmentLink);
+    const appointmentLink = screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic');
+    const detailsButton = appointmentLink.parentElement.parentElement.querySelector('.view-btn');
+    fireEvent.click(detailsButton);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/patient/appointments/appt1');
     });
