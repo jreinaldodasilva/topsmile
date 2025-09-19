@@ -92,7 +92,8 @@ describe('PatientAppointmentsList', () => {
       expect(screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')).toBeInTheDocument();
     });
     const appointmentLink = screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic');
-    const detailsButton = appointmentLink.parentElement.parentElement.querySelector('.view-btn');
+    const detailsButton = appointmentLink.parentElement?.parentElement?.querySelector('.view-btn');
+    if (!detailsButton) throw new Error('Details button not found');
     fireEvent.click(detailsButton);
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/patient/appointments/appt1');
