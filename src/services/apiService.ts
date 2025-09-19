@@ -14,7 +14,8 @@ import type {
   Provider,
   Clinic,
   AppointmentType,
-  CreateFormResponse
+  CreateFormResponse,
+  RegisterRequest
 } from '../types/api';
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
@@ -338,7 +339,7 @@ export const apiService = {
       }
       return { success: res.ok, data: res.data, message: res.message };
     },
-    register: async (userData: Partial<User>): Promise<ApiResult<User>> => {
+    register: async (userData: RegisterRequest): Promise<ApiResult<User>> => {
       const res = await request('/api/auth/register', {
         method: 'POST',
         body: JSON.stringify(userData)

@@ -20,8 +20,7 @@ export type User = {
   name: string;
   email: string;
   role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
-  clinic?: string | Clinic;
-  clinicId?: string; // Added for easier access
+  clinic?: string;
   isActive?: boolean;
   lastLogin?: string | Date;
   createdAt?: string | Date;
@@ -64,8 +63,6 @@ export type Contact = {
     ipAddress?: string;
     userAgent?: string;
   };
-  tags?: string[];
-  customFields?: Record<string, any>;
   deletedAt?: string | Date;
   deletedBy?: string;
   mergedInto?: string;
@@ -117,7 +114,7 @@ export type Clinic = {
   // ADDED: Backend-specific fields
   subscription?: {
     plan: 'basic' | 'professional' | 'premium';
-    status: 'active' | 'inactive' | 'cancelled' | 'past_due';
+    status: 'active' | 'inactive' | 'suspended' | 'canceled';
     startDate: string | Date;
     endDate?: string | Date;
   };
@@ -132,9 +129,7 @@ export type Clinic = {
     };
     appointmentDuration: number;
     allowOnlineBooking: boolean;
-    requireApproval: boolean;
   };
-  isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
@@ -144,16 +139,13 @@ export type Clinic = {
 export type Patient = {
   id?: string;
   _id?: string;
-  firstName?: string;
-  lastName?: string;
-  fullName?: string; // Computed field
+  name: string;
   email?: string;
   phone?: string;
-  dateOfBirth?: string | Date;
+  birthDate?: string | Date;
   gender?: 'male' | 'female' | 'other';
   // ADDED: Backend-specific fields
   cpf?: string;
-  rg?: string;
   address?: {
     street?: string;
     number?: string;
@@ -173,9 +165,8 @@ export type Patient = {
     conditions?: string[];
     notes?: string;
   };
-  clinic?: string | Clinic;
+  clinic?: string;
   status?: 'active' | 'inactive';
-  isActive?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
@@ -249,8 +240,9 @@ export type Provider = {
   email?: string;
   phone?: string;
   specialties?: string[];
-  license?: string;
+  licenseNumber?: string;
   clinic?: string | Clinic;
+  user?: string;
   // ADDED: Working hours and availability
   workingHours?: {
     [key: string]: {
@@ -278,10 +270,13 @@ export type AppointmentType = {
   duration?: number; // in minutes
   price?: number;
   color?: string;
-  category?: string;
+  category?: 'consultation' | 'cleaning' | 'treatment' | 'surgery' | 'emergency';
   // ADDED: Buffer times
   bufferBefore?: number;
   bufferAfter?: number;
+  allowOnlineBooking: boolean;
+  preparationInstructions?: string;
+  postTreatmentInstructions?: string;
   requiresApproval?: boolean;
   isActive?: boolean;
   clinic?: string | Clinic;

@@ -76,11 +76,11 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
 
         // For now, we'll use a default set of appointment types
         setAppointmentTypes([
-          { _id: '1', name: 'Consulta', duration: 30, price: 100, color: '#3182ce', category: 'general', isActive: true, clinic: '' },
-          { _id: '2', name: 'Limpeza', duration: 45, price: 80, color: '#10b981', category: 'preventive', isActive: true, clinic: '' },
-          { _id: '3', name: 'Tratamento de Canal', duration: 90, price: 300, color: '#f59e0b', category: 'treatment', isActive: true, clinic: '' },
-          { _id: '4', name: 'Extração', duration: 60, price: 150, color: '#ef4444', category: 'surgery', isActive: true, clinic: '' },
-          { _id: '5', name: 'Implante', duration: 120, price: 800, color: '#8b5cf6', category: 'surgery', isActive: true, clinic: '' }
+          { _id: '1', name: 'Consulta', duration: 30, price: 100, color: '#3182ce', category: 'consultation', isActive: true, clinic: '', allowOnlineBooking: true },
+          { _id: '2', name: 'Limpeza', duration: 45, price: 80, color: '#10b981', category: 'cleaning', isActive: true, clinic: '', allowOnlineBooking: true },
+          { _id: '3', name: 'Tratamento de Canal', duration: 90, price: 300, color: '#f59e0b', category: 'treatment', isActive: true, clinic: '', allowOnlineBooking: true },
+          { _id: '4', name: 'Extração', duration: 60, price: 150, color: '#ef4444', category: 'surgery', isActive: true, clinic: '', allowOnlineBooking: true },
+          { _id: '5', name: 'Implante', duration: 120, price: 800, color: '#8b5cf6', category: 'surgery', isActive: true, clinic: '', allowOnlineBooking: true }
         ]);
 
       } catch (error) {
