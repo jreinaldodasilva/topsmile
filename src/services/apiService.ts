@@ -113,7 +113,7 @@ async function createContact(payload: Partial<any>): Promise<ApiResult<any>> {
 }
 
 async function updateContact(id: string, payload: Partial<any>): Promise<ApiResult<any>> {
-  const backendPayload = toBackendContact(payload);
+  const backendPayload = toBackendContact(payload as any);
   const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(backendPayload)

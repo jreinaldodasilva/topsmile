@@ -22,7 +22,7 @@ export type User = {
   role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
   clinic?: string | Clinic;
   clinicId?: string; // Added for easier access
-  isActive: boolean;
+  isActive?: boolean;
   lastLogin?: string | Date;
   createdAt?: string | Date;
   updatedAt?: string | Date;

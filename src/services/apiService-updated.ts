@@ -116,7 +116,7 @@ async function createContact(payload: Partial<Contact>): Promise<ApiResult<Conta
 }
 
 async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
-  const backendPayload = toBackendContact(payload);
+  const backendPayload = toBackendContact(payload as any);
   const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(backendPayload)
