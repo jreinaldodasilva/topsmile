@@ -1,9 +1,7 @@
 You will review, fix, and run the **tests** of the TopSmile project.  
-I will provide the complete project in a zip file.  
 
 ⚠️ Strict Rules:  
-- Do not modify backend or frontend source code.  
-- Only modify **test files**.  
+- Only modify the backend or frontend source code if necessary. It is preferable to modify the test files.
 - Fix **one failing test at a time**, then rerun it before moving on.  
 - Each fix must adapt the test to the existing project code — do not invent new functionality.  
 - Always explain what was fixed and why.  
@@ -24,7 +22,7 @@ I will provide the complete project in a zip file.
 
 2. **Fix One Test at a Time**  
    - Select the first failing test.  
-   - Modify only that test file to resolve the issue.  
+   - It is preferable to modify the test file to resolve the issue.  
    - Explain the change and how it matches the project code.  
    - Rerun just that test to confirm it passes.  
    - Stop and report results before continuing.  
@@ -42,7 +40,7 @@ I will provide the complete project in a zip file.
 ## Deliverables
 - A step-by-step log of:  
   - Failing test output.  
-  - Fix applied (only test file modifications).  
+  - Fix applied.  
   - Rerun results (pass/fail).  
 - Final summary with:  
   - All fixed tests.  
@@ -51,6 +49,6 @@ I will provide the complete project in a zip file.
 
 ## Acceptance Criteria
 - All failing tests are fixed incrementally.  
-- Only test files are modified.  
+- It is preferable to modify the test files.  
 - Each fix is justified and confirmed by rerunning.  
 - The final suite passes with no regressions.  
