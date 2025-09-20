@@ -240,9 +240,9 @@ const ProviderSchema = new Schema<IProvider & Document>({
 }, {
     timestamps: true,
     toJSON: {
-        transform: function(doc, ret) {
+        transform: function(doc, ret: any) {
             ret.id = ret._id;
-            delete ret._id;
+            delete (ret as any)._id;
             delete (ret as any).__v;
             return ret;
         }
@@ -251,6 +251,7 @@ const ProviderSchema = new Schema<IProvider & Document>({
 
 // Pre-save middleware to validate working hours logic
 ProviderSchema.pre('save', function(this: IProvider & Document, next) {
+    if (!this.workingHours) return next();
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     
     for (const day of days) {

@@ -1,5 +1,6 @@
 // backend/src/services/appointmentService.ts
-import { Appointment, IAppointment } from '../models/Appointment';
+import { Appointment as IAppointment } from '@topsmile/types';
+import { Appointment as AppointmentModel } from '../models/Appointment';
 import mongoose from 'mongoose';
 
 export interface CreateAppointmentData {
@@ -48,7 +49,7 @@ class AppointmentService {
       }
 
       // Check for overlapping appointments for the provider
-      const overlapping = await Appointment.findOne({
+      const overlapping = await AppointmentModel.findOne({
         provider: data.provider,
         clinic: data.clinic,
         status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
@@ -70,7 +71,7 @@ class AppointmentService {
         throw new Error('Horário indisponível');
       }
 
-      const appointment = new Appointment({
+      const appointment = new AppointmentModel({
         ...data,
         status: 'scheduled',
         remindersSent: data.remindersSent || {}
@@ -91,7 +92,7 @@ class AppointmentService {
         throw new Error('ID do agendamento inválido');
       }
 
-      const appointment = await Appointment.findOne({
+      const appointment = await AppointmentModel.findOne({
         _id: appointmentId,
         clinic: clinicId
       }).populate('patient provider appointmentType');
@@ -126,7 +127,7 @@ class AppointmentService {
         query.provider = filters.providerId;
       }
 
-      return await Appointment.find(query)
+      return await AppointmentModel.find(query)
         .populate('patient provider appointmentType')
         .sort({ scheduledStart: 1 });
     } catch (error) {
@@ -143,7 +144,7 @@ class AppointmentService {
         throw new Error('ID do agendamento inválido');
       }
 
-      const appointment = await Appointment.findOne({
+      const appointment = await AppointmentModel.findOne({
         _id: appointmentId,
         clinic: clinicId
       });
@@ -154,7 +155,7 @@ class AppointmentService {
 
       // If rescheduling, check for conflicts
       if (data.scheduledStart && data.scheduledEnd) {
-        const overlapping = await Appointment.findOne({
+        const overlapping = await AppointmentModel.findOne({
           provider: appointment.provider,
           clinic: clinicId,
           status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
@@ -182,7 +183,7 @@ class AppointmentService {
           appointment.rescheduleHistory = [];
         }
         appointment.rescheduleHistory.push({
-          oldDate: appointment.scheduledStart,
+          oldDate: appointment.scheduledStart as Date,
           newDate: data.scheduledStart,
           reason: data.rescheduleHistory?.[0]?.reason || 'Reagendamento',
           rescheduleBy: 'clinic',
@@ -264,12 +265,12 @@ class AppointmentService {
         query.scheduledEnd = { $lte: endDate };
       }
 
-      const total = await Appointment.countDocuments(query);
-      const scheduled = await Appointment.countDocuments({ ...query, status: 'scheduled' });
-      const confirmed = await Appointment.countDocuments({ ...query, status: 'confirmed' });
-      const inProgress = await Appointment.countDocuments({ ...query, status: 'in-progress' });
-      const completed = await Appointment.countDocuments({ ...query, status: 'completed' });
-      const cancelled = await Appointment.countDocuments({ ...query, status: 'cancelled' });
+      const total = await AppointmentModel.countDocuments(query);
+      const scheduled = await AppointmentModel.countDocuments({ ...query, status: 'scheduled' });
+      const confirmed = await AppointmentModel.countDocuments({ ...query, status: 'confirmed' });
+      const inProgress = await AppointmentModel.countDocuments({ ...query, status: 'in-progress' });
+      const completed = await AppointmentModel.countDocuments({ ...query, status: 'completed' });
+      const cancelled = await AppointmentModel.countDocuments({ ...query, status: 'cancelled' });
 
       return {
         total,
@@ -295,7 +296,7 @@ class AppointmentService {
     reason: string
   ): Promise<IAppointment | null> {
     try {
-      const appointment = await Appointment.findOne({
+      const appointment = await AppointmentModel.findOne({
         _id: appointmentId,
         clinic: clinicId
       });
@@ -305,7 +306,7 @@ class AppointmentService {
       }
 
       // Check for conflicts
-      const overlapping = await Appointment.findOne({
+      const overlapping = await AppointmentModel.findOne({
         provider: appointment.provider,
         clinic: clinicId,
         status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
@@ -333,7 +334,7 @@ class AppointmentService {
       }
 
       appointment.rescheduleHistory.push({
-        oldDate: appointment.scheduledStart,
+        oldDate: appointment.scheduledStart as Date,
         newDate: newStart,
         reason,
         rescheduleBy: 'clinic',

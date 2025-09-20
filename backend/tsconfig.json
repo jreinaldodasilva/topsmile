@@ -4,7 +4,6 @@
     "module": "commonjs",
     "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
     "baseUrl": ".",
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
@@ -29,7 +28,8 @@
   },
   "include": [
     "src/**/*",
-    "src/types/*.d.ts"
+    "src/types/*.d.ts",
+    "../packages/types/src/**/*"
   ],
   "exclude": [
     "node_modules",

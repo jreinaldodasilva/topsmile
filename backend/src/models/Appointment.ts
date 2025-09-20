@@ -178,10 +178,10 @@ const AppointmentSchema = new Schema<IAppointment & Document>({
 }, {
     timestamps: true,
     toJSON: {
-        transform: function(doc, ret) {
+        transform: function(doc, ret: any) {
             ret.id = ret._id;
-            delete ret._id;
-            delete (ret as any).__v;
+            delete ret['_id'];
+            delete ret['__v'];
             return ret;
         }
     }
@@ -337,11 +337,15 @@ AppointmentSchema.pre('save', function(next) {
     
     // Original calculations
     if (this.actualStart && this.actualEnd) {
-        this.duration = Math.round((this.actualEnd.getTime() - this.actualStart.getTime()) / (1000 * 60));
+        const start = this.actualStart as Date;
+        const end = this.actualEnd as Date;
+        this.duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60));
     }
-    
+
     if (this.checkedInAt && this.actualStart) {
-        this.waitTime = Math.round((this.actualStart.getTime() - this.checkedInAt.getTime()) / (1000 * 60));
+        const start = this.actualStart as Date;
+        const checkedIn = this.checkedInAt as Date;
+        this.waitTime = Math.round((start.getTime() - checkedIn.getTime()) / (1000 * 60));
     }
     
     // Enhanced status change handling
@@ -372,7 +376,7 @@ AppointmentSchema.pre('save', function(next) {
     }
     
     // NEW: Track reschedule count
-    if (this.isModified('rescheduleHistory') && this.rescheduleHistory.length > 0) {
+    if (this.isModified('rescheduleHistory') && this.rescheduleHistory && this.rescheduleHistory.length > 0) {
         const lastReschedule = this.rescheduleHistory[this.rescheduleHistory.length - 1];
         lastReschedule.rescheduleCount = this.rescheduleHistory.length;
     }

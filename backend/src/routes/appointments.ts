@@ -218,7 +218,7 @@ router.post("/", bookingValidation, async (req: AuthenticatedRequest, res: any) 
 
     const { patientId, providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
 
-    const appointment = await schedulingService.createAppointment({
+    const appointment = await schedulingService.createAppointmentModel({
       clinicId: req.user!.clinicId!,
       patientId,
       providerId,
@@ -260,7 +260,7 @@ router.post("/book", bookingValidation, async (req: AuthenticatedRequest, res: a
 
     const { patientId, providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
 
-    const appointment = await schedulingService.createAppointment({
+    const appointment = await schedulingService.createAppointmentModel({
       clinicId: req.user!.clinicId!,
       patientId,
       providerId,
@@ -698,7 +698,7 @@ router.patch("/:id/status",
       }
 
       if (status === 'cancelled') {
-        const updatedAppointment = await schedulingService.cancelAppointment(
+        const updatedAppointment = await schedulingService.cancelAppointmentModel(
           req.params.id!,
           cancellationReason || 'Cancelado pelo usuário'
         );
@@ -818,7 +818,7 @@ router.patch("/:id/reschedule",
 
       const { newStart, reason, rescheduleBy } = req.body;
 
-      const updatedAppointment = await schedulingService.rescheduleAppointment(
+      const updatedAppointment = await schedulingService.rescheduleAppointmentModel(
         req.params.id!,
         new Date(newStart),
         reason,
@@ -980,8 +980,8 @@ router.post("/patient/book",
       const { providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
 
       // Ensure the patient can only book for themselves
-      const appointment = await schedulingService.createAppointment({
-        clinicId: req.patient!.clinic.toString(),
+      const appointment = await schedulingService.createAppointmentModel({
+        clinicId: (req.patient!.clinic as any).toString(),
         patientId: (req.patient!._id as any).toString(),
         providerId,
         appointmentTypeId,
@@ -1043,7 +1043,7 @@ router.patch("/patient/:id/cancel",
 
       const { reason } = req.body;
 
-      const updatedAppointment = await schedulingService.cancelAppointment(
+      const updatedAppointment = await schedulingService.cancelAppointmentModel(
         req.params.id!,
         reason || 'Cancelado pelo paciente'
       );

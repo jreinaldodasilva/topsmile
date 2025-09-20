@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { PatientUser, IPatientUser } from '../models/PatientUser';
-import { IPatient } from '../models/Patient';
+import { Patient as IPatient } from '@topsmile/types';
 import { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError, ForbiddenError } from '../types/errors';
 

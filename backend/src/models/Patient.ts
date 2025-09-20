@@ -213,7 +213,7 @@ const PatientSchema = new Schema<IPatient & Document>({
     toJSON: {
         transform: function (doc, ret) {
             ret.id = ret._id;
-            delete ret._id;
+            delete (ret as any)._id;
             delete (ret as any).__v;
             return ret;
         }

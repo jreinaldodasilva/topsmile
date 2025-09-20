@@ -1,5 +1,6 @@
 // backend/src/services/patientService.ts
-import { Patient, IPatient } from '../models/Patient';
+import { Patient as IPatient } from '@topsmile/types';
+import { Patient as PatientModel } from '../models/Patient';
 import mongoose from 'mongoose';
 import { NotFoundError } from '../types/errors';
 
@@ -71,7 +72,7 @@ class PatientService {
             }
 
             // Check if patient with same phone already exists in the clinic
-            const existingPatient = await Patient.findOne({
+            const existingPatient = await PatientModel.findOne({
                 phone: data.phone,
                 clinic: data.clinicId,
                 status: 'active'
@@ -83,7 +84,7 @@ class PatientService {
 
             // Check if email is provided and already exists in the clinic
             if (data.email) {
-                const existingEmailPatient = await Patient.findOne({
+                const existingEmailPatient = await PatientModel.findOne({
                     email: data.email.toLowerCase(),
                     clinic: data.clinicId,
                     status: 'active'
@@ -94,7 +95,7 @@ class PatientService {
                 }
             }
 
-            const patient = new Patient({
+            const patient = new PatientModel({
                 ...data,
                 clinic: data.clinicId,
                 email: data.email?.toLowerCase(),
@@ -117,7 +118,7 @@ class PatientService {
                 throw new Error('ID do paciente inválido');
             }
 
-            const patient = await Patient.findOne({
+            const patient = await PatientModel.findOne({
                 _id: patientId,
                 clinic: clinicId
             }).populate('clinic', 'name');
@@ -138,7 +139,7 @@ class PatientService {
                 throw new Error('ID do paciente inválido');
             }
 
-            const patient = await Patient.findOne({
+            const patient = await PatientModel.findOne({
                 _id: patientId,
                 clinic: clinicId
             });
@@ -149,7 +150,7 @@ class PatientService {
 
             // Check for duplicate phone if phone is being updated
             if (data.phone && data.phone !== patient.phone) {
-                const existingPatient = await Patient.findOne({
+                const existingPatient = await PatientModel.findOne({
                     phone: data.phone,
                     clinic: clinicId,
                     status: 'active',
@@ -163,7 +164,7 @@ class PatientService {
 
             // Check for duplicate email if email is being updated
             if (data.email && data.email.toLowerCase() !== patient.email) {
-                const existingEmailPatient = await Patient.findOne({
+                const existingEmailPatient = await PatientModel.findOne({
                     email: data.email.toLowerCase(),
                     clinic: clinicId,
                     status: 'active',
@@ -200,7 +201,7 @@ class PatientService {
                 throw new Error('ID do paciente inválido');
             }
 
-            const patient = await Patient.findOneAndUpdate(
+            const patient = await PatientModel.findOneAndUpdate(
                 {
                     _id: patientId,
                     clinic: clinicId
@@ -263,12 +264,12 @@ class PatientService {
 
             // Execute query with pagination
             const [patients, total] = await Promise.all([
-                Patient.find(query)
+                PatientModel.find(query)
                     .sort(sortOptions)
                     .skip(skip)
                     .limit(limit)
                     .populate('clinic', 'name'),
-                Patient.countDocuments(query)
+                PatientModel.countDocuments(query)
             ]);
 
             const totalPages = Math.ceil(total / limit);
@@ -301,7 +302,7 @@ class PatientService {
                 query.status = status;
             }
 
-            return await Patient.find(query)
+            return await PatientModel.find(query)
                 .sort({ name: 1 })
                 .populate('clinic', 'name');
         } catch (error) {
@@ -328,7 +329,7 @@ class PatientService {
                 throw new Error('ID do paciente inválido');
             }
 
-            const patient = await Patient.findOneAndUpdate(
+            const patient = await PatientModel.findOneAndUpdate(
                 {
                     _id: patientId,
                     clinic: clinicId
@@ -376,14 +377,14 @@ class PatientService {
                 recentlyAdded,
                 withMedicalHistory
             ] = await Promise.all([
-                Patient.countDocuments({ clinic: clinicId }),
-                Patient.countDocuments({ clinic: clinicId, status: 'active' }),
-                Patient.countDocuments({ clinic: clinicId, status: 'inactive' }),
-                Patient.countDocuments({ 
+                PatientModel.countDocuments({ clinic: clinicId }),
+                PatientModel.countDocuments({ clinic: clinicId, status: 'active' }),
+                PatientModel.countDocuments({ clinic: clinicId, status: 'inactive' }),
+                PatientModel.countDocuments({ 
                     clinic: clinicId, 
                     createdAt: { $gte: thirtyDaysAgo } 
                 }),
-                Patient.countDocuments({
+                PatientModel.countDocuments({
                     clinic: clinicId,
                     $or: [
                         { 'medicalHistory.allergies.0': { $exists: true } },
@@ -416,7 +417,7 @@ class PatientService {
                 throw new Error('ID do paciente inválido');
             }
 
-            const patient = await Patient.findOne({
+            const patient = await PatientModel.findOne({
                 _id: patientId,
                 clinic: clinicId,
                 status: 'inactive'
@@ -427,7 +428,7 @@ class PatientService {
             }
 
             // Check for duplicate phone with active patients
-            const existingActivePatient = await Patient.findOne({
+            const existingActivePatient = await PatientModel.findOne({
                 phone: patient.phone,
                 clinic: clinicId,
                 status: 'active',
@@ -440,7 +441,7 @@ class PatientService {
 
             // Check for duplicate email with active patients
             if (patient.email) {
-                const existingActiveEmailPatient = await Patient.findOne({
+                const existingActiveEmailPatient = await PatientModel.findOne({
                     email: patient.email,
                     clinic: clinicId,
                     status: 'active',

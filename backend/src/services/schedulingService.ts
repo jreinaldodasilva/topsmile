@@ -1,7 +1,8 @@
 // backend/src/services/schedulingService.ts - FIXED VERSION with Transactions
-import { Appointment, IAppointment } from '../models/Appointment';
-import { Provider, IProvider } from '../models/Provider';
-import { AppointmentType, IAppointmentType } from '../models/AppointmentType';
+import { Appointment as IAppointment, Provider as IProvider, AppointmentType as IAppointmentType } from '@topsmile/types';
+import { Appointment as AppointmentModel } from '../models/Appointment';
+import { Provider as ProviderModel } from '../models/Provider';
+import { AppointmentType as AppointmentTypeModel } from '../models/AppointmentType';
 import { startOfDay, endOfDay, addMinutes, format, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import mongoose from 'mongoose';
@@ -59,7 +60,7 @@ class SchedulingService {
         
         try {
             // IMPROVED: Use lean queries for better performance
-            const appointmentType = await AppointmentType.findById(appointmentTypeId).lean();
+            const appointmentType = await AppointmentTypeModel.findById(appointmentTypeId).lean();
             if (!appointmentType) {
                 throw new Error('Tipo de agendamento não encontrado');
             }
@@ -72,7 +73,7 @@ class SchedulingService {
                 providerQuery.appointmentTypes = appointmentTypeId;
             }
             
-            const providers = await Provider.find(providerQuery).lean();
+            const providers = await ProviderModel.find(providerQuery).lean();
             if (providers.length === 0) {
                 return [];
             }
@@ -127,7 +128,7 @@ class SchedulingService {
             query._id = { $ne: excludeAppointmentId };
         }
 
-        return await Appointment.find(query).lean();
+        return await AppointmentModel.find(query).lean();
     }
 
     /**
@@ -164,21 +165,32 @@ class SchedulingService {
         excludeAppointmentId?: string
     ): Promise<TimeSlot[]> {
         try {
+            if (!provider.workingHours) {
+                return [];
+            }
+
             const dayOfWeek = format(date, 'EEEE').toLowerCase() as keyof typeof provider.workingHours;
             const workingHours = provider.workingHours[dayOfWeek];
 
             // Provider doesn't work on this day
-            if (!workingHours.isWorking || !workingHours.start || !workingHours.end) {
+            if (!workingHours || !workingHours.isWorking) {
+                return [];
+            }
+
+            const startStr = workingHours.start;
+            const endStr = workingHours.end;
+
+            if (!startStr || !endStr) {
                 return [];
             }
 
             // Convert working hours to Date objects with error handling
             let startTime: Date;
             let endTime: Date;
-            
+
             try {
-                startTime = this.parseTimeToDate(date, workingHours.start, provider.timeZone);
-                endTime = this.parseTimeToDate(date, workingHours.end, provider.timeZone);
+                startTime = this.parseTimeToDate(date, startStr, (provider.timeZone as any));
+                endTime = this.parseTimeToDate(date, endStr, (provider.timeZone as any));
             } catch (error) {
                 console.error(`Error parsing working hours for provider ${provider._id}:`, error);
                 return [];
@@ -195,9 +207,13 @@ class SchedulingService {
             const slots: TimeSlot[] = [];
             const slotInterval = 15; // 15-minute intervals
             const treatmentDuration = appointmentType.duration;
-            
-            const bufferBefore = appointmentType.bufferBefore || provider.bufferTimeBefore;
-            const bufferAfter = appointmentType.bufferAfter || provider.bufferTimeAfter;
+
+            if (!treatmentDuration) {
+                return [];
+            }
+
+            const bufferBefore = appointmentType.bufferBefore || provider.bufferTimeBefore || 0;
+            const bufferAfter = appointmentType.bufferAfter || provider.bufferTimeAfter || 0;
             const totalDuration = treatmentDuration + bufferBefore + bufferAfter;
 
             let currentTime = startTime;
@@ -244,7 +260,7 @@ class SchedulingService {
     /**
      * FIXED: Create appointment with proper transaction handling
      */
-    async createAppointment(data: CreateAppointmentData): Promise<SchedulingResult<IAppointment>> {
+    async createAppointmentModel(data: CreateAppointmentData): Promise<SchedulingResult<Appointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -263,16 +279,16 @@ class SchedulingService {
 
             // Validate appointment type with session
             const appointmentType = await (session
-                ? AppointmentType.findById(appointmentTypeId).session(session)
-                : AppointmentType.findById(appointmentTypeId));
+                ? AppointmentTypeModel.findById(appointmentTypeId).session(session)
+                : AppointmentTypeModel.findById(appointmentTypeId));
             if (!appointmentType) {
                 throw new Error('Tipo de agendamento não encontrado');
             }
 
             // Validate provider with session
             const provider = await (session
-                ? Provider.findById(providerId).session(session)
-                : Provider.findById(providerId));
+                ? ProviderModel.findById(providerId).session(session)
+                : ProviderModel.findById(providerId));
             if (!provider || !provider.isActive) {
                 throw new Error('Profissional não encontrado ou inativo');
             }
@@ -305,7 +321,7 @@ class SchedulingService {
             }
 
             // Create appointment within transaction
-            const appointment = new Appointment({
+            const appointment = new AppointmentModel({
                 patient: patientId,
                 clinic: clinicId,
                 provider: providerId,
@@ -356,12 +372,12 @@ class SchedulingService {
     /**
      * FIXED: Reschedule appointment with proper transaction handling
      */
-    async rescheduleAppointment(
+    async rescheduleAppointmentModel(
         appointmentId: string,
         newStart: Date,
         reason: string,
         rescheduleBy: 'patient' | 'clinic'
-    ): Promise<SchedulingResult<IAppointment>> {
+    ): Promise<SchedulingResult<Appointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -370,17 +386,17 @@ class SchedulingService {
             if (!isTestEnv) {
                 session!.startTransaction();
             }
-            
+
             const appointment = await (session
-                ? Appointment.findById(appointmentId).session(session)
-                : Appointment.findById(appointmentId));
+                ? AppointmentModel.findById(appointmentId).session(session)
+                : AppointmentModel.findById(appointmentId));
             if (!appointment) {
                 throw new Error('Agendamento não encontrado');
             }
 
             const appointmentType = await (session
-                ? AppointmentType.findById(appointment.appointmentType).session(session)
-                : AppointmentType.findById(appointment.appointmentType));
+                ? AppointmentTypeModel.findById(appointment.appointmentType).session(session)
+                : AppointmentTypeModel.findById(appointment.appointmentType));
             if (!appointmentType) {
                 throw new Error('Tipo de agendamento não encontrado');
             }
@@ -461,7 +477,7 @@ class SchedulingService {
     /**
      * FIXED: Cancel appointment with transaction support
      */
-    async cancelAppointment(appointmentId: string, reason: string): Promise<SchedulingResult<IAppointment>> {
+    async cancelAppointmentModel(appointmentId: string, reason: string): Promise<SchedulingResult<Appointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -470,10 +486,10 @@ class SchedulingService {
             if (!isTestEnv) {
                 session!.startTransaction();
             }
-            
+
             const appointment = await (session
-                ? Appointment.findById(appointmentId).session(session)
-                : Appointment.findById(appointmentId));
+                ? AppointmentModel.findById(appointmentId).session(session)
+                : AppointmentModel.findById(appointmentId));
             if (!appointment) {
                 throw new Error('Agendamento não encontrado');
             }
@@ -535,7 +551,7 @@ class SchedulingService {
     ): Promise<{ available: boolean; reason?: string }> {
         try {
             // Get provider with session
-            const provider = await Provider.findById(providerId).session(session);
+            const provider = await ProviderModel.findById(providerId).session(session);
             if (!provider) {
                 return { available: false, reason: 'Profissional não encontrado' };
             }
@@ -577,7 +593,7 @@ class SchedulingService {
                 conflictQuery._id = { $ne: excludeAppointmentId };
             }
 
-            const conflicts = await Appointment.find(conflictQuery).session(session);
+            const conflicts = await AppointmentModel.find(conflictQuery).session(session);
 
             if (conflicts.length > 0) {
                 const conflictReason = `Conflito com agendamento às ${format(conflicts[0].scheduledStart, 'HH:mm')}`;
@@ -673,7 +689,7 @@ class SchedulingService {
                 query.status = status;
             }
 
-            return await Appointment.find(query)
+            return await AppointmentModel.find(query)
                 .populate('patient', 'name phone email')
                 .populate('provider', 'name specialties')
                 .populate('appointmentType', 'name duration color category')
@@ -703,7 +719,7 @@ class SchedulingService {
             
             for (const id of appointmentIds) {
                 try {
-                    const appointment = await Appointment.findById(id).session(session);
+                    const appointment = await AppointmentModel.findById(id).session(session);
                     if (!appointment) {
                         results.failed.push(`${id}: Agendamento não encontrado`);
                         continue;
@@ -749,7 +765,7 @@ class SchedulingService {
         appointmentTypeId: string
     ): Promise<AppointmentConflict> {
         try {
-            const appointmentType = await AppointmentType.findById(appointmentTypeId).lean();
+            const appointmentType = await AppointmentTypeModel.findById(appointmentTypeId).lean();
             if (!appointmentType) {
                 throw new Error('Tipo de agendamento não encontrado');
             }
@@ -757,7 +773,7 @@ class SchedulingService {
             const bufferBefore = appointmentType.bufferBefore || 0;
             const bufferAfter = appointmentType.bufferAfter || 0;
 
-            const conflictingAppointments = await Appointment.find({
+            const conflictingAppointments = await AppointmentModel.find({
                 provider: providerId,
                 status: { $nin: ['cancelled', 'no_show'] },
                 $or: [
@@ -812,7 +828,7 @@ class SchedulingService {
         }
     }> {
         try {
-            const appointments = await Appointment.find({
+            const appointments = await AppointmentModel.find({
                 provider: providerId,
                 scheduledStart: {
                     $gte: startDate,

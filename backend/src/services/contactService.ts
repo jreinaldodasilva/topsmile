@@ -1,4 +1,5 @@
-import { Contact, IContact } from '../models/Contact';
+import { Contact as IContact } from '@topsmile/types';
+import { Contact as ContactModel } from '../models/Contact';
 import { FilterQuery } from 'mongoose';
 import { AuthenticatedRequest } from '../middleware/auth';
 
@@ -54,7 +55,7 @@ class ContactService {
     try {
       // FIXED: Use findOneAndUpdate with upsert for atomic operation
       // This prevents race conditions between check and create/update
-      const updatedContact = await Contact.findOneAndUpdate(
+      const updatedContact = await ContactModel.findOneAndUpdate(
         { email: data.email }, // Find by email
         {
           $set: {
@@ -99,11 +100,11 @@ class ContactService {
       }
 
       // Check if contact exists first to determine if it's new or updated
-      const existingContact = await Contact.findOne({ email: data.email }).lean();
+      const existingContact = await ContactModel.findOne({ email: data.email }).lean();
       const isNew = !existingContact;
 
       // Use atomic operation
-      const updatedContact = await Contact.findOneAndUpdate(
+      const updatedContact = await ContactModel.findOneAndUpdate(
         { email: data.email },
         {
           $set: {
@@ -174,7 +175,7 @@ class ContactService {
 
   async getContactById(user: AuthenticatedRequest['user'], id: string): Promise<IContact | null> {
     try {
-      const contact = await Contact.findById(id).populate('assignedTo', 'name email') as IContact | null;
+      const contact = await ContactModel.findById(id).populate('assignedTo', 'name email') as IContact | null;
       if (contact && user?.role !== 'super_admin' && String(contact.assignedToClinic) !== user?.clinicId) {
         return null;
       }
@@ -194,7 +195,7 @@ class ContactService {
         throw new Error('E-mail é obrigatório');
       }
 
-      return await Contact.findOne({ email: email.toLowerCase().trim() })
+      return await ContactModel.findOne({ email: email.toLowerCase().trim() })
         .populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
       console.error('Error fetching contact by email:', error);
@@ -247,12 +248,12 @@ class ContactService {
 
       // Execute query with pagination
       const [contacts, total] = await Promise.all([
-        Contact.find(query)
+        ContactModel.find(query)
           .populate('assignedTo', 'name email')
           .sort({ [sortBy]: sortOrder === 'desc' ? -1 : 1 })
           .skip(skip)
           .limit(limit),
-        Contact.countDocuments(query)
+        ContactModel.countDocuments(query)
       ]);
 
       const pages = Math.ceil(total / limit);
@@ -278,7 +279,7 @@ class ContactService {
       // Remove fields that shouldn't be updated directly
       const { _id, createdAt, updatedAt, ...safeUpdates } = updates as any;
 
-      return await Contact.findByIdAndUpdate(
+      return await ContactModel.findByIdAndUpdate(
         id,
         { $set: safeUpdates },
         {
@@ -308,7 +309,7 @@ class ContactService {
         updateData.assignedTo = assignedTo;
       }
 
-      const result = await Contact.updateMany(
+      const result = await ContactModel.updateMany(
         { _id: { $in: contactIds } },
         { $set: updateData },
         { runValidators: true }
@@ -326,7 +327,7 @@ class ContactService {
 
   async deleteContact(id: string): Promise<boolean> {
     try {
-      const result = await Contact.findByIdAndDelete(id);
+      const result = await ContactModel.findByIdAndDelete(id);
       return !!result;
     } catch (error) {
       console.error('Error deleting contact:', error);
@@ -339,7 +340,7 @@ class ContactService {
    */
   async softDeleteContact(id: string, deletedBy?: string): Promise<IContact | null> {
     try {
-      return await Contact.findByIdAndUpdate(
+      return await ContactModel.findByIdAndUpdate(
         id,
         {
           $set: {
@@ -378,30 +379,30 @@ class ContactService {
 
       const [total, byStatus, bySource, recentCount, monthlyTrend] = await Promise.all([
         // Total contacts (excluding deleted)
-        Contact.countDocuments(matchQuery),
+        ContactModel.countDocuments(matchQuery),
         
         // By status
-        Contact.aggregate([
+        ContactModel.aggregate([
           { $match: matchQuery },
           { $group: { _id: '$status', count: { $sum: 1 } } },
           { $sort: { count: -1 } }
         ]),
         
         // By source
-        Contact.aggregate([
+        ContactModel.aggregate([
           { $match: matchQuery },
           { $group: { _id: '$source', count: { $sum: 1 } } },
           { $sort: { count: -1 } }
         ]),
         
         // Recent count (last week)
-        Contact.countDocuments({ 
+        ContactModel.countDocuments({ 
           ...matchQuery,
           createdAt: { $gte: lastWeek }
         }),
         
         // Monthly trend (last 12 months)
-        Contact.aggregate([
+        ContactModel.aggregate([
           {
             $match: {
               ...matchQuery,
@@ -456,7 +457,7 @@ class ContactService {
     count: number;
   }>> {
     try {
-      const duplicates = await Contact.aggregate([
+      const duplicates = await ContactModel.aggregate([
         {
           $match: { status: { $ne: 'deleted' } }
         },
@@ -498,18 +499,18 @@ class ContactService {
    * ADDED: Merge duplicate contacts
    */
   async mergeDuplicateContacts(
-    primaryContactId: string,
+    primaryContactModelId: string,
     duplicateContactIds: string[]
   ): Promise<IContact> {
     try {
       // Get the primary contact
-      const primaryContact = await Contact.findById(primaryContactId);
-      if (!primaryContact) {
+      const primaryContactModel = await ContactModel.findById(primaryContactModelId);
+      if (!primaryContactModel) {
         throw new Error('Contato principal não encontrado');
       }
 
       // Get duplicate contacts to merge data
-      const duplicateContacts = await Contact.find({
+      const duplicateContacts = await ContactModel.find({
         _id: { $in: duplicateContactIds }
       });
 
@@ -517,15 +518,15 @@ class ContactService {
       const mergedData: any = {};
 
       // Collect all sources
-      const sources = [primaryContact.source, ...duplicateContacts.map(c => c.source)]
+      const sources = [primaryContactModel.source, ...duplicateContacts.map(c => c.source)]
         .filter(Boolean);
       if (sources.length > 0) {
         mergedData.source = sources.join(', ');
       }
 
       // Use most recent data for other fields
-      const allContacts = [primaryContact, ...duplicateContacts]
-        .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+      const allContacts = [primaryContactModel, ...duplicateContacts]
+        .sort((a, b) => (b.updatedAt as Date).getTime() - (a.updatedAt as Date).getTime());
 
       const mostRecent = allContacts[0];
       if (mostRecent) {
@@ -536,19 +537,19 @@ class ContactService {
       }
 
       // Update primary contact with merged data
-      const updatedContact = await Contact.findByIdAndUpdate(
-        primaryContactId,
+      const updatedContact = await ContactModel.findByIdAndUpdate(
+        primaryContactModelId,
         { $set: mergedData },
         { new: true, runValidators: true }
       );
 
       // Soft delete duplicate contacts
-      await Contact.updateMany(
+      await ContactModel.updateMany(
         { _id: { $in: duplicateContactIds } },
         { 
           $set: { 
             status: 'merged',
-            mergedInto: primaryContactId,
+            mergedInto: primaryContactModelId,
             deletedAt: new Date()
           }
         }

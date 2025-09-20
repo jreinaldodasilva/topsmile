@@ -69,7 +69,7 @@ const PatientUserSchema = new Schema<IPatientUser>({
   toJSON: {
     transform: function (doc: any, ret: any) {
       ret.id = ret._id;
-      delete ret._id;
+      delete (ret as any)._id;
       delete ret.__v;
       delete ret.password;
       delete ret.verificationToken;

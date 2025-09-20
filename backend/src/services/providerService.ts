@@ -1,6 +1,7 @@
 // backend/src/services/providerService.ts
-import { Provider, IProvider } from '../models/Provider';
-import { User } from '../models/User';
+import { Provider as IProvider } from '@topsmile/types';
+import { Provider as ProviderModel } from '../models/Provider';
+import { User as UserModel } from '../models/User';
 import mongoose from 'mongoose';
 
 export interface CreateProviderData {
@@ -84,7 +85,7 @@ class ProviderService {
 
             // Check if provider with same email already exists in the clinic
             if (data.email) {
-                const existingProvider = await Provider.findOne({
+                const existingProvider = await ProviderModel.findOne({
                     email: data.email.toLowerCase(),
                     clinic: data.clinicId,
                     isActive: true
@@ -97,7 +98,7 @@ class ProviderService {
 
             // Validate user exists and belongs to the clinic if userId is provided
             if (data.userId) {
-                const user = await User.findOne({
+                const user = await UserModel.findOne({
                     _id: data.userId,
                     clinic: data.clinicId,
                     isActive: true
@@ -108,7 +109,7 @@ class ProviderService {
                 }
 
                 // Check if user is already linked to another provider
-                const existingProviderWithUser = await Provider.findOne({
+                const existingProviderWithUser = await ProviderModel.findOne({
                     user: data.userId,
                     clinic: data.clinicId,
                     isActive: true
@@ -128,7 +129,7 @@ class ProviderService {
                 }
             }
 
-            const provider = new Provider({
+            const provider = new ProviderModel({
                 ...data,
                 clinic: data.clinicId,
                 user: data.userId || undefined,
@@ -157,7 +158,7 @@ class ProviderService {
                 throw new Error('ID do profissional inválido');
             }
 
-            const provider = await Provider.findOne({
+            const provider = await ProviderModel.findOne({
                 _id: providerId,
                 clinic: clinicId
             })
@@ -181,7 +182,7 @@ class ProviderService {
                 throw new Error('ID do profissional inválido');
             }
 
-            const provider = await Provider.findOne({
+            const provider = await ProviderModel.findOne({
                 _id: providerId,
                 clinic: clinicId
             });
@@ -192,7 +193,7 @@ class ProviderService {
 
             // Check for duplicate email if email is being updated
             if (data.email && data.email.toLowerCase() !== provider.email) {
-                const existingProvider = await Provider.findOne({
+                const existingProvider = await ProviderModel.findOne({
                     email: data.email.toLowerCase(),
                     clinic: clinicId,
                     isActive: true,
@@ -210,7 +211,7 @@ class ProviderService {
                     throw new Error('ID do usuário inválido');
                 }
 
-                const user = await User.findOne({
+                const user = await UserModel.findOne({
                     _id: data.userId,
                     clinic: clinicId,
                     isActive: true
@@ -221,7 +222,7 @@ class ProviderService {
                 }
 
                 // Check if user is already linked to another provider
-                const existingProviderWithUser = await Provider.findOne({
+                const existingProviderWithUser = await ProviderModel.findOne({
                     user: data.userId,
                     clinic: clinicId,
                     isActive: true,
@@ -247,7 +248,7 @@ class ProviderService {
                 if (key === 'email' && data.email) {
                     (provider as any)[key] = data.email.toLowerCase();
                 } else if (key === 'userId') {
-                    provider.user = data.userId ? new mongoose.Types.ObjectId(data.userId) : undefined;
+                    (provider as any).user = data.userId ? new mongoose.Types.ObjectId(data.userId) : undefined;
                 } else if (data[key as keyof UpdateProviderData] !== undefined) {
                     (provider as any)[key] = data[key as keyof UpdateProviderData];
                 }
@@ -269,7 +270,7 @@ class ProviderService {
                 throw new Error('ID do profissional inválido');
             }
 
-            const provider = await Provider.findOneAndUpdate(
+            const provider = await ProviderModel.findOneAndUpdate(
                 {
                     _id: providerId,
                     clinic: clinicId
@@ -337,14 +338,14 @@ class ProviderService {
 
             // Execute query with pagination
             const [providers, total] = await Promise.all([
-                Provider.find(query)
+                ProviderModel.find(query)
                     .sort(sortOptions)
                     .skip(skip)
                     .limit(limit)
                     .populate('clinic', 'name')
                     .populate('user', 'name email role')
                     .populate('appointmentTypes', 'name duration color category'),
-                Provider.countDocuments(query)
+                ProviderModel.countDocuments(query)
             ]);
 
             const totalPages = Math.ceil(total / limit);
@@ -372,7 +373,7 @@ class ProviderService {
                 throw new Error('ID da clínica inválido');
             }
 
-            return await Provider.find({
+            return await ProviderModel.find({
                 clinic: clinicId,
                 isActive
             })
@@ -407,7 +408,7 @@ class ProviderService {
                 throw new Error('ID do profissional inválido');
             }
 
-            const provider = await Provider.findOneAndUpdate(
+            const provider = await ProviderModel.findOneAndUpdate(
                 {
                     _id: providerId,
                     clinic: clinicId
@@ -448,7 +449,7 @@ class ProviderService {
                 }
             }
 
-            const provider = await Provider.findOneAndUpdate(
+            const provider = await ProviderModel.findOneAndUpdate(
                 {
                     _id: providerId,
                     clinic: clinicId
@@ -496,18 +497,18 @@ class ProviderService {
                 recentlyAdded,
                 specialtyStats
             ] = await Promise.all([
-                Provider.countDocuments({ clinic: clinicId }),
-                Provider.countDocuments({ clinic: clinicId, isActive: true }),
-                Provider.countDocuments({ clinic: clinicId, isActive: false }),
-                Provider.countDocuments({ 
+                ProviderModel.countDocuments({ clinic: clinicId }),
+                ProviderModel.countDocuments({ clinic: clinicId, isActive: true }),
+                ProviderModel.countDocuments({ clinic: clinicId, isActive: false }),
+                ProviderModel.countDocuments({ 
                     clinic: clinicId, 
                     user: { $exists: true, $ne: null } 
                 }),
-                Provider.countDocuments({ 
+                ProviderModel.countDocuments({ 
                     clinic: clinicId, 
                     createdAt: { $gte: thirtyDaysAgo } 
                 }),
-                Provider.aggregate([
+                ProviderModel.aggregate([
                     { $match: { clinic: new mongoose.Types.ObjectId(clinicId) } },
                     { $unwind: '$specialties' },
                     { $group: { _id: '$specialties', count: { $sum: 1 } } },
@@ -539,7 +540,7 @@ class ProviderService {
                 throw new Error('ID do profissional inválido');
             }
 
-            const provider = await Provider.findOne({
+            const provider = await ProviderModel.findOne({
                 _id: providerId,
                 clinic: clinicId,
                 isActive: false
@@ -551,7 +552,7 @@ class ProviderService {
 
             // Check for duplicate email with active providers
             if (provider.email) {
-                const existingActiveProvider = await Provider.findOne({
+                const existingActiveProvider = await ProviderModel.findOne({
                     email: provider.email,
                     clinic: clinicId,
                     isActive: true,

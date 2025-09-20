@@ -522,6 +522,9 @@ export type AvailabilityQuery = {
   excludeAppointmentId?: string;
 };
 
+// ADDED: WorkingHours type for clinic and provider schedules
+export type WorkingHours = { [key: string]: { start: string; end: string; isWorking: boolean; }; };
+
 // ADDED: Utility types for better type safety
 export type ID = string;
 export type DateString = string;

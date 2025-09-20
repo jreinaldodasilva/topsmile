@@ -3,7 +3,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
 import { SignOptions, JwtPayload } from 'jsonwebtoken';
-import { User, IUser } from '../models/User';
+import { User as IUser } from '@topsmile/types';
+import { User as UserModel } from '../models/User';
 import { Clinic } from '../models/Clinic';
 import { tokenBlacklistService } from './tokenBlacklistService';
 import {
@@ -315,7 +316,7 @@ class AuthService {
             }
 
             // Check if user already exists
-            const existingUser = await User.findOne({ email: data.email.toLowerCase() });
+            const existingUser = await UserModel.findOne({ email: data.email.toLowerCase() });
             if (existingUser) {
                 throw new ConflictError('Usuário já existe com este e-mail');
             }
@@ -353,34 +354,34 @@ class AuthService {
                 clinicId = savedClinic._id;
             }
 
-            const user = new User({
+            const user = new UserModel({
                 name: data.name,
                 email: data.email.toLowerCase(),
                 password: data.password,
                 clinic: clinicId
             });
 
-            const savedUser = await user.save();
+            const savedUserModel = await user.save();
 
             // FIXED: Generate tokens with proper typing
             const tokenPayload: TokenPayload = {
-                userId: (savedUser._id as any).toString(),
-                email: savedUser.email,
-                role: savedUser.role,
-                ...(savedUser.clinic && { clinicId: savedUser.clinic.toString() })
+                userId: (savedUserModel._id as any).toString(),
+                email: savedUserModel.email,
+                role: savedUserModel.role,
+                ...(savedUserModel.clinic && { clinicId: savedUserModel.clinic.toString() })
             };
 
             const accessToken = this.generateAccessToken(tokenPayload);
-            const refreshDoc = await this.createRefreshToken((savedUser._id as any).toString());
+            const refreshDoc = await this.createRefreshToken((savedUserModel._id as any).toString());
 
             // Update last login
-            savedUser.lastLogin = new Date();
-            await savedUser.save();
+            savedUserModel.lastLogin = new Date();
+            await savedUserModel.save();
 
             return {
                 success: true,
                 data: {
-                    user: savedUser,
+                    user: savedUserModel,
                     accessToken,
                     refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES
@@ -414,7 +415,7 @@ class AuthService {
                 throw new ValidationError('E-mail e senha são obrigatórios');
             }
 
-            const user = await User.findOne({ email: data.email.toLowerCase() })
+            const user = await UserModel.findOne({ email: data.email.toLowerCase() })
                 .select('+password')
                 .populate('clinic');
 
@@ -490,7 +491,7 @@ class AuthService {
                 throw new ValidationError('ID do usuário é obrigatório');
             }
 
-            const user = await User.findById(userId).populate('clinic', 'name subscription settings');
+            const user = await UserModel.findById(userId).populate('clinic', 'name subscription settings');
             if (!user) {
                 throw new NotFoundError('Usuário');
             }
@@ -521,7 +522,7 @@ class AuthService {
                 throw new ValidationError('Nova senha deve ser diferente da atual');
             }
 
-            const user = await User.findById(userId).select('+password');
+            const user = await UserModel.findById(userId).select('+password');
             if (!user) {
                 throw new NotFoundError('Usuário');
             }
@@ -555,7 +556,7 @@ class AuthService {
                 throw new ValidationError('E-mail é obrigatório');
             }
 
-            const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
+            const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
             if (!user) {
                 // To prevent user enumeration, we don't reveal that the user doesn't exist.
                 // We can log this event for monitoring purposes.
@@ -598,7 +599,7 @@ class AuthService {
             // Hash the token to find it in the database
             const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
-            const user = await User.findOne({
+            const user = await UserModel.findOne({
                 passwordResetToken: hashedToken,
                 passwordResetExpires: { $gt: new Date() } // Check if the token has not expired
             }).select('+passwordResetToken +passwordResetExpires');

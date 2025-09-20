@@ -1,5 +1,6 @@
 // backend/src/services/appointmentTypeService.ts
-import { AppointmentType, IAppointmentType } from '../models/AppointmentType';
+import { AppointmentType as IAppointmentType } from '@topsmile/types';
+import { AppointmentType as AppointmentTypeModel } from '../models/AppointmentType';
 import mongoose from 'mongoose';
 
 export interface CreateAppointmentTypeData {
@@ -73,7 +74,7 @@ class AppointmentTypeService {
             }
 
             // Check if appointment type with same name already exists in the clinic
-            const existingType = await AppointmentType.findOne({
+            const existingType = await AppointmentTypeModel.findOne({
                 name: data.name.trim(),
                 clinic: data.clinicId,
                 isActive: true
@@ -83,7 +84,7 @@ class AppointmentTypeService {
                 throw new Error('Já existe um tipo de agendamento ativo com este nome nesta clínica');
             }
 
-            const appointmentType = new AppointmentType({
+            const appointmentType = new AppointmentTypeModel({
                 ...data,
                 clinic: data.clinicId,
                 name: data.name.trim(),
@@ -110,7 +111,7 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
-            const appointmentType = await AppointmentType.findOne({
+            const appointmentType = await AppointmentTypeModel.findOne({
                 _id: typeId,
                 clinic: clinicId
             }).populate('clinic', 'name');
@@ -131,7 +132,7 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
-            const appointmentType = await AppointmentType.findOne({
+            const appointmentType = await AppointmentTypeModel.findOne({
                 _id: typeId,
                 clinic: clinicId
             });
@@ -157,7 +158,7 @@ class AppointmentTypeService {
 
             // Check for duplicate name if name is being updated
             if (data.name && data.name.trim() !== appointmentType.name) {
-                const existingType = await AppointmentType.findOne({
+                const existingType = await AppointmentTypeModel.findOne({
                     name: data.name.trim(),
                     clinic: clinicId,
                     isActive: true,
@@ -194,7 +195,7 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
-            const appointmentType = await AppointmentType.findOneAndUpdate(
+            const appointmentType = await AppointmentTypeModel.findOneAndUpdate(
                 {
                     _id: typeId,
                     clinic: clinicId
@@ -266,12 +267,12 @@ class AppointmentTypeService {
 
             // Execute query with pagination
             const [appointmentTypes, total] = await Promise.all([
-                AppointmentType.find(query)
+                AppointmentTypeModel.find(query)
                     .sort(sortOptions)
                     .skip(skip)
                     .limit(limit)
                     .populate('clinic', 'name'),
-                AppointmentType.countDocuments(query)
+                AppointmentTypeModel.countDocuments(query)
             ]);
 
             const totalPages = Math.ceil(total / limit);
@@ -299,7 +300,7 @@ class AppointmentTypeService {
                 throw new Error('ID da clínica inválido');
             }
 
-            return await AppointmentType.find({
+            return await AppointmentTypeModel.find({
                 clinic: clinicId,
                 isActive
             })
@@ -324,7 +325,7 @@ class AppointmentTypeService {
                 throw new Error('ID da clínica inválido');
             }
 
-            return await AppointmentType.find({
+            return await AppointmentTypeModel.find({
                 clinic: clinicId,
                 category,
                 isActive
@@ -346,7 +347,7 @@ class AppointmentTypeService {
                 throw new Error('ID da clínica inválido');
             }
 
-            return await AppointmentType.find({
+            return await AppointmentTypeModel.find({
                 clinic: clinicId,
                 isActive: true,
                 allowOnlineBooking: true
@@ -387,30 +388,30 @@ class AppointmentTypeService {
                 durationStats,
                 priceStats
             ] = await Promise.all([
-                AppointmentType.countDocuments({ clinic: clinicId }),
-                AppointmentType.countDocuments({ clinic: clinicId, isActive: true }),
-                AppointmentType.countDocuments({ clinic: clinicId, isActive: false }),
-                AppointmentType.countDocuments({ 
+                AppointmentTypeModel.countDocuments({ clinic: clinicId }),
+                AppointmentTypeModel.countDocuments({ clinic: clinicId, isActive: true }),
+                AppointmentTypeModel.countDocuments({ clinic: clinicId, isActive: false }),
+                AppointmentTypeModel.countDocuments({ 
                     clinic: clinicId, 
                     isActive: true, 
                     allowOnlineBooking: true 
                 }),
-                AppointmentType.countDocuments({ 
+                AppointmentTypeModel.countDocuments({ 
                     clinic: clinicId, 
                     isActive: true, 
                     requiresApproval: true 
                 }),
-                AppointmentType.aggregate([
+                AppointmentTypeModel.aggregate([
                     { $match: { clinic: new mongoose.Types.ObjectId(clinicId), isActive: true } },
                     { $group: { _id: '$category', count: { $sum: 1 } } },
                     { $project: { category: '$_id', count: 1, _id: 0 } },
                     { $sort: { count: -1 } }
                 ]),
-                AppointmentType.aggregate([
+                AppointmentTypeModel.aggregate([
                     { $match: { clinic: new mongoose.Types.ObjectId(clinicId), isActive: true } },
                     { $group: { _id: null, averageDuration: { $avg: '$duration' } } }
                 ]),
-                AppointmentType.aggregate([
+                AppointmentTypeModel.aggregate([
                     { 
                         $match: { 
                             clinic: new mongoose.Types.ObjectId(clinicId), 
@@ -447,7 +448,7 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
-            const appointmentType = await AppointmentType.findOne({
+            const appointmentType = await AppointmentTypeModel.findOne({
                 _id: typeId,
                 clinic: clinicId,
                 isActive: false
@@ -458,7 +459,7 @@ class AppointmentTypeService {
             }
 
             // Check for duplicate name with active types
-            const existingActiveType = await AppointmentType.findOne({
+            const existingActiveType = await AppointmentTypeModel.findOne({
                 name: appointmentType.name,
                 clinic: clinicId,
                 isActive: true,
@@ -486,7 +487,7 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
-            const originalType = await AppointmentType.findOne({
+            const originalType = await AppointmentTypeModel.findOne({
                 _id: typeId,
                 clinic: clinicId
             });
@@ -498,7 +499,7 @@ class AppointmentTypeService {
             const duplicateName = newName || `${originalType.name} (Cópia)`;
 
             // Check if the new name already exists
-            const existingType = await AppointmentType.findOne({
+            const existingType = await AppointmentTypeModel.findOne({
                 name: duplicateName,
                 clinic: clinicId,
                 isActive: true
@@ -511,10 +512,10 @@ class AppointmentTypeService {
             const duplicateData: CreateAppointmentTypeData = {
                 name: duplicateName,
                 description: originalType.description,
-                duration: originalType.duration,
+                duration: originalType.duration as number,
                 price: originalType.price,
-                color: originalType.color,
-                category: originalType.category,
+                color: originalType.color as string,
+                category: originalType.category as "consultation" | "cleaning" | "treatment" | "surgery" | "emergency",
                 allowOnlineBooking: originalType.allowOnlineBooking,
                 requiresApproval: originalType.requiresApproval,
                 bufferBefore: originalType.bufferBefore,

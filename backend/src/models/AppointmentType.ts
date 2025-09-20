@@ -81,10 +81,10 @@ const AppointmentTypeSchema = new Schema<IAppointmentType & Document>({
 }, {
     timestamps: true,
     toJSON: {
-        transform: function(doc, ret) {
+        transform: function(doc, ret: any) {
             ret.id = ret._id;
-            delete ret._id;
-            delete (ret as any).__v;
+            delete ret['_id'];
+            delete ret['__v'];
             return ret;
         }
     }

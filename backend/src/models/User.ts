@@ -66,7 +66,7 @@ const UserSchema = new Schema<IUser & Document>({
     toJSON: {
         transform: function (doc, ret) {
             ret.id = ret._id;
-            delete ret._id;
+            delete (ret as any)._id;
             delete (ret as any).__v;
             delete (ret as any).password; // Remove password from JSON output
             return ret;

@@ -1,7 +1,8 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { PatientUser, IPatientUser } from '../models/PatientUser';
-import { Patient, IPatient } from '../models/Patient';
+import { Patient as IPatient } from '@topsmile/types';
+import { Patient as PatientModel } from '../models/Patient';
 import { PatientRefreshToken } from '../models/PatientRefreshToken';
 import { 
   ValidationError, 
@@ -162,7 +163,7 @@ class PatientAuthService {
 
       if (data.patientId) {
         // FIXED: Link to existing patient
-        const existingPatient = await Patient.findOne({
+        const existingPatient = await PatientModel.findOne({
           _id: data.patientId,
           clinic: data.clinicId,
           status: 'active'
@@ -181,7 +182,7 @@ class PatientAuthService {
         patient = existingPatient;
       } else {
         // FIXED: Create new patient record
-        const newPatient = new Patient({
+        const newPatientModel = new PatientModel({
           name: data.name,
           email,
           phone: data.phone,
@@ -197,7 +198,7 @@ class PatientAuthService {
           status: 'active'
         });
 
-        patient = await newPatient.save();
+        patient = await newPatientModel.save();
       }
 
       // Create patient user account
@@ -336,7 +337,7 @@ class PatientAuthService {
         throw new UnauthorizedError('Usuário inválido ou inativo');
     }
 
-    const patient = await Patient.findById(patientUser.patient);
+    const patient = await PatientModel.findById(patientUser.patient);
     if(!patient) {
         throw new UnauthorizedError('Paciente não encontrado');
     }
@@ -413,7 +414,7 @@ class PatientAuthService {
 
   async updateProfile(patientId: string, updates: { name?: string; phone?: string; birthDate?: Date }): Promise<IPatient> {
     try {
-      const patient = await Patient.findById(patientId);
+      const patient = await PatientModel.findById(patientId);
 
       if (!patient) {
         throw new NotFoundError('Paciente não encontrado');
