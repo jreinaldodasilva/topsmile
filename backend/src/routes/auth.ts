@@ -5,7 +5,7 @@ import rateLimit from 'express-rate-limit';
 import { authService } from '../services/authService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
 
 const router = express.Router();
@@ -224,7 +224,7 @@ const changePasswordValidation = [
  *       429:
  *         description: Muitas tentativas de registro
  */
-router.post('/register', registerLimiter, registerValidation, async (req: Request, res: Response) => {
+router.post('/register', registerLimiter, registerValidation, async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
@@ -268,12 +268,8 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
       }
     });
   } catch (error) {
-    console.error('Register error:', error);
-
-    return res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Erro ao criar usuário'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -309,7 +305,7 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
  *       429:
  *         description: Muitas tentativas de login
  */
-router.post('/login', authLimiter, loginValidation, async (req: Request, res: Response) => {
+router.post('/login', authLimiter, loginValidation, async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Check validation errors
     const errors = validationResult(req);
@@ -360,12 +356,8 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
-
-    return res.status(401).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Erro ao fazer login'
-    });
+    next(error);
+    return; 
   }
 });
 
@@ -393,7 +385,7 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
  *       401:
  *         description: Não autorizado
  */
-router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const user = await authService.getUserById(req.user!.id);
 
@@ -406,16 +398,8 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
       }
     });
   } catch (error) {
-    if (error instanceof NotFoundError) {
-      return res.status(404).json({
-        success: false,
-        message: error.message
-      });
-    }
-    return res.status(500).json({
-      success: false,
-      message: 'Erro ao buscar perfil do usuário'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -452,7 +436,7 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
  *       401:
  *         description: Não autorizado
  */
-router.patch('/change-password', authenticate, changePasswordValidation, async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/change-password', authenticate, changePasswordValidation, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -476,10 +460,8 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
       }
     });
   } catch (error) {
-    return res.status(400).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Erro ao alterar senha'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -512,7 +494,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
  *       401:
  *         description: Token de refresh inválido ou expirado
  */
-router.post('/refresh', async (req: Request, res: Response) => {
+router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
   try {
     let { refreshToken } = req.cookies;
     if (!refreshToken && req.body.refreshToken) {
@@ -554,10 +536,8 @@ router.post('/refresh', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Erro ao renovar token'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -585,7 +565,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
  *       401:
  *         description: Não autorizado
  */
-router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     let { refreshToken } = req.cookies;
     if (!refreshToken && req.body.refreshToken) {
@@ -610,10 +590,8 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
       }
     });
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: 'Erro ao fazer logout'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -632,7 +610,7 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
  *       401:
  *         description: Não autorizado
  */
-router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     await authService.logoutAllDevices(req.user!.id);
     return res.json({ 
@@ -644,10 +622,8 @@ router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: 
       }
     });
   } catch (error) {
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Erro ao fazer logout' 
-    });
+    next(error);
+    return;
   }
 });
 
@@ -692,7 +668,7 @@ router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: 
  */
 router.post('/forgot-password', [
   body('email').isEmail().withMessage('E-mail inválido').normalizeEmail()
-], async (req: Request, res: Response) => {
+], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -719,11 +695,8 @@ router.post('/forgot-password', [
       }
     });
   } catch (error) {
-    console.error('Forgot password error:', error);
-    return res.status(500).json({
-      success: false,
-      message: error instanceof Error ? error.message : 'Erro ao solicitar redefinição de senha'
-    });
+    next(error);
+    return;
   }
 });
 
@@ -783,7 +756,7 @@ router.post('/reset-password/:token', [
     .withMessage('Nova senha deve conter ao menos uma letra minúscula, uma maiúscula e um número')
     .trim()
     .escape()
-], async (req: Request, res: Response) => {
+], async (req: Request, res: Response, next: NextFunction) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -808,17 +781,8 @@ router.post('/reset-password/:token', [
       }
     });
   } catch (error) {
-    console.error('Reset password error:', error);
-    if (error instanceof UnauthorizedError) {
-      return res.status(401).json({
-        success: false,
-        message: error.message
-      });
-    }
-    return res.status(500).json({
-      success: false,
-      message: (error instanceof AppError || error instanceof Error) ? error.message : 'Erro ao redefinir senha'
-    });
+    next(error);
+    return;
   }
 });
 

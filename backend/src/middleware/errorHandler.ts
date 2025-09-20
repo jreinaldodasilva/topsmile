@@ -19,9 +19,13 @@ export const errorHandler = (
   });
 
   const rawErrors = (error as any).errors;
-  const normalizedErrors = Array.isArray(rawErrors)
+  let normalizedErrors = Array.isArray(rawErrors)
     ? rawErrors.map((e: any) => (typeof e === 'string' ? { msg: e } : e))
     : undefined;
+
+  if (!normalizedErrors && error.message) {
+    normalizedErrors = [{ msg: error.message, param: 'general' }];
+  }
 
   // Handle known AppErrors
   if (isAppError(error)) {
