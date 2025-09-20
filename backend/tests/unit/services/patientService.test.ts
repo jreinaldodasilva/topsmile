@@ -16,10 +16,11 @@ describe('PatientService', () => {
   describe('createPatient', () => {
     it('should create a new patient successfully', async () => {
       const patientData = {
-        name: 'João Silva',
+        firstName: 'João',
+        lastName: 'Silva',
         email: 'joao.silva@example.com',
         phone: '(11) 91234-5678',
-        birthDate: new Date('1990-01-15'),
+        dateOfBirth: new Date('1990-01-15'),
         gender: 'male' as const,
         cpf: '123.456.789-09',
         address: {
@@ -47,7 +48,8 @@ describe('PatientService', () => {
       const result = await patientService.createPatient(patientData);
 
       expect(result).toBeDefined();
-      expect(result.name).toBe(patientData.name);
+      expect(result.firstName).toBe(patientData.firstName);
+      expect(result.lastName).toBe(patientData.lastName);
       expect(result.email).toBe(patientData.email);
       expect(result.phone).toBe(patientData.phone);
       expect(result.clinic.toString()).toBe(testClinic._id.toString());
@@ -196,9 +198,31 @@ describe('PatientService', () => {
       const result = await patientService.updatePatient(patientId, testClinic._id.toString(), updateData);
 
       expect(result).toBeDefined();
-      expect(result!.name).toBe(updateData.name);
+      expect(result!.firstName).toBe(updateData.firstName);
+      expect(result!.lastName).toBe(updateData.lastName);
       expect(result!.email).toBe(updateData.email);
       expect(result!.phone).toBe(patientData.phone); // Unchanged field
+    });
+
+    it('should update dateOfBirth', async () => {
+      const patientData = {
+        firstName: 'Date Test',
+        lastName: 'Test',
+        phone: '(11) 91234-5678',
+        clinicId: testClinic._id.toString()
+      };
+
+      const createdPatient = await patientService.createPatient(patientData);
+      const patientId = (createdPatient._id as any).toString();
+
+      const updateData = {
+        dateOfBirth: new Date('2000-01-01')
+      };
+
+      const result = await patientService.updatePatient(patientId, testClinic._id.toString(), updateData);
+
+      expect(result).toBeDefined();
+      expect(result!.dateOfBirth).toEqual(updateData.dateOfBirth);
     });
 
     it('should return null for non-existent patient', async () => {

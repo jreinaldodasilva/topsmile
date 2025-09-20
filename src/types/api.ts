@@ -137,10 +137,11 @@ export type Clinic = {
 
 // ADDED: CreatePatientDTO to enforce required fields for patient creation, aligning with backend model.
 export type CreatePatientDTO = {
-  name: string;
+  firstName: string;
+  lastName: string;
   email?: string;
   phone: string; // Required by the backend.
-  birthDate?: string | Date;
+  dateOfBirth?: string | Date;
   gender?: 'male' | 'female' | 'other';
   cpf?: string;
   address: { // The address object is required, with zipCode being a minimal requirement.

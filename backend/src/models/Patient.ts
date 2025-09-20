@@ -2,10 +2,11 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPatient extends Document {
-    name: string;
+    firstName: string;
+    lastName: string;
     email?: string;
     phone: string;
-    birthDate?: Date;
+    dateOfBirth?: Date;
     gender?: 'male' | 'female' | 'other';
     cpf?: string;
     address: {
@@ -123,7 +124,7 @@ const validateMedicalArray = (arr: string[]): boolean => {
 };
 
 const PatientSchema = new Schema<IPatient>({
-    name: {
+    firstName: {
         type: String,
         required: [true, 'Nome é obrigatório'],
         trim: true,
@@ -132,6 +133,17 @@ const PatientSchema = new Schema<IPatient>({
         validate: {
             validator: (name: string) => /^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(name),
             message: 'Nome deve conter apenas letras, espaços, hífens, apostrofes e acentos'
+        }
+    },
+    lastName: {
+        type: String,
+        required: [true, 'Sobrenome é obrigatório'],
+        trim: true,
+        minlength: [2, 'Sobrenome deve ter pelo menos 2 caracteres'],
+        maxlength: [100, 'Sobrenome deve ter no máximo 100 caracteres'],
+        validate: {
+            validator: (name: string) => /^[a-zA-ZÀ-ÿ\s\-'.]+$/.test(name),
+            message: 'Sobrenome deve conter apenas letras, espaços, hífens, apostrofes e acentos'
         }
     },
     email: {
@@ -155,7 +167,7 @@ const PatientSchema = new Schema<IPatient>({
             message: 'Telefone deve estar em formato brasileiro válido'
         }
     },
-    birthDate: {
+    dateOfBirth: {
         type: Date,
         validate: {
             validator: validateBirthDate,
