@@ -100,8 +100,10 @@ describe('apiService', () => {
           firstName: 'New',
           lastName: 'Patient',
           email: 'new.patient@example.com',
-          phone: '(11) 99999-9999'
-        };
+          phone: '(11) 99999-9999',
+          name: 'New Patient',
+          address: { street: `Rua Teste`, number: '100', neighborhood: 'Centro', city: 'São Paulo', state: 'SP', zipCode: '01000-000' },
+        }
 
         const result = await apiService.patients.create(patientData);
 
@@ -183,14 +185,20 @@ describe('apiService', () => {
 
     describe('create', () => {
       it('should create a new appointment', async () => {
+
         const appointmentData = {
           patient: 'patient123',
+          clinic: 'clinic123',
           provider: 'provider123',
           appointmentType: 'type123',
           scheduledStart: new Date('2024-02-15T10:00:00Z'),
           scheduledEnd: new Date('2024-02-15T11:00:00Z'),
           status: 'scheduled' as const,
-          notes: 'Test appointment'
+          priority: 'routine' as const,
+          preferredContactMethod: 'email' as const,
+          syncStatus: 'synced' as const,
+          notes: 'Test appointment',
+          privateNotes: 'Internal note'
         };
 
         const result = await apiService.appointments.create(appointmentData);

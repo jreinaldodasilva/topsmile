@@ -59,7 +59,7 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
 async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
   const res = await request<any>(`/api/appointments/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -72,7 +72,7 @@ async function createAppointment(payload: Partial<Appointment>): Promise<ApiResu
     body: JSON.stringify(backendPayload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
@@ -85,7 +85,7 @@ async function updateAppointment(id: string, payload: Partial<Appointment>): Pro
     body: JSON.stringify(backendPayload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data), message: res.message };
+    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
