@@ -39,7 +39,7 @@ export type Contact = {
   phone?: string;
   status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
   source?: 'website_contact_form' | 'phone' | 'email' | 'referral' | 'social_media' | 'advertisement' | string;
-  priority?: 'low' | 'medium' | 'high';
+  priority?: 'low' | 'normal' | 'high';
   notes?: string;
   assignedTo?: string | User;
   assignedToClinic?: string;

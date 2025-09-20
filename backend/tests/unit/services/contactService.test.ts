@@ -437,6 +437,28 @@ describe('ContactService', () => {
       expect(result!.status).toBe(updateData.status);
     });
 
+    it('should update priority to normal', async () => {
+      const contactData = {
+        name: 'Priority Test',
+        email: 'priority@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      };
+
+      const createdContact = await contactService.createContact(contactData);
+      const contactId = createdContact.id;
+
+      const updateData = {
+        priority: 'normal' as const
+      };
+
+      const result = await contactService.updateContact(contactId, updateData);
+
+      expect(result).toBeDefined();
+      expect(result!.priority).toBe(updateData.priority);
+    });
+
     it('should not update protected fields', async () => {
       const contactData = {
         name: 'Protected Fields Test',
@@ -574,6 +596,28 @@ describe('ContactService', () => {
       const result = await contactService.softDeleteContact('507f1f77bcf86cd799439011');
 
       expect(result).toBeNull();
+    });
+
+    it('should update status to merged', async () => {
+      const contactData = {
+        name: 'Merged Test',
+        email: 'merged@example.com',
+        clinic: testClinic._id.toString(),
+        specialty: 'Odontologia',
+        phone: '(11) 99999-9999'
+      };
+
+      const createdContact = await contactService.createContact(contactData);
+      const contactId = createdContact.id;
+
+      const updateData = {
+        status: 'merged' as const
+      };
+
+      const result = await contactService.updateContact(contactId, updateData);
+
+      expect(result).toBeDefined();
+      expect(result!.status).toBe(updateData.status);
     });
   });
 

@@ -25,7 +25,7 @@ export interface IContact extends Document {
     clinic: string; // Clinic name as string (for external leads)
     specialty: string;
     phone: string;
-    status: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed';
+    status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
     source: string;
     notes: string;
     // FIXED: Link assignedTo to a clinic context for data isolation
@@ -33,7 +33,7 @@ export interface IContact extends Document {
     assignedToClinic?: mongoose.Types.ObjectId; // refs Clinic - for data isolation
     followUpDate?: Date;
     // ADDED: Additional tracking fields
-    priority: 'low' | 'medium' | 'high';
+    priority: 'low' | 'normal' | 'high';
     leadScore?: number; // 0-100 scoring system
     lastContactedAt?: Date;
     conversionDetails?: IConversionDetails;
@@ -150,8 +150,8 @@ const ContactSchema = new Schema<IContact>({
     // ADDED: Priority field for lead management
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high'],
-        default: 'medium',
+        enum: ['low', 'normal', 'high'],
+        default: 'normal',
         index: true
     },
     leadScore: {
