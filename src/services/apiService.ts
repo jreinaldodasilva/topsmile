@@ -16,7 +16,7 @@ import type {
   AppointmentType,
   CreateFormResponse,
   RegisterRequest
-} from '../../../packages/types/src/index';
+} from '../../packages/types/src/index';
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
 

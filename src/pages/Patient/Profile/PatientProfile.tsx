@@ -171,7 +171,11 @@ const PatientProfile: React.FC = () => {
 
       const response = await apiService.patients.update(patientUser.patient._id, {
         ...updateData.patient,
-        gender: updateData.patient.gender as 'male' | 'female' | 'other' | 'prefer_not_to_say' | undefined
+        gender: updateData.patient.gender as 'male' | 'female' | 'other' | undefined,
+        address: updateData.patient.address ? {
+          ...updateData.patient.address,
+          zipCode: updateData.patient.address.zipCode || ''
+        } : undefined
       });
 
       if (response.success) {
