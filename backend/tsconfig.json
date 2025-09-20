@@ -22,7 +22,10 @@
     "incremental": true,
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@topsmile/types": ["../packages/types/src"]
+    }
   },
   "include": [
     "src/**/*",
