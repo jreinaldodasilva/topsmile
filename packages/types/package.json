@@ -1,0 +1,17 @@
+{
+  "name": "@topsmile/types",
+  "version": "1.0.0",
+  "description": "Shared types for the TopSmile application",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/react-router-dom": "^5.3.3",
+    "typescript": "^5.0.4"
+  }
+}

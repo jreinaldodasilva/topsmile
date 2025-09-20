@@ -1,48 +1,6 @@
 // backend/src/models/Clinic.ts
 import mongoose, { Document, Schema } from 'mongoose';
-
-export interface IWorkingHours {
-    monday: { start: string; end: string; isWorking: boolean };
-    tuesday: { start: string; end: string; isWorking: boolean };
-    wednesday: { start: string; end: string; isWorking: boolean };
-    thursday: { start: string; end: string; isWorking: boolean };
-    friday: { start: string; end: string; isWorking: boolean };
-    saturday: { start: string; end: string; isWorking: boolean };
-    sunday: { start: string; end: string; isWorking: boolean };
-}
-
-export interface IClinic extends Document {
-    name: string;
-    email: string;
-    phone: string;
-    address: {
-        street: string;
-        number: string;
-        complement?: string;
-        neighborhood: string;
-        city: string;
-        state: string;
-        zipCode: string;
-    };
-    cnpj?: string;
-    subscription: {
-        plan: 'basic' | 'professional' | 'premium';
-        status: 'active' | 'inactive' | 'suspended' | 'canceled';
-        startDate: Date;
-        endDate?: Date;
-    };
-    settings: {
-        timezone: string;
-        workingHours: IWorkingHours;
-        appointmentDuration: number; // minutes
-        allowOnlineBooking: boolean;
-    };
-    createdAt: Date;
-    updatedAt: Date;
-    isOperationalToday(): boolean;
-    getTodaysHours(): { start: string; end: string } | null;
-    isActiveSubscription(): boolean;
-}
+import { Clinic as IClinic, WorkingHours as IWorkingHours } from '@topsmile/types';
 
 const validateBrazilianCNPJ = (cnpj: string | undefined): boolean => {
   if (cnpj == null) return true; // Optional field
@@ -114,7 +72,7 @@ const validateWorkingHours = (hours: any): boolean => {
   return true;
 };
 
-const ClinicSchema = new Schema<IClinic>({
+const ClinicSchema = new Schema<IClinic & Document>({
     name: {
         type: String,
         required: [true, 'Nome da clínica é obrigatório'],
@@ -221,7 +179,7 @@ const ClinicSchema = new Schema<IClinic>({
     }
 });
 
-ClinicSchema.pre('save', function(this: IClinic, next) {
+ClinicSchema.pre('save', function(this: IClinic & Document, next) {
     // Normalize phone number
     if (this.phone) {
         this.phone = this.phone!.replace(/[^\d]/g, '');
@@ -282,4 +240,4 @@ ClinicSchema.index({ 'address.city': 1, 'address.state': 1 });
 ClinicSchema.index({ 'subscription.plan': 1 });
 ClinicSchema.index({ createdAt: -1 });
 
-export const Clinic = mongoose.model<IClinic>('Clinic', ClinicSchema);
+export const Clinic = mongoose.model<IClinic & Document>('Clinic', ClinicSchema);

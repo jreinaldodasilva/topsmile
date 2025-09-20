@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuthState, useAuthActions } from '../../contexts/AuthContext';
-import { RegisterFormData } from '../../types/api';
+import { RegisterFormData } from '../../../packages/types/src/index';
 import PasswordStrengthIndicator from '../../components/Auth/PasswordStrengthIndicator';
 import './AuthPage.css';
 

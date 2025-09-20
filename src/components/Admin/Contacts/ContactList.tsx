@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { useContacts, useMutateContact, useDeleteContact } from '../../../hooks/useContacts';
 import { apiService } from '../../../services/apiService';
-import type { Contact, ContactFilters, ContactListResponse } from '../../../types/api';
+import type { Contact, ContactFilters, ContactListResponse } from '../../../../packages/types/src/index';
 import ViewContactModal from './ViewContactModal';
 import CreateContactModal from './CreateContactModal';
 import ContactListSkeleton from './ContactListSkeleton';

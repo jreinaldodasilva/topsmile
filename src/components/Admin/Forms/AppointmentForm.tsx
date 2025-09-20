@@ -1,7 +1,7 @@
 // src/components/Admin/Forms/AppointmentForm.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
-import type { Appointment, Patient, Provider, AppointmentType } from '../../../types/api';
+import type { Appointment, Patient, Provider, AppointmentType } from '../../../../packages/types/src/index';
 import './AppointmentForm.css';
 
 interface AppointmentFormProps {

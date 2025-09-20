@@ -1,39 +1,6 @@
 // backend/src/models/Patient.ts (Future feature)
 import mongoose, { Document, Schema } from 'mongoose';
-
-export interface IPatient extends Document {
-    firstName: string;
-    lastName: string;
-    email?: string;
-    phone: string;
-    dateOfBirth?: Date;
-    gender?: 'male' | 'female' | 'other';
-    cpf?: string;
-    address: {
-        street?: string;
-        number?: string;
-        complement?: string;
-        neighborhood?: string;
-        city?: string;
-        state?: string;
-        zipCode?: string;
-    };
-    clinic: mongoose.Types.ObjectId;
-    emergencyContact?: {
-        name: string;
-        phone: string;
-        relationship: string;
-    };
-    medicalHistory: {
-        allergies?: string[];
-        medications?: string[];
-        conditions?: string[];
-        notes?: string;
-    };
-    status: 'active' | 'inactive';
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { Patient as IPatient } from '@topsmile/types';
 
 const validateCPF = (cpf: string | undefined): boolean => {
   if (cpf == null) return true; // Optional field
@@ -123,7 +90,7 @@ const validateMedicalArray = (arr: string[]): boolean => {
   );
 };
 
-const PatientSchema = new Schema<IPatient>({
+const PatientSchema = new Schema<IPatient & Document>({
     firstName: {
         type: String,
         required: [true, 'Nome é obrigatório'],
@@ -253,7 +220,7 @@ const PatientSchema = new Schema<IPatient>({
     }
 });
 
-PatientSchema.pre('save', function(this: IPatient, next) {
+PatientSchema.pre('save', function(this: IPatient & Document, next) {
     // Normalize phone number
     if (this.phone != null) {
         let phone: string = this.phone;
@@ -312,4 +279,4 @@ PatientSchema.index({ email: 1 });
 PatientSchema.index({ phone: 1 });
 PatientSchema.index({ status: 1 });
 
-export const Patient = mongoose.model<IPatient>('Patient', PatientSchema);
+export const Patient = mongoose.model<IPatient & Document>('Patient', PatientSchema);

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
-import type { Provider } from '../../types/api';
+import type { Provider } from '../../../packages/types/src/index';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ProviderForm from '../../components/Admin/Forms/ProviderForm';

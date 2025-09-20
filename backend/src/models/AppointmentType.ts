@@ -2,27 +2,9 @@
 // backend/src/models/AppointmentType.ts - Service/treatment types
 // ============================================================================
 import mongoose, { Document, Schema } from 'mongoose';
+import { AppointmentType as IAppointmentType } from '@topsmile/types';
 
-export interface IAppointmentType extends Document {
-    clinic: mongoose.Types.ObjectId;
-    name: string;
-    description?: string;
-    duration: number; // minutes
-    price?: number;
-    color: string; // Hex color for calendar display
-    isActive: boolean;
-    category: 'consultation' | 'cleaning' | 'treatment' | 'surgery' | 'emergency';
-    allowOnlineBooking: boolean;
-    requiresApproval: boolean; // Staff must approve before confirming
-    bufferBefore: number; // Override provider buffer if needed
-    bufferAfter: number;
-    preparationInstructions?: string; // Patient prep instructions
-    postTreatmentInstructions?: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-const AppointmentTypeSchema = new Schema<IAppointmentType>({
+const AppointmentTypeSchema = new Schema<IAppointmentType & Document>({
     clinic: {
         type: Schema.Types.ObjectId,
         ref: 'Clinic',
@@ -112,4 +94,4 @@ const AppointmentTypeSchema = new Schema<IAppointmentType>({
 AppointmentTypeSchema.index({ clinic: 1, isActive: 1 });
 AppointmentTypeSchema.index({ category: 1 });
 
-export const AppointmentType = mongoose.model<IAppointmentType>('AppointmentType', AppointmentTypeSchema);
+export const AppointmentType = mongoose.model<IAppointmentType & Document>('AppointmentType', AppointmentTypeSchema);

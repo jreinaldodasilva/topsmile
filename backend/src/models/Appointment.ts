@@ -1,109 +1,8 @@
 // backend/src/models/Appointment.ts - ENHANCED VERSION with Advanced Features
 import mongoose, { Document, Schema, Types } from 'mongoose';
+import { Appointment as IAppointment, AppointmentStatus, UserRole } from '@topsmile/types';
 
-export interface IAppointment extends Document {
-    patient: mongoose.Types.ObjectId;
-    clinic: mongoose.Types.ObjectId;
-    provider: mongoose.Types.ObjectId;
-    appointmentType: mongoose.Types.ObjectId;
-    scheduledStart: Date;
-    scheduledEnd: Date;
-    actualStart?: Date;
-    actualEnd?: Date;
-    status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-    priority: 'routine' | 'urgent' | 'emergency';
-    notes?: string;
-    privateNotes?: string;
-    remindersSent: {
-        confirmation: boolean;
-        reminder24h: boolean;
-        reminder2h: boolean;
-        customReminder?: boolean;
-    };
-    cancellationReason?: string;
-    rescheduleHistory: Array<{
-        oldDate: Date;
-        newDate: Date;
-        reason: string;
-        rescheduleBy: 'patient' | 'clinic';
-        timestamp: Date;
-        rescheduleCount: number;
-    }>;
-    
-    // Enhanced tracking fields
-    checkedInAt?: Date;
-    completedAt?: Date;
-    duration?: number;
-    waitTime?: number;
-    
-    // NEW: Advanced features
-    room?: string;
-    equipment?: string[];
-    followUpRequired: boolean;
-    followUpDate?: Date;
-    billingStatus: 'pending' | 'billed' | 'paid' | 'insurance_pending' | 'insurance_approved' | 'insurance_denied';
-    billingAmount?: number;
-    insuranceInfo?: {
-        provider: string;
-        policyNumber: string;
-        groupNumber?: string;
-        copayAmount?: number;
-    };
-    
-    // Communication preferences
-    preferredContactMethod: 'phone' | 'email' | 'sms' | 'whatsapp';
-    languagePreference?: string;
-    
-    // Quality metrics
-    patientSatisfactionScore?: number; // 1-5 scale
-    patientFeedback?: string;
-    noShowReason?: string;
-    
-    // Integration fields
-    externalId?: string; // For third-party integrations
-    syncStatus: 'synced' | 'pending' | 'error';
-    
-    createdBy: mongoose.Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-// Enhanced interface for appointment creation
-export interface CreateAppointmentDTO {
-    patientId: string;
-    clinicId: string;
-    providerId: string;
-    appointmentTypeId: string;
-    scheduledStart: Date;
-    scheduledEnd: Date;
-    priority?: 'routine' | 'urgent' | 'emergency';
-    notes?: string;
-    room?: string;
-    equipment?: string[];
-    preferredContactMethod?: 'phone' | 'email' | 'sms' | 'whatsapp';
-    languagePreference?: string;
-    createdBy: string;
-}
-
-// Enhanced interface for appointment updates
-export interface UpdateAppointmentDTO {
-    scheduledStart?: Date;
-    scheduledEnd?: Date;
-    status?: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-    priority?: 'routine' | 'urgent' | 'emergency';
-    notes?: string;
-    privateNotes?: string;
-    room?: string;
-    equipment?: string[];
-    cancellationReason?: string;
-    noShowReason?: string;
-    patientSatisfactionScore?: number;
-    patientFeedback?: string;
-    followUpRequired?: boolean;
-    followUpDate?: Date;
-}
-
-const AppointmentSchema = new Schema<IAppointment>({
+const AppointmentSchema = new Schema<IAppointment & Document>({
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
@@ -142,8 +41,8 @@ const AppointmentSchema = new Schema<IAppointment>({
     actualEnd: Date,
     status: {
         type: String,
-        enum: ['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show'],
-        default: 'scheduled',
+        enum: Object.values(AppointmentStatus),
+        default: AppointmentStatus.SCHEDULED,
         index: true
     },
     priority: {
@@ -172,17 +71,17 @@ const AppointmentSchema = new Schema<IAppointment>({
             oldDate: { type: Date, required: true },
             newDate: { type: Date, required: true },
             reason: { type: String, required: true },
-            rescheduleBy: { 
-                type: String, 
-                enum: ['patient', 'clinic'], 
-                required: true 
+            rescheduleBy: {
+                type: String,
+                enum: ['patient', 'clinic'],
+                required: true
             },
             timestamp: { type: Date, default: Date.now },
             rescheduleCount: { type: Number, default: 1 }
         }],
         maxlength: 10 // Limit to 10 entries
     },
-    
+
     // Enhanced tracking fields
     checkedInAt: Date,
     completedAt: Date,
@@ -196,7 +95,7 @@ const AppointmentSchema = new Schema<IAppointment>({
         min: 0,
         max: 600
     },
-    
+
     // NEW: Advanced features
     room: {
         type: String,
@@ -235,7 +134,7 @@ const AppointmentSchema = new Schema<IAppointment>({
             min: 0
         }
     },
-    
+
     // Communication preferences
     preferredContactMethod: {
         type: String,
@@ -246,7 +145,7 @@ const AppointmentSchema = new Schema<IAppointment>({
         type: String,
         default: 'pt-BR'
     },
-    
+
     // Quality metrics
     patientSatisfactionScore: {
         type: Number,
@@ -258,7 +157,7 @@ const AppointmentSchema = new Schema<IAppointment>({
         maxlength: 1000
     },
     noShowReason: String,
-    
+
     // Integration fields
     externalId: {
         type: String,
@@ -270,7 +169,7 @@ const AppointmentSchema = new Schema<IAppointment>({
         enum: ['synced', 'pending', 'error'],
         default: 'synced'
     },
-    
+
     createdBy: {
         type: Schema.Types.ObjectId,
         ref: 'User',
@@ -806,4 +705,4 @@ AppointmentSchema.statics.getClinicAnalytics = function(
     ]);
 };
 
-export const Appointment = mongoose.model<IAppointment>('Appointment', AppointmentSchema);
+export const Appointment = mongoose.model<IAppointment & Document>('Appointment', AppointmentSchema);

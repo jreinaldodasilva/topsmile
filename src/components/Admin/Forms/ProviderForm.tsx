@@ -1,7 +1,7 @@
 // src/components/Admin/Forms/ProviderForm.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
-import type { Provider } from '../../../types/api';
+import type { Provider } from '../../../../packages/types/src/index';
 import './ProviderForm.css';
 
 interface ProviderFormProps {

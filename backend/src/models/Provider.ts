@@ -2,33 +2,7 @@
 // backend/src/models/Provider.ts - New model for dentists/hygienists
 // ============================================================================
 import mongoose, { Document, Schema } from 'mongoose';
-
-
-export interface IProvider extends Document {
-    clinic: mongoose.Types.ObjectId;
-    user?: mongoose.Types.ObjectId; // Link to User if provider has system access
-    name: string;
-    email?: string;
-    phone?: string;
-    specialties: string[]; // ['general_dentistry', 'orthodontics', 'oral_surgery']
-    licenseNumber?: string;
-    isActive: boolean;
-    workingHours: {
-        monday: { start: string; end: string; isWorking: boolean };
-        tuesday: { start: string; end: string; isWorking: boolean };
-        wednesday: { start: string; end: string; isWorking: boolean };
-        thursday: { start: string; end: string; isWorking: boolean };
-        friday: { start: string; end: string; isWorking: boolean };
-        saturday: { start: string; end: string; isWorking: boolean };
-        sunday: { start: string; end: string; isWorking: boolean };
-    };
-    timeZone: string;
-    bufferTimeBefore: number; // minutes
-    bufferTimeAfter: number; // minutes
-    appointmentTypes: mongoose.Types.ObjectId[]; // What services this provider offers
-    createdAt: Date;
-    updatedAt: Date;
-}
+import { Provider as IProvider } from '@topsmile/types';
 
 // Validation functions for working hours
 const validateTimeFormat = (time: string) => {
@@ -72,7 +46,7 @@ const timeToMinutes = (time: string): number => {
     return hours * 60 + minutes;
 };
 
-const ProviderSchema = new Schema<IProvider>({
+const ProviderSchema = new Schema<IProvider & Document>({
     clinic: {
         type: Schema.Types.ObjectId,
         ref: 'Clinic',
@@ -276,7 +250,7 @@ const ProviderSchema = new Schema<IProvider>({
 });
 
 // Pre-save middleware to validate working hours logic
-ProviderSchema.pre('save', function(next) {
+ProviderSchema.pre('save', function(this: IProvider & Document, next) {
     const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
     
     for (const day of days) {
@@ -305,4 +279,4 @@ ProviderSchema.pre('save', function(next) {
 ProviderSchema.index({ clinic: 1, isActive: 1 });
 ProviderSchema.index({ email: 1 });
 
-export const Provider = mongoose.model<IProvider>('Provider', ProviderSchema);
+export const Provider = mongoose.model<IProvider & Document>('Provider', ProviderSchema);

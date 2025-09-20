@@ -1,28 +1,9 @@
 // backend/src/models/User.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import { User as IUser, UserRole } from '@topsmile/types';
 
-export interface IUser extends Document {
-    name: string;
-    email: string;
-    password: string;
-    role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
-    clinic?: mongoose.Types.ObjectId;
-    isActive: boolean;
-    lastLogin?: Date;
-    loginAttempts: number;
-    lockUntil?: Date;
-    passwordResetToken?: string;
-    passwordResetExpires?: Date;
-    createdAt: Date;
-    updatedAt: Date;
-    comparePassword(candidatePassword: string): Promise<boolean>;
-    incLoginAttempts(): Promise<void>;
-    resetLoginAttempts(): Promise<void>;
-    isLocked(): boolean;
-}
-
-const UserSchema = new Schema<IUser>({
+const UserSchema = new Schema<IUser & Document>({
     name: {
         type: String,
         required: [true, 'Nome é obrigatório'],
@@ -38,7 +19,7 @@ const UserSchema = new Schema<IUser>({
         lowercase: true,
         validate: {
             validator: function (email: string) {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                return /^[^S@]+@[^S@]+\.[^S@]+$/.test(email);
             },
             message: 'E-mail inválido'
         }
@@ -51,8 +32,8 @@ const UserSchema = new Schema<IUser>({
     },
     role: {
         type: String,
-        enum: ['super_admin', 'admin', 'manager', 'dentist', 'assistant'],
-        default: 'admin'
+        enum: Object.values(UserRole),
+        default: UserRole.ADMIN
     },
     clinic: {
         type: Schema.Types.ObjectId,
@@ -94,7 +75,7 @@ const UserSchema = new Schema<IUser>({
 });
 
 // Password strength validation - runs before other validations
-UserSchema.pre('validate', function(next) {
+UserSchema.pre('validate', function(this: IUser & Document, next) {
     if (this.isNew || this.isModified('password')) {
         const password = this.password;
         
@@ -123,7 +104,7 @@ UserSchema.pre('validate', function(next) {
         }
         
         // Optional: Check for special character (uncomment if desired)
-        // if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])/.test(password)) {
+        // if (!/(?=.*[!@#$%^&*()_+\-=\[\]{};':"\|,.<>\/?])/.test(password)) {
         //     this.invalidate('password', 'Senha deve conter pelo menos um caractere especial');
         //     return next();
         // }
@@ -144,7 +125,7 @@ UserSchema.pre('validate', function(next) {
 });
 
 // Hash password before saving
-UserSchema.pre('save', async function (next) {
+UserSchema.pre('save', async function (this: IUser & Document, next) {
     if (!this.isModified('password')) return next();
 
     const salt = await bcrypt.genSalt(12);
@@ -204,4 +185,4 @@ UserSchema.methods.isLocked = function (): boolean {
 UserSchema.index({ role: 1 });
 UserSchema.index({ clinic: 1 });
 
-export const User = mongoose.model<IUser>('User', UserSchema);
+export const User = mongoose.model<IUser & Document>('User', UserSchema);

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import Calendar from 'react-calendar';
 import { useAuthState } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
-import type { Appointment, Patient, Provider, AppointmentType } from '../../types/api';
+import type { Appointment, Patient, Provider, AppointmentType } from '../../../packages/types/src/index';
 
 // Other imports remain the same
 

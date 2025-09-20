@@ -1,7 +1,5 @@
 // src/services/apiService.ts - Updated for Backend Integration
 import { request } from './http';
-import { toBackendPatient, fromBackendPatient } from '../utils/mappers';
-import { toBackendAppointment, fromBackendAppointment, toBackendContact, fromBackendContact, toBackendProvider, fromBackendProvider } from '../utils/mappers-expanded';
 import type {
   ApiResult,
   Contact,
@@ -18,7 +16,7 @@ import type {
   AppointmentType,
   CreateFormResponse,
   RegisterRequest
-} from '../types/api';
+} from '../../../packages/types/src/index';
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
 
@@ -61,136 +59,124 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
 }
 
 async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
-  const res = await request<any>(`/api/appointments/${encodeURIComponent(id)}`);
+  const res = await request<Appointment>(`/api/appointments/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function createAppointment(payload: CreateAppointmentDTO): Promise<ApiResult<Appointment>> {
-  const backendPayload = toBackendAppointment(payload as any);
-
   const res = await request('/api/appointments', {
     method: 'POST',
-    body: JSON.stringify(backendPayload)
+    body: JSON.stringify(payload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
-  const backendPayload = toBackendAppointment(payload as any);
-
   const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(backendPayload)
+    body: JSON.stringify(payload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendAppointment(res.data as any) as any, message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 // UPDATED: Contact methods with mapping
-async function getContact(id: string): Promise<ApiResult<any>> {
-  const res = await request<any>(`/api/admin/contacts/${encodeURIComponent(id)}`);
+async function getContact(id: string): Promise<ApiResult<Contact>> {
+  const res = await request<Contact>(`/api/admin/contacts/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function createContact(payload: Partial<any>): Promise<ApiResult<any>> {
-  const backendPayload = toBackendContact(payload as any);
+async function createContact(payload: Partial<Contact>): Promise<ApiResult<Contact>> {
   const res = await request('/api/admin/contacts', {
     method: 'POST',
-    body: JSON.stringify(backendPayload)
+    body: JSON.stringify(payload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function updateContact(id: string, payload: Partial<any>): Promise<ApiResult<any>> {
-  const backendPayload = toBackendContact(payload as any);
+async function updateContact(id: string, payload: Partial<Contact>): Promise<ApiResult<Contact>> {
   const res = await request(`/api/admin/contacts/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(backendPayload)
+    body: JSON.stringify(payload)
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendContact(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 // UPDATED: Provider methods with mapping
 async function getProvider(id: string): Promise<ApiResult<Provider>> {
-  const res = await request<any>(`/api/providers/${encodeURIComponent(id)}`);
+  const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function createProvider(payload: Partial<Provider>): Promise<ApiResult<Provider>> {
-  const backendPayload = toBackendProvider(payload);
   const res = await request<Provider>(`/api/providers`, {
     method: 'POST',
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function updateProvider(id: string, payload: Partial<Provider>): Promise<ApiResult<Provider>> {
-  const backendPayload = toBackendProvider(payload);
   const res = await request<Provider>(`/api/providers/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendProvider(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 // UPDATED: Patient methods with mapping
-async function getPatient(id: string): Promise<ApiResult<any>> {
-  const res = await request<any>(`/api/patients/${encodeURIComponent(id)}`);
+async function getPatient(id: string): Promise<ApiResult<Patient>> {
+  const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
 async function createPatient(payload: CreatePatientDTO): Promise<ApiResult<Patient>> {
-  const backendPayload = toBackendPatient(payload);
-
   const res = await request<Patient>(`/api/patients`, {
     method: 'POST',
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendPatient(res.data as any) as any, message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function updatePatient(id: string, payload: Partial<any>): Promise<ApiResult<any>> {
-  const backendPayload = toBackendPatient(payload);
-
-  const res = await request<any>(`/api/patients/${encodeURIComponent(id)}`, {
+async function updatePatient(id: string, payload: Partial<Patient>): Promise<ApiResult<Patient>> {
+  const res = await request<Patient>(`/api/patients/${encodeURIComponent(id)}`, {
     method: 'PATCH',
-    body: JSON.stringify(backendPayload),
+    body: JSON.stringify(payload),
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+    return { success: true, data: res.data, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }

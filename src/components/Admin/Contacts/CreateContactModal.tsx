@@ -1,6 +1,6 @@
 // src/components/Admin/Contacts/CreateContactModal.tsx
 import React, { useState } from 'react';
-import type { Contact } from '../../../types/api';
+import type { Contact } from '../../../../packages/types/src/index';
 import './CreateContactModal.css';
 
 interface CreateContactModalProps {

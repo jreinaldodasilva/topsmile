@@ -1,7 +1,7 @@
 // src/pages/Admin/PatientManagement.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/apiService';
-import type { Patient } from '../../types/api';
+import type { Patient } from '../../../packages/types/src/index';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import PatientForm from '../../components/Admin/Forms/PatientForm';

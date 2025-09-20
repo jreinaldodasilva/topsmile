@@ -12,10 +12,15 @@ router.use(authenticate);
 
 // Validation rules for creating patients
 const createPatientValidation = [
-    body('name')
+    body('firstName')
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    
+    body('lastName')
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Sobrenome deve ter entre 2 e 100 caracteres'),
     
     body('email')
         .optional()
@@ -127,11 +132,17 @@ const createPatientValidation = [
 
 // Validation rules for updating patients
 const updatePatientValidation = [
-    body('name')
+    body('firstName')
         .optional()
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+
+    body('lastName')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Sobrenome deve ter entre 2 e 100 caracteres'),
     
     body('email')
         .optional()

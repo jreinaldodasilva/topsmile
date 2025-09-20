@@ -347,6 +347,15 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+import { responseWrapper } from './middleware/normalizeResponse';
+
+// ... (other imports)
+
+// ... (other middleware)
+
+// Apply the response wrapper middleware
+app.use(responseWrapper);
+
 // Mount routes
 app.use('/api/auth', authRoutes);
 app.use("/api/calendar", calendarRoutes);

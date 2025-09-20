@@ -1,7 +1,7 @@
 // src/components/Admin/Forms/PatientForm.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
-import type { Patient } from '../../../types/api';
+import type { Patient } from '../../../../packages/types/src/index';
 import './PatientForm.css';
 
 interface PatientFormProps {

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../UI/Button/Button';
 import { apiService } from '../../../services/apiService';
-import { DashboardStats, Appointment as ApiAppointment, Patient } from '../../../types/api';
+import { DashboardStats, Appointment as ApiAppointment, Patient } from '../../../../packages/types/src/index';
 import './Dashboard.css';
 
 interface Appointment {

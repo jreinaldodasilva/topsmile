@@ -1,53 +1,8 @@
 // backend/src/models/Contact.ts - FIXED VERSION
 import mongoose, { Document, Schema } from 'mongoose';
+import { Contact as IContact, ContactStatus } from '@topsmile/types';
 
-export interface IConversionDetails {
-    convertedAt?: Date;
-    convertedBy?: mongoose.Types.ObjectId;
-    conversionNotes?: string;
-    conversionValue?: number;
-}
-
-export interface IMetadata {
-    utmSource?: string;
-    utmMedium?: string;
-    utmCampaign?: string;
-    utmTerm?: string;
-    utmContent?: string;
-    referrer?: string;
-    ipAddress?: string;
-    userAgent?: string;
-}
-
-export interface IContact extends Document {
-    name: string;
-    email: string;
-    clinic: string; // Clinic name as string (for external leads)
-    specialty: string;
-    phone: string;
-    status?: 'new' | 'contacted' | 'qualified' | 'converted' | 'closed' | 'deleted' | 'merged';
-    source: string;
-    notes: string;
-    // FIXED: Link assignedTo to a clinic context for data isolation
-    assignedTo?: mongoose.Types.ObjectId; // refs User
-    assignedToClinic?: mongoose.Types.ObjectId; // refs Clinic - for data isolation
-    followUpDate?: Date;
-    // ADDED: Additional tracking fields
-    priority: 'low' | 'normal' | 'high';
-    leadScore?: number; // 0-100 scoring system
-    lastContactedAt?: Date;
-    conversionDetails?: IConversionDetails;
-    metadata?: IMetadata;
-    // Soft delete fields
-    deletedAt?: Date;
-    deletedBy?: mongoose.Types.ObjectId;
-    // Merge tracking
-    mergedInto?: mongoose.Types.ObjectId;
-    createdAt: Date;
-    updatedAt: Date;
-}
-
-const ConversionDetailsSchema = new Schema<IConversionDetails>({
+const ConversionDetailsSchema = new Schema({
     convertedAt: Date,
     convertedBy: {
         type: Schema.Types.ObjectId,
@@ -63,7 +18,7 @@ const ConversionDetailsSchema = new Schema<IConversionDetails>({
     }
 }, { _id: false });
 
-const MetadataSchema = new Schema<IMetadata>({
+const MetadataSchema = new Schema({
     utmSource: String,
     utmMedium: String,
     utmCampaign: String,
@@ -74,7 +29,7 @@ const MetadataSchema = new Schema<IMetadata>({
     userAgent: String
 }, { _id: false });
 
-const ContactSchema = new Schema<IContact>({
+const ContactSchema = new Schema<IContact & Document>({
     name: {
         type: String,
         required: [true, 'Nome é obrigatório'],
@@ -119,8 +74,8 @@ const ContactSchema = new Schema<IContact>({
     },
     status: {
         type: String,
-        enum: ['new', 'contacted', 'qualified', 'converted', 'closed', 'deleted', 'merged'],
-        default: 'new',
+        enum: Object.values(ContactStatus),
+        default: ContactStatus.NEW,
         index: true // IMPROVED: Add index for frequent queries
     },
     source: {
@@ -210,7 +165,7 @@ ContactSchema.index({
 }); // Clinic dashboard queries
 
 // ADDED: Pre-save middleware for data validation
-ContactSchema.pre('save', function(next) {
+ContactSchema.pre('save', function(this: IContact & Document, next) {
     // Auto-assign clinic based on assignedTo user if not set
     if (this.assignedTo && !this.assignedToClinic) {
         // Note: This would require populating the user to get their clinic
@@ -264,4 +219,4 @@ ContactSchema.statics.findOverdueFollowUps = function(clinicId?: string) {
     return this.find(query).sort({ followUpDate: 1 });
 };
 
-export const Contact = mongoose.model<IContact>('Contact', ContactSchema);
+export const Contact = mongoose.model<IContact & Document>('Contact', ContactSchema);
