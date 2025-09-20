@@ -178,7 +178,9 @@ const PatientForm: React.FC<PatientFormProps> = ({
       newErrors.cpf = 'CPF deve estar no formato XXX.XXX.XXX-XX';
     }
 
-    if (formData.address.zipCode && !/^\d{5}-?\d{3}$/.test(formData.address.zipCode)) {
+    if (!formData.address.zipCode.trim()) {
+      newErrors['address.zipCode'] = 'CEP é obrigatório';
+    } else if (!/^\d{5}-?\d{3}$/.test(formData.address.zipCode)) {
       newErrors['address.zipCode'] = 'CEP deve estar no formato XXXXX-XXX';
     }
 
@@ -196,18 +198,23 @@ const PatientForm: React.FC<PatientFormProps> = ({
     setSubmitting(true);
 
     try {
-      const patientData = {
-        ...formData,
-        fullName: `${formData.firstName} ${formData.lastName}`.trim(),
-        // Convert empty string to undefined for gender to match Patient type
-        gender: formData.gender === '' ? undefined : formData.gender
-      };
+      const patientToSave = {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        email: formData.email,
+        phone: formData.phone,
+        birthDate: formData.dateOfBirth,
+        gender: formData.gender === '' || formData.gender === 'prefer_not_to_say' ? undefined : formData.gender,
+        cpf: formData.cpf,
+        address: formData.address,
+        emergencyContact: formData.emergencyContact,
+        medicalHistory: formData.medicalHistory
+    };
 
       let result;
       if (patient?._id) {
-        result = await apiService.patients.update(patient._id, patientData);
+        result = await apiService.patients.update(patient._id, patientToSave);
       } else {
-        result = await apiService.patients.create(patientData);
+        result = await apiService.patients.create(patientToSave);
       }
 
       if (result.success && result.data) {

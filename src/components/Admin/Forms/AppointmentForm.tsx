@@ -209,16 +209,28 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     setSubmitting(true);
 
     try {
+      const selectedProvider = providers.find(p => p._id === formData.providerId);
+      const clinicId = (typeof selectedProvider?.clinic === 'object' ? selectedProvider.clinic?._id : selectedProvider?.clinic) || '';
+
       const appointmentData = {
-        patient: formData.patientId,
-        provider: formData.providerId,
-        appointmentType: formData.appointmentTypeId,
+        patient: formData.patientId as string,
+        provider: formData.providerId as string,
+        appointmentType: formData.appointmentTypeId as string,
         scheduledStart: new Date(formData.scheduledStart).toISOString(),
         scheduledEnd: new Date(formData.scheduledEnd).toISOString(),
         status: formData.status,
         priority: formData.priority,
-        notes: formData.notes
+        notes: formData.notes,
+        clinic: clinicId,
+        preferredContactMethod: 'email' as const,
+        syncStatus: 'pending' as const
       };
+
+      if (!clinicId) {
+        setErrors({ submit: 'O profissional selecionado não tem uma clínica associada.' });
+        setSubmitting(false);
+        return;
+      }
 
       let result;
       if (appointment?._id) {

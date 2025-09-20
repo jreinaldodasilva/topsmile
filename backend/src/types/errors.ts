@@ -77,7 +77,7 @@ export const isDatabaseError = (error: unknown): error is DatabaseError => {
 export interface ErrorResponse {
   success: false;
   message: string;
-  errors?: string[];
+  errors?: Array<{ msg: string; param?: string }>;
   meta?: {
     timestamp: string;
     requestId?: string;

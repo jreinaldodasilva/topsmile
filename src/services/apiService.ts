@@ -10,7 +10,9 @@ import type {
   DashboardStats,
   User,
   Patient,
+  CreatePatientDTO,
   Appointment,
+  CreateAppointmentDTO,
   Provider,
   Clinic,
   AppointmentType,
@@ -66,7 +68,7 @@ async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function createAppointment(payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
+async function createAppointment(payload: CreateAppointmentDTO): Promise<ApiResult<Appointment>> {
   const backendPayload = toBackendAppointment(payload as any);
 
   const res = await request('/api/appointments', {
@@ -167,15 +169,15 @@ async function getPatient(id: string): Promise<ApiResult<any>> {
   return { success: res.ok, data: res.data, message: res.message };
 }
 
-async function createPatient(payload: Partial<any>): Promise<ApiResult<any>> {
+async function createPatient(payload: CreatePatientDTO): Promise<ApiResult<Patient>> {
   const backendPayload = toBackendPatient(payload);
 
-  const res = await request<any>(`/api/patients`, {
+  const res = await request<Patient>(`/api/patients`, {
     method: 'POST',
     body: JSON.stringify(backendPayload),
   });
   if (res.ok && res.data) {
-    return { success: true, data: fromBackendPatient(res.data), message: res.message };
+    return { success: true, data: fromBackendPatient(res.data as any) as any, message: res.message };
   }
   return { success: res.ok, data: res.data, message: res.message };
 }

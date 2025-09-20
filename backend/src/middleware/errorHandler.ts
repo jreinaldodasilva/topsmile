@@ -18,11 +18,17 @@ export const errorHandler = (
     timestamp: new Date().toISOString()
   });
 
+  const rawErrors = (error as any).errors;
+  const normalizedErrors = Array.isArray(rawErrors)
+    ? rawErrors.map((e: any) => (typeof e === 'string' ? { msg: e } : e))
+    : undefined;
+
   // Handle known AppErrors
   if (isAppError(error)) {
     const errorResponse: ErrorResponse = {
       success: false,
       message: error.message,
+      errors: normalizedErrors,
       meta: {
         timestamp: new Date().toISOString(),
         requestId: (req as any).requestId // Assuming requestId is attached to req
@@ -36,6 +42,7 @@ export const errorHandler = (
   const errorResponse: ErrorResponse = {
     success: false,
     message: 'Erro interno do servidor',
+    errors: normalizedErrors,
     meta: {
       timestamp: new Date().toISOString(),
       requestId: (req as any).requestId // Assuming requestId is attached to req

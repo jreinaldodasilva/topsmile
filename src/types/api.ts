@@ -135,25 +135,29 @@ export type Clinic = {
   [key: string]: any;
 };
 
-// UPDATED: Patient type to match backend model
-export type Patient = {
-  id?: string;
-  _id?: string;
+// ADDED: CreatePatientDTO to enforce required fields for patient creation, aligning with backend model.
+export type CreatePatientDTO = {
   name: string;
   email?: string;
-  phone?: string;
+  phone: string; // Required by the backend.
   birthDate?: string | Date;
   gender?: 'male' | 'female' | 'other';
-  // ADDED: Backend-specific fields
   cpf?: string;
-  address?: {
+  address: { // The address object is required, with zipCode being a minimal requirement.
     street?: string;
     number?: string;
     neighborhood?: string;
     city?: string;
     state?: string;
-    zipCode?: string;
+    zipCode: string;
   };
+  clinic?: string;
+};
+
+// UPDATED: Patient type to build upon CreatePatientDTO.
+export type Patient = CreatePatientDTO & {
+  id?: string;
+  _id?: string;
   emergencyContact?: {
     name: string;
     phone: string;
@@ -165,29 +169,34 @@ export type Patient = {
     conditions?: string[];
     notes?: string;
   };
-  clinic?: string;
   status?: 'active' | 'inactive';
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
 };
 
-// UPDATED: Appointment type to match backend model
-export type Appointment = {
-  id?: string;
-  _id?: string;
+// ADDED: CreateAppointmentDTO to enforce required fields for appointment creation.
+export type CreateAppointmentDTO = {
   patient: string | Patient;
   clinic: string | Clinic;
   provider: string | Provider;
   appointmentType: string | AppointmentType;
-  scheduledStart?: string | Date;
-  scheduledEnd?: string | Date;
-  actualStart?: string | Date;
-  actualEnd?: string | Date;
-  status?: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-  priority?: 'routine' | 'urgent' | 'emergency';
+  scheduledStart: string | Date;
+  scheduledEnd: string | Date;
+  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+  priority: 'routine' | 'urgent' | 'emergency';
+  preferredContactMethod: 'phone' | 'email' | 'sms' | 'whatsapp';
+  syncStatus: 'synced' | 'pending' | 'error';
   notes?: string;
   privateNotes?: string;
+};
+
+// UPDATED: Appointment type to build upon CreateAppointmentDTO.
+export type Appointment = CreateAppointmentDTO & {
+  id?: string;
+  _id?: string;
+  actualStart?: string | Date;
+  actualEnd?: string | Date;
   remindersSent?: {
     confirmation: boolean;
     reminder24h: boolean;
@@ -219,13 +228,11 @@ export type Appointment = {
     groupNumber?: string;
     copayAmount?: number;
   };
-  preferredContactMethod?: 'phone' | 'email' | 'sms' | 'whatsapp';
   languagePreference?: string;
   patientSatisfactionScore?: number;
   patientFeedback?: string;
   noShowReason?: string;
   externalId?: string;
-  syncStatus?: 'synced' | 'pending' | 'error';
   createdBy?: User;
   createdAt?: string | Date;
   updatedAt?: string | Date;
