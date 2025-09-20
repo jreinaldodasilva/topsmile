@@ -198,8 +198,9 @@ const PatientForm: React.FC<PatientFormProps> = ({
     setSubmitting(true);
 
     try {
-      const patientToSave = {
-        name: `${formData.firstName} ${formData.lastName}`.trim(),
+    const patientToSave = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
         birthDate: formData.dateOfBirth,
