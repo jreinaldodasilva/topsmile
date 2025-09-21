@@ -266,7 +266,7 @@ router.patch('/profile',
                 });
             }
 
-            const updatedPatient = await patientAuthService.updateProfile(req.patient!.id, req.body);
+            const updatedPatient = await patientAuthService.updateProfile((req.patient!.id as any), req.body);
 
             return res.json(standardResponse(updatedPatient, 'Perfil atualizado com sucesso', req));
         } catch (error) {
