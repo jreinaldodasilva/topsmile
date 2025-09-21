@@ -475,6 +475,13 @@ export type AvailabilityQuery = {
     date: Date;
     excludeAppointmentId?: string;
 };
+export type WorkingHours = {
+    [key: string]: {
+        start: string;
+        end: string;
+        isWorking: boolean;
+    };
+};
 export type ID = string;
 export type DateString = string;
 export type TimestampString = string;
