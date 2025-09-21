@@ -1,9 +1,11 @@
-# TODO: Fix TypeScript Errors
+- [x] Fix import statements for jwt and crypto
+- [x] Add transformUserToIUser helper function
+- [x] Update register method to return transformed user
+- [x] Update login method to return transformed user
+- [x] Update getUserById method to return transformed user
+- [x] Fix refreshToken method to use IUser properties
+- [ ] Run type check and lint to confirm no errors
 
-## Pending Tasks
-- [x] Add WorkingHours type to packages/types/src/index.ts
-- [x] Update backend/tsconfig.json to include types package
-- [x] Fix imports in service files to use @topsmile/types for interfaces
-- [x] Fix toJSON transforms in model files to handle _id properly
-- [x] Add date conversions and undefined checks in relevant files
-- [ ] Run tsc --noEmit to verify fixes
+
+
+

@@ -260,7 +260,7 @@ class SchedulingService {
     /**
      * FIXED: Create appointment with proper transaction handling
      */
-    async createAppointmentModel(data: CreateAppointmentData): Promise<SchedulingResult<Appointment>> {
+    async createAppointmentModel(data: CreateAppointmentData): Promise<SchedulingResult<IAppointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -285,6 +285,10 @@ class SchedulingService {
                 throw new Error('Tipo de agendamento não encontrado');
             }
 
+            if (!appointmentType.duration) {
+                throw new Error('Duração do tipo de agendamento não definida');
+            }
+
             // Validate provider with session
             const provider = await (session
                 ? ProviderModel.findById(providerId).session(session)
@@ -294,7 +298,7 @@ class SchedulingService {
             }
 
             // Calculate end time
-            const scheduledEnd = addMinutes(scheduledStart, appointmentType.duration);
+            const scheduledEnd = addMinutes(scheduledStart, appointmentType.duration!);
 
             // CRITICAL: Check availability within transaction to prevent race conditions
             const availabilityCheck = await (session
@@ -377,7 +381,7 @@ class SchedulingService {
         newStart: Date,
         reason: string,
         rescheduleBy: 'patient' | 'clinic'
-    ): Promise<SchedulingResult<Appointment>> {
+    ): Promise<SchedulingResult<IAppointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -401,7 +405,11 @@ class SchedulingService {
                 throw new Error('Tipo de agendamento não encontrado');
             }
 
-            const newEnd = addMinutes(newStart, appointmentType.duration);
+            if (!appointmentType.duration) {
+                throw new Error('Duração do tipo de agendamento não definida');
+            }
+
+            const newEnd = addMinutes(newStart, appointmentType.duration!);
 
             // Check availability for new time (excluding current appointment)
             const isAvailable = await (session
@@ -430,9 +438,12 @@ class SchedulingService {
             // Store old appointment data for history
             const oldScheduledStart = appointment.scheduledStart;
 
+            // Initialize rescheduleHistory if not exists
+            appointment.rescheduleHistory = appointment.rescheduleHistory || [];
+
             // Update appointment within transaction
             appointment.rescheduleHistory.push({
-                oldDate: oldScheduledStart,
+                oldDate: new Date(oldScheduledStart),
                 newDate: newStart,
                 reason,
                 rescheduleBy,
@@ -477,7 +488,7 @@ class SchedulingService {
     /**
      * FIXED: Cancel appointment with transaction support
      */
-    async cancelAppointmentModel(appointmentId: string, reason: string): Promise<SchedulingResult<Appointment>> {
+    async cancelAppointmentModel(appointmentId: string, reason: string): Promise<SchedulingResult<IAppointment>> {
         // Skip transactions in test environment
         const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
         const session = isTestEnv ? null : await mongoose.startSession();
@@ -556,16 +567,28 @@ class SchedulingService {
                 return { available: false, reason: 'Profissional não encontrado' };
             }
 
+            if (!provider.workingHours) {
+                return { available: false, reason: 'Horários de trabalho não definidos' };
+            }
+
+            if (!provider.timeZone) {
+                return { available: false, reason: 'Fuso horário não definido' };
+            }
+
             // Check working hours
             const dayOfWeek = format(start, 'EEEE').toLowerCase() as keyof typeof provider.workingHours;
             const workingHours = provider.workingHours[dayOfWeek];
-            
-            if (!workingHours.isWorking) {
+
+            if (!workingHours || !workingHours.isWorking) {
                 return { available: false, reason: 'Profissional não trabalha neste dia' };
             }
 
-            const workStart = this.parseTimeToDate(start, workingHours.start, provider.timeZone);
-            const workEnd = this.parseTimeToDate(start, workingHours.end, provider.timeZone);
+            if (!workingHours.start || !workingHours.end) {
+                return { available: false, reason: 'Horários de trabalho não definidos' };
+            }
+
+            const workStart = this.parseTimeToDate(start, workingHours.start!, provider.timeZone!);
+            const workEnd = this.parseTimeToDate(start, workingHours.end!, provider.timeZone!);
 
             if (start < workStart || end > workEnd) {
                 return { available: false, reason: 'Fora do horário de trabalho' };

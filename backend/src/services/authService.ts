@@ -1,6 +1,6 @@
 // backend/src/services/authService.ts - FIXED VERSION
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
+import * as jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
 import { SignOptions, JwtPayload } from 'jsonwebtoken';
 import { User as IUser } from '@topsmile/types';
@@ -71,6 +71,22 @@ class AuthService {
         this.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || '15m';
         this.REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
         this.MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
+    }
+
+    // Helper to transform UserModel to IUser
+    private transformUserToIUser(user: any): IUser {
+        return {
+            id: user._id.toString(),
+            _id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            clinic: user.clinic ? (typeof user.clinic === 'string' ? user.clinic : user.clinic._id.toString()) : undefined,
+            isActive: user.isActive,
+            lastLogin: user.lastLogin,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
+        };
     }
 
     // Get JWT secret with runtime environment variable reading
@@ -381,7 +397,7 @@ class AuthService {
             return {
                 success: true,
                 data: {
-                    user: savedUserModel,
+                    user: this.transformUserToIUser(savedUserModel),
                     accessToken,
                     refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES
@@ -450,8 +466,8 @@ class AuthService {
                 userId: (user._id as any).toString(),
                 email: user.email,
                 role: user.role,
-                ...(user.clinic && { 
-                    clinicId: user.clinic._id?.toString() || user.clinic.toString() 
+                ...(user.clinic && {
+                    clinicId: (user.clinic as any)._id.toString()
                 })
             };
 
@@ -468,7 +484,7 @@ class AuthService {
             return {
                 success: true,
                 data: {
-                    user: user,
+                    user: this.transformUserToIUser(user),
                     accessToken,
                     refreshToken: refreshDoc.token,
                     expiresIn: this.ACCESS_TOKEN_EXPIRES
@@ -496,7 +512,7 @@ class AuthService {
                 throw new NotFoundError('Usuário');
             }
 
-            return user;
+            return this.transformUserToIUser(user);
         } catch (error) {
             if (error instanceof AppError) {
                 throw error;
@@ -644,12 +660,10 @@ class AuthService {
             }
 
             const payload: TokenPayload = {
-                userId: (user._id as any).toString(),
+                userId: user.id!,
                 email: user.email,
                 role: user.role,
-                ...(user.clinic && {
-                    clinicId: user.clinic._id?.toString() || user.clinic.toString()
-                })
+                ...(user.clinic && { clinicId: user.clinic })
             };
 
             return this.generateAccessToken(payload);
