@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { isAppError, AppError, ErrorResponse } from '../types/errors';
+import type { User } from '@topsmile/types';
+
 
 export const errorHandler = (
   error: Error,

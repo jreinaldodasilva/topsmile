@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import type { Contact } from '../../../../packages/types/src/index';
 import './CreateContactModal.css';
+import type { Contact } from '@topsmile/types';
+
 
 interface CreateContactModalProps {
   onClose: () => void;

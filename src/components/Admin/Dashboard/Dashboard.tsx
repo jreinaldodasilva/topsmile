@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../UI/Button/Button';
 import { apiService } from '../../../services/apiService';
-import { DashboardStats, Appointment as ApiAppointment, Patient } from '../../../../packages/types/src/index';
+import type { Patient, DashboardStats, Appointment as ApiAppointment } from '@topsmile/types';
 import './Dashboard.css';
 
-interface Appointment {
+interface DashboardAppointment {
   id: string;
   patientName: string;
   time: string;
@@ -53,7 +53,7 @@ const EnhancedDashboard: React.FC = () => {
     }
   });
   
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [upcomingAppointments, setUpcomingAppointments] = useState<DashboardAppointment[]>([]);
   const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([]);
   const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +76,7 @@ const EnhancedDashboard: React.FC = () => {
         }
 
         if (appointmentsRes.success && appointmentsRes.data) {
-          const mappedAppointments: Appointment[] = (appointmentsRes.data as ApiAppointment[]).slice(0, 5).map(apiApt => ({
+          const mappedAppointments: DashboardAppointment[] = (appointmentsRes.data as ApiAppointment[]).slice(0, 5).map(apiApt => ({
             id: apiApt._id || apiApt.id || '',
             patientName: typeof apiApt.patient === 'string' ? apiApt.patient : apiApt.patient?.fullName || `${apiApt.patient?.firstName} ${apiApt.patient?.lastName || ''}`.trim() || 'Unknown',
             time: apiApt.scheduledStart ? new Date(apiApt.scheduledStart).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : 'N/A',

@@ -7,6 +7,8 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
 import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
+import type { User, Clinic, LoginRequest, RegisterRequest } from '@topsmile/types';
+
 
 
 const router: express.Router = express.Router();

@@ -1,4 +1,6 @@
 import { expect } from '@jest/globals';
+import type { User, Contact, Patient, Appointment } from '@topsmile/types';
+
 
 // Extend Jest matchers
 declare global {

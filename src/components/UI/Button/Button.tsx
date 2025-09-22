@@ -1,5 +1,6 @@
 // src/components/UI/Button/Button.tsx
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import { useAccessibility } from '../../../hooks/useAccessibility';
 import './Button.css';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -24,6 +25,9 @@ const Button: React.FC<ButtonProps> = ({
   children,
   ...props
 }) => {
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { announceToScreenReader } = useAccessibility();
+  
   const baseClasses = 'btn';
   const variantClasses = `btn--${variant}`;
   const sizeClasses = `btn--${size}`;
@@ -40,6 +44,12 @@ const Button: React.FC<ButtonProps> = ({
     disabledClasses,
     className
   ].filter(Boolean).join(' ');
+
+  useEffect(() => {
+    if (loading) {
+      announceToScreenReader('Carregando...', 'polite');
+    }
+  }, [loading, announceToScreenReader]);
 
   const LoadingSpinner = () => (
     <svg className="btn__spinner" data-testid="loading-spinner" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,13 +71,20 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      ref={buttonRef}
       className={classes}
       disabled={disabled || loading}
       aria-busy={loading}
       aria-pressed={props['aria-pressed'] || undefined}
+      aria-describedby={loading ? 'loading-status' : undefined}
       {...props}
     >
-      {loading && <LoadingSpinner />}
+      {loading && (
+        <>
+          <LoadingSpinner />
+          <span id="loading-status" className="sr-only">Carregando</span>
+        </>
+      )}
       {icon && iconPosition === 'left' && !loading && (
         <span className="btn__icon btn__icon--left" data-testid="icon-left">{icon}</span>
       )}

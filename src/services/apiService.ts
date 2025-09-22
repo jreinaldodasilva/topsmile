@@ -15,33 +15,12 @@ import type {
   Clinic,
   AppointmentType,
   CreateFormResponse,
-  RegisterRequest
+  RegisterRequest,
+  FormTemplate,
+  FormResponse
 } from '@topsmile/types';
 
-export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
-
-
-
-export interface FormTemplate {
-  id: string;
-  title: string;
-  questions: Array<{
-    id: string;
-    label: string;
-    type: string;
-    required?: boolean;
-    options?: Array<{ value: string; label: string }>;
-    // Add other question fields as needed
-  }>;
-}
-
-export interface FormResponse {
-  id: string;
-  templateId: string;
-  patientId: string;
-  answers: { [key: string]: string };
-  submittedAt: string;
-}
+export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType, FormTemplate, FormResponse };
 
 // UPDATED: Appointments API methods with proper mapping
 async function getAppointments(query?: Record<string, any>): Promise<ApiResult<Appointment[]>> {

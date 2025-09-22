@@ -1,4 +1,6 @@
 import { apiService } from '../../services/apiService';
+import type { User, Contact, Patient, Clinic } from '@topsmile/types';
+
 
 describe('apiService', () => {
   describe('auth methods', () => {

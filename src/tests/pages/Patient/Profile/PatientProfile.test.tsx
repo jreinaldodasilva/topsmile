@@ -4,6 +4,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { PatientAuthContext, PatientAuthContextType } from '../../../../contexts/PatientAuthContext';
 import PatientProfile from '../../../../pages/Patient/Profile/PatientProfile';
 import { apiService } from '../../../../services/apiService';
+import type { Patient, Provider } from '@topsmile/types';
+
 
 // Mocks
 jest.mock('../../../../services/apiService');

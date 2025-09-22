@@ -1,6 +1,8 @@
 // backend/src/middleware/auth.ts - FIXED VERSION
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
+import type { Clinic } from '@topsmile/types';
+
 
 /**
  * Extended request interface with user information

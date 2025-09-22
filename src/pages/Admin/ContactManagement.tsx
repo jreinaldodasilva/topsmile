@@ -5,6 +5,8 @@ import Footer from '../../components/Footer/Footer';
 import ContactList from '../../components/Admin/Contacts/ContactList';
 import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import './ContactManagement.css';
+import type { Contact } from '@topsmile/types';
+
 
 const ContactManagement: React.FC = () => {
   return (

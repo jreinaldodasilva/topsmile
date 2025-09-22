@@ -4,6 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { ErrorProvider } from '../../contexts/ErrorContext';
 import { PatientAuthProvider } from '../../contexts/PatientAuthContext';
+import type { User, Clinic } from '@topsmile/types';
+
 
 // Custom render function that includes all necessary providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {

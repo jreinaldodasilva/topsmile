@@ -4,6 +4,8 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
 import { isAppError } from '../types/errors';
+import type { Patient } from '@topsmile/types';
+
 
 const router: express.Router = express.Router();
 

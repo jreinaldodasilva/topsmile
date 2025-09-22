@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { AuthStateContext, AuthActionsContext, AuthStateContextType, AuthActionsContextType } from '../../../contexts/AuthContext';
 import LoginForm from '../../../components/Auth/LoginForm/LoginForm';
 import { BrowserRouter } from 'react-router-dom';
+import type { Provider } from '@topsmile/types';
+
 
 const mockLogin = jest.fn();
 const mockClearError = jest.fn();

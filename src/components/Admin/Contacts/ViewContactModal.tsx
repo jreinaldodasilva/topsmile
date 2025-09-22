@@ -2,6 +2,8 @@
 import React from 'react';
 import type { Contact } from '../../../../packages/types/src/index';
 import './ViewContactModal.css';
+import type { Contact } from '@topsmile/types';
+
 
 interface ViewContactModalProps {
   contact: Contact;

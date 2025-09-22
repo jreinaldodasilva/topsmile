@@ -1,4 +1,6 @@
 import swaggerJSDoc from 'swagger-jsdoc';
+import type { User, Contact, Patient, Provider, Clinic, LoginRequest, RegisterRequest } from '@topsmile/types';
+
 
 const options: swaggerJSDoc.Options = {
   definition: {

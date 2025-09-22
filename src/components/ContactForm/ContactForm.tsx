@@ -3,6 +3,8 @@ import React, { useState, FormEvent } from 'react';
 import DOMPurify from 'dompurify';
 import { apiService } from '../../services/apiService';
 import './ContactForm.css';
+import type { Clinic } from '@topsmile/types';
+
 
 // UPDATED: Interface to match backend requirements
 interface ContactFormData {

@@ -4,6 +4,8 @@ import Calendar from 'react-calendar';
 import { useAuthState } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Patient, Provider, AppointmentType } from '../../../packages/types/src/index';
+import type { Patient, Appointment, Provider, AppointmentType } from '@topsmile/types';
+
 
 // Other imports remain the same
 

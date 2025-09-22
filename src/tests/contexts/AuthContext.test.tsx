@@ -4,6 +4,8 @@ import { AuthProvider, useAuthState, useAuthActions } from '../../contexts/AuthC
 import { apiService } from '../../services/apiService';
 import { render } from '../utils/test-utils';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { User } from '@topsmile/types';
+
 
 // Mock the API service
 jest.mock('../../services/apiService', () => ({

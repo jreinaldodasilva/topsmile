@@ -1,4 +1,6 @@
 import { faker } from '@faker-js/faker';
+import type { User, Contact, Patient, Appointment, Provider, Clinic } from '@topsmile/types';
+
 
 // Mock User Data
 export const generateMockUser = (overrides = {}) => ({

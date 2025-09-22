@@ -4,6 +4,8 @@ import PatientDashboard from '../../../../pages/Patient/Dashboard/PatientDashboa
 import { apiService } from '../../../../services/apiService';
 import { PatientAuthContext } from '../../../../contexts/PatientAuthContext';
 import { render } from '../../../utils/test-utils';
+import type { Patient, Provider, Clinic } from '@topsmile/types';
+
 
 // Mocks
 jest.mock('../../../../services/apiService');

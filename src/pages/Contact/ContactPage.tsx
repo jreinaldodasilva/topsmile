@@ -4,6 +4,8 @@ import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ContactForm from '../../components/ContactForm';
 import './ContactPage.css';
+import type { Contact } from '@topsmile/types';
+
 
 // Container for staggered animations
 const formContainerVariants = {

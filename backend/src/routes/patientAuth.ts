@@ -4,6 +4,8 @@ import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../serv
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 import { patientAuthLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
 import { isAppError } from '../types/errors';
+import type { Patient } from '@topsmile/types';
+
 
 const router: express.Router = express.Router();
 

@@ -4,6 +4,8 @@ import { apiService } from '../../services/apiService';
 import type { Appointment, Provider, Patient } from '../../../packages/types/src/index';
 import AppointmentForm from '../../components/Admin/Forms/AppointmentForm';
 import './AppointmentCalendar.css';
+import type { Patient, Appointment, Provider } from '@topsmile/types';
+
 
 interface CalendarFilters {
   providerId?: string;

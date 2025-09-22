@@ -1,5 +1,7 @@
 // backend/src/models/RefreshToken.ts
 import mongoose, { Document, Schema } from 'mongoose';
+import type { User } from '@topsmile/types';
+
 
 export interface IRefreshToken extends Document {
     token: string;

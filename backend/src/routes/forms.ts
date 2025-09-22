@@ -2,6 +2,8 @@
 import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { body, validationResult } from 'express-validator';
+import type { FormTemplate, FormResponse } from '@topsmile/types';
+
 
 const router: express.Router = express.Router();
 

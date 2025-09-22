@@ -45,6 +45,7 @@
     "cy:run": "cypress run",
     "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
     "migrate-types": "node scripts/migrate-types.js",
+    "fix-type-imports": "node scripts/fix-type-imports.js",
     "lint:types": "npm run migrate-types"
   },
   "eslintConfig": {

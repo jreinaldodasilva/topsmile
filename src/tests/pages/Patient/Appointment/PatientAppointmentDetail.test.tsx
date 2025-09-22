@@ -4,6 +4,7 @@ import PatientAppointmentDetail from '../../../../pages/Patient/Appointment/Pati
 import { apiService } from '../../../../services/apiService';
 import { PatientAuthContext } from '../../../../contexts/PatientAuthContext';
 import { render } from '../../../utils/test-utils';
+import type { Provider, Clinic, Appointment } from '@topsmile/types';
 
 // Mocks
 jest.mock('../../../../services/apiService');
@@ -17,18 +18,6 @@ jest.mock('react-router-dom', () => ({
 interface PatientUser {
   id: string;
   name: string;
-}
-
-interface Appointment {
-  _id: string;
-  scheduledStart: string;
-  scheduledEnd: string;
-  status: string;
-  provider: { name: string; specialties?: string[] };
-  appointmentType: { name: string; description: string; duration: number };
-  notes?: string;
-  clinic: { name: string; address?: { street?: string; number?: string; city?: string; state?: string } };
-  createdAt: string;
 }
 
 const mockPatientUser: PatientUser = { id: 'patient1', name: 'John Doe' };

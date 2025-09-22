@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
+import type { User } from '@topsmile/types';
+
 
 import { contactService } from '../services/contactService';
 import { emailService } from '../services/emailService';

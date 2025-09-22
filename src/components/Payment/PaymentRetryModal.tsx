@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { paymentService, RetryState } from '../../services/paymentService';
 import './PaymentRetryModal.css';
+import type { Contact } from '@topsmile/types';
+
 
 interface PaymentRetryModalProps {
   isOpen: boolean;

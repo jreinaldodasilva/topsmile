@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { useContacts, useUpdateContact } from '../../../hooks/useApiQuery';
 import { apiService } from '../../../services/apiService';
-import type { Contact, ContactFilters, ContactListResponse } from '../../../../packages/types/src/index';
+import type { Contact, ContactFilters, ContactListResponse } from '@topsmile/types';
 import ViewContactModal from './ViewContactModal';
 import CreateContactModal from './CreateContactModal';
 import ContactListSkeleton from './ContactListSkeleton';

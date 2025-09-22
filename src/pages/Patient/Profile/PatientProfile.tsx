@@ -4,6 +4,8 @@ import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
 import PatientNavigation from '../../../components/PatientNavigation';
 import './PatientProfile.css';
+import type { Contact } from '@topsmile/types';
+
 
 interface PatientData {
   name: string;

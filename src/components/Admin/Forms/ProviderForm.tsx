@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
 import type { Provider } from '../../../../packages/types/src/index';
 import './ProviderForm.css';
+import type { Appointment } from '@topsmile/types';
+
 
 interface ProviderFormProps {
   provider?: Provider | null;

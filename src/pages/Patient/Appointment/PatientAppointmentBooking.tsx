@@ -3,21 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { useAppointmentTypes, useProviders, useCreateAppointment } from '../../../hooks/useApiState';
 import PatientNavigation from '../../../components/PatientNavigation';
+import type { Provider, AppointmentType } from '@topsmile/types';
 import './PatientAppointmentBooking.css';
-
-interface Provider {
-  _id: string;
-  name: string;
-  specialties: string[];
-}
-
-interface AppointmentType {
-  _id: string;
-  name: string;
-  description?: string;
-  duration: number;
-  price?: number;
-}
 
 interface TimeSlot {
   time: string;

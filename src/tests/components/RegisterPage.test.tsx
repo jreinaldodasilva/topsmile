@@ -2,6 +2,8 @@ import React from 'react';
 import { fireEvent } from '@testing-library/react';
 import RegisterPage from '../../pages/Login/RegisterPage';
 import { render, screen } from '../utils/test-utils';
+import type { User } from '@topsmile/types';
+
 
 describe('RegisterPage', () => {
   it('renders registration form fields', () => {

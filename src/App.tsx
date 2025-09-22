@@ -3,6 +3,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './providers/QueryProvider';
 import { preloadCriticalComponents } from './utils/lazyImports';
+import type { Contact, Patient, Appointment } from '@topsmile/types';
 
 // Contexts
 import { ErrorProvider } from './contexts/ErrorContext';

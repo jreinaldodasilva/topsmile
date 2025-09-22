@@ -4,6 +4,7 @@ import PatientAppointmentsList from '../../../../pages/Patient/Appointment/Patie
 import { apiService } from '../../../../services/apiService';
 import { PatientAuthContext } from '../../../../contexts/PatientAuthContext';
 import { render } from '../../../utils/test-utils';
+import type { Provider, Clinic, Appointment } from '@topsmile/types';
 
 // Mocks
 jest.mock('../../../../services/apiService');
@@ -19,15 +20,6 @@ interface PatientUser {
   email: string;
   isActive: boolean;
   emailVerified: boolean;
-}
-
-interface Appointment {
-  _id: string;
-  scheduledStart: string;
-  status: string;
-  provider: { name: string };
-  appointmentType: { name: string };
-  clinic: { name: string };
 }
 
 const mockAppointments: Appointment[] = [

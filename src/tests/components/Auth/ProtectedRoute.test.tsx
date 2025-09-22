@@ -3,6 +3,8 @@ import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AuthStateContext, AuthActionsContext, AuthStateContextType, AuthActionsContextType } from '../../../contexts/AuthContext';
 import ProtectedRoute from '../../../components/Auth/ProtectedRoute/ProtectedRoute';
+import type { User, Provider } from '@topsmile/types';
+
 
 const TestComponent = () => <div>Protected Content</div>;
 const LoginComponent = () => <div>Login Page</div>;

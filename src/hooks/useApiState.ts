@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, Appointment, AppointmentType, Provider } from '../services/apiService';
+import type { Appointment, Provider, AppointmentType } from '@topsmile/types';
+
 
 // Appointment Types
 export const useAppointmentTypes = (query?: Record<string, any>) => {

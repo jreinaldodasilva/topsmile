@@ -3,6 +3,8 @@ import express, { Response } from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../middleware/patientAuth";
 import { schedulingService } from "../services/schedulingService";
+import type { Patient, Appointment } from '@topsmile/types';
+
 
 import { Appointment } from "../models/Appointment";
 import { body, validationResult } from 'express-validator';

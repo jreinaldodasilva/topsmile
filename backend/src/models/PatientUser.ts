@@ -1,5 +1,7 @@
 import mongoose, { Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose';
 import bcrypt from 'bcryptjs';
+import type { Patient } from '@topsmile/types';
+
 
 export interface IPatientUser extends Document {
   patient: mongoose.Types.ObjectId; // References Patient

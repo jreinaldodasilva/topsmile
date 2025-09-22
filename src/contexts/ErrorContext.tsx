@@ -1,6 +1,8 @@
 // src/contexts/ErrorContext.tsx - Centralized Error Management
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import logger from '../utils/logger';
+import type { Provider } from '@topsmile/types';
+
 
 export interface ErrorNotification {
   id: string;

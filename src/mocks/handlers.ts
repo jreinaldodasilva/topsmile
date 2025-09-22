@@ -1,4 +1,6 @@
 import { http, HttpResponse } from 'msw';
+import type { User, Contact, Patient } from '@topsmile/types';
+
 
 export const handlers = [
   http.post('*/api/auth/login', async ({ request }) => {

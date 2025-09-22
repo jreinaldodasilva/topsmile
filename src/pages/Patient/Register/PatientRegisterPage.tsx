@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import './PatientRegisterPage.css';
+import type { Patient } from '@topsmile/types';
+
 
 const PatientRegisterPage: React.FC = () => {
   const { register, loading, error, clearError } = usePatientAuth();

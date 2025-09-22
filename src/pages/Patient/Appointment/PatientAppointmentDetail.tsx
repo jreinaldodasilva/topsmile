@@ -3,34 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
 import PatientNavigation from '../../../components/PatientNavigation';
+import type { Appointment } from '@topsmile/types';
 import './PatientAppointmentDetail.css';
-
-interface Appointment {
-  _id: string;
-  scheduledStart: string;
-  scheduledEnd: string;
-  status: string;
-  appointmentType: {
-    name: string;
-    description?: string;
-    duration: number;
-  };
-  provider: {
-    name: string;
-    specialties: string[];
-  };
-  clinic: {
-    name: string;
-    address?: {
-      street?: string;
-      number?: string;
-      city?: string;
-      state?: string;
-    };
-  };
-  notes?: string;
-  createdAt: string;
-}
 
 const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
   const { id } = useParams<{ id: string }>();

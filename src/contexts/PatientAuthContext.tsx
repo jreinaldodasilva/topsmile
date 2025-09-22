@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { patientLogout, LOGOUT_EVENT } from '../services/http';
+import type { Provider } from '@topsmile/types';
+
 
 interface PatientUser {
   _id: string;

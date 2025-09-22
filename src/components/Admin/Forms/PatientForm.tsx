@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
 import type { Patient } from '../../../../packages/types/src/index';
 import './PatientForm.css';
+import type { Contact } from '@topsmile/types';
+
 
 interface PatientFormProps {
   patient?: Patient | null;

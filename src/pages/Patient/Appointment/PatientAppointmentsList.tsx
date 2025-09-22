@@ -3,24 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { apiService } from '../../../services/apiService';
 import PatientNavigation from '../../../components/PatientNavigation';
+import type { Appointment } from '@topsmile/types';
 import './PatientAppointments.css';
-
-interface Appointment {
-  _id: string;
-  scheduledStart: string;
-  scheduledEnd: string;
-  status: string;
-  appointmentType: {
-    name: string;
-  };
-  provider: {
-    name: string;
-  };
-  clinic: {
-    name: string;
-  };
-  notes?: string;
-}
 
 const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
   const { patientUser, isAuthenticated } = usePatientAuth();

@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiService, Contact, ContactFilters } from '../services/apiService';
+import type { Contact, ContactFilters } from '@topsmile/types';
+
 
 export const useContacts = (filters: ContactFilters) => {
   return useQuery({

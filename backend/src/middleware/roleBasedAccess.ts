@@ -1,6 +1,8 @@
 // backend/src/middleware/roleBasedAccess.ts
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
+import type { Patient, Appointment, Provider, Clinic } from '@topsmile/types';
+
 
 // Define role hierarchy and permissions
 export const ROLE_HIERARCHY = {

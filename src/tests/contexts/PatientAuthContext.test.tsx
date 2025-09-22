@@ -3,6 +3,8 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { PatientAuthProvider, usePatientAuth } from '../../contexts/PatientAuthContext';
 import { BrowserRouter } from 'react-router-dom';
 import { apiService } from '../../services/apiService';
+import type { User, Patient } from '@topsmile/types';
+
 
 // Mock the API service
 jest.mock('../../services/apiService', () => ({

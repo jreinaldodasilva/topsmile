@@ -3,6 +3,8 @@ import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { appointmentTypeService } from '../services/appointmentTypeService';
 import { body, query, validationResult } from 'express-validator';
+import type { Appointment, AppointmentType } from '@topsmile/types';
+
 
 const router: express.Router = express.Router();
 

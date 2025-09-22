@@ -1,4 +1,4 @@
-import { Contact as IContact } from '@topsmile/types';
+import { Contact as IContact, ContactFilters, ContactListResponse } from '@topsmile/types';
 import { Contact as ContactModel } from '../models/Contact';
 import { FilterQuery } from 'mongoose';
 import { AuthenticatedRequest } from '../middleware/auth';
@@ -24,27 +24,11 @@ export interface CreateContactData {
   };
 }
 
-export interface ContactFilters {
-  status?: string;
-  source?: string;
-  dateFrom?: Date;
-  dateTo?: Date;
-  search?: string;
-}
-
 export interface PaginationOptions {
   page: number;
   limit: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
-}
-
-export interface ContactListResponse {
-  contacts: IContact[];
-  total: number;
-  page: number;
-  pages: number;
-  limit: number;
 }
 
 class ContactService {

@@ -1,4 +1,6 @@
 import { lazy } from 'react';
+import type { Patient } from '@topsmile/types';
+
 
 // Lazy load heavy components to improve initial bundle size
 export const LazyContactManagement = lazy(() => import('../pages/Admin/ContactManagement'));
