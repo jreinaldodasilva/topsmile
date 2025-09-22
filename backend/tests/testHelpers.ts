@@ -1,6 +1,7 @@
-import { User, IUser } from '../src/models/User';
-import { Clinic, IClinic } from '../src/models/Clinic';
-import { Contact, IContact } from '../src/models/Contact';
+import { User } from '../src/models/User';
+import { Clinic } from '../src/models/Clinic';
+import { Contact } from '../src/models/Contact';
+import { User as IUser, Clinic as IClinic, Contact as IContact } from '@topsmile/types';
 import jwt from 'jsonwebtoken';
 // Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
 import type { Faker } from '@faker-js/faker';

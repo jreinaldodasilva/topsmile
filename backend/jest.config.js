@@ -36,4 +36,7 @@ module.exports = {
     'default',
     ['jest-junit', { outputDirectory: 'reports', outputName: 'junit-backend.xml' }],
   ],
+  moduleNameMapper: {
+    '^@topsmile/types$': '<rootDir>/../packages/types/src',
+  },
 };
