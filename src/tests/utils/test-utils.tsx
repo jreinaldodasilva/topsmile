@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { PatientAuthProvider } from '../../contexts/PatientAuthContext';
+import { ErrorProvider } from '../../contexts/ErrorContext';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,9 +19,11 @@ const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-          <PatientAuthProvider>{children}</PatientAuthProvider>
-        </AuthProvider>
+        <ErrorProvider>
+          <AuthProvider>
+            <PatientAuthProvider>{children}</PatientAuthProvider>
+          </AuthProvider>
+        </ErrorProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );

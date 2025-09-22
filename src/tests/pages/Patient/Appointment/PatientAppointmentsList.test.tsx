@@ -23,8 +23,32 @@ interface PatientUser {
 }
 
 const mockAppointments: Appointment[] = [
-  { _id: 'appt1', scheduledStart: '2023-10-27T10:00:00.000Z', status: 'Confirmed', provider: { name: 'Dr. Smith' }, appointmentType: { name: 'Check-up' }, clinic: { name: 'Test Clinic' } },
-  { _id: 'appt2', scheduledStart: '2023-11-15T14:00:00.000Z', status: 'Completed', provider: { name: 'Dr. Jones' }, appointmentType: { name: 'Cleaning' }, clinic: { name: 'Test Clinic' } },
+  { 
+    _id: 'appt1', 
+    scheduledStart: '2023-10-27T10:00:00.000Z', 
+    scheduledEnd: '2023-10-27T10:30:00.000Z',
+    status: 'confirmed', 
+    priority: 'routine',
+    preferredContactMethod: 'phone',
+    syncStatus: 'synced',
+    patient: 'patient1',
+    provider: { name: 'Dr. Smith' }, 
+    appointmentType: { name: 'Check-up', allowOnlineBooking: true }, 
+    clinic: { name: 'Test Clinic' } 
+  },
+  { 
+    _id: 'appt2', 
+    scheduledStart: '2023-11-15T14:00:00.000Z', 
+    scheduledEnd: '2023-11-15T14:30:00.000Z',
+    status: 'completed', 
+    priority: 'routine',
+    preferredContactMethod: 'phone',
+    syncStatus: 'synced',
+    patient: 'patient1',
+    provider: { name: 'Dr. Jones' }, 
+    appointmentType: { name: 'Cleaning', allowOnlineBooking: true }, 
+    clinic: { name: 'Test Clinic' } 
+  },
 ];
 
 const mockPatientUser: PatientUser = {

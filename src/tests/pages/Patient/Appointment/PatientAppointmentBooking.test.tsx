@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PatientAuthContext, PatientAuthContextType } from '../../../../contexts/PatientAuthContext';
 import PatientAppointmentBooking from '../../../../pages/Patient/Appointment/PatientAppointmentBooking';
 import { apiService } from '../../../../services/apiService';
@@ -29,12 +30,22 @@ const mockPatientUser = {
 const mockProviders = [{ _id: 'provider1', name: 'Dr. Smith', specialties: ['General'] }];
 
 const renderBookingForm = (contextValue: Partial<PatientAuthContextType>) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  
   return render(
-    <PatientAuthContext.Provider value={contextValue as PatientAuthContextType}>
-      <MemoryRouter>
-        <PatientAppointmentBooking />
-      </MemoryRouter>
-    </PatientAuthContext.Provider>
+    <QueryClientProvider client={queryClient}>
+      <PatientAuthContext.Provider value={contextValue as PatientAuthContextType}>
+        <MemoryRouter>
+          <PatientAppointmentBooking />
+        </MemoryRouter>
+      </PatientAuthContext.Provider>
+    </QueryClientProvider>
   );
 };
 

@@ -1,6 +1,5 @@
 // src/components/Admin/Contacts/CreateContactModal.tsx
 import React, { useState } from 'react';
-import type { Contact } from '../../../../packages/types/src/index';
 import './CreateContactModal.css';
 import type { Contact } from '@topsmile/types';
 

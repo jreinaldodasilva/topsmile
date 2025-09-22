@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
-import type { User, RegisterRequest } from '../../packages/types/src/index';
 import type { User, Provider, RegisterRequest } from '@topsmile/types';
 
 

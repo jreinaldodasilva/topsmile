@@ -89,7 +89,7 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
   };
 
   const isUpcoming = (appointment: Appointment) => {
-    return new Date(appointment.scheduledStart) > new Date();
+    return new Date(appointment.scheduledStart as string) > new Date();
   };
 
   const filteredAppointments = appointments.filter(appointment => {
@@ -104,7 +104,7 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
     }
 
     try {
-      const response = await apiService.appointments.update(appointmentId, {
+      const response = await apiService.appointments.update(appointmentId!, {
         status: 'cancelled'
       });
 
@@ -218,19 +218,19 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
           ) : (
             <div className="appointments-list">
               {filteredAppointments.map((appointment) => {
-                const { date, time } = formatDateTime(appointment.scheduledStart);
+                const { date, time } = formatDateTime(appointment.scheduledStart as string);
                 const upcoming = isUpcoming(appointment);
 
                 return (
                   <div key={appointment._id} className="appointment-card">
                     <div className="appointment-info">
                       <div className="appointment-primary">
-                        <h3>{appointment.appointmentType.name}</h3>
+                        <h3>{(appointment.appointmentType as any)?.name || 'Consulta'}</h3>
                         <p className="appointment-provider">
-                          Dr. {appointment.provider.name}
+                          Dr. {(appointment.provider as any)?.name || 'Profissional'}
                         </p>
                         <p className="appointment-clinic">
-                          {appointment.clinic.name}
+                          {(appointment.clinic as any)?.name || 'Clínica'}
                         </p>
                       </div>
                       <div className="appointment-secondary">
@@ -257,7 +257,7 @@ const PatientAppointmentsList: React.FC = function PatientAppointmentsList() {
                       {upcoming && appointment.status !== 'cancelled' && (
                         <button
                           className="action-btn cancel-btn"
-                          onClick={() => handleCancelAppointment(appointment._id)}
+                          onClick={() => handleCancelAppointment(appointment._id!)}
                         >
                           Cancelar
                         </button>

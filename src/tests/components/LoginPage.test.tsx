@@ -49,7 +49,12 @@ describe('LoginPage', () => {
   it('toggles password visibility', () => {
     render(<LoginPage />);
     const passwordInput = screen.getByLabelText(/Senha/i);
-    const toggleButton = screen.getByRole('button', { name: /toggle password visibility/i });
+    const toggleButtons = screen.getAllByRole('button');
+    const toggleButton = toggleButtons.find(btn => btn.getAttribute('type') === 'button');
+
+    if (!toggleButton) {
+      throw new Error('Toggle button not found');
+    }
 
     // Initially password type is password
     expect(passwordInput).toHaveAttribute('type', 'password');

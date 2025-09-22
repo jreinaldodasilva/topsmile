@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import { Request, Response, NextFunction } from 'express';
-import type { Contact, Patient } from '@topsmile/types';
+import type { Contact as ContactType, Patient } from '@topsmile/types';
 
 
 import cookieParser from 'cookie-parser';
@@ -304,12 +304,14 @@ const passwordResetLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: AuthenticatedRequest, res) => {
+  keyGenerator: (req: Request) => {
     // Use user ID if authenticated, otherwise use IP address
-    return req.user?.id || req.ip || 'unknown';
+    const authReq = req as AuthenticatedRequest;
+    return authReq.user?.id || req.ip || 'unknown';
   },
   handler: (req, res) => {
-    console.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
+    const authReq = req as AuthenticatedRequest;
+    console.warn(`Rate limit exceeded for password reset for user/IP ${authReq.user?.id || req.ip}`);
     res.status(429).json({ success: false, message: 'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.' });
   }
 });
@@ -488,7 +490,7 @@ app.get('/api/health/database', async (req, res) => {
 app.get('/api/health/metrics',
   authenticate,
   authorize('super_admin', 'admin'),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const memoryUsage = process.memoryUsage();
       const cpuUsage = process.cpuUsage();

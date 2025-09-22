@@ -16,19 +16,32 @@ jest.mock('react-router-dom', () => ({
 }));
 
 interface PatientUser {
-  id: string;
-  name: string;
+  _id: string;
+  patient: { _id: string; name: string; phone: string };
+  email: string;
+  isActive: boolean;
+  emailVerified: boolean;
 }
 
-const mockPatientUser: PatientUser = { id: 'patient1', name: 'John Doe' };
+const mockPatientUser: PatientUser = { 
+  _id: 'user1',
+  patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
+  email: 'john@example.com',
+  isActive: true,
+  emailVerified: true
+};
 
 const mockAppointment: Appointment = {
   _id: 'appt1',
   scheduledStart: '2099-10-27T10:00:00.000Z',
   scheduledEnd: '2099-10-27T10:30:00.000Z',
   status: 'confirmed',
+  priority: 'routine',
+  preferredContactMethod: 'phone',
+  syncStatus: 'synced',
+  patient: 'patient1',
   provider: { name: 'Smith', specialties: ['Ortodontia'] },
-  appointmentType: { name: 'Check-up', description: 'Routine', duration: 30 },
+  appointmentType: { name: 'Check-up', description: 'Routine', duration: 30, allowOnlineBooking: true },
   notes: 'Annual check-up',
   clinic: { name: 'Test Clinic', address: { street: 'Rua A', number: '123', city: 'SP', state: 'SP' } },
   createdAt: '2023-01-01T10:00:00.000Z',

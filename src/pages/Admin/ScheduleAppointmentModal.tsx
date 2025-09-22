@@ -1,6 +1,5 @@
 // src/pages/Admin/ScheduleAppointmentModal.tsx
 import React from 'react';
-import type { Patient } from '../../../packages/types/src/index';
 import AppointmentForm from '../../components/Admin/Forms/AppointmentForm';
 import './ScheduleAppointmentModal.css';
 import type { Patient } from '@topsmile/types';

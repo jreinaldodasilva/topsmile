@@ -16,11 +16,12 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock fetch
+global.fetch = jest.fn();
 const mockFetch = global.fetch as jest.MockedFunction<typeof fetch>;
 
 describe('http service', () => {
   beforeEach(() => {
-    mockFetch.mockClear();
+    jest.clearAllMocks();
     localStorageMock.clear();
     jest.clearAllTimers();
   });

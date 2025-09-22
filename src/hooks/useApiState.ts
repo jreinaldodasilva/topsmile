@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiService, Appointment, AppointmentType, Provider } from '../services/apiService';
+import { apiService } from '../services/apiService';
 import type { Appointment, Provider, AppointmentType } from '@topsmile/types';
 
 

@@ -15,9 +15,16 @@ export const handlers = [
             email: 'admin@topsmile.com',
             role: 'admin'
           },
+          accessToken: 'mock-access-token',
+          refreshToken: 'mock-refresh-token',
           expiresIn: '3600'
         }
       });
+    } else if (body.email === 'test@example.com') {
+      return HttpResponse.json({
+        success: false,
+        message: 'Network error - please check your connection'
+      }, { status: 500 });
     } else {
       return HttpResponse.json({
         success: false,
@@ -87,6 +94,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
+        _id: id,
         id: id,
         firstName: 'João',
         lastName: 'Silva',
@@ -113,16 +121,15 @@ export const handlers = [
   }),
 
   http.patch('*/api/patients/:id', async ({ request }) => {
-    const body = await request.json() as { name: string; phone: string };
+    const body = await request.json() as { firstName?: string; lastName?: string; phone?: string };
     return HttpResponse.json({
       success: true,
       data: {
         id: 'patient123',
-        name: body.name,
+        firstName: body.firstName || 'Updated',
+        lastName: body.lastName || 'Name',
         phone: body.phone,
-        firstName: 'Updated',
-        lastName: 'Name',
-        fullName: 'Updated Name'
+        fullName: `${body.firstName || 'Updated'} ${body.lastName || 'Name'}`
       }
     });
   }),
@@ -139,10 +146,13 @@ export const handlers = [
       success: true,
       data: {
         contacts: [
-          { id: 'contact1', name: 'Contact 1' },
-          { id: 'contact2', name: 'Contact 2' }
+          { id: 'contact1', name: 'John Doe', email: 'john@example.com', clinic: 'Test Clinic', phone: '123456789', specialty: 'General', status: 'new', createdAt: new Date().toISOString() },
+          { id: 'contact2', name: 'Jane Doe', email: 'jane@example.com', clinic: 'Test Clinic 2', phone: '987654321', specialty: 'Orthodontics', status: 'contacted', createdAt: new Date().toISOString() }
         ],
-        total: 2
+        total: 2,
+        page: 1,
+        pages: 1,
+        limit: 10
       }
     });
   }),

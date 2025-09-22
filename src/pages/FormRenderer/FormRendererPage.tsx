@@ -6,6 +6,23 @@ import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import './FormRendererPage.css';
 
+type FormQuestion = {
+  id: string;
+  label: string;
+  type: 'text' | 'textarea' | 'select' | 'email' | 'phone' | 'number';
+  required?: boolean;
+  options?: Array<{ label: string; value: string }>;
+};
+
+type FormOption = {
+  label: string;
+  value: string;
+};
+
+type ExtendedFormTemplate = FormTemplate & {
+  questions: FormQuestion[];
+};
+
 interface FormRendererProps {
   templateId: string;
   patientId?: string;
@@ -19,7 +36,7 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
   onSubmitSuccess,
   onError 
 }) => {
-  const [template, setTemplate] = useState<FormTemplate | null>(null);
+  const [template, setTemplate] = useState<ExtendedFormTemplate | null>(null);
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -34,7 +51,7 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
         const result: ApiResult<FormTemplate> = await apiService.forms.templates.getOne(templateId);
         
         if (result.success && result.data) {
-          setTemplate(result.data);
+          setTemplate(result.data as ExtendedFormTemplate);
         } else {
           const errorMsg = result.message || 'Failed to load form template';
           setError(errorMsg);
@@ -84,7 +101,9 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
         alert('Form submitted successfully!');
 
         // Call success callback
-        onSubmitSuccess?.(result.data.id);
+        if (result.data.id) {
+          onSubmitSuccess?.(result.data.id);
+        }
       } else {
         const errorMsg = result.message || 'Failed to submit form';
         setError(errorMsg);

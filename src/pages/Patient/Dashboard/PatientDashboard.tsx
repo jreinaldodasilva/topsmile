@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { useAppointments } from '../../../hooks/useApiState';
 import PatientNavigation from '../../../components/PatientNavigation';
-import type { Appointment } from '../../../../packages/types/src/index';
 import './PatientDashboard.css';
 import type { Appointment } from '@topsmile/types';
 

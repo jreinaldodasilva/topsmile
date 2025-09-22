@@ -108,7 +108,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
 
     try {
       setCancelling(true);
-      const response = await apiService.appointments.update(appointment._id, {
+      const response = await apiService.appointments.update(appointment._id!, {
         status: 'cancelled'
       });
 
@@ -198,34 +198,34 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
                   <div className="info-grid">
                     <div className="info-item">
                       <label>Tipo de Consulta</label>
-                      <p>{appointment.appointmentType.name}</p>
-                      {appointment.appointmentType.description && (
-                        <small>{appointment.appointmentType.description}</small>
+                      <p>{(appointment.appointmentType as any)?.name || 'Consulta'}</p>
+                      {(appointment.appointmentType as any)?.description && (
+                        <small>{(appointment.appointmentType as any).description}</small>
                       )}
                     </div>
 
                     <div className="info-item">
                       <label>Dentista</label>
-                      <p>Dr. {appointment.provider.name}</p>
-                      {appointment.provider.specialties.length > 0 && (
-                        <small>{appointment.provider.specialties.join(', ')}</small>
+                      <p>Dr. {(appointment.provider as any)?.name || 'Profissional não informado'}</p>
+                      {(appointment.provider as any)?.specialties && (appointment.provider as any).specialties.length > 0 && (
+                        <small>{(appointment.provider as any).specialties.join(', ')}</small>
                       )}
                     </div>
 
                     <div className="info-item">
                       <label>Clínica</label>
-                      <p>{appointment.clinic.name}</p>
-                      {appointment.clinic.address && (
+                      <p>{(appointment.clinic as any)?.name || 'Clínica não informada'}</p>
+                      {(appointment.clinic as any)?.address && (
                         <small>
-                          {appointment.clinic.address.street}, {appointment.clinic.address.number}
-                          {appointment.clinic.address.city && ` - ${appointment.clinic.address.city}`}
+                          {(appointment.clinic as any).address.street}, {(appointment.clinic as any).address.number}
+                          {(appointment.clinic as any).address.city && ` - ${(appointment.clinic as any).address.city}`}
                         </small>
                       )}
                     </div>
 
                     <div className="info-item">
                       <label>Duração</label>
-                      <p>{appointment.appointmentType.duration} minutos</p>
+                      <p>{(appointment.appointmentType as any)?.duration || 30} minutos</p>
                     </div>
                   </div>
                 </section>
@@ -242,7 +242,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
                       </div>
                       <div className="datetime-content">
                         <h3>Data</h3>
-                        <p>{formatDateTime(appointment.scheduledStart).date}</p>
+                        <p>{formatDateTime(appointment.scheduledStart as string).date}</p>
                       </div>
                     </div>
 
@@ -254,7 +254,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
                       </div>
                       <div className="datetime-content">
                         <h3>Horário</h3>
-                        <p>{formatDateTime(appointment.scheduledStart).time}</p>
+                        <p>{formatDateTime(appointment.scheduledStart as string).time}</p>
                       </div>
                     </div>
                   </div>
@@ -276,7 +276,7 @@ const PatientAppointmentDetail: React.FC = function PatientAppointmentDetail() {
                   <div className="additional-info">
                     <div className="info-row">
                       <span>Data de Criação:</span>
-                      <span>{new Date(appointment.createdAt).toLocaleDateString('pt-BR')}</span>
+                      <span>{new Date(appointment.createdAt!).toLocaleDateString('pt-BR')}</span>
                     </div>
                   </div>
                 </section>

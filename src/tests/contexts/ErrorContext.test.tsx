@@ -109,6 +109,8 @@ describe('ErrorContext', () => {
     setup();
     fireEvent.click(screen.getByText('Show Error'));
     fireEvent.click(screen.getByText('Show Warning'));
+    
+    // Wait for notifications to appear
     expect(screen.getAllByTestId(/notification-/)).toHaveLength(2);
 
     fireEvent.click(screen.getByText('Clear All'));
@@ -146,16 +148,22 @@ describe('ErrorContext', () => {
   it('logs an error and shows a notification', () => {
     setup();
     const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleGroup = jest.spyOn(console, 'group').mockImplementation(() => {});
+    const consoleGroupEnd = jest.spyOn(console, 'groupEnd').mockImplementation(() => {});
+    
     fireEvent.click(screen.getByText('Log Error'));
 
     // It should show a user-friendly notification
-    const notification = screen.getByTestId(/notification-/);
-    expect(notification).toBeInTheDocument();
+    const notifications = screen.getAllByTestId(/notification-/);
+    expect(notifications).toHaveLength(1);
     expect(screen.getByTestId('notification-title')).toHaveTextContent('Erro no Sistema');
     expect(screen.getByTestId('notification-message')).toHaveTextContent('Ocorreu um erro inesperado. Tente novamente ou entre em contato com o suporte.');
 
     // It should log the error to the console in development
-    expect(consoleError).toHaveBeenCalled();
+    expect(consoleGroup).toHaveBeenCalled();
+    
     consoleError.mockRestore();
+    consoleGroup.mockRestore();
+    consoleGroupEnd.mockRestore();
   });
 });
