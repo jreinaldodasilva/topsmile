@@ -120,6 +120,7 @@ const Modal: React.FC<ModalProps> = ({
       aria-modal="true"
       aria-labelledby={title ? "modal-title" : undefined}
       aria-describedby={description ? "modal-description" : undefined}
+      aria-live="polite"
     >
       <div
         ref={modalRef}

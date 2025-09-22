@@ -58,10 +58,10 @@ export const authenticate = async (
     }
 
     // Verify the access token
-    const payload = await authService.verifyAccessToken(token);
+    const payload = authService.verifyAccessToken(token);
     
     // Type-safe payload extraction
-    if (!payload || typeof payload !== 'object' || !('userId' in payload)) {
+    if (!payload || !payload.userId) {
       res.status(401).json({ 
         success: false, 
         message: 'Token inválido: formato incorreto',
@@ -71,8 +71,7 @@ export const authenticate = async (
     }
 
     // Extract user information with proper typing
-    const typedPayload = payload as any; // We'll fix this with proper TokenPayload type
-    const userId = typedPayload.userId || typedPayload.id;
+    const userId = payload.userId;
     
     if (!userId) {
       res.status(401).json({ 
@@ -86,9 +85,9 @@ export const authenticate = async (
     // Attach user info to request
     req.user = {
       id: String(userId),
-      email: typedPayload.email,
-      role: typedPayload.role,
-      clinicId: typedPayload.clinicId,
+      email: payload.email,
+      role: payload.role,
+      clinicId: payload.clinicId,
     };
 
     // Optional: Verify user still exists and is active

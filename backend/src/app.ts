@@ -270,11 +270,28 @@ const contactLimiter = createRateLimit(
   'Muitos formulários enviados. Tente novamente em 15 minutos.'
 );
 
-const authLimiter = createRateLimit(
-  15 * 60 * 1000, // 15 minutes  
-  10, // 10 auth attempts
-  'Muitas tentativas de autenticação. Tente novamente em 15 minutos.'
-);
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 auth attempts
+  message: {
+    success: false,
+    message: 'Muitas tentativas de autenticação. Tente novamente em 15 minutos.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req: Request) => {
+    // Use email from request body if available, otherwise use IP
+    const email = req.body?.email;
+    return email ? `auth_${email}` : `auth_ip_${req.ip}`;
+  },
+  handler: (req, res) => {
+    logger.warn(`Auth rate limit exceeded for ${req.body?.email || req.ip}`);
+    res.status(429).json({ 
+      success: false, 
+      message: 'Muitas tentativas de autenticação. Tente novamente em 15 minutos.' 
+    });
+  }
+});
 
 const passwordResetLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour

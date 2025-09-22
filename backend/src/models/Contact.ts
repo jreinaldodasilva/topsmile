@@ -164,6 +164,17 @@ ContactSchema.index({ followUpDate: 1, status: 1 }); // Follow-up management
 ContactSchema.index({ leadScore: -1 }); // Lead scoring queries
 ContactSchema.index({ source: 1, createdAt: -1 }); // Source analytics
 
+// CRITICAL: Add compound index for dashboard queries
+ContactSchema.index({ 
+  assignedToClinic: 1, 
+  status: 1, 
+  priority: -1, 
+  createdAt: -1 
+}, { 
+  name: 'clinic_dashboard_query',
+  background: true 
+});
+
 // ADDED: Text search index for name, email, clinic
 ContactSchema.index({
     name: 'text',

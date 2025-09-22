@@ -80,7 +80,8 @@ export type ContactFilters = {
   dateFrom?: string | Date;
   dateTo?: string;
   page?: number;
-  limit?: number; // Changed from pageSize
+  limit?: number;
+  pageSize?: number; // Deprecated: use limit instead
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   [key: string]: any;

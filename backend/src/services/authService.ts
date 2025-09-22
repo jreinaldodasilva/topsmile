@@ -93,13 +93,12 @@ class AuthService {
     private getJwtSecret(): string {
         const secret = process.env.JWT_SECRET;
 
-        if (!secret || secret === 'your-secret-key') {
+        if (!secret || secret === 'your-secret-key' || secret.length < 64) {
             if (process.env.NODE_ENV === 'production') {
-                console.error('FATAL: JWT_SECRET is not configured. Set a strong JWT_SECRET environment variable before starting the app in production.');
+                console.error('FATAL: JWT_SECRET must be at least 64 characters long and not use default value');
                 process.exit(1);
             } else {
                 // For development and testing, generate a secure, random secret if not provided.
-                // This avoids using a predictable default key.
                 return crypto.randomBytes(32).toString('hex');
             }
         }
@@ -575,7 +574,6 @@ class AuthService {
             const user = await UserModel.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
             if (!user) {
                 // To prevent user enumeration, we don't reveal that the user doesn't exist.
-                // We can log this event for monitoring purposes.
                 console.log(`Password reset attempt for non-existent user: ${email}`);
                 return ''; // Return a non-committal response
             }
@@ -583,16 +581,15 @@ class AuthService {
             // Generate a secure, random token
             const resetToken = crypto.randomBytes(32).toString('hex');
 
-            // Hash the token before saving it to the database for added security
+            // SECURITY FIX: Hash the token before saving it to the database
             user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
             
-            // Set an expiration time for the token (e.g., 10 minutes)
+            // Set an expiration time for the token (10 minutes)
             user.passwordResetExpires = new Date(Date.now() + 10 * 60 * 1000);
 
             await user.save();
 
-            // In a real application, you would send the `resetToken` to the user's email.
-            // For this example, we'll return it.
+            // In production, send the resetToken to the user's email
             return resetToken;
 
         } catch (error) {

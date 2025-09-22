@@ -45,6 +45,16 @@ async function parseResponse(res: Response): Promise<HttpResponse> {
   };
 }
 
+/** Standardize API response handling */
+const handleApiResponse = <T>(response: HttpResponse): ApiResult<T> => {
+  return {
+    success: response.ok,
+    data: response.data,
+    message: response.message,
+    errors: response.ok ? undefined : [{ msg: response.message || 'Unknown error', param: 'general' }]
+  };
+};
+
 
 
 // Add request interceptor
@@ -65,12 +75,13 @@ const requestInterceptor = (config: RequestInit): RequestInit => {
   return config;
 };
 
-/** Enhanced request function with multi-context auth */
+/** Enhanced request function with multi-context auth and retry logic */
 export async function request<T = any>(
   endpoint: string,
   options: RequestOptions = {}
 ): Promise<HttpResponse<T>> {
   const { auth = true, ...restOfOptions } = options;
+  const maxRetries = 3;
 
   const makeRequest = async () => {
     const headers = new Headers({
@@ -81,12 +92,11 @@ export async function request<T = any>(
     let config: RequestInit = {
       ...restOfOptions,
       headers,
-      credentials: 'include', // Send cookies with the request
+      credentials: 'include',
       body: restOfOptions.body ?? undefined
     };
 
     config = requestInterceptor(config);
-
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     
     try {
@@ -97,26 +107,33 @@ export async function request<T = any>(
     }
   };
 
-  try {
-    const res = await makeRequest();
-    
-    if (res.status === 401) {
-      // The backend will automatically refresh the token, so we just retry the request.
-      const retryRes = await makeRequest();
-      return (await parseResponse(retryRes)) as HttpResponse<T>;
-    }
+  // Retry logic for network failures
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const res = await makeRequest();
+      
+      if (res.status === 401 && attempt === 0) {
+        // Try token refresh on first 401
+        const retryRes = await makeRequest();
+        return (await parseResponse(retryRes)) as HttpResponse<T>;
+      }
 
-    return (await parseResponse(res)) as HttpResponse<T>;
-    
-  } catch (err: any) {
-    if (err instanceof TypeError && err.message.includes('fetch')) {
-      throw new Error('Unable to connect to server. Please check your internet connection.');
+      return (await parseResponse(res)) as HttpResponse<T>;
+      
+    } catch (err: any) {
+      if (attempt === maxRetries) {
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          throw new Error('Unable to connect to server. Please check your internet connection.');
+        }
+        throw err instanceof Error ? err : new Error('An unknown network error occurred');
+      }
+      
+      // Wait before retry (exponential backoff)
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
     }
-    if (err instanceof Error) {
-      throw err;
-    }
-    throw new Error('An unknown network error occurred');
   }
+
+  throw new Error('Request failed after multiple attempts');
 }
 
 /** Logout function */
