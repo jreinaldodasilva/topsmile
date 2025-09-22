@@ -22,10 +22,9 @@ beforeAll(async () => {
   console.log('Connected to test database');
 });
 
-afterAll(async () => {
-  // Stop the token blacklist cleanup interval
-  tokenBlacklistService.stopCleanup();
+import redisClient from '../src/config/redis';
 
+afterAll(async () => {
   // Close database connection
   await mongoose.disconnect();
   console.log('Disconnected from test database');
@@ -35,9 +34,15 @@ afterAll(async () => {
     await mongoServer.stop();
     console.log('MongoDB Memory Server stopped');
   }
+
+  // Close Redis connection
+  redisClient.disconnect();
 });
 
 afterEach(async () => {
+  // Clear the Redis blacklist
+  await tokenBlacklistService.clear();
+
   // Clear all collections after each test, but only if connected
   if (mongoose.connection.readyState === 1) {
     const collections = mongoose.connection.collections;

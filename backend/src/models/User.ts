@@ -1,6 +1,6 @@
 // backend/src/models/User.ts
 import mongoose, { Document, Schema } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import { User as IUser, UserRole } from '@topsmile/types';
 
 const UserSchema = new Schema<IUser & Document>({
@@ -19,7 +19,7 @@ const UserSchema = new Schema<IUser & Document>({
         lowercase: true,
         validate: {
             validator: function (email: string) {
-                return /^[^S@]+@[^S@]+\.[^S@]+$/.test(email);
+                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
             },
             message: 'E-mail inválido'
         }

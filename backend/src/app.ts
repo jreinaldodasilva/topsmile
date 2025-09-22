@@ -102,15 +102,15 @@ const validateEnv = () => {
     
     if (errors.length > 0) {
       console.error('Environment Configuration Errors:');
-      errors.forEach(error => console.error(`- ${error}`));
+      errors.forEach(error => logger.error(`- ${error}`));
       process.exit(1);
     }
     
     // Check recommended variables
     const missingRecommended = recommendedInProd.filter(name => !process.env[name]);
     if (missingRecommended.length > 0) {
-      console.warn('Missing recommended environment variables:');
-      missingRecommended.forEach(name => console.warn(`- ${name}`));
+      logger.warn('Missing recommended environment variables:');
+      missingRecommended.forEach(name => logger.warn(`- ${name}`));
     }
     
   } else {
@@ -130,9 +130,9 @@ const validateEnv = () => {
     }
     
     if (warnings.length > 0) {
-      console.warn('Development Environment Warnings:');
-      warnings.forEach(warning => console.warn(`- ${warning}`));
-      console.warn('These should be configured for production deployment.');
+      logger.warn('Development Environment Warnings:');
+      warnings.forEach(warning => logger.warn(`- ${warning}`));
+      logger.warn('These should be configured for production deployment.');
     }
   }
 };
@@ -140,6 +140,17 @@ const validateEnv = () => {
 validateEnv();
 
 // IMPROVED: Trust proxy configuration for production deployments
+import logger from './config/logger';
+import pinoHttp from 'pino-http';
+
+const httpLogger = pinoHttp({ logger });
+
+// ...
+
+app.use(httpLogger);
+
+// ...
+
 const configureProxy = () => {
   if (process.env.TRUST_PROXY === '1' || 
       process.env.NODE_ENV === 'production' || 
@@ -147,7 +158,7 @@ const configureProxy = () => {
       process.env.HEROKU || 
       process.env.AWS_REGION) {
     app.set('trust proxy', 1);
-    console.log('✅ Proxy trust enabled for production environment');
+    logger.info('✅ Proxy trust enabled for production environment');
   }
 };
 
@@ -212,7 +223,7 @@ const configureSecurityMiddleware = () => {
       if (isAllowed) {
         callback(null, true);
       } else {
-        console.warn(`CORS blocked origin: ${origin}`);
+        logger.warn(`CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -247,7 +258,7 @@ const createRateLimit = (windowMs: number, max: number, message: string) => rate
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    console.warn(`Rate limit exceeded for IP ${req.ip}: ${req.method} ${req.path}`);
+    logger.warn(`Rate limit exceeded for IP ${req.ip}: ${req.method} ${req.path}`);
     res.status(429).json({ success: false, message });
   }
 });
@@ -279,7 +290,7 @@ const passwordResetLimiter = rateLimit({
     return req.user?.id || req.ip || 'unknown';
   },
   handler: (req, res) => {
-    console.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
+    logger.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
     res.status(429).json({ success: false, message: 'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.' });
   }
 });
@@ -317,35 +328,21 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 
+import csurf from 'csurf';
+const csrfProtection = csurf({
+  cookie: { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' }
+});
+// Add an endpoint to get the CSRF token
+app.get('/api/csrf-token', csrfProtection, (req, res) => {
+  res.json({ csrfToken: req.csrfToken() });
+});
+// Use csrfProtection on routes requiring state changes:
+app.use('/api', csrfProtection);
+
 // Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);
 
-// ADDED: Request logging middleware for production monitoring
-if (process.env.NODE_ENV === 'production') {
-  app.use('/api', (req: Request, res: Response, next: NextFunction) => {
-    const start = Date.now();
-    
-    res.on('finish', () => {
-      const duration = Date.now() - start;
-      const logData = {
-        method: req.method,
-        path: req.path,
-        status: res.statusCode,
-        duration: `${duration}ms`,
-        ip: req.ip,
-        userAgent: req.get('User-Agent'),
-        timestamp: new Date().toISOString()
-      };
-      
-      // Log errors and slow requests
-      if (res.statusCode >= 400 || duration > 1000) {
-        console.warn('Request issue:', logData);
-      }
-    });
-    
-    next();
-  });
-}
+
 
 import { responseWrapper } from './middleware/normalizeResponse';
 
@@ -456,7 +453,7 @@ app.get('/api/health/database', async (req, res) => {
       });
     }
   } catch (error) {
-    console.error('Database health check failed:', error);
+    logger.error('Database health check failed:', error);
     return res.status(503).json({
       success: false,
       message: 'Database health check failed',
@@ -521,7 +518,7 @@ app.use(errorHandler);
 
 // IMPROVED: 404 handler with request logging
 app.use('*', (req, res) => {
-  console.warn(`404 Not Found: ${req.method} ${req.originalUrl} from ${req.ip}`);
+  logger.warn(`404 Not Found: ${req.method} ${req.originalUrl} from ${req.ip}`);
   
   return res.status(404).json({
     success: false,
@@ -532,42 +529,42 @@ app.use('*', (req, res) => {
 
 // IMPROVED: Global process handlers with better error management
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // In production, you might want to log this to an external service
 });
 
 process.on('uncaughtException', (err) => {
-  console.error('Uncaught Exception:', err);
+  logger.error('Uncaught Exception:', err);
   // Log to external service in production
   
   // Graceful shutdown
   if (process.env.NODE_ENV === 'production') {
-    console.log('Shutting down due to uncaught exception');
+    logger.info('Shutting down due to uncaught exception');
     process.exit(1);
   }
 });
 
 // IMPROVED: Graceful shutdown handling
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received. Shutting down gracefully...');
+  logger.info('SIGTERM received. Shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT received. Shutting down gracefully...');
+  logger.info('SIGINT received. Shutting down gracefully...');
   process.exit(0);
 });
 
 // Start server with improved logging
 app.listen(PORT, () => {
-  console.log('🚀 ===================================');
-  console.log(`🚀 TopSmile API running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
-  console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured ✅' : 'Using default ⚠️'}`);
-  console.log(`📧 Email Service: ${process.env.SENDGRID_API_KEY ? 'SendGrid ✅' : 'Ethereal/Console ⚠️'}`);
-  console.log(`🗄️  Database: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting... ⏳'}`);
-  console.log('🚀 ===================================');
+  logger.info('🚀 ===================================');
+  logger.info(`🚀 TopSmile API running on port ${PORT}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  logger.info(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured ✅' : 'Using default ⚠️'}`);
+  logger.info(`📧 Email Service: ${process.env.SENDGRID_API_KEY ? 'SendGrid ✅' : 'Ethereal/Console ⚠️'}`);
+  logger.info(`🗄️  Database: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting... ⏳'}`);
+  logger.info('🚀 ===================================');
 });
 
 export default app;

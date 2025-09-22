@@ -7,6 +7,7 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
 import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
+import logger from '../config/logger';
 
 const router = express.Router();
 
@@ -258,8 +259,6 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
       success: true,
       data: {
         user,
-        accessToken,
-        refreshToken,
         expiresIn
       },
       meta: {
@@ -346,8 +345,6 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
       success: true,
       data: {
         user,
-        accessToken,
-        refreshToken,
         expiresIn
       },
       meta: {
@@ -526,8 +523,6 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
     return res.json({
       success: true,
       data: {
-        accessToken,
-        refreshToken: newRefreshToken,
         expiresIn
       },
       meta: {
@@ -579,7 +574,7 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
     res.clearCookie('refreshToken');
 
     // Log for development
-    console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
+    logger.info(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
 
     return res.json({
       success: true,
@@ -666,7 +661,12 @@ router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: 
  *       500:
  *         description: Erro interno do servidor.
  */
-router.post('/forgot-password', [
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15*60*1000,
+  max: 3,
+  message: 'Too many password reset requests; try again later.'
+});
+router.post('/forgot-password', forgotPasswordLimiter, [
   body('email').isEmail().withMessage('E-mail inválido').normalizeEmail()
 ], async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -684,7 +684,7 @@ router.post('/forgot-password', [
 
     // In a real application, you would send an email here.
     // For now, we'll just log the token and send a generic success message.
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    logger.info(`Password reset token for ${email}: ${resetToken}`);
 
     return res.json({
       success: true,

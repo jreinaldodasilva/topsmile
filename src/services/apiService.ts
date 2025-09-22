@@ -16,14 +16,14 @@ import type {
   AppointmentType,
   CreateFormResponse,
   RegisterRequest
-} from '../../packages/types/src/index';
+} from '@topsmile/types';
 
 export type { ApiResult, Contact, ContactFilters, ContactListResponse, DashboardStats, User, Patient, Appointment, Provider, Clinic, AppointmentType };
 
 
 
 export interface FormTemplate {
-  _id: string;
+  id: string;
   title: string;
   questions: Array<{
     id: string;
@@ -36,7 +36,7 @@ export interface FormTemplate {
 }
 
 export interface FormResponse {
-  _id: string;
+  id: string;
   templateId: string;
   patientId: string;
   answers: { [key: string]: string };

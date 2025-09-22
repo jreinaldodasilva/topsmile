@@ -8,13 +8,11 @@ export const handlers = [
         success: true,
         data: {
           user: {
-            _id: 'user123',
+            id: 'user123',
             name: 'Admin User',
             email: 'admin@topsmile.com',
             role: 'admin'
           },
-          accessToken: 'mock-access-token',
-          refreshToken: 'mock-refresh-token',
           expiresIn: '3600'
         }
       });
@@ -32,7 +30,7 @@ export const handlers = [
       success: true,
       data: {
         user: {
-          _id: 'user456',
+          id: 'user456',
           name: body.name,
           email: body.email,
           role: 'dentist'
@@ -47,7 +45,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'user123',
+        id: 'user123',
         name: 'Current User',
         email: 'current@example.com',
         role: 'admin'
@@ -60,13 +58,13 @@ export const handlers = [
       success: true,
       data: [
         {
-          _id: 'patient1',
+          id: 'patient1',
           firstName: 'João',
           lastName: 'Silva',
           email: 'joao@example.com'
         },
         {
-          _id: 'patient2',
+          id: 'patient2',
           firstName: 'Maria',
           lastName: 'Santos',
           email: 'maria@example.com'
@@ -87,7 +85,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: id,
+        id: id,
         firstName: 'João',
         lastName: 'Silva',
         email: 'joao@example.com',
@@ -101,7 +99,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'new-patient-id',
+        id: 'new-patient-id',
         name: body.name,
         email: body.email,
         phone: body.phone,
@@ -117,7 +115,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'patient123',
+        id: 'patient123',
         name: body.name,
         phone: body.phone,
         firstName: 'Updated',
@@ -139,8 +137,8 @@ export const handlers = [
       success: true,
       data: {
         contacts: [
-          { _id: 'contact1', name: 'Contact 1' },
-          { _id: 'contact2', name: 'Contact 2' }
+          { id: 'contact1', name: 'Contact 1' },
+          { id: 'contact2', name: 'Contact 2' }
         ],
         total: 2
       }
@@ -152,7 +150,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'new-contact-id',
+        id: 'new-contact-id',
         name: body.name,
         email: body.email
       }
@@ -164,7 +162,7 @@ export const handlers = [
       success: true,
       data: [
         {
-          _id: 'appt1',
+          id: 'appt1',
           patient: 'patient1',
           provider: 'provider1',
           status: 'scheduled'
@@ -178,7 +176,7 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'new-appt-id',
+        id: 'new-appt-id',
         patient: body.patient,
         provider: body.provider,
         status: body.status
@@ -232,8 +230,8 @@ export const handlers = [
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'user1',
-        patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
+        id: 'user1',
+        patient: { id: 'patient1', name: 'John Doe', phone: '123456789' },
         email: 'john@example.com',
         isActive: true,
         emailVerified: true
