@@ -1,6 +1,7 @@
 // src/pages/FormRenderer/FormRendererPage.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService, type FormTemplate } from '../../services/apiService';
+import { type ApiResult } from '../../services/http';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import './FormRendererPage.css';
@@ -30,7 +31,7 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
         setLoading(true);
         setError(null);
         
-        const result = await apiService.forms.templates.getOne(templateId);
+        const result: ApiResult<FormTemplate> = await apiService.forms.templates.getOne(templateId);
         
         if (result.success && result.data) {
           setTemplate(result.data);
@@ -83,7 +84,7 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
         alert('Form submitted successfully!');
 
         // Call success callback
-        onSubmitSuccess?.(result.data._id);
+        onSubmitSuccess?.(result.data.id);
       } else {
         const errorMsg = result.message || 'Failed to submit form';
         setError(errorMsg);

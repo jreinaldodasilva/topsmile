@@ -21,8 +21,8 @@ export const useContacts = (filters?: ContactFilters) => {
     queryKey: queryKeys.contacts(filters),
     queryFn: () => apiService.contacts.getAll(filters),
     staleTime: 2 * 60 * 1000, // 2 minutes
-    cacheTime: 5 * 60 * 1000, // 5 minutes
-    keepPreviousData: true,
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -67,7 +67,7 @@ export const usePatients = (filters?: any) => {
     queryKey: queryKeys.patients(filters),
     queryFn: () => apiService.patients.getAll(filters),
     staleTime: 5 * 60 * 1000,
-    keepPreviousData: true,
+    placeholderData: (previousData) => previousData,
   });
 };
 
@@ -88,6 +88,6 @@ export const useDashboardStats = () => {
     queryKey: queryKeys.dashboardStats(),
     queryFn: () => apiService.dashboard.getStats(),
     staleTime: 1 * 60 * 1000, // 1 minute
-    cacheTime: 3 * 60 * 1000, // 3 minutes
+    gcTime: 3 * 60 * 1000, // 3 minutes
   });
 };

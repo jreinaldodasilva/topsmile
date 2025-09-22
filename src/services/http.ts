@@ -45,6 +45,13 @@ async function parseResponse(res: Response): Promise<HttpResponse> {
   };
 }
 
+export interface ApiResult<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  errors?: Array<{ msg: string; param: string }>;
+}
+
 /** Standardize API response handling */
 const handleApiResponse = <T>(response: HttpResponse): ApiResult<T> => {
   return {

@@ -97,7 +97,9 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       metadata,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
+      severity: getErrorSeverity(error, context),
+      category: getErrorCategory(error, context)
     };
 
     // Log to console in development
@@ -167,6 +169,30 @@ export const useError = (): ErrorContextType => {
   }
   return context;
 };
+
+// Helper functions for error categorization
+function getErrorSeverity(error: Error, context?: string): 'low' | 'medium' | 'high' | 'critical' {
+  const message = error.message.toLowerCase();
+  
+  if (message.includes('network') || message.includes('timeout')) return 'medium';
+  if (message.includes('401') || message.includes('403')) return 'high';
+  if (message.includes('500') || message.includes('database')) return 'critical';
+  if (context === 'payment' || context === 'auth') return 'high';
+  
+  return 'low';
+}
+
+function getErrorCategory(error: Error, context?: string): string {
+  const message = error.message.toLowerCase();
+  
+  if (message.includes('network') || message.includes('fetch')) return 'network';
+  if (message.includes('401') || message.includes('403') || context === 'auth') return 'authentication';
+  if (message.includes('validation') || message.includes('invalid')) return 'validation';
+  if (message.includes('500') || message.includes('server')) return 'server';
+  if (context === 'payment') return 'payment';
+  
+  return 'general';
+}
 
 // Helper function to convert technical errors to user-friendly messages
 function getUserFriendlyErrorMessage(error: Error, context?: string): string {

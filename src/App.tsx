@@ -1,7 +1,8 @@
 // src/App.tsx - Updated with Enhanced Error Handling
-import React, { Suspense, lazy } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryProvider } from './providers/QueryProvider';
+import { preloadCriticalComponents } from './utils/lazyImports';
 
 // Contexts
 import { ErrorProvider } from './contexts/ErrorContext';
@@ -47,12 +48,16 @@ const ProviderManagement = lazy(() => import('./pages/Admin/ProviderManagement')
 const AppointmentCalendar = lazy(() => import('./pages/Admin/AppointmentCalendar'));
 const UnauthorizedPage = lazy(() => import('./pages/Unauthorized/UnauthorizedPage'));
 
-const queryClient = new QueryClient();
+const App: React.FC = () => {
+  useEffect(() => {
+    // Preload critical components after initial render
+    preloadCriticalComponents();
+  }, []);
 
-const App: React.FC = () => (
-  <ErrorBoundary level="critical" context="app-root">
-    <ErrorProvider>
-      <QueryClientProvider client={queryClient}>
+  return (
+    <ErrorBoundary level="critical" context="app-root">
+      <ErrorProvider>
+        <QueryProvider>
         <Router>
           <AuthProvider>
             <PatientAuthProvider>
@@ -311,8 +316,10 @@ const App: React.FC = () => (
             </PatientAuthProvider>
           </AuthProvider>
         </Router>
-      </QueryClientProvider>
-    </ErrorProvider>
-  </ErrorBoundary>
-);
+        </QueryProvider>
+      </ErrorProvider>
+    </ErrorBoundary>
+  );
+};
+
 export default App;
