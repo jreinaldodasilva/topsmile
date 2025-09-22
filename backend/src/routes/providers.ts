@@ -1,5 +1,5 @@
 // backend/src/routes/providers.ts
-import express, { Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { providerService } from '../services/providerService';
 import { body, query, validationResult } from 'express-validator';
@@ -386,8 +386,8 @@ const workingHoursValidation = [
 router.post('/', 
     authorize('super_admin', 'admin', 'manager'),
     createProviderValidation, 
-    async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -517,8 +517,8 @@ router.post('/',
  *       401:
  *         description: Não autorizado
  */
-router.get('/', searchValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/', searchValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -627,7 +627,7 @@ router.get('/', searchValidation, async (req: Request, res: any) => {
 router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
     async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({
@@ -693,7 +693,7 @@ router.get('/stats',
  *         description: Erro interno do servidor
  */
 router.get('/:id', async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -777,8 +777,8 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.patch('/:id',
     authorize('super_admin', 'admin', 'manager'),
     updateProviderValidation,
-    async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -941,8 +941,8 @@ router.patch('/:id',
 router.patch('/:id/working-hours',
     authorize('super_admin', 'admin', 'manager'),
     workingHoursValidation,
-    async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -1048,7 +1048,7 @@ router.patch('/:id/appointment-types',
     body('appointmentTypes').isArray().withMessage('Tipos de agendamento deve ser um array'),
     body('appointmentTypes.*').isMongoId().withMessage('ID de tipo de agendamento inválido'),
     async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -1139,7 +1139,7 @@ router.patch('/:id/appointment-types',
 router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
     async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({
@@ -1215,7 +1215,7 @@ router.patch('/:id/reactivate',
 router.delete('/:id',
     authorize('super_admin', 'admin'),
     async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({

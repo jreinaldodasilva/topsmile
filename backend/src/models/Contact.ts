@@ -2,99 +2,39 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { Contact as IContact, ContactStatus } from '@topsmile/types';
 
-interface ConversionDetails {
-    convertedAt?: Date;
-    convertedBy?: mongoose.Types.ObjectId;
-    conversionNotes?: string;
-    conversionValue?: number;
-}
 
-interface Metadata {
-    utmSource?: string;
-    utmMedium?: string;
-    utmCampaign?: string;
-    utmTerm?: string;
-    utmContent?: string;
-    referrer?: string;
-    ipAddress?: string;
-    userAgent?: string;
-}
-
-const ConversionDetailsSchema = new Schema<ConversionDetails>({
-    convertedAt: Date,
-    convertedBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User'
-    },
-    conversionNotes: {
-        type: String,
-        maxlength: [500, 'Notas de conversão devem ter no máximo 500 caracteres']
-    },
-    conversionValue: {
-        type: Number,
-        min: 0
-    }
-}, { _id: false });
-
-const MetadataSchema = new Schema<Metadata>({
-    utmSource: String,
-    utmMedium: String,
-    utmCampaign: String,
-    utmTerm: String,
-    utmContent: String,
-    referrer: String,
-    ipAddress: String,
-    userAgent: String
-}, { _id: false });
 
 const ContactSchema = new Schema<IContact & Document>({
     name: {
         type: String,
-        required: [true, 'Nome é obrigatório'],
-        trim: true,
-        minlength: [2, 'Nome deve ter pelo menos 2 caracteres'],
-        maxlength: [100, 'Nome deve ter no máximo 100 caracteres']
+        required: true,
+        trim: true
     },
     email: {
         type: String,
-        required: [true, 'E-mail é obrigatório'],
+        required: true,
         trim: true,
-        lowercase: true,
-        validate: {
-            validator: function (email: string) {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            },
-            message: 'E-mail inválido'
-        }
+        lowercase: true
     },
     clinic: {
         type: String,
-        required: [true, 'Nome da clínica é obrigatório'],
-        trim: true,
-        maxlength: [100, 'Nome da clínica deve ter no máximo 100 caracteres']
+        required: true,
+        trim: true
     },
     specialty: {
         type: String,
-        required: [true, 'Especialidade é obrigatória'],
-        trim: true,
-        maxlength: [100, 'Especialidade deve ter no máximo 100 caracteres']
+        required: true,
+        trim: true
     },
     phone: {
         type: String,
-        required: [true, 'Telefone é obrigatório'],
-        trim: true,
-        validate: {
-            validator: function (phone: string) {
-                return /^[\d\s\-()+]{10,20}$/.test(phone);
-            },
-            message: 'Telefone inválido'
-        }
+        required: true,
+        trim: true
     },
     status: {
         type: String,
-        enum: Object.values(ContactStatus),
-        default: ContactStatus.NEW,
-        index: true // IMPROVED: Add index for frequent queries
+        default: 'new',
+        index: true
     },
     source: {
         type: String,
@@ -103,8 +43,7 @@ const ContactSchema = new Schema<IContact & Document>({
     },
     notes: {
         type: String,
-        trim: true,
-        maxlength: [1000, 'Notas devem ter no máximo 1000 caracteres']
+        trim: true
     },
     // FIXED: Proper clinic association for data isolation
     assignedTo: {
@@ -123,22 +62,33 @@ const ContactSchema = new Schema<IContact & Document>({
     // ADDED: Priority field for lead management
     priority: {
         type: String,
-        enum: ['low', 'normal', 'high'],
         default: 'normal',
         index: true
     },
     leadScore: {
         type: Number,
-        min: 0,
-        max: 100,
         default: 50
     },
     lastContactedAt: {
         type: Date,
         index: true
     },
-    conversionDetails: ConversionDetailsSchema,
-    metadata: MetadataSchema,
+    conversionDetails: {
+        convertedAt: Date,
+        convertedBy: Schema.Types.ObjectId,
+        conversionNotes: String,
+        conversionValue: Number
+    },
+    metadata: {
+        utmSource: String,
+        utmMedium: String,
+        utmCampaign: String,
+        utmTerm: String,
+        utmContent: String,
+        referrer: String,
+        ipAddress: String,
+        userAgent: String
+    },
     // Soft delete fields
     deletedAt: Date,
     deletedBy: {

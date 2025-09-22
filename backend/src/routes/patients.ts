@@ -1,5 +1,5 @@
 // backend/src/routes/patients.ts
-import express, { Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
@@ -331,8 +331,8 @@ const searchValidation = [
  *       401:
  *         description: Não autorizado
  */
-router.post('/', createPatientValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.post('/', createPatientValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -454,8 +454,8 @@ router.post('/', createPatientValidation, async (req: Request, res: any) => {
  *       401:
  *         description: Não autorizado
  */
-router.get('/', searchValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/', searchValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -552,7 +552,7 @@ router.get('/', searchValidation, async (req: Request, res: any) => {
  *         description: Erro interno do servidor
  */
 router.get('/stats', async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -616,7 +616,7 @@ router.get('/stats', async (req: Request, res: Response) => {
  *         description: Erro interno do servidor
  */
 router.get('/:id', async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -694,8 +694,8 @@ router.get('/:id', async (req: Request, res: Response) => {
  *       404:
  *         description: Paciente não encontrado
  */
-router.patch('/:id', updatePatientValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.patch('/:id', updatePatientValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -809,7 +809,7 @@ router.patch('/:id/medical-history',
     body('conditions').optional().isArray().withMessage('Condições deve ser um array'),
     body('notes').optional().trim().isLength({ max: 1000 }).withMessage('Observações devem ter no máximo 1000 caracteres'),
     async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -895,7 +895,7 @@ router.patch('/:id/medical-history',
  *         description: Paciente inativo não encontrado
  */
 router.patch('/:id/reactivate', async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -973,7 +973,7 @@ router.patch('/:id/reactivate', async (req: Request, res: Response) => {
  *         description: Erro interno do servidor
  */
 router.delete('/:id', async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({

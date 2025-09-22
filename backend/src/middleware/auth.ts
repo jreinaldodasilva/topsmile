@@ -1,17 +1,15 @@
 // backend/src/middleware/auth.ts - FIXED VERSION
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
-import type { Clinic } from '@topsmile/types';
+import type { Clinic, User } from '@topsmile/types';
+
+type UserRole = 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
 
 /**
  * User information attached to authenticated requests
  */
-export interface AuthUser {
-  id: string;
-  email?: string;
-  role?: string;
+export interface AuthUser extends User {
   clinicId?: string;
-  name?: string;
 }
 
 /**
@@ -93,15 +91,26 @@ export const authenticate = async (
     (req as AuthenticatedRequest).user = {
       id: String(userId),
       email: payload.email,
-      role: payload.role as string,
+      role: payload.role as UserRole,
       clinicId: payload.clinicId,
+      name: payload.name || payload.email || 'Unknown User',
     };
 
     // Optional: Verify user still exists and is active
     if (process.env.VERIFY_USER_ON_REQUEST === 'true') {
-      try {
-        const user = await authService.getUserById((req as AuthenticatedRequest).user!.id);
-        if (!user.isActive) {
+      const currentUser = (req as AuthenticatedRequest).user;
+      if (currentUser?.id) {
+        try {
+          const user = await authService.getUserById(currentUser.id);
+          if (!user.isActive) {
+            res.status(401).json({
+              success: false,
+              message: 'Usuário inválido ou inativo',
+              code: 'USER_INACTIVE'
+            });
+            return;
+          }
+        } catch (error) {
           res.status(401).json({
             success: false,
             message: 'Usuário inválido ou inativo',
@@ -109,13 +118,6 @@ export const authenticate = async (
           });
           return;
         }
-      } catch (error) {
-        res.status(401).json({
-          success: false,
-          message: 'Usuário inválido ou inativo',
-          code: 'USER_INACTIVE'
-        });
-        return;
       }
     }
 
@@ -276,8 +278,9 @@ export const optionalAuth = async (
           (req as AuthenticatedRequest).user = {
             id: String(userId),
             email: typedPayload.email,
-            role: typedPayload.role,
+            role: typedPayload.role as UserRole,
             clinicId: typedPayload.clinicId,
+            name: typedPayload.name || typedPayload.email || 'Unknown User',
           };
         }
       }

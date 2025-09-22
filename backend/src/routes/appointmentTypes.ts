@@ -1,5 +1,5 @@
 // backend/src/routes/appointmentTypes.ts
-import express, { Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { appointmentTypeService } from '../services/appointmentTypeService';
 import { body, query, validationResult } from 'express-validator';
@@ -272,8 +272,8 @@ const searchValidation = [
 router.post('/',
     authorize('super_admin', 'admin', 'manager'),
     createAppointmentTypeValidation,
-    async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -407,8 +407,8 @@ router.post('/',
  *       401:
  *         description: Não autorizado
  */
-router.get('/', searchValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/', searchValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -500,8 +500,8 @@ router.get('/', searchValidation, async (req: Request, res: any) => {
  */
 router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({
@@ -569,8 +569,8 @@ router.get('/stats',
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/category/:category', async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/category/:category', async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -636,8 +636,8 @@ router.get('/category/:category', async (req: Request, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/online-booking', async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/online-booking', async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -701,8 +701,8 @@ router.get('/online-booking', async (req: Request, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get('/:id', async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
     try {
         if (!authReq.user?.clinicId) {
             return res.status(400).json({
@@ -789,8 +789,8 @@ router.get('/:id', async (req: Request, res) => {
 router.put('/:id',
     authorize('super_admin', 'admin', 'manager'),
     updateAppointmentTypeValidation,
-    async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -895,8 +895,8 @@ router.put('/:id',
 router.post('/:id/duplicate',
     authorize('super_admin', 'admin', 'manager'),
     body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Nome deve ter entre 2 e 100 caracteres'),
-    async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -979,8 +979,8 @@ router.post('/:id/duplicate',
  */
 router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({
@@ -1058,8 +1058,8 @@ router.patch('/:id/reactivate',
  */
 router.delete('/:id',
     authorize('super_admin', 'admin'),
-    async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+    async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
         try {
             if (!authReq.user?.clinicId) {
                 return res.status(400).json({

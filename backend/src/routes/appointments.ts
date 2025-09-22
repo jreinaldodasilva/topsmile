@@ -1,5 +1,5 @@
 // backend/src/routes/appointments.ts
-import express, { Response } from "express";
+import express, { Request, Response, NextFunction } from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../middleware/patientAuth";
 import { schedulingService } from "../services/schedulingService";
@@ -72,8 +72,8 @@ router.use(authenticate);
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/providers/:providerId/availability", async (req: Request, res) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.get("/providers/:providerId/availability", async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
   try {
     const providerId = authReq.params.providerId;
     const { date, appointmentTypeId } = authReq.query;
@@ -206,8 +206,8 @@ const bookingValidation = [
  *       401:
  *         description: Não autorizado
  */
-router.post("/", bookingValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.post("/", bookingValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -249,8 +249,8 @@ router.post("/", bookingValidation, async (req: Request, res: any) => {
 });
 
 // Book a new appointment (legacy endpoint)
-router.post("/book", bookingValidation, async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.post("/book", bookingValidation, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -347,7 +347,7 @@ router.post("/book", bookingValidation, async (req: Request, res: any) => {
  *         description: Não autorizado
  */
 router.get("/", async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
   try {
     const { startDate, endDate, providerId, status } = authReq.query;
     
@@ -431,7 +431,7 @@ router.get("/", async (req: Request, res: Response) => {
  *         description: Erro interno do servidor
  */
 router.get("/:id", async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
   try {
     const appointment = await Appointment.findById(authReq.params.id!)
       .populate('patient', 'name phone email')
@@ -545,8 +545,8 @@ router.get("/:id", async (req: Request, res: Response) => {
  *       404:
  *         description: Agendamento não encontrado
  */
-router.patch("/:id", bookingValidation.map(validation => validation.optional()), async (req: Request, res: any) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+router.patch("/:id", bookingValidation.map(validation => validation.optional()), async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -675,7 +675,7 @@ router.patch("/:id/status",
   body('status').isIn(['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show']),
   body('cancellationReason').optional().isLength({ max: 500 }),
   async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -813,7 +813,7 @@ router.patch("/:id/reschedule",
   body('reason').isLength({ min: 1, max: 500 }).withMessage('Motivo é obrigatório e deve ter no máximo 500 caracteres'),
   body('rescheduleBy').isIn(['patient', 'clinic']).withMessage('Tipo de reagendamento inválido'),
   async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -855,7 +855,7 @@ router.patch("/:id/reschedule",
 router.delete("/:id", 
   authorize('super_admin', 'admin'), 
   async (req: Request, res: Response) => {
-  const authReq = req as unknown as AuthenticatedRequest;
+  const authReq = req as AuthenticatedRequest;
     try {
       const appointment = await Appointment.findById(authReq.params.id!);
       if (!appointment) {
@@ -899,7 +899,7 @@ router.get("/patient",
   requirePatientEmailVerification,
   async (req: PatientAuthenticatedRequest, res: Response) => {
     try {
-      const { startDate, endDate, status, page = 1, limit = 10 } = authReq.query;
+      const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
 
       // Default to current month if no dates provided
       const start = startDate ? new Date(startDate as string) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -957,7 +957,7 @@ router.get("/patient",
         },
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (authReq as any).requestId
+          requestId: (req as any).requestId
         }
       });
     } catch (err: any) {
@@ -986,7 +986,7 @@ router.post("/patient/book",
         });
       }
 
-      const { providerId, appointmentTypeId, scheduledStart, notes, priority } = authReq.body;
+      const { providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
 
       // Ensure the patient can only book for themselves
       const appointment = await schedulingService.createAppointmentModel({
@@ -1005,7 +1005,7 @@ router.post("/patient/book",
         data: appointment,
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (authReq as any).requestId
+          requestId: (req as any).requestId
         }
       });
     } catch (err: any) {
@@ -1034,7 +1034,7 @@ router.patch("/patient/:id/cancel",
         });
       }
 
-      const appointment = await Appointment.findById(authReq.params.id!);
+      const appointment = await Appointment.findById(req.params.id!);
       if (!appointment) {
         return res.status(404).json({
           success: false,
@@ -1050,10 +1050,10 @@ router.patch("/patient/:id/cancel",
         });
       }
 
-      const { reason } = authReq.body;
+      const { reason } = req.body;
 
       const updatedAppointment = await schedulingService.cancelAppointmentModel(
-        authReq.params.id!,
+        req.params.id!,
         reason || 'Cancelado pelo paciente'
       );
 
@@ -1062,7 +1062,7 @@ router.patch("/patient/:id/cancel",
         data: updatedAppointment,
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (authReq as any).requestId
+          requestId: (req as any).requestId
         }
       });
     } catch (err: any) {

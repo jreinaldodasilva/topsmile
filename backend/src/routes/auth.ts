@@ -387,7 +387,13 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
 router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   const authReq = req as AuthenticatedRequest;
   try {
-    const user = await authService.getUserById(authReq.user!.id);
+    if (!authReq.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário não autenticado'
+      });
+    }
+    const user = await authService.getUserById(authReq.user.id);
 
     return res.json({
       success: true,
@@ -450,7 +456,14 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
 
     const { currentPassword, newPassword } = authReq.body;
 
-    await authService.changePassword(authReq.user!.id, currentPassword, newPassword);
+    if (!authReq.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário não autenticado'
+      });
+    }
+
+    await authService.changePassword(authReq.user.id, currentPassword, newPassword);
 
     return res.json({
       success: true,
@@ -613,7 +626,13 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
 router.post('/logout-all', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   const authReq = req as AuthenticatedRequest;
   try {
-    await authService.logoutAllDevices(authReq.user!.id);
+    if (!authReq.user?.id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuário não autenticado'
+      });
+    }
+    await authService.logoutAllDevices(authReq.user.id);
     return res.json({ 
       success: true, 
       message: 'Logout realizado em todos os dispositivos',
