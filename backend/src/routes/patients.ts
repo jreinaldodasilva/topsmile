@@ -1,5 +1,5 @@
 // backend/src/routes/patients.ts
-import express from 'express';
+import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';

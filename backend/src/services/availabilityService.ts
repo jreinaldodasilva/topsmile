@@ -1,4 +1,5 @@
 // backend/src/services/availabilityService.ts - FIXED VERSION
+import { Provider as IProvider, AppointmentType as IAppointmentType } from '@topsmile/types';
 import { Provider } from '../models/Provider';
 import { Appointment } from '../models/Appointment';
 import { AppointmentType } from '../models/AppointmentType';
@@ -21,6 +22,15 @@ export interface GenerateAvailabilityOptions {
   toIso: string;
   granularityMin?: number;
   maxDays?: number; // ADDED: Prevent excessive date ranges
+}
+
+export interface GenerateDayAvailabilityOptions {
+  provider: IProvider;
+  appointmentType: IAppointmentType;
+  date: Date;
+  granularityMin: number;
+  startTime?: Date;
+  endTime?: Date;
 }
 
 /**
@@ -127,34 +137,30 @@ export async function generateAvailability(options: GenerateAvailabilityOptions)
   return slots;
 }
 
-interface GenerateDayAvailabilityOptions {
-  provider: any;
-  appointmentType: any;
-  date: Date;
-  granularityMin: number;
-  startTime?: Date;
-  endTime?: Date;
-}
-
 async function generateDayAvailability(options: GenerateDayAvailabilityOptions): Promise<AvailabilitySlot[]> {
   const { provider, appointmentType, date, granularityMin, startTime, endTime } = options;
   
+  // Check if provider has working hours
+  if (!provider.workingHours) {
+    return [];
+  }
+
   // Get day of week (lowercase)
-  const dayOfWeek = format(date, 'EEEE').toLowerCase() as keyof typeof provider.workingHours;
+  const dayOfWeek = format(date, 'EEEE').toLowerCase();
   const workingHours = provider.workingHours[dayOfWeek];
 
   // Check if provider works on this day
-  if (!workingHours || !workingHours.isWorking) {
+  if (!workingHours || !workingHours.isWorking || !workingHours.start || !workingHours.end) {
     return [];
   }
 
   // IMPROVED: Better error handling for time parsing
   let workStart: Date;
   let workEnd: Date;
-  
+
   try {
-    workStart = parseTimeToDate(date, workingHours.start, provider.timeZone);
-    workEnd = parseTimeToDate(date, workingHours.end, provider.timeZone);
+    workStart = parseTimeToDate(date, workingHours.start, provider.timeZone!);
+    workEnd = parseTimeToDate(date, workingHours.end, provider.timeZone!);
   } catch (error) {
     console.error(`Error parsing working hours for provider ${provider._id}:`, error);
     return [];
@@ -182,6 +188,11 @@ async function generateDayAvailability(options: GenerateDayAvailabilityOptions):
     scheduledEnd: 1,
     status: 1
   }).sort({ scheduledStart: 1 }).lean(); // Use lean() for performance
+
+  // Check if appointment type has duration
+  if (!appointmentType.duration) {
+    return [];
+  }
 
   // Generate time slots with memory efficiency
   const slots: AvailabilitySlot[] = [];
@@ -215,7 +226,7 @@ async function generateDayAvailability(options: GenerateDayAvailabilityOptions):
         start: currentTime,
         end: slotEnd,
         available: true,
-        providerId: provider._id.toString(),
+        providerId: provider._id?.toString() || provider.id || '',
         conflictReason: undefined
       });
     }
@@ -278,7 +289,7 @@ function parseTimeToDate(date: Date, timeString: string, timeZone: string): Date
 function checkTimeConflictOptimized(
   proposedStart: Date,
   proposedEnd: Date,
-  existingAppointments: any[],
+  existingAppointments: Array<{scheduledStart: string | Date, scheduledEnd: string | Date, status: string}>,
   bufferBefore: number,
   bufferAfter: number
 ): { hasConflict: boolean; reason?: string } {

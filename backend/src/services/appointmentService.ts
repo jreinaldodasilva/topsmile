@@ -35,6 +35,18 @@ export interface UpdateAppointmentData {
   }>;
 }
 
+export interface AppointmentFilters {
+  status?: string | string[];
+  startDate?: Date;
+  endDate?: Date;
+  providerId?: string;
+  patientId?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
 class AppointmentService {
   async createAppointment(data: CreateAppointmentData): Promise<IAppointment> {
     try {
@@ -106,7 +118,7 @@ class AppointmentService {
     }
   }
 
-  async getAppointments(clinicId: string, filters: any = {}): Promise<IAppointment[]> {
+  async getAppointments(clinicId: string, filters: AppointmentFilters = {}): Promise<IAppointment[]> {
     try {
       if (!mongoose.Types.ObjectId.isValid(clinicId)) {
         throw new Error('ID da clínica inválido');
