@@ -229,9 +229,10 @@ const responseValidation = [
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/templates', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/templates', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const { category, isActive } = req.query;
+    const { category, isActive } = authReq.query;
     
     let templates = [...mockFormTemplates];
     
@@ -251,7 +252,7 @@ router.get('/templates', async (req: AuthenticatedRequest, res: Response) => {
       data: templates,
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId
+        requestId: (authReq as any).requestId
       }
     });
   } catch (error: any) {
@@ -299,9 +300,10 @@ router.get('/templates', async (req: AuthenticatedRequest, res: Response) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/templates/:id', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/templates/:id', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const template = mockFormTemplates.find(t => t._id === req.params.id);
+    const template = mockFormTemplates.find(t => t._id === authReq.params.id);
     
     if (!template) {
       return res.status(404).json({
@@ -315,7 +317,7 @@ router.get('/templates/:id', async (req: AuthenticatedRequest, res: Response) =>
       data: template,
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId
+        requestId: (authReq as any).requestId
       }
     });
   } catch (error: any) {
@@ -364,7 +366,8 @@ router.get('/templates/:id', async (req: AuthenticatedRequest, res: Response) =>
 router.post('/templates',
   authorize('super_admin', 'admin', 'manager'),
   templateValidation,
-  async (req: AuthenticatedRequest, res: any) => {
+  async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -377,8 +380,8 @@ router.post('/templates',
       
       const newTemplate = {
         _id: `template_${Date.now()}`,
-        ...req.body,
-        isActive: req.body.isActive !== false,
+        ...authReq.body,
+        isActive: authReq.body.isActive !== false,
         createdAt: new Date(),
         updatedAt: new Date()
       };
@@ -392,7 +395,7 @@ router.post('/templates',
         data: newTemplate,
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -451,7 +454,8 @@ router.post('/templates',
 router.patch('/templates/:id',
   authorize('super_admin', 'admin', 'manager'),
   templateValidation.map(validation => validation.optional()),
-  async (req: AuthenticatedRequest, res: any) => {
+  async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -462,7 +466,7 @@ router.patch('/templates/:id',
         });
       }
       
-      const templateIndex = mockFormTemplates.findIndex(t => t._id === req.params.id);
+      const templateIndex = mockFormTemplates.findIndex(t => t._id === authReq.params.id);
       
       if (templateIndex === -1) {
         return res.status(404).json({
@@ -474,7 +478,7 @@ router.patch('/templates/:id',
       // Update template
       mockFormTemplates[templateIndex] = {
         ...mockFormTemplates[templateIndex],
-        ...req.body,
+        ...authReq.body,
         updatedAt: new Date()
       };
       
@@ -484,7 +488,7 @@ router.patch('/templates/:id',
         data: mockFormTemplates[templateIndex],
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -532,9 +536,10 @@ router.patch('/templates/:id',
  */
 router.delete('/templates/:id',
   authorize('super_admin', 'admin'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-      const templateIndex = mockFormTemplates.findIndex(t => t._id === req.params.id);
+      const templateIndex = mockFormTemplates.findIndex(t => t._id === authReq.params.id);
       
       if (templateIndex === -1) {
         return res.status(404).json({
@@ -551,7 +556,7 @@ router.delete('/templates/:id',
         message: 'Template de formulário excluído com sucesso',
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -616,9 +621,10 @@ router.delete('/templates/:id',
  *       401:
  *         description: Não autorizado
  */
-router.get('/responses', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/responses', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const { templateId, patientId, startDate, endDate } = req.query;
+    const { templateId, patientId, startDate, endDate } = authReq.query;
     
     let responses = [...mockFormResponses];
     
@@ -647,7 +653,7 @@ router.get('/responses', async (req: AuthenticatedRequest, res: Response) => {
       data: responses,
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId
+        requestId: (authReq as any).requestId
       }
     });
   } catch (error: any) {
@@ -692,9 +698,10 @@ router.get('/responses', async (req: AuthenticatedRequest, res: Response) => {
  *       404:
  *         description: Resposta não encontrada
  */
-router.get('/responses/:id', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/responses/:id', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const response = mockFormResponses.find(r => r._id === req.params.id);
+    const response = mockFormResponses.find(r => r._id === authReq.params.id);
     
     if (!response) {
       return res.status(404).json({
@@ -708,7 +715,7 @@ router.get('/responses/:id', async (req: AuthenticatedRequest, res: Response) =>
       data: response,
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId
+        requestId: (authReq as any).requestId
       }
     });
   } catch (error: any) {
@@ -754,7 +761,8 @@ router.get('/responses/:id', async (req: AuthenticatedRequest, res: Response) =>
  */
 router.post('/responses',
   responseValidation,
-  async (req: AuthenticatedRequest, res: any) => {
+  async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -766,7 +774,7 @@ router.post('/responses',
       }
       
       // Validate that template exists
-      const template = mockFormTemplates.find(t => t._id === req.body.templateId);
+      const template = mockFormTemplates.find(t => t._id === authReq.body.templateId);
       if (!template) {
         return res.status(400).json({
           success: false,
@@ -776,9 +784,9 @@ router.post('/responses',
       
       const newResponse = {
         _id: `response_${Date.now()}`,
-        templateId: req.body.templateId,
-        patientId: req.body.patientId,
-        answers: req.body.answers,
+        templateId: authReq.body.templateId,
+        patientId: authReq.body.patientId,
+        answers: authReq.body.answers,
         submittedAt: new Date(),
         createdAt: new Date()
       };
@@ -792,7 +800,7 @@ router.post('/responses',
         data: newResponse,
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -850,7 +858,8 @@ router.post('/responses',
  */
 router.patch('/responses/:id',
   responseValidation.map(validation => validation.optional()),
-  async (req: AuthenticatedRequest, res: any) => {
+  async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -861,7 +870,7 @@ router.patch('/responses/:id',
         });
       }
       
-      const responseIndex = mockFormResponses.findIndex(r => r._id === req.params.id);
+      const responseIndex = mockFormResponses.findIndex(r => r._id === authReq.params.id);
       
       if (responseIndex === -1) {
         return res.status(404).json({
@@ -873,7 +882,7 @@ router.patch('/responses/:id',
       // Update response
       mockFormResponses[responseIndex] = {
         ...mockFormResponses[responseIndex],
-        ...req.body,
+        ...authReq.body,
         updatedAt: new Date()
       };
       
@@ -883,7 +892,7 @@ router.patch('/responses/:id',
         data: mockFormResponses[responseIndex],
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -931,9 +940,10 @@ router.patch('/responses/:id',
  */
 router.delete('/responses/:id',
   authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-      const responseIndex = mockFormResponses.findIndex(r => r._id === req.params.id);
+      const responseIndex = mockFormResponses.findIndex(r => r._id === authReq.params.id);
       
       if (responseIndex === -1) {
         return res.status(404).json({
@@ -949,7 +959,7 @@ router.delete('/responses/:id',
         message: 'Resposta de formulário excluída com sucesso',
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {
@@ -1010,7 +1020,8 @@ router.delete('/responses/:id',
  */
 router.get('/stats',
   authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
       const stats = {
         totalTemplates: mockFormTemplates.length,
@@ -1031,7 +1042,7 @@ router.get('/stats',
         data: stats,
         meta: {
           timestamp: new Date().toISOString(),
-          requestId: (req as any).requestId
+          requestId: (authReq as any).requestId
         }
       });
     } catch (error: any) {

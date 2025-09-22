@@ -3,17 +3,22 @@ import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
 import type { Clinic } from '@topsmile/types';
 
+/**
+ * User information attached to authenticated requests
+ */
+export interface AuthUser {
+  id: string;
+  email?: string;
+  role?: string;
+  clinicId?: string;
+  name?: string;
+}
 
 /**
- * Extended request interface with user information
+ * Type alias for authenticated requests
  */
-export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email?: string;
-    role?: string;
-    clinicId?: string;
-  };
+export type AuthenticatedRequest = Request & {
+  user?: AuthUser;
 }
 
 /**
@@ -43,7 +48,7 @@ const extractToken = (req: Request): string | null => {
  * Authentication middleware: verifies access token and attaches req.user
  */
 export const authenticate = async (
-  req: AuthenticatedRequest, 
+  req: Request, 
   res: Response, 
   next: NextFunction
 ): Promise<void> => {
@@ -85,17 +90,17 @@ export const authenticate = async (
     }
 
     // Attach user info to request
-    req.user = {
+    (req as AuthenticatedRequest).user = {
       id: String(userId),
       email: payload.email,
-      role: payload.role,
+      role: payload.role as string,
       clinicId: payload.clinicId,
     };
 
     // Optional: Verify user still exists and is active
     if (process.env.VERIFY_USER_ON_REQUEST === 'true') {
       try {
-        const user = await authService.getUserById(req.user.id);
+        const user = await authService.getUserById((req as AuthenticatedRequest).user!.id);
         if (!user.isActive) {
           res.status(401).json({
             success: false,
@@ -152,8 +157,9 @@ export const authenticate = async (
  * Usage: authorize('admin', 'manager') - allows only these roles
  */
 export const authorize = (...allowedRoles: string[]) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const authReq = req as AuthenticatedRequest;
+    if (!authReq.user) {
       res.status(401).json({ 
         success: false, 
         message: 'Autenticação obrigatória',
@@ -162,7 +168,7 @@ export const authorize = (...allowedRoles: string[]) => {
       return;
     }
 
-    const userRole = req.user.role;
+    const userRole = authReq.user.role;
     
     if (!userRole) {
       res.status(403).json({ 
@@ -203,8 +209,9 @@ export const ensureClinicAccess = (
   field: 'params' | 'body' | 'query' = 'params', 
   key: string = 'clinicId'
 ) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const authReq = req as AuthenticatedRequest;
+    if (!authReq.user) {
       res.status(401).json({ 
         success: false, 
         message: 'Autenticação obrigatória',
@@ -213,7 +220,7 @@ export const ensureClinicAccess = (
       return;
     }
 
-    const userClinic = req.user.clinicId;
+    const userClinic = authReq.user.clinicId;
     if (!userClinic) {
       res.status(403).json({ 
         success: false, 
@@ -224,7 +231,7 @@ export const ensureClinicAccess = (
     }
 
     // Super admin can access any clinic
-    if (req.user.role === 'super_admin') {
+    if (authReq.user.role === 'super_admin') {
       next();
       return;
     }
@@ -251,7 +258,7 @@ export const ensureClinicAccess = (
  * Optional authentication middleware: adds user info if token is present but doesn't require it
  */
 export const optionalAuth = async (
-  req: AuthenticatedRequest, 
+  req: Request, 
   res: Response, 
   next: NextFunction
 ): Promise<void> => {
@@ -266,7 +273,7 @@ export const optionalAuth = async (
         const userId = typedPayload.userId || typedPayload.id;
         
         if (userId) {
-          req.user = {
+          (req as AuthenticatedRequest).user = {
             id: String(userId),
             email: typedPayload.email,
             role: typedPayload.role,
@@ -292,8 +299,9 @@ export const ensureOwnership = (
   field: 'params' | 'body' | 'query' = 'params',
   key: string = 'userId'
 ) => {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
-    if (!req.user) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const authReq = req as AuthenticatedRequest;
+    if (!authReq.user) {
       res.status(401).json({ 
         success: false, 
         message: 'Autenticação obrigatória',
@@ -303,7 +311,7 @@ export const ensureOwnership = (
     }
 
     // Super admin can access any resource
-    if (req.user.role === 'super_admin') {
+    if (authReq.user.role === 'super_admin') {
       next();
       return;
     }
@@ -311,7 +319,7 @@ export const ensureOwnership = (
     const requestData = (req as any)[field];
     const resourceUserId = requestData?.[key];
     
-    if (resourceUserId && String(resourceUserId) !== String(req.user.id)) {
+    if (resourceUserId && String(resourceUserId) !== String(authReq.user.id)) {
       res.status(403).json({ 
         success: false, 
         message: 'Acesso negado: você só pode acessar seus próprios recursos',
@@ -328,11 +336,12 @@ export const ensureOwnership = (
  * Rate limiting aware middleware - for sensitive operations
  */
 export const sensitiveOperation = (
-  req: AuthenticatedRequest, 
+  req: Request, 
   res: Response, 
   next: NextFunction
 ): void => {
-  if (!req.user) {
+  const authReq = req as AuthenticatedRequest;
+  if (!authReq.user) {
     res.status(401).json({ 
       success: false, 
       message: 'Autenticação obrigatória',
@@ -343,10 +352,10 @@ export const sensitiveOperation = (
 
   // Add request metadata for audit logging
   (req as any).auditContext = {
-    userId: req.user.id,
-    userEmail: req.user.email,
-    userRole: req.user.role,
-    clinicId: req.user.clinicId,
+    userId: authReq.user.id,
+    userEmail: authReq.user.email,
+    userRole: authReq.user.role,
+    clinicId: authReq.user.clinicId,
     timestamp: new Date(),
     ip: req.ip || req.connection.remoteAddress,
     userAgent: req.headers['user-agent']

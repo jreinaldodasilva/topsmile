@@ -1,24 +1,25 @@
-import express, { Response } from 'express';
+import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { contactService } from '../../services/contactService';
 
 const router: express.Router = express.Router();
 
 // GET /api/admin/contacts - List contacts with pagination and filtering
-router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = Math.min(parseInt(req.query.limit as string) || 10, 100); // Max 100 per page
-    const status = req.query.status as string;
-    const search = req.query.search as string;
-    const sortBy = req.query.sortBy as string || 'createdAt';
-    const sortOrder = req.query.sortOrder as 'asc' | 'desc' || 'desc';
+    const page = parseInt(authReq.query.page as string) || 1;
+    const limit = Math.min(parseInt(authReq.query.limit as string) || 10, 100); // Max 100 per page
+    const status = authReq.query.status as string;
+    const search = authReq.query.search as string;
+    const sortBy = authReq.query.sortBy as string || 'createdAt';
+    const sortOrder = authReq.query.sortOrder as 'asc' | 'desc' || 'desc';
 
     const filters: any = {};
     if (status) filters.status = status;
     if (search) filters.search = search;
 
-    const result = await contactService.getContacts(req.user, filters, {
+    const result = await contactService.getContacts(authReq.user, filters, {
       page,
       limit,
       sortBy,
@@ -39,9 +40,10 @@ router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), asyn
 });
 
 // GET /api/admin/contacts/stats - Get contact statistics
-router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const stats = await contactService.getContactStats(req.user);
+    const stats = await contactService.getContactStats(authReq.user);
     return res.json({
       success: true,
       data: stats
@@ -56,9 +58,10 @@ router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'),
 });
 
 // GET /api/admin/contacts/:id - Get single contact
-router.get('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const contact = await contactService.getContactById(req.user, req.params.id!);
+    const contact = await contactService.getContactById(authReq.user, authReq.params.id!);
     if (!contact) {
       return res.status(404).json({
         success: false,
@@ -79,17 +82,18 @@ router.get('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), a
 });
 
 // PATCH /api/admin/contacts/:id - Update contact
-router.patch('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
     const updates = req.body;
 
     // Add assignedTo if updating status and user is not super_admin
-    if (updates.status && req.user && req.user.role !== 'super_admin') {
-      updates.assignedTo = req.user.id;
-      updates.assignedToClinic = req.user.clinicId;
+    if (updates.status && authReq.user && authReq.user.role !== 'super_admin') {
+      updates.assignedTo = authReq.user.id;
+      updates.assignedToClinic = authReq.user.clinicId;
     }
 
-    const contact = await contactService.updateContact(req.params.id!, updates);
+    const contact = await contactService.updateContact(authReq.params.id!, updates);
 
     if (!contact) {
       return res.status(404).json({
@@ -112,9 +116,10 @@ router.patch('/:id', authenticate, authorize('super_admin', 'admin', 'manager'),
 });
 
 // DELETE /api/admin/contacts/:id - Delete contact
-router.delete('/:id', authenticate, authorize('super_admin', 'admin'), async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', authenticate, authorize('super_admin', 'admin'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const deleted = await contactService.deleteContact(req.params.id!);
+    const deleted = await contactService.deleteContact(authReq.params.id!);
 
     if (!deleted) {
       return res.status(404).json({
@@ -137,9 +142,10 @@ router.delete('/:id', authenticate, authorize('super_admin', 'admin'), async (re
 });
 
 // POST /api/admin/contacts/batch/status - Batch update contact status
-router.post('/batch/status', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {
+router.post('/batch/status', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const { contactIds, status, assignedTo } = req.body;
+    const { contactIds, status, assignedTo } = authReq.body;
 
     if (!contactIds || !Array.isArray(contactIds) || contactIds.length === 0) {
       return res.status(400).json({
@@ -172,7 +178,7 @@ router.post('/batch/status', authenticate, authorize('super_admin', 'admin', 'ma
 });
 
 // GET /api/admin/contacts/duplicates - Find duplicate contacts
-router.get('/duplicates', authenticate, authorize('super_admin', 'admin'), async (req: AuthenticatedRequest, res: Response) => {
+router.get('/duplicates', authenticate, authorize('super_admin', 'admin'), async (req: Request, res: Response) => {
   try {
     const duplicates = await contactService.findDuplicateContacts();
 
@@ -190,9 +196,10 @@ router.get('/duplicates', authenticate, authorize('super_admin', 'admin'), async
 });
 
 // POST /api/admin/contacts/merge - Merge duplicate contacts
-router.post('/merge', authenticate, authorize('super_admin', 'admin'), async (req: AuthenticatedRequest, res: Response) => {
+router.post('/merge', authenticate, authorize('super_admin', 'admin'), async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
   try {
-    const { primaryContactId, duplicateContactIds } = req.body;
+    const { primaryContactId, duplicateContactIds } = authReq.body;
 
     if (!primaryContactId || !duplicateContactIds || !Array.isArray(duplicateContactIds)) {
       return res.status(400).json({

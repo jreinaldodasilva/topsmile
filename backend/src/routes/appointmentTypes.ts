@@ -272,7 +272,8 @@ const searchValidation = [
 router.post('/',
     authorize('super_admin', 'admin', 'manager'),
     createAppointmentTypeValidation,
-    async (req: AuthenticatedRequest, res: any) => {
+    async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -283,7 +284,7 @@ router.post('/',
                 });
             }
 
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -291,8 +292,8 @@ router.post('/',
             }
 
             const appointmentTypeData = {
-                ...req.body,
-                clinicId: req.user.clinicId
+                ...authReq.body,
+                clinicId: authReq.user.clinicId
             };
 
             const appointmentType = await appointmentTypeService.createAppointmentType(appointmentTypeData);
@@ -303,7 +304,7 @@ router.post('/',
                 data: appointmentType,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -406,7 +407,8 @@ router.post('/',
  *       401:
  *         description: Não autorizado
  */
-router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
+router.get('/', searchValidation, async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -417,7 +419,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
             });
         }
 
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
@@ -425,16 +427,16 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
         }
 
         const filters = {
-            clinicId: req.user.clinicId,
-            search: req.query.search as string,
-            isActive: req.query.isActive === 'false' ? false : true,
-            category: req.query.category as string,
-            allowOnlineBooking: req.query.allowOnlineBooking === 'true' ? true : 
-                               req.query.allowOnlineBooking === 'false' ? false : undefined,
-            page: parseInt(req.query.page as string) || 1,
-            limit: parseInt(req.query.limit as string) || 20,
-            sortBy: req.query.sortBy as string || 'name',
-            sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'asc'
+            clinicId: authReq.user.clinicId,
+            search: authReq.query.search as string,
+            isActive: authReq.query.isActive === 'false' ? false : true,
+            category: authReq.query.category as string,
+            allowOnlineBooking: authReq.query.allowOnlineBooking === 'true' ? true : 
+                               authReq.query.allowOnlineBooking === 'false' ? false : undefined,
+            page: parseInt(authReq.query.page as string) || 1,
+            limit: parseInt(authReq.query.limit as string) || 20,
+            sortBy: authReq.query.sortBy as string || 'name',
+            sortOrder: authReq.query.sortOrder as 'asc' | 'desc' || 'asc'
         };
 
         const result = await appointmentTypeService.searchAppointmentTypes(filters);
@@ -444,7 +446,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
             data: result,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -498,23 +500,24 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
  */
 router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
                 });
             }
 
-            const stats = await appointmentTypeService.getAppointmentTypeStats(req.user.clinicId);
+            const stats = await appointmentTypeService.getAppointmentTypeStats(authReq.user.clinicId);
 
             return res.json({
                 success: true,
                 data: stats,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -566,16 +569,17 @@ router.get('/stats',
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
+router.get('/category/:category', async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const category = req.params.category as 'consultation' | 'cleaning' | 'treatment' | 'surgery' | 'emergency';
+        const category = authReq.params.category as 'consultation' | 'cleaning' | 'treatment' | 'surgery' | 'emergency';
         
         if (!['consultation', 'cleaning', 'treatment', 'surgery', 'emergency'].includes(category)) {
             return res.status(400).json({
@@ -584,14 +588,14 @@ router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
             });
         }
 
-        const appointmentTypes = await appointmentTypeService.getAppointmentTypesByCategory(req.user.clinicId, category);
+        const appointmentTypes = await appointmentTypeService.getAppointmentTypesByCategory(authReq.user.clinicId, category);
 
         return res.json({
             success: true,
             data: appointmentTypes,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -632,23 +636,24 @@ router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/online-booking', async (req: AuthenticatedRequest, res) => {
+router.get('/online-booking', async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const appointmentTypes = await appointmentTypeService.getOnlineBookingTypes(req.user.clinicId);
+        const appointmentTypes = await appointmentTypeService.getOnlineBookingTypes(authReq.user.clinicId);
 
         return res.json({
             success: true,
             data: appointmentTypes,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -696,9 +701,10 @@ router.get('/online-booking', async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/:id', async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
@@ -706,8 +712,8 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
         }
 
         const appointmentType = await appointmentTypeService.getAppointmentTypeById(
-            req.params.id!,
-            req.user.clinicId
+            authReq.params.id!,
+            authReq.user.clinicId
         );
 
         if (!appointmentType) {
@@ -722,7 +728,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
             data: appointmentType,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -783,7 +789,8 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 router.put('/:id',
     authorize('super_admin', 'admin', 'manager'),
     updateAppointmentTypeValidation,
-    async (req: AuthenticatedRequest, res: any) => {
+    async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -794,7 +801,7 @@ router.put('/:id',
                 });
             }
 
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -802,9 +809,9 @@ router.put('/:id',
             }
 
             const appointmentType = await appointmentTypeService.updateAppointmentType(
-                req.params.id!,
-                req.user.clinicId,
-                req.body
+                authReq.params.id!,
+                authReq.user.clinicId,
+                authReq.body
             );
 
             if (!appointmentType) {
@@ -820,7 +827,7 @@ router.put('/:id',
                 data: appointmentType,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -888,7 +895,8 @@ router.put('/:id',
 router.post('/:id/duplicate',
     authorize('super_admin', 'admin', 'manager'),
     body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Nome deve ter entre 2 e 100 caracteres'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -899,7 +907,7 @@ router.post('/:id/duplicate',
                 });
             }
 
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -907,9 +915,9 @@ router.post('/:id/duplicate',
             }
 
             const duplicatedType = await appointmentTypeService.duplicateAppointmentType(
-                req.params.id!,
-                req.user.clinicId,
-                req.body.name
+                authReq.params.id!,
+                authReq.user.clinicId,
+                authReq.body.name
             );
 
             return res.status(201).json({
@@ -918,7 +926,7 @@ router.post('/:id/duplicate',
                 data: duplicatedType,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -971,9 +979,10 @@ router.post('/:id/duplicate',
  */
 router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -981,8 +990,8 @@ router.patch('/:id/reactivate',
             }
 
             const appointmentType = await appointmentTypeService.reactivateAppointmentType(
-                req.params.id!,
-                req.user.clinicId
+                authReq.params.id!,
+                authReq.user.clinicId
             );
 
             if (!appointmentType) {
@@ -998,7 +1007,7 @@ router.patch('/:id/reactivate',
                 data: appointmentType,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -1049,9 +1058,10 @@ router.patch('/:id/reactivate',
  */
 router.delete('/:id',
     authorize('super_admin', 'admin'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: Request, res) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -1059,8 +1069,8 @@ router.delete('/:id',
             }
 
             const success = await appointmentTypeService.deleteAppointmentType(
-                req.params.id!,
-                req.user.clinicId
+                authReq.params.id!,
+                authReq.user.clinicId
             );
 
             if (!success) {
@@ -1075,7 +1085,7 @@ router.delete('/:id',
                 message: 'Tipo de agendamento excluído com sucesso',
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {

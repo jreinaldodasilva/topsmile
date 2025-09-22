@@ -1,5 +1,5 @@
-import express, { Response } from 'express';
-import { authenticate, authorize } from '../../middleware/auth';
+import express, { Request, Response } from 'express';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { contactService } from '../../services/contactService';
 import contactRoutes from './contacts';
 
@@ -9,10 +9,11 @@ const router: express.Router = express.Router();
 router.use('/contacts', contactRoutes);
 
 // Dashboard stats endpoint
-router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manager'), async (req, res) => {
+router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {
   try {
+    const authReq = req as unknown as AuthenticatedRequest;
     // Get contact statistics
-    const contactStats = await contactService.getContactStats(req.user);
+    const contactStats = await contactService.getContactStats(authReq.user);
 
     // Calculate summary metrics
     const totalContacts = contactStats.total;
@@ -32,9 +33,9 @@ router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manage
         revenue
       },
       user: {
-        name: (req.user as any)?.name || 'Usuário',
-        role: (req.user as any)?.role || 'admin',
-        clinicId: (req.user as any)?.clinicId || null,
+        name: authReq.user?.name || 'Usuário',
+        role: authReq.user?.role || 'admin',
+        clinicId: authReq.user?.clinicId || null,
         lastActivity: new Date().toISOString()
       }
     };

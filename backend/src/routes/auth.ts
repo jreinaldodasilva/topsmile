@@ -384,9 +384,10 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
  *       401:
  *         description: Não autorizado
  */
-router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.get('/me', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthenticatedRequest;
   try {
-    const user = await authService.getUserById(req.user!.id);
+    const user = await authService.getUserById(authReq.user!.id);
 
     return res.json({
       success: true,
@@ -435,7 +436,8 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response,
  *       401:
  *         description: Não autorizado
  */
-router.patch('/change-password', authenticate, changePasswordValidation, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.patch('/change-password', authenticate, changePasswordValidation, async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthenticatedRequest;
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -446,9 +448,9 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
       });
     }
 
-    const { currentPassword, newPassword } = req.body;
+    const { currentPassword, newPassword } = authReq.body;
 
-    await authService.changePassword(req.user!.id, currentPassword, newPassword);
+    await authService.changePassword(authReq.user!.id, currentPassword, newPassword);
 
     return res.json({
       success: true,
@@ -562,11 +564,12 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
  *       401:
  *         description: Não autorizado
  */
-router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.post('/logout', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthenticatedRequest;
   try {
-    let { refreshToken } = req.cookies;
-    if (!refreshToken && req.body.refreshToken) {
-      refreshToken = req.body.refreshToken;
+    let { refreshToken } = authReq.cookies;
+    if (!refreshToken && authReq.body.refreshToken) {
+      refreshToken = authReq.body.refreshToken;
     }
     if (refreshToken) {
       await authService.logout(refreshToken);
@@ -576,14 +579,14 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
     res.clearCookie('refreshToken');
 
     // Log for development
-    console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
+    console.log(`User ${authReq.user!.email} logged out at ${new Date().toISOString()}`);
 
     return res.json({
       success: true,
       message: 'Logout realizado com sucesso',
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId
+        requestId: (authReq as any).requestId
       }
     });
   } catch (error) {
@@ -607,9 +610,10 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
  *       401:
  *         description: Não autorizado
  */
-router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+router.post('/logout-all', authenticate, async (req: Request, res: Response, next: NextFunction) => {
+  const authReq = req as AuthenticatedRequest;
   try {
-    await authService.logoutAllDevices(req.user!.id);
+    await authService.logoutAllDevices(authReq.user!.id);
     return res.json({ 
       success: true, 
       message: 'Logout realizado em todos os dispositivos',

@@ -490,7 +490,8 @@ app.get('/api/health/database', async (req, res) => {
 app.get('/api/health/metrics',
   authenticate,
   authorize('super_admin', 'admin'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
     try {
       const memoryUsage = process.memoryUsage();
       const cpuUsage = process.cpuUsage();

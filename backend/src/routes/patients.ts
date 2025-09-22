@@ -331,7 +331,8 @@ const searchValidation = [
  *       401:
  *         description: Não autorizado
  */
-router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res: any) => {
+router.post('/', createPatientValidation, async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -342,7 +343,7 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
             });
         }
 
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
@@ -350,8 +351,8 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
         }
 
         const patientData = {
-            ...req.body,
-            clinicId: req.user.clinicId
+            ...authReq.body,
+            clinicId: authReq.user.clinicId
         };
 
         const patient = await patientService.createPatient(patientData);
@@ -362,7 +363,7 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
             data: patient,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -453,7 +454,8 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
  *       401:
  *         description: Não autorizado
  */
-router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
+router.get('/', searchValidation, async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -464,7 +466,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
             });
         }
 
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
@@ -472,13 +474,13 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
         }
 
         const filters = {
-            clinicId: req.user.clinicId,
-            search: req.query.search as string,
-            status: req.query.status as 'active' | 'inactive' || 'active',
-            page: parseInt(req.query.page as string) || 1,
-            limit: parseInt(req.query.limit as string) || 20,
-            sortBy: req.query.sortBy as string || 'name',
-            sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'asc'
+            clinicId: authReq.user.clinicId,
+            search: authReq.query.search as string,
+            status: authReq.query.status as 'active' | 'inactive' || 'active',
+            page: parseInt(authReq.query.page as string) || 1,
+            limit: parseInt(authReq.query.limit as string) || 20,
+            sortBy: authReq.query.sortBy as string || 'name',
+            sortOrder: authReq.query.sortOrder as 'asc' | 'desc' || 'asc'
         };
 
         const result = await patientService.searchPatients(filters);
@@ -498,7 +500,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
             data: transformedResult,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -549,23 +551,24 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/stats', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/stats', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const stats = await patientService.getPatientStats(req.user.clinicId);
+        const stats = await patientService.getPatientStats(authReq.user.clinicId);
 
         return res.json({
             success: true,
             data: stats,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -612,16 +615,17 @@ router.get('/stats', async (req: AuthenticatedRequest, res: Response) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const patient = await patientService.getPatientById(req.params.id!, req.user.clinicId);
+        const patient = await patientService.getPatientById(authReq.params.id!, authReq.user.clinicId);
 
         if (!patient) {
             return res.status(404).json({
@@ -635,7 +639,7 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
             data: patient,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -690,7 +694,8 @@ router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
  *       404:
  *         description: Paciente não encontrado
  */
-router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, res: any) => {
+router.patch('/:id', updatePatientValidation, async (req: Request, res: any) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -701,7 +706,7 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
             });
         }
 
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
@@ -709,9 +714,9 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
         }
 
         const patient = await patientService.updatePatient(
-            req.params.id!,
-            req.user.clinicId,
-            req.body
+            authReq.params.id!,
+            authReq.user.clinicId,
+            authReq.body
         );
 
         if (!patient) {
@@ -727,7 +732,7 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
             data: patient,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -803,7 +808,8 @@ router.patch('/:id/medical-history',
     body('medications').optional().isArray().withMessage('Medicamentos deve ser um array'),
     body('conditions').optional().isArray().withMessage('Condições deve ser um array'),
     body('notes').optional().trim().isLength({ max: 1000 }).withMessage('Observações devem ter no máximo 1000 caracteres'),
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -814,7 +820,7 @@ router.patch('/:id/medical-history',
                 });
             }
 
-            if (!req.user?.clinicId) {
+            if (!authReq.user?.clinicId) {
                 return res.status(400).json({
                     success: false,
                     message: 'Clínica não identificada'
@@ -822,9 +828,9 @@ router.patch('/:id/medical-history',
             }
 
             const patient = await patientService.updateMedicalHistory(
-                req.params.id!,
-                req.user.clinicId,
-                req.body
+                authReq.params.id!,
+                authReq.user.clinicId,
+                authReq.body
             );
 
             if (!patient) {
@@ -840,7 +846,7 @@ router.patch('/:id/medical-history',
                 data: patient,
                 meta: {
                     timestamp: new Date().toISOString(),
-                    requestId: (req as any).requestId
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
@@ -888,16 +894,17 @@ router.patch('/:id/medical-history',
  *       404:
  *         description: Paciente inativo não encontrado
  */
-router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res: Response) => {
+router.patch('/:id/reactivate', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const patient = await patientService.reactivatePatient(req.params.id!, req.user.clinicId);
+        const patient = await patientService.reactivatePatient(authReq.params.id!, authReq.user.clinicId);
 
         if (!patient) {
             return res.status(404).json({
@@ -912,7 +919,7 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res: Response)
             data: patient,
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
@@ -965,16 +972,17 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res: Response)
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete('/:id', async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
+  const authReq = req as unknown as AuthenticatedRequest;
     try {
-        if (!req.user?.clinicId) {
+        if (!authReq.user?.clinicId) {
             return res.status(400).json({
                 success: false,
                 message: 'Clínica não identificada'
             });
         }
 
-        const success = await patientService.deletePatient(req.params.id!, req.user.clinicId);
+        const success = await patientService.deletePatient(authReq.params.id!, authReq.user.clinicId);
 
         if (!success) {
             return res.status(404).json({
@@ -988,7 +996,7 @@ router.delete('/:id', async (req: AuthenticatedRequest, res: Response) => {
             message: 'Paciente excluído com sucesso',
             meta: {
                 timestamp: new Date().toISOString(),
-                requestId: (req as any).requestId
+                requestId: (authReq as any).requestId
             }
         });
     } catch (error: any) {
