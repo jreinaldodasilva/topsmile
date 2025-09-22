@@ -1,11 +1,11 @@
 // backend/src/routes/patients.ts
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
 import { isAppError } from '../types/errors';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // All patient routes require authentication
 router.use(authenticate);
@@ -547,7 +547,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/stats', async (req: AuthenticatedRequest, res) => {
+router.get('/stats', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user?.clinicId) {
             return res.status(400).json({
@@ -610,7 +610,7 @@ router.get('/stats', async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user?.clinicId) {
             return res.status(400).json({
@@ -801,7 +801,7 @@ router.patch('/:id/medical-history',
     body('medications').optional().isArray().withMessage('Medicamentos deve ser um array'),
     body('conditions').optional().isArray().withMessage('Condições deve ser um array'),
     body('notes').optional().trim().isLength({ max: 1000 }).withMessage('Observações devem ter no máximo 1000 caracteres'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -886,7 +886,7 @@ router.patch('/:id/medical-history',
  *       404:
  *         description: Paciente inativo não encontrado
  */
-router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
+router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user?.clinicId) {
             return res.status(400).json({
@@ -963,7 +963,7 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.delete('/:id', async (req: AuthenticatedRequest, res) => {
+router.delete('/:id', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user?.clinicId) {
             return res.status(400).json({

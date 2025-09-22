@@ -1,8 +1,8 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { contactService } from '../../services/contactService';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // GET /api/admin/contacts - List contacts with pagination and filtering
 router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: AuthenticatedRequest, res: Response) => {

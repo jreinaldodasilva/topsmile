@@ -7,9 +7,9 @@ import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
 import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
-import logger from '../config/logger';
 
-const router = express.Router();
+
+const router: express.Router = express.Router();
 
 // Rate limiting for auth endpoints
 const authLimiter = rateLimit({
@@ -574,7 +574,7 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
     res.clearCookie('refreshToken');
 
     // Log for development
-    logger.info(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
+    console.log(`User ${req.user!.email} logged out at ${new Date().toISOString()}`);
 
     return res.json({
       success: true,
@@ -684,7 +684,7 @@ router.post('/forgot-password', forgotPasswordLimiter, [
 
     // In a real application, you would send an email here.
     // For now, we'll just log the token and send a generic success message.
-    logger.info(`Password reset token for ${email}: ${resetToken}`);
+    console.log(`Password reset token for ${email}: ${resetToken}`);
 
     return res.json({
       success: true,

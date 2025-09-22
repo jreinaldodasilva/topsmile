@@ -1,10 +1,10 @@
 // backend/src/routes/appointmentTypes.ts
-import express from 'express';
+import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { appointmentTypeService } from '../services/appointmentTypeService';
 import { body, query, validationResult } from 'express-validator';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // All appointment type routes require authentication
 router.use(authenticate);

@@ -1,9 +1,9 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { authenticate, authorize } from '../../middleware/auth';
 import { contactService } from '../../services/contactService';
 import contactRoutes from './contacts';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Mount admin sub-routes
 router.use('/contacts', contactRoutes);

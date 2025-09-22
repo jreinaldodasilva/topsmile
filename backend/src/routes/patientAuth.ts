@@ -1,11 +1,11 @@
-import express from 'express';
+import express, { Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../services/patientAuthService';
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 import { patientAuthLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
 import { isAppError } from '../types/errors';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 const standardResponse = (data: any, message?: string, req?: express.Request) => ({
     success: true,
@@ -68,7 +68,7 @@ const loginValidation = [
 router.post('/register', 
     patientAuthLimiter,
     enhancedRegisterValidation, 
-    async (req: express.Request, res: express.Response) => {
+    async (req: express.Request, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -132,7 +132,7 @@ router.post('/register',
 router.post('/login', 
     patientAuthLimiter,
     loginValidation, 
-    async (req: express.Request, res: express.Response) => {
+    async (req: express.Request, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -196,7 +196,7 @@ router.post('/login',
     }
 );
 
-router.post('/refresh', async (req: express.Request, res: express.Response) => {
+router.post('/refresh', async (req: express.Request, res: Response) => {
     try {
         const { patientRefreshToken } = req.cookies;
         if (!patientRefreshToken) {
@@ -226,7 +226,7 @@ router.post('/refresh', async (req: express.Request, res: express.Response) => {
     }
 });
 
-router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequest, res: express.Response) => {
+router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequest, res: Response) => {
     try {
         const { patientRefreshToken } = req.cookies;
         if (patientRefreshToken) {
@@ -255,7 +255,7 @@ router.patch('/profile',
         body('phone').optional().matches(/^[\d\s\-()+]{10,20}$/),
         body('birthDate').optional().isISO8601(),
     ],
-    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+    async (req: PatientAuthenticatedRequest, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -295,7 +295,7 @@ router.patch('/change-password',
             .isLength({ min: 8 })
             .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
     ],
-    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+    async (req: PatientAuthenticatedRequest, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -332,7 +332,7 @@ router.patch('/change-password',
 router.post('/resend-verification',
     patientAuthLimiter,
     [body('email').isEmail().normalizeEmail()],
-    async (req: express.Request, res: express.Response) => {
+    async (req: express.Request, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -368,7 +368,7 @@ router.delete('/account',
     authenticatePatient,
     requirePatientEmailVerification,
     [body('password').notEmpty()],
-    async (req: PatientAuthenticatedRequest, res: express.Response) => {
+    async (req: PatientAuthenticatedRequest, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -400,7 +400,7 @@ router.delete('/account',
     }
 );
 
-router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, res: express.Response) => {
+router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, res: Response) => {
     try {
         return res.json(standardResponse({
             patient: req.patient,

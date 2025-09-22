@@ -1,5 +1,5 @@
 // backend/src/routes/appointments.ts
-import express from "express";
+import express, { Response } from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../middleware/patientAuth";
 import { schedulingService } from "../services/schedulingService";
@@ -7,7 +7,7 @@ import { schedulingService } from "../services/schedulingService";
 import { Appointment } from "../models/Appointment";
 import { body, validationResult } from 'express-validator';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // All appointment routes require authentication
 router.use(authenticate);
@@ -343,7 +343,7 @@ router.post("/book", bookingValidation, async (req: AuthenticatedRequest, res: a
  *       401:
  *         description: Não autorizado
  */
-router.get("/", async (req: AuthenticatedRequest, res) => {
+router.get("/", async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { startDate, endDate, providerId, status } = req.query;
     
@@ -426,7 +426,7 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get("/:id", async (req: AuthenticatedRequest, res) => {
+router.get("/:id", async (req: AuthenticatedRequest, res: Response) => {
   try {
     const appointment = await Appointment.findById(req.params.id!)
       .populate('patient', 'name phone email')
@@ -668,7 +668,7 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
 router.patch("/:id/status", 
   body('status').isIn(['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show']),
   body('cancellationReason').optional().isLength({ max: 500 }),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -805,7 +805,7 @@ router.patch("/:id/reschedule",
   body('newStart').isISO8601().withMessage('Nova data/hora inválida'),
   body('reason').isLength({ min: 1, max: 500 }).withMessage('Motivo é obrigatório e deve ter no máximo 500 caracteres'),
   body('rescheduleBy').isIn(['patient', 'clinic']).withMessage('Tipo de reagendamento inválido'),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
@@ -846,7 +846,7 @@ router.patch("/:id/reschedule",
 // Delete appointment (only for admins)
 router.delete("/:id", 
   authorize('super_admin', 'admin'), 
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const appointment = await Appointment.findById(req.params.id!);
       if (!appointment) {
@@ -888,7 +888,7 @@ router.delete("/:id",
 router.get("/patient",
   authenticatePatient,
   requirePatientEmailVerification,
-  async (req: PatientAuthenticatedRequest, res) => {
+  async (req: PatientAuthenticatedRequest, res: Response) => {
     try {
       const { startDate, endDate, status, page = 1, limit = 10 } = req.query;
 

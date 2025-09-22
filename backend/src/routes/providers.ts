@@ -1,10 +1,10 @@
 // backend/src/routes/providers.ts
-import express from 'express';
+import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { providerService } from '../services/providerService';
 import { body, query, validationResult } from 'express-validator';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // All provider routes require authentication
 router.use(authenticate);
@@ -622,7 +622,7 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
  */
 router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
         try {
             if (!req.user?.clinicId) {
                 return res.status(400).json({
@@ -687,7 +687,7 @@ router.get('/stats',
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
     try {
         if (!req.user?.clinicId) {
             return res.status(400).json({
@@ -1039,7 +1039,7 @@ router.patch('/:id/appointment-types',
     authorize('super_admin', 'admin', 'manager'),
     body('appointmentTypes').isArray().withMessage('Tipos de agendamento deve ser um array'),
     body('appointmentTypes.*').isMongoId().withMessage('ID de tipo de agendamento inválido'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -1129,7 +1129,7 @@ router.patch('/:id/appointment-types',
  */
 router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
         try {
             if (!req.user?.clinicId) {
                 return res.status(400).json({
@@ -1204,7 +1204,7 @@ router.patch('/:id/reactivate',
  */
 router.delete('/:id',
     authorize('super_admin', 'admin'),
-    async (req: AuthenticatedRequest, res) => {
+    async (req: AuthenticatedRequest, res: Response) => {
         try {
             if (!req.user?.clinicId) {
                 return res.status(400).json({

@@ -207,7 +207,7 @@ ContactSchema.pre('save', function(this: IContact & Document, next) {
     }
     
     // Auto-fill conversion details when status becomes 'converted'
-    /* if (this.isModified('status') && this.status === 'converted' && !this.conversionDetails?.convertedAt) {
+    if (this.isModified('status') && this.status === 'converted' && !this.conversionDetails?.convertedAt) {
         if (!this.conversionDetails) {
             this.conversionDetails = {
                 convertedAt: new Date(),
@@ -217,7 +217,7 @@ ContactSchema.pre('save', function(this: IContact & Document, next) {
         } else {
             this.conversionDetails.convertedAt = new Date();
         }
-    } */
+    }
     
     next();
 });

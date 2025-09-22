@@ -5,7 +5,7 @@ import { body, validationResult } from 'express-validator';
 import { contactService } from '../services/contactService';
 import { emailService } from '../services/emailService';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Rate limiter specific to contact forms
 const contactLimiter = rateLimit({

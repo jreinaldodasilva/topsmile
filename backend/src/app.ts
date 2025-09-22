@@ -13,7 +13,7 @@ import cookieParser from 'cookie-parser';
 import { connectToDatabase } from './config/database';
 import { contactService } from './services/contactService';
 import { checkDatabaseConnection, handleValidationError } from './middleware/database';
-import { Contact } from './models/Contact'; // FIXED: Replaced require with import
+import { Contact } from './models/Contact';
 
 // Authentication imports
 import { authenticate, authorize, AuthenticatedRequest } from './middleware/auth';
@@ -38,7 +38,7 @@ import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
 
-const app = express();
+const app: express.Application = express();
 const PORT = process.env.PORT || 5000;
 
 /**
@@ -102,15 +102,15 @@ const validateEnv = () => {
     
     if (errors.length > 0) {
       console.error('Environment Configuration Errors:');
-      errors.forEach(error => logger.error(`- ${error}`));
+      errors.forEach(error => console.error(`- ${error}`));
       process.exit(1);
     }
     
     // Check recommended variables
     const missingRecommended = recommendedInProd.filter(name => !process.env[name]);
     if (missingRecommended.length > 0) {
-      logger.warn('Missing recommended environment variables:');
-      missingRecommended.forEach(name => logger.warn(`- ${name}`));
+      console.warn('Missing recommended environment variables:');
+      missingRecommended.forEach(name => console.warn(`- ${name}`));
     }
     
   } else {
@@ -130,9 +130,9 @@ const validateEnv = () => {
     }
     
     if (warnings.length > 0) {
-      logger.warn('Development Environment Warnings:');
-      warnings.forEach(warning => logger.warn(`- ${warning}`));
-      logger.warn('These should be configured for production deployment.');
+      console.warn('Development Environment Warnings:');
+      warnings.forEach(warning => console.warn(`- ${warning}`));
+      console.warn('These should be configured for production deployment.');
     }
   }
 };
@@ -158,7 +158,7 @@ const configureProxy = () => {
       process.env.HEROKU || 
       process.env.AWS_REGION) {
     app.set('trust proxy', 1);
-    logger.info('✅ Proxy trust enabled for production environment');
+    console.log('✅ Proxy trust enabled for production environment');
   }
 };
 
@@ -223,7 +223,7 @@ const configureSecurityMiddleware = () => {
       if (isAllowed) {
         callback(null, true);
       } else {
-        logger.warn(`CORS blocked origin: ${origin}`);
+        console.warn(`CORS blocked origin: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -258,7 +258,7 @@ const createRateLimit = (windowMs: number, max: number, message: string) => rate
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    logger.warn(`Rate limit exceeded for IP ${req.ip}: ${req.method} ${req.path}`);
+    console.warn(`Rate limit exceeded for IP ${req.ip}: ${req.method} ${req.path}`);
     res.status(429).json({ success: false, message });
   }
 });
@@ -285,7 +285,7 @@ const authLimiter = rateLimit({
     return email ? `auth_${email}` : `auth_ip_${req.ip}`;
   },
   handler: (req, res) => {
-    logger.warn(`Auth rate limit exceeded for ${req.body?.email || req.ip}`);
+    console.warn(`Auth rate limit exceeded for ${req.body?.email || req.ip}`);
     res.status(429).json({ 
       success: false, 
       message: 'Muitas tentativas de autenticação. Tente novamente em 15 minutos.' 
@@ -307,7 +307,7 @@ const passwordResetLimiter = rateLimit({
     return req.user?.id || req.ip || 'unknown';
   },
   handler: (req, res) => {
-    logger.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
+    console.warn(`Rate limit exceeded for password reset for user/IP ${req.user?.id || req.ip}`);
     res.status(429).json({ success: false, message: 'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.' });
   }
 });
@@ -345,16 +345,15 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 
-import csurf from 'csurf';
-const csrfProtection = csurf({
-  cookie: { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' }
-});
-// Add an endpoint to get the CSRF token
-app.get('/api/csrf-token', csrfProtection, (req, res) => {
-  res.json({ csrfToken: req.csrfToken() });
-});
-// Use csrfProtection on routes requiring state changes:
-app.use('/api', csrfProtection);
+// CSRF protection disabled for API-only backend
+// import csurf from 'csurf';
+// const csrfProtection = csurf({
+//   cookie: { httpOnly: true, sameSite: 'strict', secure: process.env.NODE_ENV === 'production' }
+// });
+// app.get('/api/csrf-token', csrfProtection, (req, res) => {
+//   res.json({ csrfToken: req.csrfToken() });
+// });
+// app.use('/api', csrfProtection);
 
 // Database connection check middleware for API routes
 app.use('/api', checkDatabaseConnection);
@@ -470,7 +469,7 @@ app.get('/api/health/database', async (req, res) => {
       });
     }
   } catch (error) {
-    logger.error('Database health check failed:', error);
+    console.error('Database health check failed:', error);
     return res.status(503).json({
       success: false,
       message: 'Database health check failed',
@@ -535,7 +534,7 @@ app.use(errorHandler);
 
 // IMPROVED: 404 handler with request logging
 app.use('*', (req, res) => {
-  logger.warn(`404 Not Found: ${req.method} ${req.originalUrl} from ${req.ip}`);
+  console.warn(`404 Not Found: ${req.method} ${req.originalUrl} from ${req.ip}`);
   
   return res.status(404).json({
     success: false,
@@ -546,42 +545,42 @@ app.use('*', (req, res) => {
 
 // IMPROVED: Global process handlers with better error management
 process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
   // In production, you might want to log this to an external service
 });
 
 process.on('uncaughtException', (err) => {
-  logger.error('Uncaught Exception:', err);
+  console.error('Uncaught Exception:', err);
   // Log to external service in production
   
   // Graceful shutdown
   if (process.env.NODE_ENV === 'production') {
-    logger.info('Shutting down due to uncaught exception');
+    console.log('Shutting down due to uncaught exception');
     process.exit(1);
   }
 });
 
 // IMPROVED: Graceful shutdown handling
 process.on('SIGTERM', () => {
-  logger.info('SIGTERM received. Shutting down gracefully...');
+  console.log('SIGTERM received. Shutting down gracefully...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  logger.info('SIGINT received. Shutting down gracefully...');
+  console.log('SIGINT received. Shutting down gracefully...');
   process.exit(0);
 });
 
 // Start server with improved logging
 app.listen(PORT, () => {
-  logger.info('🚀 ===================================');
-  logger.info(`🚀 TopSmile API running on port ${PORT}`);
-  logger.info(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  logger.info(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
-  logger.info(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured ✅' : 'Using default ⚠️'}`);
-  logger.info(`📧 Email Service: ${process.env.SENDGRID_API_KEY ? 'SendGrid ✅' : 'Ethereal/Console ⚠️'}`);
-  logger.info(`🗄️  Database: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting... ⏳'}`);
-  logger.info('🚀 ===================================');
+  console.log('🚀 ===================================');
+  console.log(`🚀 TopSmile API running on port ${PORT}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔗 Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
+  console.log(`🔐 JWT Secret: ${process.env.JWT_SECRET ? 'Configured ✅' : 'Using default ⚠️'}`);
+  console.log(`📧 Email Service: ${process.env.SENDGRID_API_KEY ? 'SendGrid ✅' : 'Ethereal/Console ⚠️'}`);
+  console.log(`🗄️  Database: ${mongoose.connection.readyState === 1 ? 'Connected ✅' : 'Connecting... ⏳'}`);
+  console.log('🚀 ===================================');
 });
 
 export default app;

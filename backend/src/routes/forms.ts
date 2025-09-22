@@ -1,9 +1,9 @@
 // backend/src/routes/forms.ts
-import express from 'express';
+import express, { Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { body, validationResult } from 'express-validator';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // All form routes require authentication
 router.use(authenticate);
@@ -227,7 +227,7 @@ const responseValidation = [
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/templates', async (req: AuthenticatedRequest, res) => {
+router.get('/templates', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { category, isActive } = req.query;
     
@@ -297,7 +297,7 @@ router.get('/templates', async (req: AuthenticatedRequest, res) => {
  *       500:
  *         description: Erro interno do servidor
  */
-router.get('/templates/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/templates/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const template = mockFormTemplates.find(t => t._id === req.params.id);
     
@@ -530,7 +530,7 @@ router.patch('/templates/:id',
  */
 router.delete('/templates/:id',
   authorize('super_admin', 'admin'),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const templateIndex = mockFormTemplates.findIndex(t => t._id === req.params.id);
       
@@ -614,7 +614,7 @@ router.delete('/templates/:id',
  *       401:
  *         description: Não autorizado
  */
-router.get('/responses', async (req: AuthenticatedRequest, res) => {
+router.get('/responses', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { templateId, patientId, startDate, endDate } = req.query;
     
@@ -690,7 +690,7 @@ router.get('/responses', async (req: AuthenticatedRequest, res) => {
  *       404:
  *         description: Resposta não encontrada
  */
-router.get('/responses/:id', async (req: AuthenticatedRequest, res) => {
+router.get('/responses/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const response = mockFormResponses.find(r => r._id === req.params.id);
     
@@ -929,7 +929,7 @@ router.patch('/responses/:id',
  */
 router.delete('/responses/:id',
   authorize('super_admin', 'admin', 'manager'),
-  async (req: AuthenticatedRequest, res) => {
+  async (req: AuthenticatedRequest, res: Response) => {
     try {
       const responseIndex = mockFormResponses.findIndex(r => r._id === req.params.id);
       

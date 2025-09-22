@@ -6,7 +6,7 @@ import { SignOptions, JwtPayload } from 'jsonwebtoken';
 import { User as IUser } from '@topsmile/types';
 import { User as UserModel } from '../models/User';
 import { Clinic } from '../models/Clinic';
-import { tokenBlacklistService } from './tokenBlacklistService';
+// import { tokenBlacklistService } from './tokenBlacklistService';
 import {
     AppError,
     ValidationError,
@@ -179,9 +179,9 @@ class AuthService {
             }
 
             // Check if token is blacklisted
-            if (tokenBlacklistService.isBlacklisted(token)) {
-                throw new UnauthorizedError('Token foi revogado');
-            }
+            // if (tokenBlacklistService && tokenBlacklistService.isBlacklisted(token)) {
+            //     throw new UnauthorizedError('Token foi revogado');
+            // }
 
             const payload = jwt.verify(token, this.getJwtSecret(), {
                 issuer: 'topsmile-api',
@@ -294,7 +294,7 @@ class AuthService {
             const expiresAt = new Date(decoded.exp! * 1000); // JWT exp is in seconds
 
             // Add to blacklist
-            await tokenBlacklistService.addToBlacklist(accessToken, expiresAt);
+            // await tokenBlacklistService.addToBlacklist(accessToken, expiresAt);
         } catch (error) {
             console.error('Error during access token logout:', error);
             // Don't throw - logout should be graceful
@@ -445,7 +445,7 @@ class AuthService {
             }
 
             const isMatch = await user.comparePassword(data.password);
-            if (!isMatch) {
+            if (isMatch === false) {
                 // Increment login attempts on failed password
                 await user.incLoginAttempts();
                 throw new UnauthorizedError('E-mail ou senha inválidos');

@@ -1,8 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../config/swagger';
 
-const router = express.Router();
+const router: express.Router = express.Router();
 
 // Swagger UI
 /**
@@ -53,7 +53,7 @@ router.get('/', swaggerUi.setup(swaggerSpec, {
  *             schema:
  *               type: object
  */
-router.get('/json', (req, res) => {
+router.get('/json', (req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
 });
