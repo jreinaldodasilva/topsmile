@@ -29,6 +29,7 @@ module.exports = {
 
   moduleNameMapper: {
     ...defaultConfig.moduleNameMapper,
+    '^@topsmile/types$': '<rootDir>/../packages/types/src',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@components/(.*)$': '<rootDir>/src/components/$1',
     '^@contexts/(.*)$': '<rootDir>/src/contexts/$1',
