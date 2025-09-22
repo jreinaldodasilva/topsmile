@@ -1,6 +1,6 @@
 // src/components/Admin/Contacts/ContactList.tsx - Updated for React Query
 import React, { useState, useCallback } from 'react';
-import { useContacts, useMutateContact, useDeleteContact } from '../../../hooks/useContacts';
+import { useContacts, useUpdateContact } from '../../../hooks/useApiQuery';
 import { apiService } from '../../../services/apiService';
 import type { Contact, ContactFilters, ContactListResponse } from '../../../../packages/types/src/index';
 import ViewContactModal from './ViewContactModal';
@@ -40,8 +40,7 @@ const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) 
   } | null>(null);
 
   const { data: contactsData, isLoading, error, refetch } = useContacts({ ...filters, ...sort });
-  const contactMutation = useMutateContact();
-  const deleteContactMutation = useDeleteContact();
+  const updateContactMutation = useUpdateContact();
 
   const handleViewContact = useCallback((contact: Contact) => {
     setSelectedContact(contact);
@@ -49,12 +48,15 @@ const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) 
 
   const handleCreateContact = useCallback(async (contact: Omit<Contact, '_id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      await contactMutation.mutateAsync(contact);
-      setIsCreateModalOpen(false);
+      const result = await apiService.contacts.create(contact);
+      if (result.success) {
+        setIsCreateModalOpen(false);
+        refetch();
+      }
     } catch (error) {
       console.error('Failed to create contact:', error);
     }
-  }, [contactMutation, setIsCreateModalOpen]);
+  }, [setIsCreateModalOpen, refetch]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -84,12 +86,12 @@ const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) 
   const handleStatusUpdate = useCallback(async (contactId: string, newStatus: Contact['status']) => {
     try {
       if (newStatus) {
-        await contactMutation.mutateAsync({ id: contactId, status: newStatus });
+        await updateContactMutation.mutateAsync({ id: contactId, data: { status: newStatus } });
       }
     } catch (error) {
       console.error('Failed to update contact status:', error);
     }
-  }, [contactMutation]);
+  }, [updateContactMutation]);
 
   const handleDeleteContact = useCallback(async (contactId: string) => {
     setConfirmDialog({
@@ -97,14 +99,17 @@ const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) 
       message: 'Tem certeza que deseja excluir este contato?',
       onConfirm: async () => {
         try {
-          await deleteContactMutation.mutateAsync(contactId);
+          const result = await apiService.contacts.delete(contactId);
+          if (result.success) {
+            refetch();
+          }
         } catch (error) {
           console.error('Failed to delete contact:', error);
         }
         setConfirmDialog(null);
       },
     });
-  }, [deleteContactMutation, setConfirmDialog]);
+  }, [setConfirmDialog, refetch]);
 
   const handlePageChange = useCallback((page: number) => {
     setFilters(prev => ({ ...prev, page }));
@@ -418,7 +423,7 @@ const ContactList: React.FC<ContactListProps> = React.memo(({ initialFilters }) 
       )}
 
       {/* Loading overlay for updates */}
-      {(isLoading || contactMutation.isPending || deleteContactMutation.isPending) && (
+      {(isLoading || updateContactMutation.isPending) && (
         <div className="loading-overlay">
           <div className="loading-spinner">Atualizando...</div>
         </div>

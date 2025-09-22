@@ -61,12 +61,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [navigate]);
 
-  // UPDATED: Enhanced initial authentication check
+  // UPDATED: Enhanced initial authentication check with race condition prevention
   useEffect(() => {
+    let isMounted = true;
+    let authCheckInProgress = false;
+
     const verifyAuth = async () => {
+      if (authCheckInProgress) return;
+      authCheckInProgress = true;
+      
       const hadTokens = !!localStorage.getItem('topsmile_access_token');
       try {
         const userResponse = await apiService.auth.me();
+
+        if (!isMounted) return;
 
         if (userResponse.success && userResponse.data) {
           setUser(userResponse.data);
@@ -79,6 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           if (hadTokens) navigate('/login');
         }
       } catch (err) {
+        if (!isMounted) return;
         setUser(null);
         // Clear invalid tokens on error
         localStorage.removeItem('topsmile_access_token');
@@ -86,11 +95,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Navigate to login if tokens were present but invalid
         if (hadTokens) navigate('/login');
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
+        authCheckInProgress = false;
       }
     };
 
     verifyAuth();
+    
+    return () => {
+      isMounted = false;
+    };
   }, [navigate]);
 
   // UPDATED: Enhanced login function with secure token storage
