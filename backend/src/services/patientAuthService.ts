@@ -159,7 +159,7 @@ class PatientAuthService {
         throw new ConflictError('Já existe uma conta com este e-mail');
       }
 
-      let patient: IPatient;
+      let patient: IPatient | null = null;
 
       if (data.patientId) {
         // FIXED: Link to existing patient
@@ -167,7 +167,7 @@ class PatientAuthService {
           _id: data.patientId,
           clinic: data.clinicId,
           status: 'active'
-        }) as IPatient | null;
+        }).populate('clinic');
 
         if (!existingPatient) {
           throw new NotFoundError('Paciente não encontrado ou inativo');
@@ -178,7 +178,6 @@ class PatientAuthService {
         if (hasUserAccount) {
           throw new ConflictError('Este paciente já possui uma conta no portal');
         }
-
         patient = existingPatient;
       } else {
         // FIXED: Create new patient record
@@ -198,7 +197,16 @@ class PatientAuthService {
           status: 'active'
         });
 
-        patient = await newPatientModel.save();
+        await newPatientModel.save();
+        const createdPatient = await PatientModel.findById(newPatientModel._id).populate('clinic');
+        if (!createdPatient) {
+          throw new AppError('Failed to create patient', 500);
+        }
+        patient = createdPatient;
+      }
+
+      if (!patient) {
+        throw new AppError('Patient not found or created', 500);
       }
 
       // Create patient user account
