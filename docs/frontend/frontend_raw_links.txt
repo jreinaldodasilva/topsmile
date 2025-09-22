@@ -105,7 +105,6 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/TestC
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Unauthorized/UnauthorizedPage.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/react-app-env.d.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/reportWebVitals.ts
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/apiService-updated.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/apiService.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/http.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/paymentService.ts
@@ -144,8 +143,5 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils/testHelpers.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/textEncoderPolyfill.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/transformStreamPolyfill.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/types/api.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/logger.ts
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/mappers-expanded.ts
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/mappers.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/tsconfig.json

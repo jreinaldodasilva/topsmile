@@ -13,6 +13,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/con
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/auth.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/database.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/errorHandler.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/normalizeResponse.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/patientAuth.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/rateLimiter.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/roleBasedAccess.ts
