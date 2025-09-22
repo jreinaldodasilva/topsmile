@@ -83,7 +83,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const result = await schedulingService.createAppointment(appointmentData);
+      const result = await schedulingService.createAppointmentModel(appointmentData);
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -101,7 +101,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const result = await schedulingService.createAppointment(appointmentData);
+      const result = await schedulingService.createAppointmentModel(appointmentData);
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('Tipo de agendamento não encontrado');
@@ -135,7 +135,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const inactiveResult = await schedulingService.createAppointment(appointmentData);
+      const inactiveResult = await schedulingService.createAppointmentModel(appointmentData);
 
       expect(inactiveResult.success).toBe(false);
       expect(inactiveResult.error).toBe('Profissional não encontrado ou inativo');
@@ -152,7 +152,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const firstResult = await schedulingService.createAppointment(firstAppointmentData);
+      const firstResult = await schedulingService.createAppointmentModel(firstAppointmentData);
       expect(firstResult.success).toBe(true);
 
       // Try to create overlapping appointment
@@ -165,7 +165,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const conflictResult = await schedulingService.createAppointment(conflictingAppointmentData);
+      const conflictResult = await schedulingService.createAppointmentModel(conflictingAppointmentData);
 
       expect(conflictResult.success).toBe(false);
       expect(conflictResult.error).toContain('Horário não disponível');
@@ -184,14 +184,14 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const createResult = await schedulingService.createAppointment(appointmentData);
+      const createResult = await schedulingService.createAppointmentModel(appointmentData);
       expect(createResult.success).toBe(true);
 
       const appointmentId = (createResult.data!._id as any).toString();
       const newStart = new Date('2024-01-15T14:00:00Z');
       const reason = 'Patient requested change';
 
-      const rescheduleResult = await schedulingService.rescheduleAppointment(
+      const rescheduleResult = await schedulingService.rescheduleAppointmentModel(
         appointmentId,
         newStart,
         reason,
@@ -200,14 +200,14 @@ describe('SchedulingService', () => {
 
       expect(rescheduleResult.success).toBe(true);
       expect(rescheduleResult.data).toBeDefined();
-      expect(rescheduleResult.data!.scheduledStart.getTime()).toBe(newStart.getTime());
+      expect(new Date(rescheduleResult.data!.scheduledStart).getTime()).toBe(newStart.getTime());
       expect(rescheduleResult.data!.rescheduleHistory).toBeDefined();
       expect(rescheduleResult.data!.rescheduleHistory).toHaveLength(1);
       expect(rescheduleResult.data!.rescheduleHistory![0].reason).toBe(reason);
     });
 
     it('should return error for non-existent appointment', async () => {
-      const nonExistentResult = await schedulingService.rescheduleAppointment(
+      const nonExistentResult = await schedulingService.rescheduleAppointmentModel(
         '507f1f77bcf86cd799439011',
         new Date('2024-01-15T14:00:00Z'),
         'Test reason',
@@ -231,13 +231,13 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const createResult = await schedulingService.createAppointment(appointmentData);
+      const createResult = await schedulingService.createAppointmentModel(appointmentData);
       expect(createResult.success).toBe(true);
 
       const appointmentId = (createResult.data!._id as any).toString();
       const reason = 'Patient cancelled';
 
-      const result = await schedulingService.cancelAppointment(appointmentId, reason);
+      const result = await schedulingService.cancelAppointmentModel(appointmentId, reason);
 
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -256,13 +256,13 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      const createResult = await schedulingService.createAppointment(appointmentData);
+      const createResult = await schedulingService.createAppointmentModel(appointmentData);
       expect(createResult.success).toBe(true);
 
       // Manually update to completed status
       await Appointment.findByIdAndUpdate(createResult.data!._id, { status: 'completed' });
 
-      const result = await schedulingService.cancelAppointment(
+      const result = await schedulingService.cancelAppointmentModel(
         (createResult.data!._id as any).toString(),
         'Test reason'
       );
@@ -347,8 +347,8 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      await schedulingService.createAppointment(appointmentData1);
-      await schedulingService.createAppointment(appointmentData2);
+      await schedulingService.createAppointmentModel(appointmentData1);
+      await schedulingService.createAppointmentModel(appointmentData2);
     });
 
     it('should return appointments within date range', async () => {
@@ -409,7 +409,7 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      await schedulingService.createAppointment(appointmentData);
+      await schedulingService.createAppointmentModel(appointmentData);
 
       // Check for conflicts with overlapping time
       const startDate = new Date('2024-01-15T13:30:00Z'); // 10:30 AM Sao Paulo time (13:30 UTC)
@@ -449,8 +449,8 @@ describe('SchedulingService', () => {
         createdBy: testUser._id.toString()
       };
 
-      await schedulingService.createAppointment(appointmentData1);
-      const secondResult = await schedulingService.createAppointment(appointmentData2);
+      await schedulingService.createAppointmentModel(appointmentData1);
+      const secondResult = await schedulingService.createAppointmentModel(appointmentData2);
 
       // Mark one as completed
       if (secondResult.success) {
