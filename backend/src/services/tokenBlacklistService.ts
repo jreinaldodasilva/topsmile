@@ -12,10 +12,12 @@ class TokenBlacklistService {
     private intervalId: NodeJS.Timeout | null = null;
 
     constructor() {
-        // Clean up expired tokens periodically
-        this.intervalId = setInterval(() => {
-            this.cleanup();
-        }, this.CLEANUP_INTERVAL);
+        // Clean up expired tokens periodically, but not in Jest tests
+        if (!process.env.JEST_WORKER_ID) {
+            this.intervalId = setInterval(() => {
+                this.cleanup();
+            }, this.CLEANUP_INTERVAL);
+        }
     }
 
     /**
