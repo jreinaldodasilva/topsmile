@@ -2,7 +2,25 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import { Contact as IContact, ContactStatus } from '@topsmile/types';
 
-const ConversionDetailsSchema = new Schema({
+interface ConversionDetails {
+    convertedAt?: Date;
+    convertedBy?: mongoose.Types.ObjectId;
+    conversionNotes?: string;
+    conversionValue?: number;
+}
+
+interface Metadata {
+    utmSource?: string;
+    utmMedium?: string;
+    utmCampaign?: string;
+    utmTerm?: string;
+    utmContent?: string;
+    referrer?: string;
+    ipAddress?: string;
+    userAgent?: string;
+}
+
+const ConversionDetailsSchema = new Schema<ConversionDetails>({
     convertedAt: Date,
     convertedBy: {
         type: Schema.Types.ObjectId,
@@ -18,7 +36,7 @@ const ConversionDetailsSchema = new Schema({
     }
 }, { _id: false });
 
-const MetadataSchema = new Schema({
+const MetadataSchema = new Schema<Metadata>({
     utmSource: String,
     utmMedium: String,
     utmCampaign: String,
