@@ -12,11 +12,7 @@ describe('Patient Portal Integration Tests', () => {
   let patientToken: string;
   let patient: any;
 
-  beforeEach(async () => {
-    // Clean collections
-    const mongoose = require('mongoose');
-    await mongoose.connection.db.dropDatabase();
-    // Create test app
+  beforeAll(async () => {
     app = express();
     app.use(express.json());
 
@@ -35,6 +31,10 @@ describe('Patient Portal Integration Tests', () => {
       });
     });
 
+    // Clean collections
+    const mongoose = require('mongoose');
+    await mongoose.connection.db.dropDatabase();
+
     // Create a patient
     patient = await Patient.create({
       firstName: 'Test',
@@ -52,7 +52,8 @@ describe('Patient Portal Integration Tests', () => {
         patientId: patient._id.toString(),
         email: 'testpatient@example.com',
         password: 'TestPassword123!',
-        name: 'Test Patient',
+        firstName: 'Test',
+        lastName: 'Patient',
         phone: '(11) 99999-9999',
         clinicId: patient.clinic.toString()
       });
