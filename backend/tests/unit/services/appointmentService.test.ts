@@ -277,14 +277,6 @@ describe('AppointmentService', () => {
       expect(appointments[0].provider.toString()).toBe(testProvider._id.toString());
     });
   });
-});nst appointments = await appointmentService.getAppointmentsByProvider(
-        testProvider._id.toString()
-      );
-
-      expect(appointments).toHaveLength(1);
-      expect(appointments[0].provider.toString()).toBe(testProvider._id.toString());
-    });
-  });
 
   describe('checkAvailability', () => {
     it('should return true for available time slot', async () => {
@@ -294,7 +286,8 @@ describe('AppointmentService', () => {
       const isAvailable = await appointmentService.checkAvailability(
         testProvider._id.toString(),
         startTime,
-        endTime
+        endTime,
+        testClinic._id.toString()
       );
 
       expect(isAvailable).toBe(true);
@@ -306,13 +299,13 @@ describe('AppointmentService', () => {
 
       // Create an appointment
       await appointmentService.createAppointment({
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: startTime,
         scheduledEnd: endTime,
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       });
 
       // Check availability for overlapping time
@@ -322,7 +315,8 @@ describe('AppointmentService', () => {
       const isAvailable = await appointmentService.checkAvailability(
         testProvider._id.toString(),
         conflictingStart,
-        conflictingEnd
+        conflictingEnd,
+        testClinic._id.toString()
       );
 
       expect(isAvailable).toBe(false);

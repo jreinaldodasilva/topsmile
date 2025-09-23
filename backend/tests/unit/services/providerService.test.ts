@@ -369,7 +369,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       const result = await providerService.deleteProvider(providerId, testClinic._id.toString());
 
@@ -521,8 +521,8 @@ describe('ProviderService', () => {
       // Make one provider inactive
       const providers = await providerService.getProvidersByClinic(testClinic._id.toString());
       const inactiveProvider = providers.find(p => p.name === 'Dr. Inactive');
-      if (inactiveProvider) {
-        await providerService.deleteProvider((inactiveProvider._id as any).toString(), testClinic._id.toString());
+      if (inactiveProvider && inactiveProvider._id) {
+        await providerService.deleteProvider(inactiveProvider._id.toString(), testClinic._id.toString());
       }
     });
 
@@ -541,8 +541,8 @@ describe('ProviderService', () => {
 
       expect(activeProviders.length).toBe(1);
       expect(inactiveProviders.length).toBe(1);
-      expect(activeProviders[0]!.name).toBe('Dr. Active');
-      expect(inactiveProviders[0]!.name).toBe('Dr. Inactive');
+      expect(activeProviders[0]?.name).toBe('Dr. Active');
+      expect(inactiveProviders[0]?.name).toBe('Dr. Inactive');
     });
 
     it('should throw error for invalid clinic ID', async () => {
@@ -562,7 +562,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as any).toString();
+      const providerId = createdProvider._id!.toString();
 
       const newWorkingHours = {
         monday: { start: '09:00', end: '17:00', isWorking: true },
@@ -577,8 +577,8 @@ describe('ProviderService', () => {
       const result = await providerService.updateWorkingHours(providerId, testClinic._id.toString(), newWorkingHours);
 
       expect(result).toBeDefined();
-      expect(result!.workingHours.monday.start).toBe('09:00');
-      expect(result!.workingHours.saturday.isWorking).toBe(true);
+      expect(result?.workingHours?.monday.start).toBe('09:00');
+      expect(result?.workingHours?.saturday.isWorking).toBe(true);
     });
 
     it('should return null for non-existent provider', async () => {
@@ -608,15 +608,15 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as any).toString();
+      const providerId = createdProvider._id!.toString();
 
-      const appointmentTypeIds = [(testAppointmentType._id as any).toString()];
+      const appointmentTypeIds = [testAppointmentType._id!.toString()];
 
       const result = await providerService.updateAppointmentTypes(providerId, testClinic._id.toString(), appointmentTypeIds);
 
       expect(result).toBeDefined();
-      expect(result!.appointmentTypes).toHaveLength(1);
-      expect(result!.appointmentTypes![0]!._id.toString()).toBe(testAppointmentType._id.toString());
+      expect(result?.appointmentTypes).toHaveLength(1);
+      expect(result?.appointmentTypes?.[0]?.toString()).toBe(testAppointmentType._id.toString());
     });
 
     it('should throw error for invalid appointment type ID', async () => {
@@ -628,7 +628,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as any).toString();
+      const providerId = createdProvider._id!.toString();
 
       const invalidTypeIds = ['invalid-id'];
 
@@ -665,8 +665,8 @@ describe('ProviderService', () => {
       // Make one provider inactive
       const providers = await providerService.getProvidersByClinic(testClinic._id.toString());
       const inactiveProvider = providers.find(p => p.name === 'Dr. Inactive');
-      if (inactiveProvider) {
-        await providerService.deleteProvider((inactiveProvider._id as any).toString(), testClinic._id.toString());
+      if (inactiveProvider && inactiveProvider._id) {
+        await providerService.deleteProvider(inactiveProvider._id.toString(), testClinic._id.toString());
       }
     });
 
@@ -710,7 +710,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       // Deactivate provider
       await providerService.deleteProvider(providerId, testClinic._id.toString());
@@ -737,7 +737,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as any).toString();
+      const providerId = createdProvider._id!.toString();
 
       await expect(
         providerService.reactivateProvider(providerId, testClinic._id.toString())
@@ -752,7 +752,7 @@ describe('ProviderService', () => {
         specialties: ['general_dentistry'],
         clinicId: testClinic._id.toString()
       });
-      await providerService.deleteProvider((inactiveProvider._id as any).toString(), testClinic._id.toString());
+      await providerService.deleteProvider(inactiveProvider._id!.toString(), testClinic._id.toString());
 
       // Create an active provider with the same email
       await providerService.createProvider({
@@ -764,7 +764,7 @@ describe('ProviderService', () => {
 
       // Try to reactivate the first provider
       await expect(
-        providerService.reactivateProvider((inactiveProvider._id as any).toString(), testClinic._id.toString())
+        providerService.reactivateProvider(inactiveProvider._id!.toString(), testClinic._id.toString())
       ).rejects.toThrow('Já existe um profissional ativo com este e-mail nesta clínica');
     });
   });
