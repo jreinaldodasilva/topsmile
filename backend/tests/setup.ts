@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import './customMatchers';
 import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
+import redisClient from '../src/config/redis';
 
 let mongoServer: MongoMemoryServer;
 
@@ -22,8 +23,6 @@ beforeAll(async () => {
   console.log('Connected to test database');
 });
 
-import redisClient from '../src/config/redis';
-
 afterAll(async () => {
   // Close database connection
   await mongoose.disconnect();
@@ -40,8 +39,12 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  // Clear the Redis blacklist
-  await tokenBlacklistService.clear();
+  try {
+    // Clear the Redis blacklist
+    await tokenBlacklistService.clear();
+  } catch (error) {
+    console.warn('Failed to clear token blacklist:', error);
+  }
 
   // Clear all collections after each test, but only if connected
   if (mongoose.connection.readyState === 1) {

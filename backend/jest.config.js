@@ -39,4 +39,7 @@ module.exports = {
   moduleNameMapper: {
     '^@topsmile/types$': '<rootDir>/../packages/types/src',
   },
+  globalSetup: undefined,
+  globalTeardown: undefined,
+  maxWorkers: 1, // Run tests sequentially to avoid database conflicts
 };

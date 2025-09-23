@@ -6,6 +6,14 @@ import { authenticate } from '../../src/middleware/auth';
 // Import and use auth routes
 import authRoutes from '../../src/routes/auth';
 
+// Test constants to avoid hardcoded credentials
+const TEST_PASSWORDS = {
+  SECURE: 'SecurePass123!',
+  TEST: 'TestPassword123!',
+  NEW: 'NewPass123!',
+  LOGIN: 'LoginPass123!'
+};
+
 // Create a test app with real middleware
 const app = express();
 app.use(express.json());
@@ -23,7 +31,7 @@ describe('Auth Routes Integration', () => {
     testUser = await createTestUser({
       name: 'Test User',
       email: 'test@example.com',
-      password: 'TestPassword123!',
+      password: TEST_PASSWORDS.TEST,
       role: 'admin'
     });
 
@@ -35,7 +43,7 @@ describe('Auth Routes Integration', () => {
       const userData = {
         name: 'João Silva',
         email: 'joao@example.com',
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
       };
 
       const response = await request(app)
@@ -70,7 +78,7 @@ describe('Auth Routes Integration', () => {
       const userData = {
         name: 'Test User',
         email: 'test@example.com', // Same email as testUser
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
       };
 
       const response = await request(app)
@@ -87,7 +95,7 @@ describe('Auth Routes Integration', () => {
     it('should login user successfully', async () => {
       const loginData = {
         email: 'test@example.com',
-        password: 'TestPassword123!',
+        password: TEST_PASSWORDS.TEST,
       };
 
       const response = await request(app)
@@ -154,8 +162,8 @@ describe('Auth Routes Integration', () => {
   describe('PATCH /api/auth/change-password', () => {
     it('should change password successfully', async () => {
       const changePasswordData = {
-        currentPassword: 'TestPassword123!',
-        newPassword: 'NewPass123!',
+        currentPassword: TEST_PASSWORDS.TEST,
+        newPassword: TEST_PASSWORDS.NEW,
       };
 
       const response = await request(app)
@@ -170,7 +178,7 @@ describe('Auth Routes Integration', () => {
 
     it('should return 400 for invalid new password', async () => {
       const changePasswordData = {
-        currentPassword: 'TestPassword123!',
+        currentPassword: TEST_PASSWORDS.TEST,
         newPassword: 'weak',
       };
 
@@ -205,7 +213,7 @@ describe('Auth Routes Integration', () => {
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: 'TestPassword123!'
+          password: TEST_PASSWORDS.TEST
         });
 
       const refreshToken = loginResponse.body.data.refreshToken;

@@ -1,10 +1,19 @@
 import { User } from '../src/models/User';
 import { Clinic } from '../src/models/Clinic';
 import { Contact } from '../src/models/Contact';
-import { User as IUser, Clinic as IClinic, Contact as IContact } from '@topsmile/types';
+import { Patient } from '../src/models/Patient';
+import { PatientUser } from '../src/models/PatientUser';
+import { User as IUser, Clinic as IClinic, Contact as IContact, Patient as IPatient } from '@topsmile/types';
 import jwt from 'jsonwebtoken';
 // Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
 import type { Faker } from '@faker-js/faker';
+
+// Test constants to avoid hardcoded credentials
+const TEST_PASSWORDS = {
+  DEFAULT: 'TestPassword123!',
+  PATIENT: 'PatientPass123!',
+  PROVIDER: 'ProviderPass123!'
+};
 
 let fakerInstance: Faker | undefined;
 
@@ -29,7 +38,7 @@ export const createTestUser = async (overrides = {}): Promise<IUser> => {
   const defaultUser = {
     name: 'Test User',
     email: `test${userCounter}@example.com`,
-    password: 'TestPassword123!',
+    password: TEST_PASSWORDS.DEFAULT,
     role: 'admin' as const,
   };
 
@@ -83,7 +92,7 @@ export const createTestUserWithClinic = async (overrides = {}): Promise<IUser> =
   const defaultUser = {
     name: 'Test User',
     email: `test${userCounter}@example.com`,
-    password: 'TestPassword123!',
+    password: TEST_PASSWORDS.DEFAULT,
     role: 'admin' as const,
     clinic: clinic._id,
   };
@@ -108,6 +117,64 @@ export const createTestContact = async (overrides = {}): Promise<IContact> => {
   const contactData = { ...defaultContact, ...overrides };
   const contact = new Contact(contactData);
   return await contact.save();
+};
+
+export const createTestPatient = async (overrides = {}): Promise<IPatient> => {
+  const defaultPatient = {
+    name: 'Test Patient',
+    email: 'patient@example.com',
+    phone: '(11) 99999-9999',
+    birthDate: new Date('1990-01-01'),
+    gender: 'male',
+    status: 'active',
+    medicalHistory: {
+      allergies: [],
+      medications: [],
+      conditions: [],
+      notes: ''
+    }
+  };
+
+  const patientData = { ...defaultPatient, ...overrides };
+  const patient = new Patient(patientData);
+  return await patient.save();
+};
+
+export const createTestPatientWithClinic = async (overrides = {}): Promise<IPatient> => {
+  const clinic = await createTestClinic();
+  const defaultPatient = {
+    name: 'Test Patient',
+    email: 'patient@example.com',
+    phone: '(11) 99999-9999',
+    clinic: clinic._id,
+    birthDate: new Date('1990-01-01'),
+    gender: 'male',
+    status: 'active',
+    medicalHistory: {
+      allergies: [],
+      medications: [],
+      conditions: [],
+      notes: ''
+    }
+  };
+
+  const patientData = { ...defaultPatient, ...overrides };
+  const patient = new Patient(patientData);
+  return await patient.save();
+};
+
+export const createTestPatientUser = async (patientId: string, overrides = {}) => {
+  const defaultPatientUser = {
+    patient: patientId,
+    email: 'patient.user@example.com',
+    password: TEST_PASSWORDS.PATIENT,
+    isActive: true,
+    emailVerified: false
+  };
+
+  const patientUserData = { ...defaultPatientUser, ...overrides };
+  const patientUser = new PatientUser(patientUserData);
+  return await patientUser.save();
 };
 
 // Enhanced test data factories using faker
@@ -139,7 +206,7 @@ export const createRealisticPatient = async (overrides = {}) => {
   const patientData = { ...defaultPatient, ...overrides };
   const user = new User({
     ...patientData,
-    password: 'TestPassword123!',
+    password: TEST_PASSWORDS.PATIENT,
     role: 'patient'
   });
   return await user.save();
@@ -169,7 +236,7 @@ export const createRealisticProvider = async (overrides = {}) => {
   const providerData = { ...defaultProvider, ...overrides };
   const user = new User({
     ...providerData,
-    password: 'TestPassword123!',
+    password: TEST_PASSWORDS.PROVIDER,
     role: 'provider'
   });
   return await user.save();
@@ -216,6 +283,23 @@ export const generateAuthToken = (userId: string, role = 'admin', clinicId?: str
     expiresIn: '1h',
     issuer: 'topsmile-api',
     audience: 'topsmile-client',
+    algorithm: 'HS256'
+  });
+};
+
+export const generatePatientAuthToken = (patientUserId: string, patientId: string, clinicId: string, email: string) => {
+  const payload = {
+    patientUserId,
+    patientId,
+    email,
+    clinicId,
+    type: 'patient'
+  };
+  const secret = process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || 'test-patient-jwt-secret-key';
+  return jwt.sign(payload, secret, {
+    expiresIn: '15m',
+    issuer: 'topsmile-patient-portal',
+    audience: 'topsmile-patients',
     algorithm: 'HS256'
   });
 };

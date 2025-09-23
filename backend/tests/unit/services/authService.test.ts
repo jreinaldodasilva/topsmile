@@ -2,13 +2,25 @@ import { authService } from '../../../src/services/authService';
 import { User } from '../../../src/models/User';
 import { createTestUser, createTestClinic } from '../../testHelpers';
 
+// Test constants to avoid hardcoded credentials
+const TEST_PASSWORDS = {
+  SECURE: 'SecurePass123!',
+  LOGIN: 'LoginPass123!',
+  OLD: 'OldPass123!',
+  NEW: 'NewPass123!',
+  CORRECT: 'CorrectPass123!',
+  WRONG: 'WrongPass123!',
+  GET_USER: 'GetUserPass123!',
+  CHANGE: 'ChangePass123!'
+};
+
 describe('AuthService', () => {
   describe('register', () => {
     it('should register a new user successfully', async () => {
       const userData = {
         name: 'João Silva',
         email: 'joao.silva@example.com',
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
       };
 
       const result = await authService.register(userData);
@@ -25,7 +37,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Test User',
         email: 'test@example.com',
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
       };
 
       await authService.register(userData);
@@ -39,7 +51,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Test User',
         email: 'duplicate@example.com',
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
       };
 
       await authService.register(userData);
@@ -51,7 +63,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Dr. Maria Santos',
         email: 'maria@example.com',
-        password: 'SecurePass123!',
+        password: TEST_PASSWORDS.SECURE,
         clinic: {
           name: 'Clínica Odontológica Maria Santos',
           phone: '(11) 99999-9999',
@@ -78,7 +90,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Login Test',
         email: 'login@example.com',
-        password: 'LoginPass123!',
+        password: TEST_PASSWORDS.LOGIN,
       };
 
       await authService.register(userData);
@@ -109,14 +121,14 @@ describe('AuthService', () => {
       const userData = {
         name: 'Password Test',
         email: 'password@example.com',
-        password: 'CorrectPass123!',
+        password: TEST_PASSWORDS.CORRECT,
       };
 
       await authService.register(userData);
 
       const loginData = {
         email: userData.email,
-        password: 'WrongPass123!',
+        password: TEST_PASSWORDS.WRONG,
       };
 
       await expect(authService.login(loginData)).rejects.toThrow('E-mail ou senha inválidos');
@@ -128,7 +140,7 @@ describe('AuthService', () => {
       const userData = {
         name: 'Get User Test',
         email: 'getuser@example.com',
-        password: 'GetUserPass123!',
+        password: TEST_PASSWORDS.GET_USER,
       };
 
       const registeredUser = await authService.register(userData);
@@ -151,20 +163,20 @@ describe('AuthService', () => {
       const userData = {
         name: 'Change Password Test',
         email: 'changepass@example.com',
-        password: 'OldPass123!',
+        password: TEST_PASSWORDS.OLD,
       };
 
       const registeredUser = await authService.register(userData);
       const userId = (registeredUser.data.user._id as any).toString();
 
       await expect(
-        authService.changePassword(userId, userData.password, 'NewPass123!')
+        authService.changePassword(userId, userData.password, TEST_PASSWORDS.NEW)
       ).resolves.not.toThrow();
 
       // Verify new password works
       const loginResult = await authService.login({
         email: userData.email,
-        password: 'NewPass123!',
+        password: TEST_PASSWORDS.NEW,
       });
 
       expect(loginResult.success).toBe(true);
@@ -174,14 +186,14 @@ describe('AuthService', () => {
       const userData = {
         name: 'Wrong Current Password Test',
         email: 'wrongcurrent@example.com',
-        password: 'CorrectPass123!',
+        password: TEST_PASSWORDS.CORRECT,
       };
 
       const registeredUser = await authService.register(userData);
       const userId = (registeredUser.data.user._id as any).toString();
 
       await expect(
-        authService.changePassword(userId, 'WrongPass123!', 'NewPass123!')
+        authService.changePassword(userId, TEST_PASSWORDS.WRONG, TEST_PASSWORDS.NEW)
       ).rejects.toThrow('Senha atual incorreta');
     });
   });
