@@ -412,7 +412,7 @@ app.get("/api/csrf-token", (req: any, res: any, next: any) => {
 // CSRF protection for state-changing operations
 const applyCSRF = (req: any, res: any, next: any) => {
   if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
-    return csrfProtection(req, res, next);
+    csrfProtection(req, res, next);
   }
   next();
 };
