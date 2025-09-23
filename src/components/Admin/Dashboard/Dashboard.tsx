@@ -239,7 +239,7 @@ const EnhancedDashboard: React.FC = () => {
                   <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{stats.contacts.total.toLocaleString()}</div>
+              <div className="dashboard__stat-value">{stats.contacts?.total?.toLocaleString() || '0'}</div>
               <p className="dashboard__stat-description">total registrado</p>
             </div>
           </div>
@@ -257,7 +257,7 @@ const EnhancedDashboard: React.FC = () => {
                   <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{stats.summary.newThisWeek}</div>
+              <div className="dashboard__stat-value">{stats.summary?.newThisWeek || 0}</div>
               <p className="dashboard__stat-description">novos contatos</p>
             </div>
           </div>
@@ -276,7 +276,7 @@ const EnhancedDashboard: React.FC = () => {
                   <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{(stats.summary.conversionRate * 100).toFixed(1)}%</div>
+              <div className="dashboard__stat-value">{((stats.summary?.conversionRate || 0) * 100).toFixed(1)}%</div>
               <p className="dashboard__stat-description">taxa de conversão</p>
             </div>
           </div>
@@ -294,7 +294,7 @@ const EnhancedDashboard: React.FC = () => {
                   <span className="dashboard__trend-value--neutral">0%</span>
                 </div>
               </div>
-              <div className="dashboard__stat-value">{formatCurrency(parseFloat(stats.summary.revenue || '0'))}</div>
+              <div className="dashboard__stat-value">{formatCurrency(parseFloat(stats.summary?.revenue || '0'))}</div>
               <p className="dashboard__stat-description">receita total</p>
             </div>
           </div>
