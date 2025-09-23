@@ -52,6 +52,8 @@ describe('Patient Portal Integration Tests', () => {
         patientId: patient._id.toString(),
         email: 'testpatient@example.com',
         password: 'TestPassword123!',
+        name: 'Test Patient',
+        phone: '(11) 99999-9999',
         clinicId: patient.clinic.toString()
       });
 
@@ -61,7 +63,11 @@ describe('Patient Portal Integration Tests', () => {
         email: 'testpatient@example.com',
         password: 'TestPassword123!'
       });
-    patientToken = res.body.data.accessToken;
+    // Extract token from cookies since API uses HTTP-only cookies
+    const setCookieHeader = res.headers['set-cookie'];
+    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : setCookieHeader ? [setCookieHeader] : [];
+    const tokenCookie = cookies.find((cookie: string) => cookie.startsWith('patientAccessToken='));
+    patientToken = tokenCookie ? tokenCookie.split('=')[1].split(';')[0] : '';
   });
 
   it('should login patient user and return access token', async () => {
@@ -73,7 +79,11 @@ describe('Patient Portal Integration Tests', () => {
       });
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    expect(res.body.data.accessToken).toBeDefined();
+    // Check that access token is set as cookie instead of in response body
+    const setCookieHeader = res.headers['set-cookie'];
+    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : setCookieHeader ? [setCookieHeader] : [];
+    const tokenCookie = cookies.find((cookie: string) => cookie.startsWith('patientAccessToken='));
+    expect(tokenCookie).toBeDefined();
   });
 
   it('should get patient user info with valid token', async () => {

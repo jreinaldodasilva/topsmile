@@ -28,6 +28,17 @@ export interface PatientSearchResult {
 }
 
 class PatientService {
+    // Helper function to normalize phone number for comparison
+    private normalizePhone(phone: string): string {
+        const cleanPhone = phone.replace(/[^\d]/g, '');
+        if (cleanPhone.length === 11) {
+            return `(${cleanPhone.substring(0, 2)}) ${cleanPhone.substring(2, 7)}-${cleanPhone.substring(7)}`;
+        } else if (cleanPhone.length === 10) {
+            return `(${cleanPhone.substring(0, 2)}) ${cleanPhone.substring(2, 6)}-${cleanPhone.substring(6)}`;
+        }
+        return phone; // Return original if not valid format
+    }
+
     // Create a new patient
     async createPatient(data: CreatePatientDTO & { clinic: string }): Promise<IPatient> {
         try {
@@ -42,8 +53,9 @@ class PatientService {
             }
 
             // Check if patient with same phone already exists in the clinic
+            const normalizedPhone = this.normalizePhone(data.phone);
             const existingPatient = await PatientModel.findOne({
-                phone: data.phone,
+                phone: normalizedPhone,
                 clinic: data.clinic,
                 status: 'active'
             });
@@ -119,8 +131,9 @@ class PatientService {
 
             // Check for duplicate phone if phone is being updated
             if (data.phone && data.phone !== patient.phone) {
+                const normalizedPhone = this.normalizePhone(data.phone);
                 const existingPatient = await PatientModel.findOne({
-                    phone: data.phone,
+                    phone: normalizedPhone,
                     clinic: clinicId,
                     status: 'active',
                     _id: { $ne: patientId }

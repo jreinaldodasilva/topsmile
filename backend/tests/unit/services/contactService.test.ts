@@ -238,10 +238,10 @@ describe('ContactService', () => {
       const createdContact = await contactService.createContact(contactData);
 
       const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
-      const result = await contactService.getContactById(mockUser as any, createdContact.id);
+      const result = await contactService.getContactById(mockUser as any, createdContact._id!.toString());
 
       expect(result).toBeDefined();
-      expect(result!.id).toBe(createdContact.id);
+      expect(result!._id!.toString()).toBe(createdContact._id!.toString());
       expect(result!.name).toBe(contactData.name);
     });
 
@@ -370,7 +370,7 @@ describe('ContactService', () => {
       const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
         mockUser as any,
-        { dateFrom: yesterday, dateTo: tomorrow },
+        { dateFrom: yesterday.toISOString(), dateTo: tomorrow.toISOString() },
         { page: 1, limit: 10 }
       );
 
@@ -400,7 +400,7 @@ describe('ContactService', () => {
       expect(result.contacts[0].email).toBe('maria@example.com');
     });
 
-    it('should paginate results', async () => {
+    it('should paginate results correctly', async () => {
       const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
         mockUser as any,
@@ -411,26 +411,6 @@ describe('ContactService', () => {
       expect(result.contacts.length).toBe(2);
       expect(result.total).toBe(3);
       expect(result.pages).toBe(2);
-    });
-  });
-}); {},
-        { page: 1, limit: 2 }
-      );
-
-      expect(result.contacts.length).toBe(2);
-      expect(result.total).toBe(3);
-      expect(result.pages).toBe(2);
-    });
-
-    it('should sort results', async () => {
-      const result = await contactService.getContacts(
-        {},
-        { page: 1, limit: 10, sortBy: 'name', sortOrder: 'asc' }
-      );
-
-      expect(result.contacts[0].name).toBe('João Silva');
-      expect(result.contacts[1].name).toBe('Maria Santos');
-      expect(result.contacts[2].name).toBe('Pedro Costa');
     });
   });
 
@@ -445,7 +425,6 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact.id;
 
       const updateData = {
         name: 'Updated Name',
@@ -453,7 +432,7 @@ describe('ContactService', () => {
         status: 'contacted' as const
       };
 
-      const result = await contactService.updateContact(contactId, updateData);
+      const result = await contactService.updateContact(createdContact._id!.toString(), updateData);
 
       expect(result).toBeDefined();
       expect(result!.name).toBe(updateData.name);
@@ -471,13 +450,12 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact.id;
 
       const updateData = {
         priority: 'normal' as const
       };
 
-      const result = await contactService.updateContact(contactId, updateData);
+      const result = await contactService.updateContact(createdContact._id!.toString(), updateData);
 
       expect(result).toBeDefined();
       expect(result!.priority).toBe(updateData.priority);
@@ -493,7 +471,6 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = (createdContact._id as any).toString();
       const originalCreatedAt = createdContact.createdAt;
 
       const updateData = {
@@ -502,10 +479,10 @@ describe('ContactService', () => {
         updatedAt: new Date('2020-01-01')
       };
 
-      const result = await contactService.updateContact(contactId, updateData);
+      const result = await contactService.updateContact(createdContact._id!.toString(), updateData);
 
       expect(result).toBeDefined();
-      expect(result!.createdAt.getTime()).toBe(originalCreatedAt.getTime());
+      expect(new Date(result!.createdAt as string).getTime()).toBe(new Date(originalCreatedAt as string).getTime());
     });
 
     it('should return null for non-existent contact', async () => {
@@ -536,7 +513,7 @@ describe('ContactService', () => {
       });
 
       const result = await contactService.updateContactStatus(
-        [contact1.id, contact2.id],
+        [contact1._id!.toString(), contact2._id!.toString()],
         'contacted'
       );
 
@@ -556,7 +533,7 @@ describe('ContactService', () => {
       const assignedToId = '507f1f77bcf86cd799439011'; // Mock user ID
 
       const result = await contactService.updateContactStatus(
-        [contact.id],
+        [contact._id!.toString()],
         'qualified',
         assignedToId
       );
@@ -577,14 +554,13 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact.id;
 
-      const result = await contactService.deleteContact(contactId);
+      const result = await contactService.deleteContact(createdContact._id!.toString());
 
       expect(result).toBe(true);
 
       // Verify contact is deleted
-      const deletedContact = await Contact.findById(contactId);
+      const deletedContact = await Contact.findById(createdContact._id);
       expect(deletedContact).toBeNull();
     });
 
@@ -606,9 +582,8 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact.id;
 
-      const result = await contactService.softDeleteContact(contactId, testUser._id.toString());
+      const result = await contactService.softDeleteContact(createdContact._id!.toString(), testUser._id.toString());
 
       expect(result).toBeDefined();
       expect(result!.status).toBe('deleted');
@@ -617,7 +592,7 @@ describe('ContactService', () => {
     });
 
     it('should return null for non-existent contact', async () => {
-      const result = await contactService.softDeleteContact('507f1f77bcf86cd799439011');
+      const result = await contactService.softDeleteContact('507f1f77bcf86cd799439011', testUser._id.toString());
 
       expect(result).toBeNull();
     });
@@ -632,13 +607,12 @@ describe('ContactService', () => {
       };
 
       const createdContact = await contactService.createContact(contactData);
-      const contactId = createdContact.id;
 
       const updateData = {
         status: 'merged' as const
       };
 
-      const result = await contactService.updateContact(contactId, updateData);
+      const result = await contactService.updateContact(createdContact._id!.toString(), updateData);
 
       expect(result).toBeDefined();
       expect(result!.status).toBe(updateData.status);
@@ -669,12 +643,13 @@ describe('ContactService', () => {
       // Update one contact to contacted status
       const contactedContact = await contactService.getContactByEmail('contacted@example.com');
       if (contactedContact) {
-        await contactService.updateContact(contactedContact.id, { status: 'contacted' });
+        await contactService.updateContact(contactedContact._id!.toString(), { status: 'contacted' });
       }
     });
 
     it('should return correct contact statistics', async () => {
-      const result = await contactService.getContactStats();
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContactStats(mockUser as any);
 
       expect(result).toBeDefined();
       expect(result.total).toBe(2);
@@ -685,7 +660,8 @@ describe('ContactService', () => {
     });
 
     it('should return status breakdown', async () => {
-      const result = await contactService.getContactStats();
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContactStats(mockUser as any);
 
       const newStatus = result.byStatus.find(s => s._id === 'new');
       const contactedStatus = result.byStatus.find(s => s._id === 'contacted');
@@ -697,7 +673,8 @@ describe('ContactService', () => {
     });
 
     it('should return source breakdown', async () => {
-      const result = await contactService.getContactStats();
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContactStats(mockUser as any);
 
       const websiteSource = result.bySource.find(s => s._id === 'website');
       const referralSource = result.bySource.find(s => s._id === 'referral');
@@ -780,8 +757,8 @@ describe('ContactService', () => {
       });
 
       const result = await contactService.mergeDuplicateContacts(
-        contact1.id,
-        [contact2.id]
+        contact1._id!.toString(),
+        [contact2._id!.toString()]
       );
 
       expect(result).toBeDefined();
@@ -792,9 +769,9 @@ describe('ContactService', () => {
       expect(result.source).toContain('referral');
 
       // Check that duplicate was marked as merged
-      const mergedContact = await Contact.findById(contact2.id);
+      const mergedContact = await Contact.findById(contact2._id);
       expect(mergedContact!.status).toBe('merged');
-      expect(mergedContact!.mergedInto?.toString()).toBe(contact1.id);
+      expect(mergedContact!.mergedInto?.toString()).toBe(contact1._id!.toString());
     });
 
     it('should throw error for non-existent primary contact', async () => {

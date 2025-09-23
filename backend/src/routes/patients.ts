@@ -352,7 +352,7 @@ router.post('/', createPatientValidation, async (req: Request, res: Response) =>
 
         const patientData = {
             ...authReq.body,
-            clinicId: authReq.user.clinicId
+            clinic: authReq.user.clinicId
         };
 
         const patient = await patientService.createPatient(patientData);

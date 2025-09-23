@@ -87,7 +87,7 @@ class PatientAuthService {
       patientUserId: (patientUser._id as any).toString(),
       patientId: (patient._id as any).toString(),
       email: patientUser.email,
-      clinicId: (patient.clinic as any).toString(),
+      clinicId: patient.clinic ? (patient.clinic as any).toString() : '',
       type: 'patient'
     };
 
@@ -181,13 +181,21 @@ class PatientAuthService {
         patient = existingPatient;
       } else {
         // FIXED: Create new patient record
+        // Split name into firstName and lastName
+        const nameParts = data.name.trim().split(' ');
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || 'Paciente';
+        
         const newPatientModel = new PatientModel({
-          name: data.name,
+          firstName,
+          lastName,
           email,
           phone: data.phone,
-          birthDate: data.birthDate,
-          gender: data.gender,
+          dateOfBirth: data.birthDate,
           clinic: data.clinicId,
+          address: {
+            zipCode: '00000-000' // Minimal required address
+          },
           medicalHistory: {
             allergies: [],
             medications: [],

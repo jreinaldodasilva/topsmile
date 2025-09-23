@@ -180,10 +180,13 @@ describe('Patient Routes Integration Tests', () => {
         phone: '11999999999'
       };
 
-      await request(app)
+      const firstResponse = await request(app)
         .post('/api/patients')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(patientData1);
+
+      // Ensure first patient was created successfully
+      expect(firstResponse.status).toBe(201);
 
       // Try to create second patient with same phone
       const patientData2 = {
