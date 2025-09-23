@@ -15,12 +15,13 @@ describe('PatientAuthService', () => {
   describe('register', () => {
     it('should register a new patient user successfully', async () => {
       const registrationData = {
-        name: 'João Silva',
+        firstName: 'João',
+        lastName: 'Silva',
         email: 'joao@example.com',
         phone: '(11) 99999-9999',
         password: 'SecurePass123!',
         clinicId: testClinic._id.toString(),
-        birthDate: new Date('1990-01-01'),
+        dateOfBirth: new Date('1990-01-01'),
         gender: 'male' as const
       };
 
@@ -31,7 +32,8 @@ describe('PatientAuthService', () => {
       expect(result.data.patientUser).toBeDefined();
       expect(result.data.accessToken).toBeDefined();
       expect(result.data.refreshToken).toBeDefined();
-      expect(result.data.patient.name).toBe(registrationData.name);
+      expect(result.data.patient.firstName).toBe(registrationData.firstName);
+      expect(result.data.patient.lastName).toBe(registrationData.lastName);
       expect(result.data.patientUser.email).toBe(registrationData.email);
       expect(result.data.requiresEmailVerification).toBe(true);
     });
@@ -39,17 +41,20 @@ describe('PatientAuthService', () => {
     it('should link to existing patient when patientId is provided', async () => {
       // Create existing patient
       const existingPatient = new Patient({
-        name: 'Maria Santos',
+        firstName: 'Maria',
+        lastName: 'Santos',
         email: 'maria@example.com',
         phone: '(11) 88888-8888',
         clinic: testClinic._id,
+        address: { zipCode: '01234-567' },
         status: 'active'
       });
       await existingPatient.save();
 
       const registrationData = {
         patientId: existingPatient._id.toString(),
-        name: 'Maria Santos',
+        firstName: 'Maria',
+        lastName: 'Santos',
         email: 'maria.portal@example.com',
         phone: '(11) 88888-8888',
         password: 'SecurePass123!',
@@ -65,7 +70,8 @@ describe('PatientAuthService', () => {
 
     it('should throw error for duplicate email', async () => {
       const registrationData = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'duplicate@example.com',
         phone: '(11) 99999-9999',
         password: 'SecurePass123!',
@@ -80,7 +86,8 @@ describe('PatientAuthService', () => {
 
     it('should throw error for invalid data', async () => {
       const invalidData = {
-        name: '',
+        firstName: '',
+        lastName: '',
         email: 'invalid-email',
         phone: '',
         password: '123',
@@ -98,7 +105,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Login Test',
+        firstName: 'Login',
+        lastName: 'Test',
         email: 'login@example.com',
         phone: '(11) 99999-9999',
         password: 'LoginPass123!',
@@ -174,7 +182,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Refresh Test',
+        firstName: 'Refresh',
+        lastName: 'Test',
         email: 'refresh@example.com',
         phone: '(11) 99999-9999',
         password: 'RefreshPass123!',
@@ -212,7 +221,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Profile Test',
+        firstName: 'Profile',
+        lastName: 'Test',
         email: 'profile@example.com',
         phone: '(11) 99999-9999',
         password: 'ProfilePass123!',
@@ -225,9 +235,10 @@ describe('PatientAuthService', () => {
 
     it('should update patient profile successfully', async () => {
       const updates = {
-        name: 'Updated Name',
+        firstName: 'Updated',
+        lastName: 'Name',
         phone: '(11) 88888-8888',
-        birthDate: new Date('1985-05-15')
+        dateOfBirth: new Date('1985-05-15')
       };
 
       const updatedPatient = await patientAuthService.updateProfile(
@@ -235,13 +246,14 @@ describe('PatientAuthService', () => {
         updates
       );
 
-      expect(updatedPatient.name).toBe(updates.name);
+      expect(updatedPatient.firstName).toBe(updates.firstName);
+      expect(updatedPatient.lastName).toBe(updates.lastName);
       expect(updatedPatient.phone).toBe(updates.phone);
-      expect(updatedPatient.birthDate).toEqual(updates.birthDate);
+      expect(updatedPatient.dateOfBirth).toEqual(updates.dateOfBirth);
     });
 
     it('should throw error for non-existent patient', async () => {
-      const updates = { name: 'Updated Name' };
+      const updates = { firstName: 'Updated', lastName: 'Name' };
 
       await expect(patientAuthService.updateProfile('507f1f77bcf86cd799439011', updates))
         .rejects.toThrow(NotFoundError);
@@ -253,7 +265,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Password Test',
+        firstName: 'Password',
+        lastName: 'Test',
         email: 'password@example.com',
         phone: '(11) 99999-9999',
         password: 'OldPass123!',
@@ -294,7 +307,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Logout Test',
+        firstName: 'Logout',
+        lastName: 'Test',
         email: 'logout@example.com',
         phone: '(11) 99999-9999',
         password: 'LogoutPass123!',
@@ -323,7 +337,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Token Test',
+        firstName: 'Token',
+        lastName: 'Test',
         email: 'token@example.com',
         phone: '(11) 99999-9999',
         password: 'TokenPass123!',
@@ -355,7 +370,8 @@ describe('PatientAuthService', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Delete Test',
+        firstName: 'Delete',
+        lastName: 'Test',
         email: 'delete@example.com',
         phone: '(11) 99999-9999',
         password: 'DeletePass123!',

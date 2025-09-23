@@ -12,7 +12,7 @@ describe('AppointmentService', () => {
     testClinic = await createTestClinic();
     testPatient = await createTestPatient({ clinic: testClinic._id });
     testProvider = await createTestUser({ 
-      role: 'provider', 
+      role: 'dentist', 
       clinic: testClinic._id,
       specialty: 'General Dentistry'
     });

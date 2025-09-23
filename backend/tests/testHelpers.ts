@@ -121,11 +121,15 @@ export const createTestContact = async (overrides = {}): Promise<IContact> => {
 
 export const createTestPatient = async (overrides = {}): Promise<IPatient> => {
   const defaultPatient = {
-    name: 'Test Patient',
+    firstName: 'Test',
+    lastName: 'Patient',
     email: 'patient@example.com',
     phone: '(11) 99999-9999',
-    birthDate: new Date('1990-01-01'),
-    gender: 'male',
+    dateOfBirth: new Date('1990-01-01'),
+    gender: 'male' as const,
+    address: {
+      zipCode: '01234-567'
+    },
     status: 'active',
     medicalHistory: {
       allergies: [],
@@ -143,12 +147,16 @@ export const createTestPatient = async (overrides = {}): Promise<IPatient> => {
 export const createTestPatientWithClinic = async (overrides = {}): Promise<IPatient> => {
   const clinic = await createTestClinic();
   const defaultPatient = {
-    name: 'Test Patient',
+    firstName: 'Test',
+    lastName: 'Patient',
     email: 'patient@example.com',
     phone: '(11) 99999-9999',
     clinic: clinic._id,
-    birthDate: new Date('1990-01-01'),
-    gender: 'male',
+    dateOfBirth: new Date('1990-01-01'),
+    gender: 'male' as const,
+    address: {
+      zipCode: '01234-567'
+    },
     status: 'active',
     medicalHistory: {
       allergies: [],
@@ -180,11 +188,18 @@ export const createTestPatientUser = async (patientId: string, overrides = {}) =
 // Enhanced test data factories using faker
 export const createRealisticPatient = async (overrides = {}) => {
   const f = await ensureFaker();
+  const fullName = f.person.fullName();
+  const nameParts = fullName.split(' ');
+  const firstName = nameParts[0];
+  const lastName = nameParts.slice(1).join(' ') || 'Silva';
+  
   const defaultPatient = {
-    name: f.person.fullName(),
+    firstName,
+    lastName,
     email: f.internet.email(),
     phone: f.phone.number({ style: 'national' }),
-    birthDate: f.date.birthdate({ min: 18, max: 80, mode: 'age' }),
+    dateOfBirth: f.date.birthdate({ min: 18, max: 80, mode: 'age' }),
+    gender: f.helpers.arrayElement(['male', 'female', 'other'] as const),
     address: {
       street: f.location.streetAddress(),
       city: f.location.city(),
@@ -204,12 +219,8 @@ export const createRealisticPatient = async (overrides = {}) => {
   };
 
   const patientData = { ...defaultPatient, ...overrides };
-  const user = new User({
-    ...patientData,
-    password: TEST_PASSWORDS.PATIENT,
-    role: 'patient'
-  });
-  return await user.save();
+  const patient = new Patient(patientData);
+  return await patient.save();
 };
 
 export const createRealisticProvider = async (overrides = {}) => {
@@ -237,7 +248,7 @@ export const createRealisticProvider = async (overrides = {}) => {
   const user = new User({
     ...providerData,
     password: TEST_PASSWORDS.PROVIDER,
-    role: 'provider'
+    role: 'dentist'
   });
   return await user.save();
 };

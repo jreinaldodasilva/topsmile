@@ -14,12 +14,13 @@ import {
 
 export interface PatientRegistrationData {
   patientId?: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phone: string;
   password: string;
   clinicId: string;
-  birthDate?: Date;
+  dateOfBirth?: Date;
   gender?: 'male' | 'female' | 'other';
 }
 
@@ -143,8 +144,8 @@ class PatientAuthService {
   async register(data: PatientRegistrationData, deviceInfo?: DeviceInfo): Promise<PatientAuthResponse> {
     try {
       // Validate input
-      if (!data.name || !data.email || !data.password || !data.clinicId) {
-        throw new ValidationError('Nome, e-mail, senha e clínica são obrigatórios');
+      if (!data.firstName || !data.lastName || !data.email || !data.password || !data.clinicId) {
+        throw new ValidationError('Nome, sobrenome, e-mail, senha e clínica são obrigatórios');
       }
 
       if (data.password.length < 8) {
@@ -181,17 +182,12 @@ class PatientAuthService {
         patient = existingPatient;
       } else {
         // FIXED: Create new patient record
-        // Split name into firstName and lastName
-        const nameParts = data.name.trim().split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || 'Paciente';
-        
         const newPatientModel = new PatientModel({
-          firstName,
-          lastName,
+          firstName: data.firstName,
+          lastName: data.lastName,
           email,
           phone: data.phone,
-          dateOfBirth: data.birthDate,
+          dateOfBirth: data.dateOfBirth,
           clinic: data.clinicId,
           address: {
             zipCode: '00000-000' // Minimal required address
@@ -428,7 +424,7 @@ class PatientAuthService {
     }
   }
 
-  async updateProfile(patientId: string, updates: { name?: string; phone?: string; birthDate?: Date }): Promise<IPatient> {
+  async updateProfile(patientId: string, updates: { firstName?: string; lastName?: string; phone?: string; dateOfBirth?: Date }): Promise<IPatient> {
     try {
       const patient = await PatientModel.findById(patientId);
 
@@ -436,14 +432,17 @@ class PatientAuthService {
         throw new NotFoundError('Paciente não encontrado');
       }
 
-      if (updates.name) {
-        patient.name = updates.name;
+      if (updates.firstName) {
+        patient.firstName = updates.firstName;
+      }
+      if (updates.lastName) {
+        patient.lastName = updates.lastName;
       }
       if (updates.phone) {
         patient.phone = updates.phone;
       }
-      if (updates.birthDate) {
-        patient.birthDate = updates.birthDate;
+      if (updates.dateOfBirth) {
+        patient.dateOfBirth = updates.dateOfBirth;
       }
 
       return await patient.save();
