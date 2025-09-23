@@ -34,8 +34,13 @@ afterAll(async () => {
     console.log('MongoDB Memory Server stopped');
   }
 
-  // Close Redis connection
-  redisClient.disconnect();
+  // Close Redis connection properly
+  try {
+    await redisClient.quit();
+    console.log('Redis connection closed');
+  } catch (error) {
+    console.warn('Error closing Redis connection:', error);
+  }
 });
 
 afterEach(async () => {

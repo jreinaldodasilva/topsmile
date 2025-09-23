@@ -3,14 +3,21 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+  lazyConnect: true,
+  maxRetriesPerRequest: process.env.NODE_ENV === 'test' ? 1 : 3,
+});
 
 redisClient.on('connect', () => {
-  console.log('Connected to Redis');
+  if (process.env.NODE_ENV !== 'test') {
+    console.log('Connected to Redis');
+  }
 });
 
 redisClient.on('error', (err) => {
-  console.error('Redis connection error:', err);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Redis connection error:', err);
+  }
 });
 
 export default redisClient;
