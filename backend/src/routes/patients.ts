@@ -288,7 +288,7 @@ const searchValidation = [
     
     query('sortBy')
         .optional()
-        .isIn(['name', 'email', 'phone', 'createdAt', 'updatedAt'])
+        .isIn(['name', 'firstName', 'lastName', 'email', 'phone', 'createdAt', 'updatedAt'])
         .withMessage('Campo de ordenação inválido'),
     
     query('sortOrder')

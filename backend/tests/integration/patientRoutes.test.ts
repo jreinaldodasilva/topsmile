@@ -288,7 +288,7 @@ describe('Patient Routes Integration Tests', () => {
 
     it('should search patients by phone', async () => {
       const response = await request(app)
-        .get('/api/patients?search=999999999')
+        .get('/api/patients?search=11999999999')
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
@@ -334,15 +334,14 @@ describe('Patient Routes Integration Tests', () => {
 
     it('should sort results', async () => {
       const response = await request(app)
-        .get('/api/patients?sortBy=name&sortOrder=desc')
+        .get('/api/patients?sortBy=firstName&sortOrder=desc')
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
-      expect(response.body.data.patients[0].firstName).toBe('João');
-      expect(response.body.data.patients[0].lastName).toBe('Silva');
-      expect(response.body.data.patients[1].name).toBe('Maria Santos');
-      expect(response.body.data.patients[2].name).toBe('João Silva');
+      expect(response.body.data.patients[0].firstName).toBe('Pedro');
+      expect(response.body.data.patients[1].firstName).toBe('Maria');
+      expect(response.body.data.patients[2].firstName).toBe('João');
     });
   });
 

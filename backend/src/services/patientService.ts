@@ -229,10 +229,13 @@ class PatientService {
             // Add search functionality
             if (search && search.trim()) {
                 const searchRegex = new RegExp(search.trim(), 'i');
+                const normalizedPhone = this.normalizePhone(search.trim());
                 query.$or = [
-                    { name: searchRegex },
+                    { firstName: searchRegex },
+                    { lastName: searchRegex },
                     { email: searchRegex },
                     { phone: searchRegex },
+                    { phone: normalizedPhone },
                     { cpf: searchRegex },
                     { 'medicalHistory.conditions': searchRegex },
                     { 'medicalHistory.allergies': searchRegex }
@@ -242,7 +245,12 @@ class PatientService {
             // Calculate pagination
             const skip = (page - 1) * limit;
             const sortOptions: any = {};
-            sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+            if (sortBy === 'name') {
+                sortOptions['firstName'] = sortOrder === 'asc' ? 1 : -1;
+                sortOptions['lastName'] = sortOrder === 'asc' ? 1 : -1;
+            } else {
+                sortOptions[sortBy] = sortOrder === 'asc' ? 1 : -1;
+            }
 
             // Execute query with pagination
             const [patients, total] = await Promise.all([

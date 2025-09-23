@@ -616,7 +616,7 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result?.appointmentTypes).toHaveLength(1);
-      expect(result?.appointmentTypes?.[0]?.toString()).toBe(testAppointmentType._id!.toString());
+      expect((result?.appointmentTypes?.[0] as any)._id.toString()).toBe(testAppointmentType._id!.toString());
     });
 
     it('should throw error for invalid appointment type ID', async () => {

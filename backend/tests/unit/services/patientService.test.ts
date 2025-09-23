@@ -317,7 +317,7 @@ describe('PatientService', () => {
   describe('searchPatients', () => {
     beforeEach(async () => {
       await patientService.createPatient({
-        firstName: 'João Silva',
+        firstName: 'João',
         lastName: 'Santos',
         phone: '(11) 91234-5678',
         email: 'joao.santos@example.com',
@@ -328,7 +328,7 @@ describe('PatientService', () => {
 
       await patientService.createPatient({
         firstName: 'Maria',
-        lastName: 'Silva',
+        lastName: 'Garcia',
         phone: '(11) 98765-4321',
         email: 'maria.silva@example.com',
         cpf: '529.982.247-25',
@@ -340,7 +340,7 @@ describe('PatientService', () => {
     it('should search patients by name', async () => {
       const result = await patientService.searchPatients({
         clinicId: testClinic._id.toString(),
-        search: 'Silva'
+        search: 'João'
       });
 
       expect(result).toBeDefined();
@@ -355,7 +355,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.patients.length).toBe(1);
-      expect(result.patients[0]!.firstName).toBe('João Silva');
+      expect(result.patients[0]!.firstName).toBe('João');
     });
 
     it('should search patients by email', async () => {
