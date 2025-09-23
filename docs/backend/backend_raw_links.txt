@@ -5,10 +5,11 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverag
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/prettify.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/sorter.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/jest.config.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/app.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/database.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/logger.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/redis.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/swagger.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/auth.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/database.ts
@@ -56,6 +57,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/uti
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/customMatchers.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/db-test.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/authRoutes.test.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/concurrency.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/errorBoundary.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/patientPortal.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/patientRoutes.test.ts

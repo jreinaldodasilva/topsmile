@@ -1,6 +1,5 @@
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress.config.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/jest.config.js
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/public/manifest.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/public/mockServiceWorker.js
@@ -70,8 +69,11 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/contexts/AuthContext.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/contexts/ErrorContext.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/contexts/PatientAuthContext.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useAccessibility.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useApiQuery.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useApiState.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/useContacts.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/hooks/usePerformanceMonitor.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/index.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/jest-pre-setup.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/mocks/browser.ts
@@ -103,13 +105,14 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Patie
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Pricing/PricingPage.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/TestComponents/TestComponents.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Unauthorized/UnauthorizedPage.tsx
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/providers/QueryProvider.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/react-app-env.d.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/reportWebVitals.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/apiService.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/http.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/paymentService.ts
-https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/services/tokenStore.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/setupTests.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/accessibility.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/components/AdminDashboard.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/components/AppointmentCalendar.test.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/components/Auth/LoginForm.test.tsx
@@ -143,5 +146,6 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/tests/utils/testHelpers.tsx
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/textEncoderPolyfill.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/transformStreamPolyfill.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/lazyImports.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/utils/logger.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/tsconfig.json
