@@ -43,7 +43,7 @@ describe('Patient Auth Routes Integration', () => {
       expect(response.body.data.requiresEmailVerification).toBe(true);
       
       // Check cookies are set
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       expect(cookies).toBeDefined();
       expect(cookies.some((cookie: string) => cookie.includes('patientAccessToken'))).toBe(true);
       expect(cookies.some((cookie: string) => cookie.includes('patientRefreshToken'))).toBe(true);
@@ -154,7 +154,7 @@ describe('Patient Auth Routes Integration', () => {
       expect(response.body.data.patientUser).toBeDefined();
       
       // Check cookies are set
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       expect(cookies).toBeDefined();
       expect(cookies.some((cookie: string) => cookie.includes('patientAccessToken'))).toBe(true);
     });
@@ -201,10 +201,10 @@ describe('Patient Auth Routes Integration', () => {
         .post('/api/patient-auth/register')
         .send(registrationData);
 
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       refreshTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientRefreshToken')
-      );
+      ) || '';
     });
 
     it('should refresh access token with valid refresh token', async () => {
@@ -217,7 +217,7 @@ describe('Patient Auth Routes Integration', () => {
       expect(response.body.data.expiresIn).toBeDefined();
       
       // Check new access token cookie is set
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       expect(cookies.some((cookie: string) => cookie.includes('patientAccessToken'))).toBe(true);
     });
 
@@ -247,10 +247,10 @@ describe('Patient Auth Routes Integration', () => {
         .post('/api/patient-auth/register')
         .send(registrationData);
 
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       accessTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientAccessToken')
-      );
+      ) || '';
     });
 
     it('should return current patient profile', async () => {
@@ -290,10 +290,10 @@ describe('Patient Auth Routes Integration', () => {
         .post('/api/patient-auth/register')
         .send(registrationData);
 
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       accessTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientAccessToken')
-      );
+      ) || '';
     });
 
     it('should update patient profile successfully', async () => {
@@ -347,10 +347,10 @@ describe('Patient Auth Routes Integration', () => {
         .post('/api/patient-auth/register')
         .send(registrationData);
 
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       accessTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientAccessToken')
-      );
+      ) || '';
     });
 
     it('should change password successfully', async () => {
@@ -403,13 +403,13 @@ describe('Patient Auth Routes Integration', () => {
         .post('/api/patient-auth/register')
         .send(registrationData);
 
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       accessTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientAccessToken')
-      );
+      ) || '';
       refreshTokenCookie = cookies.find((cookie: string) => 
         cookie.includes('patientRefreshToken')
-      );
+      ) || '';
     });
 
     it('should logout successfully', async () => {
@@ -422,7 +422,7 @@ describe('Patient Auth Routes Integration', () => {
       expect(response.body.message).toContain('sucesso');
       
       // Check cookies are cleared
-      const cookies = response.headers['set-cookie'];
+      const cookies = response.headers['set-cookie'] as unknown as string[];
       expect(cookies.some((cookie: string) => 
         cookie.includes('patientAccessToken') && cookie.includes('Max-Age=0')
       )).toBe(true);

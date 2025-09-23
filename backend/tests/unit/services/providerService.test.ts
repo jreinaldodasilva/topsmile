@@ -44,7 +44,7 @@ describe('ProviderService', () => {
       expect(result.phone).toBe(providerData.phone);
       expect(result.specialties).toEqual(providerData.specialties);
       expect(result.licenseNumber).toBe(providerData.licenseNumber);
-      expect(result.clinic.toString()).toBe((testClinic._id as mongoose.Types.ObjectId).toString());
+      expect(result.clinic!.toString()).toBe((testClinic._id as mongoose.Types.ObjectId).toString());
       expect(result.isActive).toBe(true);
     });
 
@@ -60,8 +60,8 @@ describe('ProviderService', () => {
 
       expect(result).toBeDefined();
       expect(result.workingHours).toBeDefined();
-      expect(result.workingHours.monday.isWorking).toBe(true);
-      expect(result.workingHours.saturday.isWorking).toBe(false);
+      expect(result.workingHours!.monday.isWorking).toBe(true);
+      expect(result.workingHours!.saturday.isWorking).toBe(false);
       expect(result.timeZone).toBe('America/Sao_Paulo');
       expect(result.bufferTimeBefore).toBe(15);
       expect(result.bufferTimeAfter).toBe(15);
@@ -92,8 +92,8 @@ describe('ProviderService', () => {
       const result = await providerService.createProvider(providerData);
 
       expect(result).toBeDefined();
-      expect(result.workingHours.monday.start).toBe('09:00');
-      expect(result.workingHours.saturday.isWorking).toBe(true);
+      expect(result.workingHours!.monday.start).toBe('09:00');
+      expect(result.workingHours!.saturday.isWorking).toBe(true);
       expect(result.bufferTimeBefore).toBe(30);
       expect(result.bufferTimeAfter).toBe(30);
     });
@@ -103,7 +103,7 @@ describe('ProviderService', () => {
         name: 'Dr. Ana Oliveira',
         email: 'ana@example.com',
         specialties: ['general_dentistry'],
-        userId: (testUser._id as mongoose.Types.ObjectId).toString(),
+        userId: testUser._id!.toString(),
         clinicId: testClinic._id.toString()
       };
 
@@ -118,7 +118,7 @@ describe('ProviderService', () => {
         name: 'Dr. Carlos Mendes',
         email: 'carlos@example.com',
         specialties: ['general_dentistry'],
-        appointmentTypes: [(testAppointmentType._id as mongoose.Types.ObjectId).toString()],
+        appointmentTypes: [testAppointmentType._id!.toString()],
         clinicId: testClinic._id.toString()
       };
 
@@ -185,7 +185,7 @@ describe('ProviderService', () => {
         name: 'Dr. Wrong Clinic',
         email: 'wrong@example.com',
         specialties: ['general_dentistry'],
-        userId: (otherUser._id as mongoose.Types.ObjectId).toString(),
+        userId: otherUser._id!.toString(),
         clinicId: testClinic._id.toString()
       };
 
@@ -229,12 +229,12 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       const result = await providerService.getProviderById(providerId, testClinic._id.toString());
 
       expect(result).toBeDefined();
-      expect((result!._id as mongoose.Types.ObjectId).toString()).toBe(providerId);
+      expect(result!._id!.toString()).toBe(providerId);
       expect(result!.name).toBe(providerData.name);
     });
 
@@ -262,7 +262,7 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       const updateData = {
         name: 'Dr. Updated',
@@ -289,10 +289,10 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       const updateData = {
-        userId: (testUser._id as mongoose.Types.ObjectId).toString()
+        userId: testUser._id!.toString()
       };
 
       const result = await providerService.updateProvider(providerId, testClinic._id.toString(), updateData);
@@ -310,10 +310,10 @@ describe('ProviderService', () => {
       };
 
       const createdProvider = await providerService.createProvider(providerData);
-      const providerId = (createdProvider._id as mongoose.Types.ObjectId).toString();
+      const providerId = createdProvider._id!.toString();
 
       const updateData = {
-        appointmentTypes: [(testAppointmentType._id as mongoose.Types.ObjectId).toString()]
+        appointmentTypes: [testAppointmentType._id!.toString()]
       };
 
       const result = await providerService.updateProvider(providerId, testClinic._id.toString(), updateData);
@@ -354,7 +354,7 @@ describe('ProviderService', () => {
       };
 
       await expect(
-        providerService.updateProvider((secondProvider._id as mongoose.Types.ObjectId).toString(), testClinic._id.toString(), updateData)
+        providerService.updateProvider(secondProvider._id!.toString(), testClinic._id.toString(), updateData)
       ).rejects.toThrow('Já existe um profissional ativo com este e-mail nesta clínica');
     });
   });

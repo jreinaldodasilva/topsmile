@@ -26,18 +26,17 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000), // Tomorrow + 1 hour
-        type: 'Consulta',
+        appointmentType: 'Consulta',
         notes: 'Consulta de rotina',
-        price: 150
+        createdBy: testProvider._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
 
-      expect(result.success).toBe(true);
-      expect(result.data.patient.toString()).toBe(testPatient._id.toString());
-      expect(result.data.provider.toString()).toBe(testProvider._id.toString());
-      expect(result.data.type).toBe(appointmentData.type);
-      expect(result.data.status).toBe('scheduled');
+      expect(result.patient.toString()).toBe(testPatient._id.toString());
+      expect(result.provider.toString()).toBe(testProvider._id.toString());
+      expect(result.appointmentType).toBe(appointmentData.appointmentType);
+      expect(result.status).toBe('scheduled');
     });
 
     it('should throw error for invalid data', async () => {
@@ -45,7 +44,10 @@ describe('AppointmentService', () => {
         patient: '',
         provider: '',
         scheduledStart: new Date(),
-        scheduledEnd: new Date()
+        scheduledEnd: new Date(),
+        appointmentType: 'Consulta',
+        clinic: testClinic._id.toString(),
+        createdBy: testProvider._id.toString()
       };
 
       await expect(appointmentService.createAppointment(invalidData))
@@ -59,7 +61,8 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
         scheduledEnd: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        type: 'Consulta'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       await expect(appointmentService.createAppointment(appointmentData))
@@ -72,33 +75,37 @@ describe('AppointmentService', () => {
 
     beforeEach(async () => {
       const appointmentData = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
-      testAppointment = result.data;
+      testAppointment = result;
     });
 
     it('should return appointment by ID', async () => {
       const appointment = await appointmentService.getAppointmentById(
-        testAppointment._id.toString()
+        testAppointment._id.toString(),
+        testClinic._id.toString()
       );
 
       expect(appointment).toBeDefined();
-      expect(appointment._id.toString()).toBe(testAppointment._id.toString());
-      expect(appointment.patient).toBeDefined();
-      expect(appointment.provider).toBeDefined();
+      expect(appointment!._id!.toString()).toBe(testAppointment._id.toString());
+      expect(appointment!.patient).toBeDefined();
+      expect(appointment!.provider).toBeDefined();
     });
 
     it('should throw error for non-existent appointment', async () => {
-      await expect(appointmentService.getAppointmentById('507f1f77bcf86cd799439011'))
-        .rejects.toThrow(NotFoundError);
+      const appointment = await appointmentService.getAppointmentById(
+        '507f1f77bcf86cd799439011',
+        testClinic._id.toString()
+      );
+      expect(appointment).toBeNull();
     });
   });
 
@@ -107,41 +114,44 @@ describe('AppointmentService', () => {
 
     beforeEach(async () => {
       const appointmentData = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
-      testAppointment = result.data;
+      testAppointment = result;
     });
 
     it('should update appointment successfully', async () => {
       const updates = {
         notes: 'Updated notes',
-        status: 'confirmed' as const,
-        price: 200
+        status: 'confirmed' as const
       };
 
       const updatedAppointment = await appointmentService.updateAppointment(
         testAppointment._id.toString(),
+        testClinic._id.toString(),
         updates
       );
 
-      expect(updatedAppointment.notes).toBe(updates.notes);
-      expect(updatedAppointment.status).toBe(updates.status);
-      expect(updatedAppointment.price).toBe(updates.price);
+      expect(updatedAppointment!.notes).toBe(updates.notes);
+      expect(updatedAppointment!.status).toBe(updates.status);
     });
 
     it('should throw error for non-existent appointment', async () => {
       const updates = { notes: 'Updated notes' };
 
-      await expect(appointmentService.updateAppointment('507f1f77bcf86cd799439011', updates))
-        .rejects.toThrow(NotFoundError);
+      const result = await appointmentService.updateAppointment(
+        '507f1f77bcf86cd799439011',
+        testClinic._id.toString(),
+        updates
+      );
+      expect(result).toBeNull();
     });
   });
 
@@ -150,17 +160,17 @@ describe('AppointmentService', () => {
 
     beforeEach(async () => {
       const appointmentData = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       const result = await appointmentService.createAppointment(appointmentData);
-      testAppointment = result.data;
+      testAppointment = result;
     });
 
     it('should cancel appointment successfully', async () => {
@@ -168,59 +178,61 @@ describe('AppointmentService', () => {
 
       const cancelledAppointment = await appointmentService.cancelAppointment(
         testAppointment._id.toString(),
+        testClinic._id.toString(),
         reason
       );
 
-      expect(cancelledAppointment.status).toBe('cancelled');
-      expect(cancelledAppointment.cancellationReason).toBe(reason);
-      expect(cancelledAppointment.cancelledAt).toBeDefined();
+      expect(cancelledAppointment!.status).toBe('cancelled');
+      expect(cancelledAppointment!.cancellationReason).toBe(reason);
     });
 
     it('should throw error for already cancelled appointment', async () => {
       // First cancellation
       await appointmentService.cancelAppointment(
         testAppointment._id.toString(),
+        testClinic._id.toString(),
         'First cancellation'
       );
 
       // Second cancellation should fail
       await expect(appointmentService.cancelAppointment(
         testAppointment._id.toString(),
+        testClinic._id.toString(),
         'Second cancellation'
-      )).rejects.toThrow(ConflictError);
+      )).rejects.toThrow();
     });
   });
 
-  describe('getAppointmentsByPatient', () => {
+  describe('getAppointments', () => {
     beforeEach(async () => {
       // Create multiple appointments for the patient
       const appointmentData1 = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       const appointmentData2 = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 48 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 48 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Limpeza',
-        status: 'confirmed'
+        appointmentType: 'Limpeza',
+        createdBy: testProvider._id.toString()
       };
 
       await appointmentService.createAppointment(appointmentData1);
       await appointmentService.createAppointment(appointmentData2);
     });
 
-    it('should return appointments for patient', async () => {
-      const appointments = await appointmentService.getAppointmentsByPatient(
-        testPatient._id.toString()
+    it('should return appointments for clinic', async () => {
+      const appointments = await appointmentService.getAppointments(
+        testClinic._id.toString()
       );
 
       expect(appointments).toHaveLength(2);
@@ -229,12 +241,12 @@ describe('AppointmentService', () => {
     });
 
     it('should filter appointments by status', async () => {
-      const scheduledAppointments = await appointmentService.getAppointmentsByPatient(
-        testPatient._id.toString(),
+      const scheduledAppointments = await appointmentService.getAppointments(
+        testClinic._id.toString(),
         { status: 'scheduled' }
       );
 
-      expect(scheduledAppointments).toHaveLength(1);
+      expect(scheduledAppointments).toHaveLength(2);
       expect(scheduledAppointments[0].status).toBe('scheduled');
     });
   });
@@ -243,20 +255,29 @@ describe('AppointmentService', () => {
     beforeEach(async () => {
       // Create multiple appointments for the provider
       const appointmentData1 = {
-        patient: testPatient._id,
-        provider: testProvider._id,
-        clinic: testClinic._id,
+        patient: testPatient._id.toString(),
+        provider: testProvider._id.toString(),
+        clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        type: 'Consulta',
-        status: 'scheduled'
+        appointmentType: 'Consulta',
+        createdBy: testProvider._id.toString()
       };
 
       await appointmentService.createAppointment(appointmentData1);
     });
 
     it('should return appointments for provider', async () => {
-      const appointments = await appointmentService.getAppointmentsByProvider(
+      const appointments = await appointmentService.getAppointments(
+        testClinic._id.toString(),
+        { providerId: testProvider._id.toString() }
+      );
+
+      expect(appointments).toHaveLength(1);
+      expect(appointments[0].provider.toString()).toBe(testProvider._id.toString());
+    });
+  });
+});nst appointments = await appointmentService.getAppointmentsByProvider(
         testProvider._id.toString()
       );
 

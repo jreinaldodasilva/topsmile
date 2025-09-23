@@ -59,7 +59,7 @@ describe('PatientAuthService', () => {
       const result = await patientAuthService.register(registrationData);
 
       expect(result.success).toBe(true);
-      expect(result.data.patient._id.toString()).toBe(existingPatient._id.toString());
+      expect(result.data.patient._id!.toString()).toBe(existingPatient._id.toString());
       expect(result.data.patientUser.email).toBe(registrationData.email);
     });
 
@@ -119,8 +119,8 @@ describe('PatientAuthService', () => {
       const result = await patientAuthService.login(loginData);
 
       expect(result.success).toBe(true);
-      expect(result.data.patient._id.toString()).toBe(testPatient._id.toString());
-      expect(result.data.patientUser._id.toString()).toBe(testPatientUser._id.toString());
+      expect(result.data.patient._id!.toString()).toBe(testPatient._id.toString());
+      expect((result.data.patientUser._id as any).toString()).toBe(testPatientUser._id.toString());
       expect(result.data.accessToken).toBeDefined();
       expect(result.data.refreshToken).toBeDefined();
     });

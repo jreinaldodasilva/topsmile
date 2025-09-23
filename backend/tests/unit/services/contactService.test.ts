@@ -237,7 +237,8 @@ describe('ContactService', () => {
 
       const createdContact = await contactService.createContact(contactData);
 
-      const result = await contactService.getContactById(createdContact.id);
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContactById(mockUser as any, createdContact.id);
 
       expect(result).toBeDefined();
       expect(result!.id).toBe(createdContact.id);
@@ -245,7 +246,8 @@ describe('ContactService', () => {
     });
 
     it('should return null for non-existent contact', async () => {
-      const result = await contactService.getContactById('507f1f77bcf86cd799439011');
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContactById(mockUser as any, '507f1f77bcf86cd799439011');
 
       expect(result).toBeNull();
     });
@@ -326,7 +328,8 @@ describe('ContactService', () => {
     });
 
     it('should return all contacts with pagination', async () => {
-      const result = await contactService.getContacts({}, { page: 1, limit: 10 });
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
+      const result = await contactService.getContacts(mockUser as any, {}, { page: 1, limit: 10 });
 
       expect(result).toBeDefined();
       expect(result.contacts.length).toBe(3);
@@ -336,7 +339,9 @@ describe('ContactService', () => {
     });
 
     it('should filter by status', async () => {
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         { status: 'new' },
         { page: 1, limit: 10 }
       );
@@ -345,7 +350,9 @@ describe('ContactService', () => {
     });
 
     it('should filter by source', async () => {
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         { source: 'website' },
         { page: 1, limit: 10 }
       );
@@ -360,7 +367,9 @@ describe('ContactService', () => {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
 
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         { dateFrom: yesterday, dateTo: tomorrow },
         { page: 1, limit: 10 }
       );
@@ -369,7 +378,9 @@ describe('ContactService', () => {
     });
 
     it('should search by name', async () => {
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         { search: 'João' },
         { page: 1, limit: 10 }
       );
@@ -378,7 +389,9 @@ describe('ContactService', () => {
     });
 
     it('should search by email', async () => {
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         { search: 'maria@example.com' },
         { page: 1, limit: 10 }
       );
@@ -388,8 +401,19 @@ describe('ContactService', () => {
     });
 
     it('should paginate results', async () => {
+      const mockUser = { role: 'super_admin', clinicId: testClinic._id.toString() };
       const result = await contactService.getContacts(
+        mockUser as any,
         {},
+        { page: 1, limit: 2 }
+      );
+
+      expect(result.contacts.length).toBe(2);
+      expect(result.total).toBe(3);
+      expect(result.pages).toBe(2);
+    });
+  });
+}); {},
         { page: 1, limit: 2 }
       );
 

@@ -19,6 +19,7 @@
     "@types/date-fns": "^2.6.3",
     "@types/mongoose": "^5.11.97",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
     "bullmq": "^5.58.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

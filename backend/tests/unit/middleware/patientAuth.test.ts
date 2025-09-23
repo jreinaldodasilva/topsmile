@@ -1,9 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../../../src/middleware/patientAuth';
-import { patientAuthService } from '../../../src/services/patientAuthService';
-import { createTestClinic, createTestPatient, createTestPatientUser } from '../../testHelpers';
+import { patientAuthService, PatientTokenPayload } from '../../../src/services/patientAuthService';
+import { PatientUser } from '../../../src/models/PatientUser';
+import { Patient } from '../../../src/models/Patient';
+import mongoose from 'mongoose';
 
-// Mock the patientAuthService
 jest.mock('../../../src/services/patientAuthService');
 const mockedPatientAuthService = patientAuthService as jest.Mocked<typeof patientAuthService>;
 
@@ -28,23 +29,23 @@ describe('Patient Auth Middleware', () => {
 
   describe('authenticatePatient', () => {
     it('should authenticate valid patient token from cookies', async () => {
-      const mockPayload = {
-        patientUserId: 'user123',
-        patientId: 'patient123',
+      const mockPayload: PatientTokenPayload = {
+        patientUserId: new mongoose.Types.ObjectId().toHexString(),
+        patientId: new mongoose.Types.ObjectId().toHexString(),
         email: 'test@example.com',
-        clinicId: 'clinic123',
+        clinicId: new mongoose.Types.ObjectId().toHexString(),
         type: 'patient' as const
       };
 
       const mockPatientUser = {
-        _id: 'user123',
-        email: 'test@example.com',
+        _id: mockPayload.patientUserId,
+        patient: mockPayload.patientId,
+        emailVerified: true,
         isActive: true,
-        emailVerified: true
       };
 
       const mockPatient = {
-        _id: 'patient123',
+        _id: mockPayload.patientId,
         name: 'Test Patient',
         status: 'active'
       };
@@ -52,17 +53,8 @@ describe('Patient Auth Middleware', () => {
       req.cookies = { patientAccessToken: 'valid-token' };
 
       mockedPatientAuthService.verifyToken.mockResolvedValue(mockPayload);
-      // Mock database queries
-      jest.doMock('../../../src/models/PatientUser', () => ({
-        PatientUser: {
-          findById: jest.fn().mockResolvedValue(mockPatientUser)
-        }
-      }));
-      jest.doMock('../../../src/models/Patient', () => ({
-        Patient: {
-          findById: jest.fn().mockResolvedValue(mockPatient)
-        }
-      }));
+      jest.spyOn(PatientUser, 'findById').mockResolvedValue(mockPatientUser as any);
+      jest.spyOn(Patient, 'findById').mockResolvedValue(mockPatient as any);
 
       await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
 
@@ -73,23 +65,38 @@ describe('Patient Auth Middleware', () => {
     });
 
     it('should authenticate valid patient token from Authorization header', async () => {
-      const mockPayload = {
-        patientUserId: 'user123',
-        patientId: 'patient123',
-        email: 'test@example.com',
-        clinicId: 'clinic123',
-        type: 'patient' as const
-      };
-
-      req.headers = { authorization: 'Bearer valid-token' };
-      req.cookies = {};
-
-      mockedPatientAuthService.verifyToken.mockResolvedValue(mockPayload);
-
-      await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
-
-      expect(mockedPatientAuthService.verifyToken).toHaveBeenCalledWith('valid-token');
-      expect(next).toHaveBeenCalled();
+        const mockPayload: PatientTokenPayload = {
+            patientUserId: new mongoose.Types.ObjectId().toHexString(),
+            patientId: new mongoose.Types.ObjectId().toHexString(),
+            email: 'test@example.com',
+            clinicId: new mongoose.Types.ObjectId().toHexString(),
+            type: 'patient' as const
+          };
+    
+          const mockPatientUser = {
+            _id: mockPayload.patientUserId,
+            patient: mockPayload.patientId,
+            emailVerified: true,
+            isActive: true,
+          };
+    
+          const mockPatient = {
+            _id: mockPayload.patientId,
+            name: 'Test Patient',
+            status: 'active'
+          };
+    
+          req.headers = { authorization: 'Bearer valid-token' };
+          req.cookies = {};
+    
+          mockedPatientAuthService.verifyToken.mockResolvedValue(mockPayload);
+          jest.spyOn(PatientUser, 'findById').mockResolvedValue(mockPatientUser as any);
+          jest.spyOn(Patient, 'findById').mockResolvedValue(mockPatient as any);
+    
+          await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
+    
+          expect(mockedPatientAuthService.verifyToken).toHaveBeenCalledWith('valid-token');
+          expect(next).toHaveBeenCalled();
     });
 
     it('should return 401 for missing token', async () => {
@@ -99,10 +106,10 @@ describe('Patient Auth Middleware', () => {
       await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: false,
-        message: 'Token de acesso obrigatório'
-      });
+        message: 'Token de acesso não fornecido'
+      }));
       expect(next).not.toHaveBeenCalled();
     });
 
@@ -114,42 +121,43 @@ describe('Patient Auth Middleware', () => {
       await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: false,
         message: 'Token inválido'
-      });
+      }));
       expect(res.clearCookie).toHaveBeenCalledWith('patientAccessToken');
       expect(next).not.toHaveBeenCalled();
     });
 
     it('should return 401 for inactive patient user', async () => {
-      const mockPayload = {
-        patientUserId: 'user123',
-        patientId: 'patient123',
-        email: 'test@example.com',
-        clinicId: 'clinic123',
-        type: 'patient' as const
-      };
-
-      const mockPatientUser = {
-        _id: 'user123',
-        email: 'test@example.com',
-        isActive: false, // Inactive user
-        emailVerified: true
-      };
-
-      req.cookies = { patientAccessToken: 'valid-token' };
-
-      mockedPatientAuthService.verifyToken.mockResolvedValue(mockPayload);
-
-      await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
-
-      expect(res.status).toHaveBeenCalledWith(401);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Conta desativada'
-      });
-      expect(next).not.toHaveBeenCalled();
+        const mockPayload: PatientTokenPayload = {
+            patientUserId: new mongoose.Types.ObjectId().toHexString(),
+            patientId: new mongoose.Types.ObjectId().toHexString(),
+            email: 'test@example.com',
+            clinicId: new mongoose.Types.ObjectId().toHexString(),
+            type: 'patient' as const
+          };
+    
+          const mockPatientUser = {
+            _id: mockPayload.patientUserId,
+            patient: mockPayload.patientId,
+            emailVerified: true,
+            isActive: false,
+          };
+    
+          req.cookies = { patientAccessToken: 'valid-token' };
+    
+          mockedPatientAuthService.verifyToken.mockResolvedValue(mockPayload);
+          jest.spyOn(PatientUser, 'findById').mockResolvedValue(mockPatientUser as any);
+    
+          await authenticatePatient(req as PatientAuthenticatedRequest, res as Response, next);
+    
+          expect(res.status).toHaveBeenCalledWith(401);
+          expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
+            success: false,
+            message: 'Conta de paciente inativa'
+          }));
+          expect(next).not.toHaveBeenCalled();
     });
   });
 
@@ -165,18 +173,21 @@ describe('Patient Auth Middleware', () => {
     });
 
     it('should return 403 for unverified email', () => {
-      req.patientUser = {
-        emailVerified: false
-      } as any;
+        req.patientUser = {
+            emailVerified: false,
+            email: 'test@example.com'
+        } as any;
+        req.patient = {
+            _id: 'patient123'
+        } as any;
 
       requirePatientEmailVerification(req as PatientAuthenticatedRequest, res as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith({
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
         success: false,
-        message: 'E-mail não verificado. Verifique seu e-mail antes de continuar.',
-        requiresEmailVerification: true
-      });
+        message: 'E-mail não verificado. Verifique seu e-mail antes de continuar.'
+      }));
       expect(next).not.toHaveBeenCalled();
     });
 

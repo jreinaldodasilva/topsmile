@@ -42,7 +42,7 @@ describe('PatientService', () => {
           conditions: ['Hipertensão'],
           notes: 'Paciente com hipertensão controlada'
         },
-        clinicId: testClinic._id.toString()
+        clinic: testClinic._id.toString()
       };
 
       const result = await patientService.createPatient(patientData);
@@ -52,36 +52,43 @@ describe('PatientService', () => {
       expect(result.lastName).toBe(patientData.lastName);
       expect(result.email).toBe(patientData.email);
       expect(result.phone).toBe(patientData.phone);
-      expect(result.clinic.toString()).toBe(testClinic._id.toString());
+      expect(result.clinic!.toString()).toBe(testClinic._id.toString());
     });
 
     it('should create patient without optional fields', async () => {
       const minimalPatientData = {
-        name: 'Ana Costa',
+        firstName: 'Ana',
+        lastName: 'Costa',
         phone: '(11) 91234-5678',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       const result = await patientService.createPatient(minimalPatientData);
 
       expect(result).toBeDefined();
-      expect(result.name).toBe(minimalPatientData.name);
+      expect(result.firstName).toBe(minimalPatientData.firstName);
+      expect(result.lastName).toBe(minimalPatientData.lastName);
       expect(result.phone).toBe(minimalPatientData.phone);
       expect(result.email).toBeUndefined();
-      expect(result.birthDate).toBeUndefined();
+      expect(result.dateOfBirth).toBeUndefined();
     });
 
     it('should throw error for duplicate phone', async () => {
       const patientData1 = {
-        name: 'João Silva',
+        firstName: 'João',
+        lastName: 'Silva',
         phone: '(11) 91234-5678',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       const patientData2 = {
-        name: 'Maria Silva',
+        firstName: 'Maria',
+        lastName: 'Silva',
         phone: '(11) 91234-5678', // Same phone
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       await patientService.createPatient(patientData1);
@@ -95,8 +102,8 @@ describe('PatientService', () => {
       const invalidPatientData = {
         email: 'test@example.com',
         phone: '(11) 91234-5678',
-        clinicId: testClinic._id.toString()
-        // Missing required 'name'
+        clinic: testClinic._id.toString()
+        // Missing required firstName and lastName
       };
 
       await expect(
@@ -108,10 +115,12 @@ describe('PatientService', () => {
   describe('getPatientById', () => {
     it('should return patient by ID', async () => {
       const patientData = {
-        name: 'Test Patient',
+        firstName: 'Test',
+        lastName: 'Patient',
         phone: '(11) 91234-5678',
         email: 'test@example.com',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       const createdPatient = await patientService.createPatient(patientData);
@@ -120,7 +129,8 @@ describe('PatientService', () => {
       const result = await patientService.getPatientById(patientId, testClinic._id.toString());
 
       expect(result).toBeDefined();
-      expect(result!.name).toBe(patientData.name);
+      expect(result!.firstName).toBe(patientData.firstName);
+      expect(result!.lastName).toBe(patientData.lastName);
       expect(result!.email).toBe(patientData.email);
     });
 
@@ -135,24 +145,30 @@ describe('PatientService', () => {
     beforeEach(async () => {
       // Create multiple test patients
       await patientService.createPatient({
-        name: 'João Silva',
+        firstName: 'João',
+        lastName: 'Silva',
         phone: '(11) 91234-5678',
         email: 'joao@example.com',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       });
 
       await patientService.createPatient({
-        name: 'Maria Santos',
+        firstName: 'Maria',
+        lastName: 'Santos',
         phone: '(11) 98765-4321',
         email: 'maria@example.com',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       });
 
       await patientService.createPatient({
-        name: 'Pedro Costa',
+        firstName: 'Pedro',
+        lastName: 'Costa',
         phone: '(11) 91234-5679',
         email: 'pedro@example.com',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       });
     });
 
@@ -161,7 +177,7 @@ describe('PatientService', () => {
 
       expect(result).toBeDefined();
       expect(result.length).toBe(3);
-      expect(result[0]!.clinic._id.toString()).toBe(testClinic._id.toString());
+      expect(result[0]!.clinic!._id!.toString()).toBe(testClinic._id.toString());
     });
 
     it('should return inactive patients when specified', async () => {
@@ -181,17 +197,20 @@ describe('PatientService', () => {
   describe('updatePatient', () => {
     it('should update patient successfully', async () => {
       const patientData = {
-        name: 'Original Name',
+        firstName: 'Original',
+        lastName: 'Name',
         phone: '(11) 91234-5678',
         email: 'original@example.com',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       const createdPatient = await patientService.createPatient(patientData);
       const patientId = (createdPatient._id as any).toString();
 
       const updateData = {
-        name: 'Updated Name',
+        firstName: 'Updated',
+        lastName: 'Name',
         email: 'updated@example.com'
       };
 
@@ -226,7 +245,7 @@ describe('PatientService', () => {
     });
 
     it('should return null for non-existent patient', async () => {
-      const updateData = { name: 'New Name' };
+      const updateData = { firstName: 'New', lastName: 'Name' };
 
       const result = await patientService.updatePatient('507f1f77bcf86cd799439011', testClinic._id.toString(), updateData);
 
@@ -235,9 +254,11 @@ describe('PatientService', () => {
 
     it('should update medical history', async () => {
       const patientData = {
-        name: 'Medical Test',
+        firstName: 'Medical',
+        lastName: 'Test',
         phone: '(11) 91234-5678',
-        clinicId: testClinic._id.toString()
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
       };
 
       const createdPatient = await patientService.createPatient(patientData);
@@ -263,7 +284,22 @@ describe('PatientService', () => {
   describe('deletePatient', () => {
     it('should delete patient successfully', async () => {
       const patientData = {
-        name: 'Delete Test',
+        firstName: 'Delete',
+        lastName: 'Test',
+        phone: '(11) 91234-5678',
+        address: { zipCode: '01234-567' },
+        clinic: testClinic._id.toString()
+      };
+
+      const createdPatient = await patientService.createPatient(patientData);
+      const patientId = (createdPatient._id as any).toString();
+
+      const result = await patientService.deletePatient(patientId, testClinic._id.toString());
+
+      expect(result).toBe(true);
+    });
+  });
+}); Test',
         phone: '(11) 91234-5678',
         clinicId: testClinic._id.toString()
       };

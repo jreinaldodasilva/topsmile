@@ -22,7 +22,8 @@ describe('SchedulingService', () => {
 
       // Create test patient
       testPatient = await Patient.create({
-        name: 'Test Patient',
+        firstName: 'Test',
+        lastName: 'Patient',
         phone: '(11) 99999-9999',
         email: 'patient@example.com',
         clinic: testClinic._id,

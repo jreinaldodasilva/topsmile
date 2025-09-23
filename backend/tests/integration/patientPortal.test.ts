@@ -37,7 +37,8 @@ describe('Patient Portal Integration Tests', () => {
 
     // Create a patient
     patient = await Patient.create({
-      name: 'Test Patient',
+      firstName: 'Test',
+      lastName: 'Patient',
       phone: '(11) 99999-9999',
       email: 'patient@example.com',
       clinic: '507f1f77bcf86cd799439011',
