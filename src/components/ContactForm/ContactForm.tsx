@@ -2,6 +2,7 @@
 import React, { useState, FormEvent } from 'react';
 import DOMPurify from 'dompurify';
 import { apiService } from '../../services/apiService';
+import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import './ContactForm.css';
 import type { Clinic } from '@topsmile/types';
 
@@ -387,4 +388,11 @@ declare global {
   }
 }
 
-export default ContactForm;
+// Wrap with ErrorBoundary for async operations
+const ContactFormWithErrorBoundary: React.FC = () => (
+  <ErrorBoundary level="component" context="contact-form">
+    <ContactForm />
+  </ErrorBoundary>
+);
+
+export default ContactFormWithErrorBoundary;

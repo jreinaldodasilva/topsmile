@@ -1,7 +1,7 @@
 // src/pages/FormRenderer/FormRendererPage.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService, type FormTemplate } from '../../services/apiService';
-import { type ApiResult } from '../../services/http';
+import { ApiResult } from '@topsmile/types';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import './FormRendererPage.css';

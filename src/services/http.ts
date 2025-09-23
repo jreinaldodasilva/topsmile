@@ -1,5 +1,5 @@
 // src/services/http.ts - Updated for Backend Integration
-
+import { ApiResult } from '@topsmile/types';
 
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const LOGOUT_EVENT = 'topsmile-logout';
@@ -43,13 +43,6 @@ async function parseResponse(res: Response): Promise<HttpResponse> {
     data: payload?.data || payload,
     message: payload?.message 
   };
-}
-
-export interface ApiResult<T = any> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  errors?: Array<{ msg: string; param: string }>;
 }
 
 /** Standardize API response handling */

@@ -1,40 +1,10 @@
 // backend/src/services/patientService.ts
-import { Patient as IPatient } from '@topsmile/types';
+import { Patient as IPatient, CreatePatientDTO } from '@topsmile/types';
 import { Patient as PatientModel } from '../models/Patient';
 import mongoose from 'mongoose';
 import { NotFoundError } from '../types/errors';
 
-export interface CreatePatientData {
-    name: string;
-    email?: string;
-    phone: string;
-    birthDate?: Date;
-    gender?: 'male' | 'female' | 'other';
-    cpf?: string;
-    address?: {
-        street?: string;
-        number?: string;
-        complement?: string;
-        neighborhood?: string;
-        city?: string;
-        state?: string;
-        zipCode?: string;
-    };
-    emergencyContact?: {
-        name: string;
-        phone: string;
-        relationship: string;
-    };
-    medicalHistory?: {
-        allergies?: string[];
-        medications?: string[];
-        conditions?: string[];
-        notes?: string;
-    };
-    clinicId: string;
-}
-
-export interface UpdatePatientData extends Partial<CreatePatientData> {
+export interface UpdatePatientData extends Partial<CreatePatientDTO> {
     status?: 'active' | 'inactive';
 }
 
@@ -59,22 +29,22 @@ export interface PatientSearchResult {
 
 class PatientService {
     // Create a new patient
-    async createPatient(data: CreatePatientData): Promise<IPatient> {
+    async createPatient(data: CreatePatientDTO & { clinic: string }): Promise<IPatient> {
         try {
             // Validate required fields
-            if (!data.name || !data.phone || !data.clinicId) {
-                throw new Error('Nome, telefone e clínica são obrigatórios');
+            if (!data.firstName || !data.lastName || !data.phone || !data.clinic) {
+                throw new Error('Nome, sobrenome, telefone e clínica são obrigatórios');
             }
 
             // Validate clinic ID
-            if (!mongoose.Types.ObjectId.isValid(data.clinicId)) {
+            if (!mongoose.Types.ObjectId.isValid(data.clinic)) {
                 throw new Error('ID da clínica inválido');
             }
 
             // Check if patient with same phone already exists in the clinic
             const existingPatient = await PatientModel.findOne({
                 phone: data.phone,
-                clinic: data.clinicId,
+                clinic: data.clinic,
                 status: 'active'
             });
 
@@ -86,7 +56,7 @@ class PatientService {
             if (data.email) {
                 const existingEmailPatient = await PatientModel.findOne({
                     email: data.email.toLowerCase(),
-                    clinic: data.clinicId,
+                    clinic: data.clinic,
                     status: 'active'
                 });
 
@@ -97,7 +67,6 @@ class PatientService {
 
             const patient = new PatientModel({
                 ...data,
-                clinic: data.clinicId,
                 email: data.email?.toLowerCase(),
                 status: 'active'
             });

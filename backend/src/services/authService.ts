@@ -63,11 +63,16 @@ export interface DeviceInfo {
 }
 
 class AuthService {
+    private readonly JWT_SECRET: string;
     private readonly ACCESS_TOKEN_EXPIRES: string;
     private readonly REFRESH_TOKEN_EXPIRES_DAYS: number;
     private readonly MAX_REFRESH_TOKENS_PER_USER: number;
 
     constructor() {
+        this.JWT_SECRET = process.env.JWT_SECRET || '';
+        if (!this.JWT_SECRET || this.JWT_SECRET.length < 32) {
+            throw new Error('JWT_SECRET must be at least 32 characters');
+        }
         this.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || '15m';
         this.REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
         this.MAX_REFRESH_TOKENS_PER_USER = parseInt(process.env.MAX_REFRESH_TOKENS_PER_USER || '5', 10);
@@ -89,20 +94,9 @@ class AuthService {
         };
     }
 
-    // Get JWT secret with runtime environment variable reading
+    // Get JWT secret - now validated at startup
     private getJwtSecret(): string {
-        const secret = process.env.JWT_SECRET;
-
-        if (!secret || secret === 'your-secret-key' || secret.length < 64) {
-            if (process.env.NODE_ENV === 'production') {
-                console.error('FATAL: JWT_SECRET must be at least 64 characters long and not use default value');
-                process.exit(1);
-            } else {
-                // For development and testing, generate a secure, random secret if not provided.
-                return crypto.randomBytes(32).toString('hex');
-            }
-        }
-        return secret;
+        return this.JWT_SECRET;
     }
 
     // FIXED: Generate short-lived access token with proper typing

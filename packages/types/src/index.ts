@@ -160,6 +160,7 @@ export type CreatePatientDTO = {
 export type Patient = CreatePatientDTO & {
   id?: string;
   _id?: string;
+  fullName?: string; // computed from firstName + lastName
   emergencyContact?: {
     name: string;
     phone: string;

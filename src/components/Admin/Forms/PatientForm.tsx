@@ -1,6 +1,7 @@
 // src/components/Admin/Forms/PatientForm.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../../../services/apiService';
+import ErrorBoundary from '../../ErrorBoundary/ErrorBoundary';
 import type { Patient } from '../../../../packages/types/src/index';
 import './PatientForm.css';
 import type { Contact } from '@topsmile/types';
@@ -47,7 +48,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
   onSave,
   onCancel,
   loading = false
-}) => {
+}): JSX.Element => {
   const [formData, setFormData] = useState<PatientFormData>({
     firstName: '',
     lastName: '',
@@ -168,7 +169,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Telefone é obrigatório';
-    } else if (!/^[\d\s\-()+]{10,15}$/.test(formData.phone)) {
+    } else if (!/^[\d\s\-()+ ]{10,15}$/.test(formData.phone)) {
       newErrors.phone = 'Telefone inválido';
     }
 
@@ -530,4 +531,11 @@ const PatientForm: React.FC<PatientFormProps> = ({
   );
 };
 
-export default PatientForm;
+// Wrap with ErrorBoundary for async operations
+const PatientFormWithErrorBoundary: React.FC<PatientFormProps> = (props): JSX.Element => (
+  <ErrorBoundary level="component" context="patient-form">
+    <PatientForm {...props} />
+  </ErrorBoundary>
+);
+
+export default PatientFormWithErrorBoundary;

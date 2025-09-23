@@ -211,6 +211,7 @@ const PatientSchema = new Schema<IPatient & Document>({
 }, {
     timestamps: true,
     toJSON: {
+        virtuals: true,
         transform: function (doc, ret) {
             ret.id = ret._id;
             delete (ret as any)._id;
@@ -273,10 +274,16 @@ PatientSchema.pre('save', function(this: IPatient & Document, next) {
     next();
 });
 
+// Virtual for fullName
+PatientSchema.virtual('fullName').get(function() {
+  return `${this.firstName} ${this.lastName}`.trim();
+});
+
 // Indexes
 PatientSchema.index({ clinic: 1 });
 PatientSchema.index({ email: 1 });
 PatientSchema.index({ phone: 1 });
 PatientSchema.index({ status: 1 });
+PatientSchema.index({ email: 1, phone: 1 });
 
 export const Patient = mongoose.model<IPatient & Document>('Patient', PatientSchema);
