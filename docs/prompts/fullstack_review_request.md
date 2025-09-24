@@ -1,4 +1,5 @@
-Thoroughly and meticulously perform a **static full-stack code review** of the TopSmile project using only the inputs provided. This is a *static analysis only* task — do **not** execute code, install dependencies, or read secrets (.env). Use the three input files in the repo root:
+Thoroughly and meticulously perform a **static full-stack code review** of the TopSmile project using only the inputs provided.
+⚠️ Important: Do **not** use any cached knowledge or prior memory about this project. All source code must be taken **directly from the GitHub raw links** listed in the input files below:
 
 - `frontend_raw_links.txt`
 - `backend_raw_links.txt`
@@ -158,6 +159,7 @@ Produce a single ZIP (or a commit-like bundle) containing:
 - `patches/` contains at least one **ready-to-apply** patch for every Critical and High issue (where a code change is applicable).
 - `files_reviewed.txt` and `tests_to_add.md` included.
 - All suggested fixes include reproduction steps and at least one unit/integration test suggestion.
+- All analysis is based **only** on the provided raw GitHub links.  
 
 ---
 

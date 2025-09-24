@@ -1,5 +1,6 @@
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/cypress.config.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/jest.config.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/public/manifest.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/public/mockServiceWorker.js

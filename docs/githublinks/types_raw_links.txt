@@ -1,3 +1,4 @@
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/packages/types/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/packages/types/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/packages/types/src/index.d.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/packages/types/src/index.d.ts.map

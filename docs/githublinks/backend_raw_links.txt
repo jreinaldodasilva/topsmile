@@ -5,6 +5,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverag
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/prettify.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/coverage/sorter.js
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/jest.config.js
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package-lock.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/package.json
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/app.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/database.ts
@@ -18,6 +19,7 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/mid
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/patientAuth.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/rateLimiter.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/roleBasedAccess.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/middleware/security.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/models/Appointment.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/models/AppointmentType.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/models/Clinic.ts
@@ -59,15 +61,18 @@ https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/d
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/authRoutes.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/concurrency.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/errorBoundary.test.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/patientAuthRoutes.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/patientPortal.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/patientRoutes.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/performance.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/integration/security.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/setup.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/testHelpers.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/middleware/patientAuth.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/appointmentService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/authService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/contactService.test.ts
+https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/patientAuthService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/patientService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/providerService.test.ts
 https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/tests/unit/services/schedulingService.test.ts
