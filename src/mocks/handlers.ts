@@ -5,7 +5,7 @@ import type { User, Contact, Patient } from '@topsmile/types';
 export const handlers = [
   http.post('*/api/auth/login', async ({ request }) => {
     const body = await request.json() as { email: string; password: string };
-    if (body.email === 'admin@topsmile.com' && body.password === 'SecurePass123!') {
+    if (body.email === (process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com') && body.password === (process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!')) {
       return HttpResponse.json({
         success: true,
         data: {

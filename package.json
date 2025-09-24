@@ -46,7 +46,8 @@
     "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
     "migrate-types": "node scripts/migrate-types.js",
     "fix-type-imports": "node scripts/fix-type-imports.js",
-    "lint:types": "npm run migrate-types"
+    "lint:types": "npm run migrate-types",
+    "generate-secrets": "node scripts/generate-secrets.js"
   },
   "eslintConfig": {
     "extends": [

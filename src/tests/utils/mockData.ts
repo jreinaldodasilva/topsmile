@@ -306,8 +306,8 @@ export const generateBrazilianState = () => faker.helpers.arrayElement([
 export const createTestScenarios = {
   // Authentication scenarios
   validLogin: () => ({
-    email: 'admin@topsmile.com',
-    password: 'SecurePass123!'
+    email: process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com',
+    password: process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!'
   }),
   
   invalidLogin: () => ({

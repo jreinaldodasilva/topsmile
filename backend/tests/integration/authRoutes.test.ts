@@ -6,12 +6,12 @@ import { authenticate } from '../../src/middleware/auth';
 // Import and use auth routes
 import authRoutes from '../../src/routes/auth';
 
-// Test constants to avoid hardcoded credentials
+// Test constants using environment variables
 const TEST_PASSWORDS = {
-  SECURE: 'SecurePass123!',
-  TEST: 'TestPassword123!',
-  NEW: 'NewPass123!',
-  LOGIN: 'LoginPass123!'
+  SECURE: process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!',
+  TEST: process.env.TEST_USER_PASSWORD || 'TestPassword123!',
+  NEW: process.env.TEST_NEW_PASSWORD || 'NewPass123!',
+  LOGIN: process.env.TEST_USER_PASSWORD || 'LoginPass123!'
 };
 
 // Create a test app with real middleware

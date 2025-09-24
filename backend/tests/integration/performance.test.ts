@@ -15,7 +15,7 @@ describe('Performance Tests', () => {
     testUser = await createTestUser({
       name: 'Performance Test User',
       email: 'perf@example.com',
-      password: 'PerfPass123!',
+      password: process.env.TEST_USER_PASSWORD || 'PerfPass123!',
       role: 'admin'
     });
     authToken = generateAuthToken(testUser._id.toString(), testUser.role);
@@ -30,7 +30,7 @@ describe('Performance Tests', () => {
           .post('/api/auth/login')
           .send({
             email: 'perf@example.com',
-            password: 'PerfPass123!'
+            password: process.env.TEST_USER_PASSWORD || 'PerfPass123!'
           })
       );
 
@@ -71,7 +71,7 @@ describe('Performance Tests', () => {
           .post('/api/auth/login')
           .send({
             email: 'perf@example.com',
-            password: 'PerfPass123!'
+            password: process.env.TEST_USER_PASSWORD || 'PerfPass123!'
           });
       }
 
@@ -93,7 +93,7 @@ describe('Performance Tests', () => {
         createTestUser({
           name: `Perf User ${i}`,
           email: `perf${i}@example.com`,
-          password: 'PerfPass123!',
+          password: process.env.TEST_USER_PASSWORD || 'PerfPass123!',
           role: 'admin'
         })
       );
@@ -106,7 +106,7 @@ describe('Performance Tests', () => {
           .post('/api/auth/login')
           .send({
             email: `perf${i}@example.com`,
-            password: 'PerfPass123!'
+            password: process.env.TEST_USER_PASSWORD || 'PerfPass123!'
           })
       );
 
@@ -122,7 +122,7 @@ describe('Performance Tests', () => {
   describe('Response Time Benchmarks', () => {
     it('should respond quickly to auth endpoints', async () => {
       const endpoints = [
-        { method: 'POST', path: '/api/auth/login', data: { email: 'perf@example.com', password: 'PerfPass123!' } },
+        { method: 'POST', path: '/api/auth/login', data: { email: 'perf@example.com', password: process.env.TEST_USER_PASSWORD || 'PerfPass123!' } },
         { method: 'GET', path: '/api/auth/me', headers: { Authorization: `Bearer ${authToken}` } },
         { method: 'POST', path: '/api/auth/logout', headers: { Authorization: `Bearer ${authToken}` }, data: { refreshToken: 'dummy' } }
       ];

@@ -6,7 +6,7 @@ describe('apiService', () => {
   describe('auth methods', () => {
     describe('login', () => {
       it('should successfully login with valid credentials', async () => {
-        const result = await apiService.auth.login('admin@topsmile.com', 'SecurePass123!');
+        const result = await apiService.auth.login(process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com', process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!');
 
         expect(result.success).toBe(true);
         expect(result.data).toBeDefined();
@@ -35,7 +35,7 @@ describe('apiService', () => {
         const registerData = {
           name: 'New User',
           email: 'newuser@example.com',
-          password: 'SecurePass123!'
+          password: process.env.TEST_USER_PASSWORD || 'SecurePass123!'
         };
 
         const result = await apiService.auth.register(registerData);

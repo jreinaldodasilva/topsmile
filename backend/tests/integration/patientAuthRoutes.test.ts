@@ -26,7 +26,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'João Silva',
         email: 'joao@example.com',
         phone: '(11) 99999-9999',
-        password: 'SecurePass123!',
+        password: process.env.TEST_USER_PASSWORD || 'SecurePass123!',
         clinicId: testClinic._id.toString(),
         birthDate: '1990-01-01',
         gender: 'male'
@@ -63,7 +63,7 @@ describe('Patient Auth Routes Integration', () => {
       const registrationData = {
         patientId: existingPatient._id.toString(),
         email: 'maria.portal@example.com',
-        password: 'SecurePass123!',
+        password: process.env.TEST_USER_PASSWORD || 'SecurePass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -98,7 +98,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Test User',
         email: 'duplicate@example.com',
         phone: '(11) 99999-9999',
-        password: 'SecurePass123!',
+        password: process.env.TEST_USER_PASSWORD || 'SecurePass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -127,7 +127,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Login Test',
         email: 'login@example.com',
         phone: '(11) 99999-9999',
-        password: 'LoginPass123!',
+        password: process.env.TEST_USER_PASSWORD || 'LoginPass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -141,7 +141,7 @@ describe('Patient Auth Routes Integration', () => {
     it('should login with correct credentials', async () => {
       const loginData = {
         email: 'login@example.com',
-        password: 'LoginPass123!'
+        password: process.env.TEST_USER_PASSWORD || 'LoginPass123!'
       };
 
       const response = await request(app)
@@ -193,7 +193,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Refresh Test',
         email: 'refresh@example.com',
         phone: '(11) 99999-9999',
-        password: 'RefreshPass123!',
+        password: process.env.TEST_USER_PASSWORD || 'RefreshPass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -239,7 +239,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Me Test',
         email: 'me@example.com',
         phone: '(11) 99999-9999',
-        password: 'MePass123!',
+        password: process.env.TEST_USER_PASSWORD || 'MePass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -282,7 +282,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Profile Test',
         email: 'profile@example.com',
         phone: '(11) 99999-9999',
-        password: 'ProfilePass123!',
+        password: process.env.TEST_USER_PASSWORD || 'ProfilePass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -339,7 +339,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Password Test',
         email: 'password@example.com',
         phone: '(11) 99999-9999',
-        password: 'OldPass123!',
+        password: process.env.TEST_OLD_PASSWORD || 'OldPass123!',
         clinicId: testClinic._id.toString()
       };
 
@@ -355,8 +355,8 @@ describe('Patient Auth Routes Integration', () => {
 
     it('should change password successfully', async () => {
       const changePasswordData = {
-        currentPassword: 'OldPass123!',
-        newPassword: 'NewPass123!'
+        currentPassword: process.env.TEST_OLD_PASSWORD || 'OldPass123!',
+        newPassword: process.env.TEST_NEW_PASSWORD || 'NewPass123!'
       };
 
       const response = await request(app)
@@ -371,7 +371,7 @@ describe('Patient Auth Routes Integration', () => {
 
     it('should return 400 for weak new password', async () => {
       const changePasswordData = {
-        currentPassword: 'OldPass123!',
+        currentPassword: process.env.TEST_OLD_PASSWORD || 'OldPass123!',
         newPassword: 'weak'
       };
 
@@ -395,7 +395,7 @@ describe('Patient Auth Routes Integration', () => {
         name: 'Logout Test',
         email: 'logout@example.com',
         phone: '(11) 99999-9999',
-        password: 'LogoutPass123!',
+        password: process.env.TEST_USER_PASSWORD || 'LogoutPass123!',
         clinicId: testClinic._id.toString()
       };
 
