@@ -252,12 +252,27 @@ class AppointmentService {
     }
   }
 
-  async checkAvailability(providerId: string, startDate: Date, endDate: Date, clinicId: string): Promise<Array<{ start: Date; end: Date }>> {
+  async checkAvailability(providerId: string, startDate: Date, endDate: Date, clinicId: string): Promise<boolean> {
     try {
-      // This is a mock implementation, real implementation would check provider's schedule and existing appointments
-      return [
-        { start: new Date(startDate), end: new Date(endDate) }
-      ];
+      const overlapping = await AppointmentModel.findOne({
+        provider: providerId,
+        clinic: clinicId,
+        status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
+        $or: [
+          {
+            scheduledStart: { $lt: endDate, $gte: startDate }
+          },
+          {
+            scheduledEnd: { $gt: startDate, $lte: endDate }
+          },
+          {
+            scheduledStart: { $lte: startDate },
+            scheduledEnd: { $gte: endDate }
+          }
+        ]
+      });
+
+      return !overlapping;
     } catch (error) {
       if (error instanceof Error) {
         throw error;

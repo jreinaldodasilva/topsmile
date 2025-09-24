@@ -15,11 +15,28 @@ describe('AppointmentService', () => {
   beforeEach(async () => {
     testClinic = await createTestClinic();
     testPatient = await createTestPatient({ clinic: testClinic._id });
-    testProvider = await createTestUser({ 
+    const testUser = await createTestUser({ 
       role: 'dentist', 
       clinic: testClinic._id,
       specialty: 'General Dentistry'
     });
+    testProvider = await new Provider({
+      clinic: testClinic._id,
+      user: testUser._id,
+      name: testUser.name,
+      email: testUser.email,
+      specialties: ['general_dentistry'],
+      isActive: true,
+      workingHours: {
+        monday: { start: '08:00', end: '18:00', isWorking: true },
+        tuesday: { start: '08:00', end: '18:00', isWorking: true },
+        wednesday: { start: '08:00', end: '18:00', isWorking: true },
+        thursday: { start: '08:00', end: '18:00', isWorking: true },
+        friday: { start: '08:00', end: '18:00', isWorking: true },
+        saturday: { start: '08:00', end: '12:00', isWorking: false },
+        sunday: { start: '08:00', end: '12:00', isWorking: false }
+      }
+    }).save();
     testAppointmentType = await new AppointmentType({
       clinic: testClinic._id,
       name: 'Consulta',
@@ -224,7 +241,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
@@ -234,7 +251,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 48 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 48 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Limpeza',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
@@ -248,8 +265,8 @@ describe('AppointmentService', () => {
       );
 
       expect(appointments).toHaveLength(2);
-      expect(appointments[0].patient.toString()).toBe(testPatient._id.toString());
-      expect(appointments[1].patient.toString()).toBe(testPatient._id.toString());
+      expect((appointments[0].patient as any)._id.toString()).toBe(testPatient._id.toString());
+      expect((appointments[1].patient as any)._id.toString()).toBe(testPatient._id.toString());
     });
 
     it('should filter appointments by status', async () => {
@@ -272,7 +289,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
@@ -286,7 +303,8 @@ describe('AppointmentService', () => {
       );
 
       expect(appointments).toHaveLength(1);
-      expect(appointments[0].provider.toString()).toBe(testProvider._id.toString());
+      expect(appointments[0].provider).toBeDefined();
+      expect((appointments[0].provider as any)._id.toString()).toBe(testProvider._id.toString());
     });
   });
 
@@ -316,7 +334,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: startTime,
         scheduledEnd: endTime,
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       });
 
