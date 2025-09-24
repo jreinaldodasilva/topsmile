@@ -1,5 +1,6 @@
 import request from 'supertest';
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import { createTestClinic } from '../testHelpers';
 import { Patient } from '../../src/models/Patient';
 import { PatientUser } from '../../src/models/PatientUser';
@@ -9,6 +10,10 @@ import patientAuthRoutes from '../../src/routes/patientAuth';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Disable rate limiting for tests
+process.env.NODE_ENV = 'test';
 
 // Use real patient auth routes
 app.use('/api/patient-auth', patientAuthRoutes);
@@ -23,13 +28,13 @@ describe('Patient Auth Routes Integration', () => {
   describe('POST /api/patient-auth/register', () => {
     it('should register a new patient user successfully', async () => {
       const registrationData = {
-        name: 'João Silva',
+        firstName: 'João',
+        lastName: 'Silva',
         email: 'joao@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'SecurePass123!',
         clinicId: testClinic._id.toString(),
-        birthDate: '1990-01-01',
-        gender: 'male'
+        dateOfBirth: '1990-01-01'
       };
 
       const response = await request(app)
@@ -52,11 +57,14 @@ describe('Patient Auth Routes Integration', () => {
     it('should register with existing patient ID', async () => {
       // Create existing patient
       const existingPatient = new Patient({
-        name: 'Maria Santos',
+        firstName: 'Maria',
+        lastName: 'Santos',
         email: 'maria@example.com',
-        phone: '(11) 88888-8888',
+        phone: '11888888888',
         clinic: testClinic._id,
-        status: 'active'
+        status: 'active',
+        address: { zipCode: '00000-000' },
+        medicalHistory: { allergies: [], medications: [], conditions: [], notes: '' }
       });
       await existingPatient.save();
 
@@ -73,12 +81,13 @@ describe('Patient Auth Routes Integration', () => {
         .expect(201);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.patient._id).toBe(existingPatient._id.toString());
+      expect(response.body.data.patient.id).toBe(existingPatient._id.toString());
     });
 
     it('should return 400 for invalid data', async () => {
       const invalidData = {
-        name: '',
+        firstName: '',
+        lastName: '',
         email: 'invalid-email',
         password: '123',
         clinicId: 'invalid-id'
@@ -95,9 +104,10 @@ describe('Patient Auth Routes Integration', () => {
 
     it('should return 400 for duplicate email', async () => {
       const registrationData = {
-        name: 'Test User',
+        firstName: 'Test',
+        lastName: 'User',
         email: 'duplicate@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'SecurePass123!',
         clinicId: testClinic._id.toString()
       };
@@ -124,9 +134,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Login Test',
+        firstName: 'Login',
+        lastName: 'Test',
         email: 'login@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'LoginPass123!',
         clinicId: testClinic._id.toString()
       };
@@ -190,9 +201,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Refresh Test',
+        firstName: 'Refresh',
+        lastName: 'Test',
         email: 'refresh@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'RefreshPass123!',
         clinicId: testClinic._id.toString()
       };
@@ -236,9 +248,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Me Test',
+        firstName: 'Me',
+        lastName: 'Test',
         email: 'me@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'MePass123!',
         clinicId: testClinic._id.toString()
       };
@@ -279,9 +292,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Profile Test',
+        firstName: 'Profile',
+        lastName: 'Test',
         email: 'profile@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'ProfilePass123!',
         clinicId: testClinic._id.toString()
       };
@@ -298,9 +312,10 @@ describe('Patient Auth Routes Integration', () => {
 
     it('should update patient profile successfully', async () => {
       const updateData = {
-        name: 'Updated Name',
-        phone: '(11) 88888-8888',
-        birthDate: '1985-05-15'
+        firstName: 'Updated',
+        lastName: 'Name',
+        phone: '11888888888',
+        dateOfBirth: '1985-05-15'
       };
 
       const response = await request(app)
@@ -310,13 +325,16 @@ describe('Patient Auth Routes Integration', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.name).toBe(updateData.name);
-      expect(response.body.data.phone).toBe(updateData.phone);
+      expect(response.body.data.firstName).toBe(updateData.firstName);
+      expect(response.body.data.lastName).toBe(updateData.lastName);
+      // Phone gets formatted by the model, so check for formatted version
+      expect(response.body.data.phone).toBe('(11) 88888-8888');
     });
 
     it('should return 400 for invalid data', async () => {
       const invalidData = {
-        name: '', // Empty name
+        firstName: '', // Empty name
+        lastName: '',
         phone: 'invalid-phone'
       };
 
@@ -336,9 +354,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Password Test',
+        firstName: 'Password',
+        lastName: 'Test',
         email: 'password@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_OLD_PASSWORD || 'OldPass123!',
         clinicId: testClinic._id.toString()
       };
@@ -392,9 +411,10 @@ describe('Patient Auth Routes Integration', () => {
 
     beforeEach(async () => {
       const registrationData = {
-        name: 'Logout Test',
+        firstName: 'Logout',
+        lastName: 'Test',
         email: 'logout@example.com',
-        phone: '(11) 99999-9999',
+        phone: '11999999999',
         password: process.env.TEST_USER_PASSWORD || 'LogoutPass123!',
         clinicId: testClinic._id.toString()
       };
@@ -423,8 +443,9 @@ describe('Patient Auth Routes Integration', () => {
       
       // Check cookies are cleared
       const cookies = response.headers['set-cookie'] as unknown as string[];
+      expect(cookies).toBeDefined();
       expect(cookies.some((cookie: string) => 
-        cookie.includes('patientAccessToken') && cookie.includes('Max-Age=0')
+        cookie.includes('patientAccessToken') && (cookie.includes('Max-Age=0') || cookie.includes('Expires=Thu, 01 Jan 1970'))
       )).toBe(true);
     });
   });

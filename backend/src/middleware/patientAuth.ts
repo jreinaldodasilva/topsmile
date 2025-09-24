@@ -28,23 +28,18 @@ export const authenticatePatient = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const authHeader = req.headers.authorization;
+    // Read token from cookies instead of Authorization header
+    const token = req.cookies?.patientAccessToken;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token || typeof token !== 'string') {
       throw new UnauthorizedError('Token de acesso não fornecido');
     }
 
-    const token = authHeader.substring(7);
-
-    if (!token || typeof token !== 'string') {
-      throw new UnauthorizedError('Token inválido');
-    }
-
     try {
-      // IMPROVED: Proper JWT verification
-      const jwtSecret = process.env.JWT_SECRET || process.env.PATIENT_JWT_SECRET;
+      // Use patient-specific JWT secret
+      const jwtSecret = process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET;
       if (!jwtSecret) {
-        console.error('JWT_SECRET not configured for patient authentication');
+        console.error('PATIENT_JWT_SECRET not configured for patient authentication');
         throw new Error('Server configuration error');
       }
 
@@ -67,11 +62,11 @@ export const authenticatePatient = async (
         throw new UnauthorizedError('Token com dados incompletos');
       }
 
-      // IMPROVED: Single database query with population
+      // Single database query with population
       const patientUser = await PatientUser.findById(decoded.patientUserId)
         .populate({
           path: 'patient',
-          select: 'name email phone clinic birthDate gender address emergencyContact medicalHistory status',
+          select: 'firstName lastName email phone clinic dateOfBirth address emergencyContact medicalHistory status',
           populate: {
             path: 'clinic',
             select: 'name address phone email'
@@ -90,8 +85,9 @@ export const authenticatePatient = async (
         throw new UnauthorizedError('Dados do paciente não encontrados');
       }
 
-      // IMPROVED: Check if patient is still active
-      if ((patientUser.patient as any).status !== 'active') {
+      // Check if patient is still active
+      const patient = patientUser.patient as any;
+      if (patient && patient.status !== 'active') {
         throw new UnauthorizedError('Cadastro de paciente inativo');
       }
 

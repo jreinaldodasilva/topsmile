@@ -14,14 +14,15 @@ import {
 
 export interface PatientRegistrationData {
   patientId?: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string; // Legacy support
   email: string;
-  phone: string;
+  phone?: string;
   password: string;
-  clinicId: string;
+  clinicId?: string;
   dateOfBirth?: Date;
-  gender?: 'male' | 'female' | 'other';
+  birthDate?: string; // Legacy support
 }
 
 export interface PatientLoginData {
@@ -145,9 +146,19 @@ class PatientAuthService {
   // FIXED: Complete registration with patient creation or linking
   async register(data: PatientRegistrationData, deviceInfo?: DeviceInfo): Promise<PatientAuthResponse> {
     try {
-      // Validate input
-      if (!data.firstName || !data.lastName || !data.email || !data.password || !data.clinicId) {
-        throw new ValidationError('Nome, sobrenome, e-mail, senha e clínica são obrigatórios');
+      // Handle legacy name field
+      const firstName = data.firstName || (data.name ? data.name.split(' ')[0] : '');
+      const lastName = data.lastName || (data.name ? data.name.split(' ').slice(1).join(' ') : '');
+      const clinicId = data.clinicId;
+      const phone = data.phone;
+      
+      // Validate input - only require fields for new patient creation
+      if (!data.patientId && (!firstName || !lastName || !phone || !clinicId)) {
+        throw new ValidationError('Nome, sobrenome, telefone e clínica são obrigatórios para novos pacientes');
+      }
+      
+      if (!data.email || !data.password) {
+        throw new ValidationError('E-mail e senha são obrigatórios');
       }
 
       if (data.password.length < 8) {
@@ -183,14 +194,14 @@ class PatientAuthService {
         }
         patient = existingPatient;
       } else {
-        // FIXED: Create new patient record
+        // Create new patient record
         const newPatientModel = new PatientModel({
-          firstName: data.firstName,
-          lastName: data.lastName,
+          firstName,
+          lastName,
           email,
-          phone: data.phone,
-          dateOfBirth: data.dateOfBirth,
-          clinic: data.clinicId,
+          phone,
+          dateOfBirth: data.dateOfBirth || (data.birthDate ? new Date(data.birthDate) : undefined),
+          clinic: clinicId,
           address: {
             zipCode: '00000-000' // Minimal required address
           },
@@ -426,7 +437,7 @@ class PatientAuthService {
     }
   }
 
-  async updateProfile(patientId: string, updates: { firstName?: string; lastName?: string; phone?: string; dateOfBirth?: Date }): Promise<IPatient> {
+  async updateProfile(patientId: string, updates: { firstName?: string; lastName?: string; name?: string; phone?: string; dateOfBirth?: Date; birthDate?: string }): Promise<IPatient> {
     try {
       const patient = await PatientModel.findById(patientId);
 
@@ -434,6 +445,12 @@ class PatientAuthService {
         throw new NotFoundError('Paciente não encontrado');
       }
 
+      // Handle legacy name field
+      if (updates.name) {
+        const nameParts = updates.name.split(' ');
+        patient.firstName = nameParts[0];
+        patient.lastName = nameParts.slice(1).join(' ');
+      }
       if (updates.firstName) {
         patient.firstName = updates.firstName;
       }
@@ -445,6 +462,9 @@ class PatientAuthService {
       }
       if (updates.dateOfBirth) {
         patient.dateOfBirth = updates.dateOfBirth;
+      }
+      if (updates.birthDate) {
+        patient.dateOfBirth = new Date(updates.birthDate);
       }
 
       return await patient.save();

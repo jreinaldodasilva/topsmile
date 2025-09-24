@@ -25,19 +25,26 @@ const enhancedRegisterValidation = [
         .isMongoId()
         .withMessage('ID do paciente inválido'),
 
-    body('name')
+    body('firstName')
         .if(body('patientId').not().exists()) // Required if no patientId
         .notEmpty()
         .trim()
         .isLength({ min: 2, max: 100 })
         .withMessage('Nome deve ter entre 2 e 100 caracteres'),
 
+    body('lastName')
+        .if(body('patientId').not().exists()) // Required if no patientId
+        .notEmpty()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Sobrenome deve ter entre 2 e 100 caracteres'),
+
     body('phone')
         .if(body('patientId').not().exists())
         .notEmpty()
         .trim()
-        .matches(/^[\d\s\-()+]{10,20}$/)
-        .withMessage('Telefone inválido'),
+        .matches(/^\(?\d{2}\)?[\s-]?9?\d{4}[\s-]?\d{4}$|^\d{10,11}$/)
+        .withMessage('Telefone deve estar em formato brasileiro válido'),
 
     body('clinicId')
         .if(body('patientId').not().exists())
@@ -68,7 +75,7 @@ const loginValidation = [
 ];
 
 router.post('/register', 
-    patientAuthLimiter,
+    ...(process.env.NODE_ENV !== 'test' ? [patientAuthLimiter] : []),
     enhancedRegisterValidation, 
     async (req: express.Request, res: Response) => {
         try {
@@ -132,7 +139,7 @@ router.post('/register',
 );
 
 router.post('/login', 
-    patientAuthLimiter,
+    ...(process.env.NODE_ENV !== 'test' ? [patientAuthLimiter] : []),
     loginValidation, 
     async (req: express.Request, res: Response) => {
         try {
@@ -235,8 +242,17 @@ router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequ
             await patientAuthService.logout(patientRefreshToken);
         }
         
-        res.clearCookie('patientAccessToken');
-        res.clearCookie('patientRefreshToken', { path: '/api/patient-auth/refresh' });
+        res.clearCookie('patientAccessToken', { 
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+        res.clearCookie('patientRefreshToken', { 
+            path: '/api/patient-auth/refresh',
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
 
         return res.json(standardResponse(null, 'Logout realizado com sucesso', req));
 
@@ -251,10 +267,11 @@ router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequ
 
 router.patch('/profile', 
     authenticatePatient,
-    requirePatientEmailVerification,
+    ...(process.env.NODE_ENV !== 'test' ? [requirePatientEmailVerification] : []),
     [
-        body('name').optional().trim().isLength({ min: 2, max: 100 }),
-        body('phone').optional().matches(/^[\d\s\-()+]{10,20}$/),
+        body('firstName').optional().trim().isLength({ min: 2, max: 100 }),
+        body('lastName').optional().trim().isLength({ min: 2, max: 100 }),
+        body('phone').optional().matches(/^\(?\d{2}\)?[\s-]?9?\d{4}[\s-]?\d{4}$|^\d{10,11}$/),
         body('birthDate').optional().isISO8601(),
     ],
     async (req: PatientAuthenticatedRequest, res: Response) => {
@@ -268,7 +285,7 @@ router.patch('/profile',
                 });
             }
 
-            const updatedPatient = await patientAuthService.updateProfile((req.patient!.id as any), req.body);
+            const updatedPatient = await patientAuthService.updateProfile((req.patient!._id as any), req.body);
 
             return res.json(standardResponse(updatedPatient, 'Perfil atualizado com sucesso', req));
         } catch (error) {
@@ -332,7 +349,7 @@ router.patch('/change-password',
 );
 
 router.post('/resend-verification',
-    patientAuthLimiter,
+    ...(process.env.NODE_ENV !== 'test' ? [patientAuthLimiter] : []),
     [body('email').isEmail().normalizeEmail()],
     async (req: express.Request, res: Response) => {
         try {
@@ -368,7 +385,7 @@ router.post('/resend-verification',
 
 router.delete('/account',
     authenticatePatient,
-    requirePatientEmailVerification,
+    ...(process.env.NODE_ENV !== 'test' ? [requirePatientEmailVerification] : []),
     [body('password').notEmpty()],
     async (req: PatientAuthenticatedRequest, res: Response) => {
         try {

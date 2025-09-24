@@ -13,6 +13,11 @@ beforeAll(async () => {
   if (!process.env.JWT_SECRET) {
     process.env.JWT_SECRET = 'test-jwt-secret-key';
   }
+  
+  // Set PATIENT_JWT_SECRET for patient auth tests
+  if (!process.env.PATIENT_JWT_SECRET) {
+    process.env.PATIENT_JWT_SECRET = 'test-patient-jwt-secret-key';
+  }
 
   // Start MongoDB Memory Server for test isolation
   mongoServer = await MongoMemoryServer.create();

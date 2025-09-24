@@ -50,12 +50,14 @@ const validateBrazilianPhone = (phone: string | undefined): boolean => {
   // Brazilian phone formats:
   // Mobile: (XX) 9XXXX-XXXX (11 digits, starts with 9 after area code)
   // Landline: (XX) XXXX-XXXX (10 digits)
-  const isMobile = cleanPhone.length === 11 && cleanPhone.startsWith('9', 2); // Check for 9 after area code
+  // Also accept raw 10 or 11 digit numbers
+  const isMobile = cleanPhone.length === 11;
   const isLandline = cleanPhone.length === 10;
 
-  return (isMobile || isLandline) &&
-         parseInt(cleanPhone.substring(0, 2)) >= 11 &&
-         parseInt(cleanPhone.substring(0, 2)) <= 99;
+  if (!(isMobile || isLandline)) return false;
+  
+  const areaCode = parseInt(cleanPhone.substring(0, 2));
+  return areaCode >= 11 && areaCode <= 99;
 };
 
 const validateBrazilianZipCode = (zipCode: string | undefined): boolean => {
