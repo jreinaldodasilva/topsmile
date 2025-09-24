@@ -55,6 +55,10 @@ class AppointmentService {
         throw new Error('Todos os campos obrigatórios devem ser preenchidos');
       }
 
+      if (new Date(data.scheduledStart) < new Date()) {
+        throw new Error('Não é possível agendar no passado');
+      }
+
       // Validate clinic ID
       if (!mongoose.Types.ObjectId.isValid(data.clinic)) {
         throw new Error('ID da clínica inválido');
@@ -163,6 +167,10 @@ class AppointmentService {
 
       if (!appointment) {
         return null;
+      }
+
+      if (appointment.status === 'cancelled') {
+        throw new Error('Não é possível alterar um agendamento cancelado');
       }
 
       // If rescheduling, check for conflicts

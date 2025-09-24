@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import './customMatchers';
+import '../src/models/Provider';
 import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
 import redisClient from '../src/config/redis';
 

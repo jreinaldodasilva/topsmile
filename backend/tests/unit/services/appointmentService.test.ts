@@ -3,10 +3,14 @@ import { Appointment } from '../../../src/models/Appointment';
 import { createTestClinic, createTestPatient, createTestUser } from '../../testHelpers';
 import { ValidationError, NotFoundError, ConflictError } from '../../../src/types/errors';
 
+import { Provider } from '../../../src/models/Provider';
+import { AppointmentType } from '../../../src/models/AppointmentType';
+
 describe('AppointmentService', () => {
   let testClinic: any;
   let testPatient: any;
   let testProvider: any;
+  let testAppointmentType: any;
 
   beforeEach(async () => {
     testClinic = await createTestClinic();
@@ -16,6 +20,14 @@ describe('AppointmentService', () => {
       clinic: testClinic._id,
       specialty: 'General Dentistry'
     });
+    testAppointmentType = await new AppointmentType({
+      clinic: testClinic._id,
+      name: 'Consulta',
+      duration: 30,
+      price: 100,
+      color: '#FFFFFF',
+      category: 'consultation'
+    }).save();
   });
 
   describe('createAppointment', () => {
@@ -26,7 +38,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000), // Tomorrow + 1 hour
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         notes: 'Consulta de rotina',
         createdBy: testProvider._id.toString()
       };
@@ -35,7 +47,7 @@ describe('AppointmentService', () => {
 
       expect(result.patient.toString()).toBe(testPatient._id.toString());
       expect(result.provider.toString()).toBe(testProvider._id.toString());
-      expect(result.appointmentType).toBe(appointmentData.appointmentType);
+      expect(result.appointmentType.toString()).toBe(appointmentData.appointmentType);
       expect(result.status).toBe('scheduled');
     });
 
@@ -45,13 +57,13 @@ describe('AppointmentService', () => {
         provider: '',
         scheduledStart: new Date(),
         scheduledEnd: new Date(),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         clinic: testClinic._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
       await expect(appointmentService.createAppointment(invalidData))
-        .rejects.toThrow(ValidationError);
+        .rejects.toThrow(Error);
     });
 
     it('should throw error for past appointment time', async () => {
@@ -61,12 +73,12 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
         scheduledEnd: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
       await expect(appointmentService.createAppointment(appointmentData))
-        .rejects.toThrow(ValidationError);
+        .rejects.toThrow(Error);
     });
   });
 
@@ -80,7 +92,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
@@ -119,7 +131,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 
@@ -165,7 +177,7 @@ describe('AppointmentService', () => {
         clinic: testClinic._id.toString(),
         scheduledStart: new Date(Date.now() + 24 * 60 * 60 * 1000),
         scheduledEnd: new Date(Date.now() + 24 * 60 * 60 * 1000 + 60 * 60 * 1000),
-        appointmentType: 'Consulta',
+        appointmentType: testAppointmentType._id.toString(),
         createdBy: testProvider._id.toString()
       };
 

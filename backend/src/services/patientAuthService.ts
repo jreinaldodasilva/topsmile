@@ -93,7 +93,9 @@ class PatientAuthService {
     };
 
     return jwt.sign(payload, this.getPatientJwtSecret(), {
-      expiresIn: this.ACCESS_TOKEN_EXPIRES
+      expiresIn: this.ACCESS_TOKEN_EXPIRES,
+      issuer: 'topsmile-patient-portal',
+      audience: 'topsmile-patients'
     } as SignOptions);
   }
 

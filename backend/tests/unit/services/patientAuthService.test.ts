@@ -44,7 +44,7 @@ describe('PatientAuthService', () => {
         firstName: 'Maria',
         lastName: 'Santos',
         email: 'maria@example.com',
-        phone: '(11) 88888-8888',
+        phone: '(11) 98888-8888',
         clinic: testClinic._id,
         address: { zipCode: '01234-567' },
         status: 'active'
@@ -56,7 +56,7 @@ describe('PatientAuthService', () => {
         firstName: 'Maria',
         lastName: 'Santos',
         email: 'maria.portal@example.com',
-        phone: '(11) 88888-8888',
+        phone: '(11) 98888-8888',
         password: 'SecurePass123!',
         clinicId: testClinic._id.toString()
       };
@@ -237,7 +237,7 @@ describe('PatientAuthService', () => {
       const updates = {
         firstName: 'Updated',
         lastName: 'Name',
-        phone: '(11) 88888-8888',
+        phone: '(11) 98888-8888',
         dateOfBirth: new Date('1985-05-15')
       };
 
