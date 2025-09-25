@@ -1,183 +1,113 @@
-# Failed Tests Summary
+# Failed Tests Report
 
-Total Failed Tests: 22
+This document lists the failed tests from the JUnit XML report (`backend/reports/junit-backend.xml`), including the test names and their failure causes.
 
-## Patient Portal Integration Tests (17 failures)
+## Summary
+- Total tests: 265
+- Total failures: 17
+- Total errors: 0
 
-- **Test:** should get patient user info with valid token
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+All failures are from the "Patient Portal Integration Tests" test suite.
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:94:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+## Failed Tests
 
-- **Test:** should get upcoming appointments for patient
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 1. should get patient user info with valid token
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:94:28
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:104:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 2. should get upcoming appointments for patient
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:104:28
 
-- **Test:** should logout patient user successfully
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 3. should logout patient user successfully
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:124:28
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:124:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 4. should handle appointment booking with valid data
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 201  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:158:28
 
-- **Test:** should handle appointment booking with valid data
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 5. should handle appointment cancellation
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:170:31
 
-  Expected: 201
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:158:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 6. should handle patient profile updates
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:203:28
 
-- **Test:** should handle appointment cancellation
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 7. should handle password reset request
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 404  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:211:28
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:170:31)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 8. should handle rate limiting on auth endpoints
+**Cause:** expect(received).toBeGreaterThan(expected)  
+Expected: > 0  
+Received: 0  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:233:41
 
-- **Test:** should handle patient profile updates
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 9. should handle concurrent session management
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:254:30
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:203:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 10. should handle appointment rescheduling
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:280:31
 
-- **Test:** should handle password reset request
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 11. should handle patient medical history retrieval
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:304:28
 
-  Expected: 200
-  Received: 404
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:211:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 12. should handle appointment type listing
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:313:28
 
-- **Test:** should handle rate limiting on auth endpoints
-  **Failure:** Error: expect(received).toBeGreaterThan(expected)
+### 13. should handle provider availability checking
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 200  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:330:28
 
-  Expected: > 0
-  Received:   0
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:233:41)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 14. should handle error responses gracefully
+**Cause:** expect(received).toBe(expected) // Object.is equality  
+Expected: 404  
+Received: 401  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:339:28
 
-- **Test:** should handle concurrent session management
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
+### 15. should handle CORS headers properly
+**Cause:** expect(received).toBeDefined()  
+Received: undefined  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:351:56
 
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:254:30)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 16. should handle large request payloads
+**Cause:** expect(received).toContain(expected) // indexOf  
+Expected value: 401  
+Received array: [200, 201, 400, 413]  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:372:34
 
-- **Test:** should handle appointment rescheduling
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
-
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:280:31)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle patient medical history retrieval
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
-
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:304:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle appointment type listing
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
-
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:313:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle provider availability checking
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
-
-  Expected: 200
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:330:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle error responses gracefully
-  **Failure:** Error: expect(received).toBe(expected) // Object.is equality
-
-  Expected: 404
-  Received: 401
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:339:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle CORS headers properly
-  **Failure:** Error: expect(received).toBeDefined()
-
-  Received: undefined
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:351:56)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle large request payloads
-  **Failure:** Error: expect(received).toContain(expected) // indexOf
-
-  Expected value: 401
-  Received array: [200, 201, 400, 413]
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:372:34)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** should handle database connection errors gracefully
-  **Failure:** Error: expect(received).toContain(expected) // indexOf
-
-  Expected value: 401
-  Received array: [200, 500]
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:384:24)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-## Patient Auth Middleware (5 failures)
-
-- **Test:** authenticatePatient should authenticate valid patient token from cookies
-  **Failure:** Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-  Expected: "valid-token"
-  Number of calls: 0
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/unit/middleware/patientAuth.test.ts:61:52)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** authenticatePatient should authenticate valid patient token from Authorization header
-  **Failure:** Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-  Expected: "valid-token"
-  Number of calls: 0
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/unit/middleware/patientAuth.test.ts:98:56)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** authenticatePatient should return 401 for invalid token
-  **Failure:** Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-  Expected: "patientAccessToken"
-  Number of calls: 0
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/unit/middleware/patientAuth.test.ts:128:31)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** authenticatePatient should return 401 for inactive patient user
-  **Failure:** Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-  Expected: ObjectContaining {"message": "Conta de paciente inativa", "success": false}
-  Received: {"code": "PATIENT_AUTH_FAILED", "message": "Token inválido", "success": false}
-  Number of calls: 1
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/unit/middleware/patientAuth.test.ts:156:28)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
-
-- **Test:** requirePatientEmailVerification should return 401 for missing patient user
-  **Failure:** Error: expect(jest.fn()).toHaveBeenCalledWith(...expected)
-
-  Expected: 401
-  Received: 500
-  at Object.<anonymous> (/home/rebelde/development/topsmile/backend/tests/unit/middleware/patientAuth.test.ts:199:26)
-  at processTicksAndRejections (node:internal/process/task_queues:105:5)
+### 17. should handle database connection errors gracefully
+**Cause:** expect(received).toContain(expected) // indexOf  
+Expected value: 401  
+Received array: [200, 500]  
+Location: /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:384:24
