@@ -28,16 +28,8 @@ export const authenticatePatient = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    // Read token from cookies or Authorization header (for tests)
-    let token = req.cookies?.patientAccessToken;
-    
-    // In test environment, also check Authorization header
-    if (!token && process.env.NODE_ENV === 'test') {
-      const authHeader = req.headers.authorization;
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        token = authHeader.substring(7);
-      }
-    }
+    // Read token from cookies instead of Authorization header
+    const token = req.cookies?.patientAccessToken;
 
     if (!token || typeof token !== 'string') {
       throw new UnauthorizedError('Token de acesso não fornecido');

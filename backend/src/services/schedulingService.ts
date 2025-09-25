@@ -693,8 +693,7 @@ class SchedulingService {
         startDate: Date,
         endDate: Date,
         providerId?: string,
-        status?: string,
-        patientId?: string
+        status?: string
     ): Promise<IAppointment[]> {
         try {
             const query: any = {
@@ -710,20 +709,11 @@ class SchedulingService {
             }
 
             if (status) {
-                // Handle comma-separated status values
-                if (status.includes(',')) {
-                    query.status = { $in: status.split(',').map(s => s.trim()) };
-                } else {
-                    query.status = status;
-                }
-            }
-
-            if (patientId) {
-                query.patient = patientId;
+                query.status = status;
             }
 
             return await AppointmentModel.find(query)
-                .populate('patient', 'firstName lastName phone email')
+                .populate('patient', 'name phone email')
                 .populate('provider', 'name specialties')
                 .populate('appointmentType', 'name duration color category')
                 .sort({ scheduledStart: 1 })

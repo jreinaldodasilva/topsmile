@@ -1,7 +1,6 @@
 // backend/src/routes/patients.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
-import { authenticatePatient, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
 import { isAppError } from '../types/errors';
@@ -10,47 +9,8 @@ import type { Patient } from '@topsmile/types';
 
 const router: express.Router = express.Router();
 
-// Middleware to handle both staff and patient authentication
-const authenticateAny = async (req: any, res: any, next: any) => {
-  // Try patient authentication first (since this is primarily for patient portal)
-  try {
-    await new Promise<void>((resolve, reject) => {
-      authenticatePatient(req, res, (error?: any) => {
-        if (error || !req.patientUser) {
-          reject(error || new Error('Patient auth failed'));
-        } else {
-          resolve();
-        }
-      });
-    });
-    // Patient auth succeeded
-    return next();
-  } catch (patientError) {
-    // Patient auth failed, try staff auth
-    try {
-      await new Promise<void>((resolve, reject) => {
-        authenticate(req, res, (error?: any) => {
-          if (error || !req.user) {
-            reject(error || new Error('Staff auth failed'));
-          } else {
-            resolve();
-          }
-        });
-      });
-      // Staff auth succeeded
-      return next();
-    } catch (staffError) {
-      // Both failed
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-    }
-  }
-};
-
-// All patient routes require authentication (staff or patient)
-router.use(authenticateAny);
+// All patient routes require authentication
+router.use(authenticate);
 
 // Validation rules for creating patients
 const createPatientValidation = [
@@ -657,34 +617,15 @@ router.get('/stats', async (req: Request, res: Response) => {
  */
 router.get('/:id', async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
-  const patientReq = req as PatientAuthenticatedRequest;
     try {
-        let clinicId: string;
-        let patientId = authReq.params.id!;
-        
-        if (patientReq.patientUser && patientReq.patient) {
-            // Patient user - can only access their own data
-            clinicId = (patientReq.patient.clinic as any).toString();
-            const requestedPatientId = patientId;
-            const ownPatientId = (patientReq.patient._id as any).toString();
-            
-            if (requestedPatientId !== ownPatientId) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'Acesso negado'
-                });
-            }
-        } else if (authReq.user?.clinicId) {
-            // Staff user - can access any patient in their clinic
-            clinicId = authReq.user.clinicId;
-        } else {
-            return res.status(401).json({
+        if (!authReq.user?.clinicId) {
+            return res.status(400).json({
                 success: false,
-                message: 'Authentication required'
+                message: 'Clínica não identificada'
             });
         }
 
-        const patient = await patientService.getPatientById(patientId, clinicId);
+        const patient = await patientService.getPatientById(authReq.params.id!, authReq.user.clinicId);
 
         if (!patient) {
             return res.status(404).json({
