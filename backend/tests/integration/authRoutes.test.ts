@@ -21,6 +21,21 @@ app.use(express.json());
 // Use real auth routes
 app.use('/api/auth', authRoutes);
 
+// Add error handler middleware
+app.use((error: any, req: any, res: any, next: any) => {
+  if (error.statusCode) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message
+    });
+  }
+  
+  return res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
+});
+
 describe('Auth Routes Integration', () => {
   let testUser: any;
   let authToken: string;
@@ -84,7 +99,7 @@ describe('Auth Routes Integration', () => {
       const response = await request(app)
         .post('/api/auth/register')
         .send(userData)
-        .expect(400);
+        .expect(409);
 
       expect(response.body.success).toBe(false);
       expect(response.body.message).toBeDefined();

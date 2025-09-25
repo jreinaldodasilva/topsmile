@@ -261,6 +261,8 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
       success: true,
       data: {
         user,
+        accessToken,
+        refreshToken,
         expiresIn
       },
       meta: {
@@ -347,6 +349,8 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
       success: true,
       data: {
         user,
+        accessToken,
+        refreshToken,
         expiresIn
       },
       meta: {
@@ -510,7 +514,7 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
  */
 router.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
   try {
-    let { refreshToken } = req.cookies;
+    let { refreshToken } = req.cookies || {};
     if (!refreshToken && req.body.refreshToken) {
       refreshToken = req.body.refreshToken;
     }
@@ -540,6 +544,8 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
     return res.json({
       success: true,
       data: {
+        accessToken,
+        refreshToken: newRefreshToken,
         expiresIn
       },
       meta: {
@@ -580,7 +586,7 @@ router.post('/refresh', async (req: Request, res: Response, next: NextFunction) 
 router.post('/logout', authenticate, async (req: Request, res: Response, next: NextFunction) => {
   const authReq = req as AuthenticatedRequest;
   try {
-    let { refreshToken } = authReq.cookies;
+    let { refreshToken } = authReq.cookies || {};
     if (!refreshToken && authReq.body.refreshToken) {
       refreshToken = authReq.body.refreshToken;
     }
