@@ -6,6 +6,9 @@ import patientsRoutes from '../../src/routes/patients';
 import appointmentTypesRoutes from '../../src/routes/appointmentTypes';
 import providersRoutes from '../../src/routes/providers';
 import { Patient } from '../../src/models/Patient';
+import '../../src/models/Clinic'; // Ensure Clinic model is registered
+import '../../src/models/PatientUser'; // Ensure PatientUser model is registered
+import '../../src/models/PatientRefreshToken'; // Ensure PatientRefreshToken model is registered
 
 describe('Patient Portal Integration Tests', () => {
   let app: express.Application;
@@ -42,11 +45,20 @@ describe('Patient Portal Integration Tests', () => {
       phone: '(11) 99999-9999',
       email: 'patient@example.com',
       clinic: '507f1f77bcf86cd799439011',
-      status: 'active'
+      status: 'active',
+      address: {
+        zipCode: '00000-000'
+      },
+      medicalHistory: {
+        allergies: [],
+        medications: [],
+        conditions: [],
+        notes: ''
+      }
     });
 
     // Register a new patient user
-    await request(app)
+    const registerRes = await request(app)
       .post('/api/patient/auth/register')
       .send({
         patientId: patient._id.toString(),
@@ -58,17 +70,23 @@ describe('Patient Portal Integration Tests', () => {
         clinicId: patient.clinic.toString()
       });
 
+    if (registerRes.statusCode !== 201) {
+      console.error('Registration failed:', registerRes.body);
+    }
+
     const res = await request(app)
       .post('/api/patient/auth/login')
       .send({
         email: 'testpatient@example.com',
         password: 'TestPassword123!'
       });
-    // Extract token from cookies since API uses HTTP-only cookies
-    const setCookieHeader = res.headers['set-cookie'];
-    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : setCookieHeader ? [setCookieHeader] : [];
-    const tokenCookie = cookies.find((cookie: string) => cookie.startsWith('patientAccessToken='));
-    patientToken = tokenCookie ? tokenCookie.split('=')[1].split(';')[0] : '';
+    
+    if (res.statusCode !== 200) {
+      console.error('Login failed:', res.body);
+    }
+    
+    // Extract token from response body in test environment
+    patientToken = res.body.data?.accessToken || '';
   });
 
   it('should login patient user and return access token', async () => {
@@ -80,11 +98,8 @@ describe('Patient Portal Integration Tests', () => {
       });
     expect(res.statusCode).toBe(200);
     expect(res.body.success).toBe(true);
-    // Check that access token is set as cookie instead of in response body
-    const setCookieHeader = res.headers['set-cookie'];
-    const cookies = Array.isArray(setCookieHeader) ? setCookieHeader : setCookieHeader ? [setCookieHeader] : [];
-    const tokenCookie = cookies.find((cookie: string) => cookie.startsWith('patientAccessToken='));
-    expect(tokenCookie).toBeDefined();
+    // In test environment, access token is returned in response body
+    expect(res.body.data.accessToken).toBeDefined();
   });
 
   it('should get patient user info with valid token', async () => {

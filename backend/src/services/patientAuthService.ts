@@ -4,6 +4,7 @@ import { PatientUser, IPatientUser } from '../models/PatientUser';
 import { Patient as IPatient } from '@topsmile/types';
 import { Patient as PatientModel } from '../models/Patient';
 import { PatientRefreshToken } from '../models/PatientRefreshToken';
+import { Clinic } from '../models/Clinic'; // Import Clinic model to ensure it's registered
 import { 
   ValidationError, 
   UnauthorizedError, 

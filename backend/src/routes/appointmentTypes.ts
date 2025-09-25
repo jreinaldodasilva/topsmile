@@ -1,6 +1,7 @@
 // backend/src/routes/appointmentTypes.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticatePatient, PatientAuthenticatedRequest } from '../middleware/patientAuth';
 import { appointmentTypeService } from '../services/appointmentTypeService';
 import { body, query, validationResult } from 'express-validator';
 import type { Appointment, AppointmentType } from '@topsmile/types';
@@ -8,8 +9,47 @@ import type { Appointment, AppointmentType } from '@topsmile/types';
 
 const router: express.Router = express.Router();
 
-// All appointment type routes require authentication
-router.use(authenticate);
+// Middleware to handle both staff and patient authentication
+const authenticateAny = async (req: any, res: any, next: any) => {
+  // Try patient authentication first (since this is primarily for patient portal)
+  try {
+    await new Promise<void>((resolve, reject) => {
+      authenticatePatient(req, res, (error?: any) => {
+        if (error || !req.patientUser) {
+          reject(error || new Error('Patient auth failed'));
+        } else {
+          resolve();
+        }
+      });
+    });
+    // Patient auth succeeded
+    return next();
+  } catch (patientError) {
+    // Patient auth failed, try staff auth
+    try {
+      await new Promise<void>((resolve, reject) => {
+        authenticate(req, res, (error?: any) => {
+          if (error || !req.user) {
+            reject(error || new Error('Staff auth failed'));
+          } else {
+            resolve();
+          }
+        });
+      });
+      // Staff auth succeeded
+      return next();
+    } catch (staffError) {
+      // Both failed
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+  }
+};
+
+// All appointment type routes require authentication (staff or patient)
+router.use(authenticateAny);
 
 // Validation rules for creating appointment types
 const createAppointmentTypeValidation = [

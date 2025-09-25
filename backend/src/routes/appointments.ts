@@ -9,8 +9,47 @@ import { body, validationResult } from 'express-validator';
 
 const router: express.Router = express.Router();
 
-// All appointment routes require authentication
-router.use(authenticate);
+// Middleware to handle both staff and patient authentication
+const authenticateAny = async (req: any, res: any, next: any) => {
+  // Try patient authentication first (since this is primarily for patient portal)
+  try {
+    await new Promise<void>((resolve, reject) => {
+      authenticatePatient(req, res, (error?: any) => {
+        if (error || !req.patientUser) {
+          reject(error || new Error('Patient auth failed'));
+        } else {
+          resolve();
+        }
+      });
+    });
+    // Patient auth succeeded
+    return next();
+  } catch (patientError) {
+    // Patient auth failed, try staff auth
+    try {
+      await new Promise<void>((resolve, reject) => {
+        authenticate(req, res, (error?: any) => {
+          if (error || !req.user) {
+            reject(error || new Error('Staff auth failed'));
+          } else {
+            resolve();
+          }
+        });
+      });
+      // Staff auth succeeded
+      return next();
+    } catch (staffError) {
+      // Both failed
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+  }
+};
+
+// All appointment routes require authentication (staff or patient)
+router.use(authenticateAny);
 
 // Get provider availability
 /**
@@ -348,18 +387,40 @@ router.post("/book", bookingValidation, async (req: Request, res: Response) => {
  */
 router.get("/", async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
+  const patientReq = req as PatientAuthenticatedRequest;
   try {
-    const { startDate, endDate, providerId, status } = authReq.query;
+    const { startDate, endDate, providerId, status, patient } = authReq.query;
     
-    if (!startDate || !endDate) {
-      return res.status(400).json({
+    // For patient users, filter by their patient ID
+    let patientFilter: string | undefined;
+    let clinicId: string;
+    
+    if (patientReq.patientUser && patientReq.patient) {
+      // Patient user - can only see their own appointments
+      patientFilter = (patientReq.patient._id as any).toString();
+      clinicId = (patientReq.patient.clinic as any).toString();
+    } else if (authReq.user) {
+      // Staff user - can see all appointments in their clinic
+      patientFilter = patient as string;
+      clinicId = authReq.user.clinicId!;
+    } else {
+      return res.status(401).json({
         success: false,
-        error: 'startDate and endDate are required'
+        error: 'Authentication required'
       });
     }
 
-    const start = new Date(startDate as string);
-    const end = new Date(endDate as string);
+    // If no date range provided, use current month for patient users
+    let start: Date, end: Date;
+    if (startDate && endDate) {
+      start = new Date(startDate as string);
+      end = new Date(endDate as string);
+    } else {
+      // Default to current month
+      const now = new Date();
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    }
     
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return res.status(400).json({
@@ -369,11 +430,12 @@ router.get("/", async (req: Request, res: Response) => {
     }
 
     const appointments = await schedulingService.getAppointments(
-      authReq.user!.clinicId!,
+      clinicId,
       start,
       end,
       providerId as string,
-      status as string
+      status as string,
+      patientFilter
     );
 
     return res.json({

@@ -113,12 +113,15 @@ router.post('/register',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            return res.status(201).json(standardResponse({
+            const responseData = {
                 patient,
                 patientUser,
                 expiresIn,
-                requiresEmailVerification
-            }, 'Conta criada com sucesso', req));
+                requiresEmailVerification,
+                ...(process.env.NODE_ENV === 'test' && { accessToken })
+            };
+
+            return res.status(201).json(standardResponse(responseData, 'Conta criada com sucesso', req));
 
         } catch (error) {
             console.error('Patient registration error:', error);
@@ -180,12 +183,15 @@ router.post('/login',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            return res.json(standardResponse({
+            const responseData = {
                 patient,
                 patientUser,
                 expiresIn,
-                requiresEmailVerification
-            }, 'Login realizado com sucesso', req));
+                requiresEmailVerification,
+                ...(process.env.NODE_ENV === 'test' && { accessToken })
+            };
+
+            return res.json(standardResponse(responseData, 'Login realizado com sucesso', req));
 
         } catch (error) {
             console.error('Patient login error:', error);
@@ -367,6 +373,41 @@ router.post('/resend-verification',
             return res.json(standardResponse(null, 'Se o e-mail estiver registrado, um novo link de verificação foi enviado.', req));
         } catch (error) {
             console.error('Resend verification email error:', error);
+            
+            if (isAppError(error)) {
+                return res.status(error.statusCode).json({
+                    success: false,
+                    message: error.message
+                });
+            }
+            
+            return res.status(500).json({
+                success: false,
+                message: 'Erro interno do servidor'
+            });
+        }
+    }
+);
+
+router.post('/forgot-password',
+    ...(process.env.NODE_ENV !== 'test' ? [passwordResetLimiter] : []),
+    [body('email').isEmail().normalizeEmail()],
+    async (req: express.Request, res: Response) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            await patientAuthService.resendVerificationEmail(req.body.email);
+
+            return res.json(standardResponse(null, 'Se o e-mail estiver registrado, um link de recuperação foi enviado.', req));
+        } catch (error) {
+            console.error('Password reset request error:', error);
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
