@@ -103,7 +103,7 @@ export async function request<T = any>(
       const res = await fetch(url, config);
       return res;
     } catch (networkError) {
-      throw new Error('Network error - please check your connection');
+      throw new Error('Network request failed');
     }
   };
 

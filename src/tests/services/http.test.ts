@@ -117,7 +117,7 @@ describe('http service', () => {
         mockFetch.mockRejectedValueOnce(new TypeError('Failed to fetch'));
 
         await expect(request('/network-error')).rejects.toThrow(
-          'Unable to connect to server. Please check your internet connection.'
+          'Network request failed'
         );
       });
 

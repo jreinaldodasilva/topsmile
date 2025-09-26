@@ -1,11 +1,32 @@
 import { apiService } from '../../services/apiService';
 import type { User, Contact, Patient, Clinic } from '@topsmile/types';
 
+// Mock the http service
+jest.mock('../../services/http', () => ({
+  request: jest.fn()
+}));
+
+import { request } from '../../services/http';
+
 
 describe('apiService', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('auth methods', () => {
     describe('login', () => {
       it('should successfully login with valid credentials', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          data: {
+            user: { id: 'user123', name: 'Admin User', email: 'admin@topsmile.com', role: 'admin' },
+            accessToken: 'mock-access-token',
+            refreshToken: 'mock-refresh-token'
+          }
+        });
+
         const result = await apiService.auth.login(process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com', process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!');
 
         expect(result.success).toBe(true);
@@ -16,6 +37,12 @@ describe('apiService', () => {
       });
 
       it('should handle login failure with invalid credentials', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          message: 'E-mail ou senha inválidos'
+        });
+
         const result = await apiService.auth.login('invalid@example.com', 'wrongpassword');
 
         expect(result.success).toBe(false);
@@ -23,10 +50,12 @@ describe('apiService', () => {
       });
 
       it('should handle network errors', async () => {
+        (request as jest.Mock).mockRejectedValueOnce(new Error('Network request failed'));
+
         const result = await apiService.auth.login('test@example.com', 'password');
 
         expect(result.success).toBe(false);
-        expect(result.message).toContain('Network error');
+        expect(result.message).toContain('Network request failed');
       });
     });
 
@@ -37,6 +66,16 @@ describe('apiService', () => {
           email: 'newuser@example.com',
           password: process.env.TEST_USER_PASSWORD || 'SecurePass123!'
         };
+
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          data: {
+            user: { id: 'user456', name: registerData.name, email: registerData.email, role: 'dentist' },
+            accessToken: 'new-access-token',
+            refreshToken: 'new-refresh-token'
+          }
+        });
 
         const result = await apiService.auth.register(registerData);
 
@@ -49,6 +88,12 @@ describe('apiService', () => {
 
     describe('me', () => {
       it('should get current user data', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          data: { id: 'user123', name: 'Current User', email: 'current@example.com', role: 'admin' }
+        });
+
         const result = await apiService.auth.me();
 
         expect(result.success).toBe(true);
