@@ -1,30 +1,34 @@
 import { request, logout, API_BASE_URL } from '../../services/http';
 
-// Mock localStorage with proper implementation
-const localStorageMock = (() => {
+// Create a clean localStorage mock
+const createLocalStorageMock = () => {
   let store: Record<string, string> = {};
   return {
-    getItem: (key: string) => store[key] || null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { store = {}; }
+    getItem: jest.fn((key: string) => store[key] || null),
+    setItem: jest.fn((key: string, value: string) => { store[key] = value; }),
+    removeItem: jest.fn((key: string) => { delete store[key]; }),
+    clear: jest.fn(() => { store = {}; }),
+    get length() { return Object.keys(store).length; },
+    key: jest.fn((index: number) => Object.keys(store)[index] || null),
   };
-})();
+};
 
-Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
+// Mock localStorage
+const mockLocalStorage = createLocalStorageMock();
+Object.defineProperty(global, 'localStorage', {
+  value: mockLocalStorage,
   writable: true
 });
 
-// Mock fetch properly for this test suite
+// Mock fetch
 const mockFetch = jest.fn();
 global.fetch = mockFetch;
 
 describe('http service', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    localStorageMock.clear();
-    mockFetch.mockClear();
+    mockLocalStorage.clear();
+    mockFetch.mockReset();
   });
 
   describe('request function', () => {
@@ -34,7 +38,7 @@ describe('http service', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           status: 200,
-          text: async () => JSON.stringify(mockResponse)
+          text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
         });
 
         const result = await request('/test-endpoint', { auth: false });
@@ -42,17 +46,25 @@ describe('http service', () => {
         expect(result.ok).toBe(true);
         expect(result.status).toBe(200);
         expect(result.data).toEqual(mockResponse);
+        expect(mockFetch).toHaveBeenCalledWith(
+          `${API_BASE_URL}/test-endpoint`,
+          expect.objectContaining({
+            headers: expect.objectContaining({
+              'Content-Type': 'application/json'
+            })
+          })
+        );
       });
 
       it('should make successful POST request with auth', async () => {
         const mockResponse = { data: { id: '123' } };
         const accessToken = 'test-access-token';
-        localStorageMock.setItem('topsmile_access_token', accessToken);
+        mockLocalStorage.setItem('topsmile_access_token', accessToken);
 
         mockFetch.mockResolvedValueOnce({
           ok: true,
           status: 201,
-          text: async () => JSON.stringify(mockResponse)
+          text: jest.fn().mockResolvedValue(JSON.stringify(mockResponse))
         });
 
         const result = await request('/test-endpoint', {
@@ -62,6 +74,17 @@ describe('http service', () => {
 
         expect(result.ok).toBe(true);
         expect(result.data).toEqual(mockResponse);
+        expect(mockFetch).toHaveBeenCalledWith(
+          `${API_BASE_URL}/test-endpoint`,
+          expect.objectContaining({
+            method: 'POST',
+            headers: expect.objectContaining({
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`
+            }),
+            body: JSON.stringify({ name: 'test' })
+          })
+        );
       });
 
       it('should handle full URL endpoints', async () => {
@@ -69,11 +92,13 @@ describe('http service', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           status: 200,
-          text: async () => JSON.stringify({ data: 'external' })
+          text: jest.fn().mockResolvedValue(JSON.stringify({ data: 'external' }))
         });
 
         const result = await request(fullUrl);
+
         expect(result.ok).toBe(true);
+        expect(mockFetch).toHaveBeenCalledWith(fullUrl, expect.any(Object));
       });
     });
 
@@ -83,7 +108,8 @@ describe('http service', () => {
         mockFetch.mockResolvedValueOnce({
           ok: false,
           status: 404,
-          text: async () => JSON.stringify(errorResponse)
+          statusText: 'Not Found',
+          text: jest.fn().mockResolvedValue(JSON.stringify(errorResponse))
         });
 
         const result = await request('/not-found');
@@ -97,7 +123,7 @@ describe('http service', () => {
         mockFetch.mockResolvedValueOnce({
           ok: true,
           status: 200,
-          text: async () => 'not json'
+          text: jest.fn().mockResolvedValue('not json')
         });
 
         const result = await request('/malformed');
@@ -113,87 +139,89 @@ describe('http service', () => {
         const newToken = 'new-access-token';
         const refreshToken = 'refresh-token';
 
-        localStorageMock.setItem('topsmile_access_token', expiredToken);
-        localStorageMock.setItem('topsmile_refresh_token', refreshToken);
+        mockLocalStorage.setItem('topsmile_access_token', expiredToken);
+        mockLocalStorage.setItem('topsmile_refresh_token', refreshToken);
 
         // First call returns 401
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-          text: async () => JSON.stringify({ message: 'Unauthorized' })
-        });
-
-        // Refresh call succeeds
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          text: async () => JSON.stringify({
-            data: { accessToken: newToken, refreshToken: 'new-refresh' }
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: false,
+            status: 401,
+            text: jest.fn().mockResolvedValue(JSON.stringify({ message: 'Unauthorized' }))
           })
-        });
-
-        // Retry call succeeds
-        mockFetch.mockResolvedValueOnce({
-          ok: true,
-          status: 200,
-          text: async () => JSON.stringify({ data: { success: true } })
-        });
+          // Refresh call succeeds
+          .mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: jest.fn().mockResolvedValue(JSON.stringify({
+              data: { accessToken: newToken, refreshToken: 'new-refresh' }
+            }))
+          })
+          // Retry call succeeds
+          .mockResolvedValueOnce({
+            ok: true,
+            status: 200,
+            text: jest.fn().mockResolvedValue(JSON.stringify({ data: { success: true } }))
+          });
 
         const result = await request('/protected-endpoint');
 
         expect(result.ok).toBe(true);
-        expect(localStorageMock.getItem('topsmile_access_token')).toBe(newToken);
+        expect(mockLocalStorage.setItem).toHaveBeenCalledWith('topsmile_access_token', newToken);
+        expect(mockFetch).toHaveBeenCalledTimes(3);
       });
 
       it('should handle refresh failure', async () => {
-        localStorageMock.setItem('topsmile_access_token', 'expired');
-        localStorageMock.setItem('topsmile_refresh_token', 'refresh');
+        mockLocalStorage.setItem('topsmile_access_token', 'expired');
+        mockLocalStorage.setItem('topsmile_refresh_token', 'refresh');
 
         // Original request fails
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 401,
-          text: async () => JSON.stringify({ message: 'Unauthorized' })
-        });
+        mockFetch
+          .mockResolvedValueOnce({
+            ok: false,
+            status: 401,
+            text: jest.fn().mockResolvedValue(JSON.stringify({ message: 'Unauthorized' }))
+          })
+          // Refresh fails
+          .mockResolvedValueOnce({
+            ok: false,
+            status: 400,
+            statusText: 'Bad Request',
+            text: jest.fn().mockResolvedValue(JSON.stringify({ message: 'Invalid refresh token' }))
+          });
 
-        // Refresh fails
-        mockFetch.mockResolvedValueOnce({
-          ok: false,
-          status: 400,
-          text: async () => JSON.stringify({ message: 'Invalid refresh token' })
-        });
-
-        await expect(request('/protected-endpoint')).rejects.toThrow();
-        expect(localStorageMock.getItem('topsmile_access_token')).toBeNull();
+        await expect(request('/protected-endpoint')).rejects.toThrow('Invalid refresh token');
+        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('topsmile_access_token');
+        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('topsmile_refresh_token');
       });
 
       it('should handle concurrent refresh requests', async () => {
-        localStorageMock.setItem('topsmile_access_token', 'expired');
-        localStorageMock.setItem('topsmile_refresh_token', 'refresh');
+        mockLocalStorage.setItem('topsmile_access_token', 'expired');
+        mockLocalStorage.setItem('topsmile_refresh_token', 'refresh');
 
         // Setup mock responses
         mockFetch
           .mockResolvedValueOnce({
             ok: false,
             status: 401,
-            text: async () => JSON.stringify({ message: 'Unauthorized' })
+            text: jest.fn().mockResolvedValue(JSON.stringify({ message: 'Unauthorized' }))
           })
           .mockResolvedValueOnce({
             ok: false,
             status: 401,
-            text: async () => JSON.stringify({ message: 'Unauthorized' })
+            text: jest.fn().mockResolvedValue(JSON.stringify({ message: 'Unauthorized' }))
           })
           .mockResolvedValueOnce({
             ok: true,
             status: 200,
-            text: async () => JSON.stringify({
+            text: jest.fn().mockResolvedValue(JSON.stringify({
               data: { accessToken: 'new-token', refreshToken: 'new-refresh' }
-            })
+            }))
           })
           .mockResolvedValue({
             ok: true,
             status: 200,
-            text: async () => JSON.stringify({ data: { success: true } })
+            text: jest.fn().mockResolvedValue(JSON.stringify({ data: { success: true } }))
           });
 
         const [result1, result2] = await Promise.all([
@@ -203,6 +231,8 @@ describe('http service', () => {
 
         expect(result1.ok).toBe(true);
         expect(result2.ok).toBe(true);
+        // Should only refresh once
+        expect(mockFetch).toHaveBeenCalledTimes(5); // 2 initial + 1 refresh + 2 retry
       });
     });
   });
@@ -210,12 +240,12 @@ describe('http service', () => {
   describe('logout function', () => {
     it('should notify backend about logout', async () => {
       const refreshToken = 'test-refresh-token';
-      localStorageMock.setItem('topsmile_refresh_token', refreshToken);
+      mockLocalStorage.setItem('topsmile_refresh_token', refreshToken);
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        text: async () => JSON.stringify({ success: true })
+        text: jest.fn().mockResolvedValue(JSON.stringify({ success: true }))
       });
 
       await logout();
@@ -228,6 +258,15 @@ describe('http service', () => {
           body: JSON.stringify({ refreshToken })
         })
       );
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('topsmile_access_token');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('topsmile_refresh_token');
+    });
+
+    it('should handle backend logout failure gracefully', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
+
+      // Should not throw
+      await expect(logout()).resolves.not.toThrow();
     });
   });
 });
