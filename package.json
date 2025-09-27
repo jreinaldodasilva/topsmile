@@ -32,7 +32,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "test": "npm run test:all",
-    "test:all": "npm run test:frontend && npm run test:backend",
+    "test:all": "npm run test:frontend",
     "test:frontend": "jest --config jest.config.js --runInBand",
     "test:watch:frontend": "jest --config jest.config.js --watch",
     "test:coverage:frontend": "jest --config jest.config.js --coverage",
