@@ -9,26 +9,11 @@ export const server = setupServer(...handlers);
 // Start server before all tests
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'warn' });
-
-  // Silence console.error for known React warnings during tests
-  const originalError = console.error;
-  console.error = (...args: any) => {
-    if (
-      typeof args[0] === 'string' &&
-      (args[0].includes('Warning:') ||
-       args[0].includes('ReactDOMTestUtils') ||
-       args[0].includes('act()'))
-    ) {
-      return;
-    }
-    originalError.call(console, ...args);
-  };
 });
 
 // Reset handlers after each test
 afterEach(() => {
   server.resetHandlers();
-  localStorage.clear();
 });
 
 // Close server after all tests
@@ -54,7 +39,7 @@ Object.defineProperty(window, 'localStorage', {
   writable: true
 });
 
-// Other global mocks...
+// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
@@ -69,18 +54,21 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// Mock IntersectionObserver
 global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
+// Mock ResizeObserver
 global.ResizeObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
+// Mock other window methods
 Object.defineProperty(window, 'scrollTo', {
   writable: true,
   value: jest.fn(),
@@ -89,4 +77,22 @@ Object.defineProperty(window, 'scrollTo', {
 Object.defineProperty(window, 'alert', {
   writable: true,
   value: jest.fn(),
+});
+
+// Clean up console.error to reduce test noise
+const originalError = console.error;
+beforeAll(() => {
+  console.error = (...args: any) => {
+    if (
+      typeof args[0] === 'string' &&
+      (args[0].includes('Warning:') || args[0].includes('ReactDOMTestUtils'))
+    ) {
+      return;
+    }
+    originalError.call(console, ...args);
+  };
+});
+
+afterAll(() => {
+  console.error = originalError;
 });
