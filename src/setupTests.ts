@@ -1,86 +1,91 @@
-// Polyfills must be loaded before any other imports
-import './textEncoderPolyfill';
-import type { SetupServerApi } from 'msw/node';
 import '@testing-library/jest-dom';
+import { setupServer } from 'msw/node';
+import { handlers } from './mocks/handlers';
+import './tests/utils/customMatchers';
 
-const server: SetupServerApi = require('./mocks/server').server;
+// Setup MSW server for tests
+export const server = setupServer(...handlers);
 
-// Establish API mocking before all tests.
-beforeAll(() => server.listen?.());
+// Start server before all tests
+beforeAll(() => {
+  server.listen({ onUnhandledRequest: 'warn' });
+});
 
-// Reset any request handlers that we may add during the tests,
-// so they don't affect other tests.
-afterEach(() => server.resetHandlers?.());
+// Reset handlers after each test
+afterEach(() => {
+  server.resetHandlers();
+});
 
-// Clean up after the tests are finished.
-afterAll(() => server.close?.());
+// Close server after all tests
+afterAll(() => {
+  server.close();
+});
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn(),
-  length: 0,
-  key: jest.fn(),
-};
-(global as any).localStorage = localStorageMock;
+// Mock localStorage with proper implementation
+const localStorageMock = (() => {
+  let store: Record<string, string> = {};
+  return {
+    getItem: (key: string) => store[key] || null,
+    setItem: (key: string, value: string) => { store[key] = value; },
+    removeItem: (key: string) => { delete store[key]; },
+    clear: () => { store = {}; },
+    length: Object.keys(store).length,
+    key: (index: number) => Object.keys(store)[index] || null,
+  };
+})();
 
-// Mock window.matchMedia for components that use media queries
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+});
+
+// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: jest.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: jest.fn(), // deprecated
-    removeListener: jest.fn(), // deprecated
+    addListener: jest.fn(),
+    removeListener: jest.fn(),
     addEventListener: jest.fn(),
     removeEventListener: jest.fn(),
     dispatchEvent: jest.fn(),
   })),
 });
 
-// Mock IntersectionObserver for components that use it
-(global as any).IntersectionObserver = jest.fn().mockImplementation(() => ({
+// Mock IntersectionObserver
+global.IntersectionObserver = jest.fn().mockImplementation(() => ({
   observe: jest.fn(),
   unobserve: jest.fn(),
   disconnect: jest.fn(),
 }));
 
-// Mock ResizeObserver for components that use it
-global.ResizeObserver = class ResizeObserver {
-  observe() {
-    return null;
-  }
-  disconnect() {
-    return null;
-  }
-  unobserve() {
-    return null;
-  }
-};
+// Mock ResizeObserver
+global.ResizeObserver = jest.fn().mockImplementation(() => ({
+  observe: jest.fn(),
+  unobserve: jest.fn(),
+  disconnect: jest.fn(),
+}));
 
-// Mock window.scrollTo for components that use it
+// Mock other window methods
 Object.defineProperty(window, 'scrollTo', {
   writable: true,
   value: jest.fn(),
 });
 
-// Mock window.alert for components that use it
 Object.defineProperty(window, 'alert', {
   writable: true,
   value: jest.fn(),
 });
 
-// Mock console methods to reduce noise in tests
+// Clean up console.error to reduce test noise
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args: any) => {
     if (
       typeof args[0] === 'string' &&
-      args[0].includes('Warning:') &&
-      args[0].includes('ReactDOMTestUtils')
+      (args[0].includes('Warning:') || args[0].includes('ReactDOMTestUtils'))
     ) {
       return;
     }

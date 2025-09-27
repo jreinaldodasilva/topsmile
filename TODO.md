@@ -1,0 +1,5 @@
+- [x] Replace src/tests/services/http.test.ts with the provided code
+- [x] Replace src/mocks/handlers.ts with the provided code
+- [x] Replace src/setupTests.ts with the provided code
+- [x] Replace src/tests/components/LoginPage.test.tsx with the provided code
+- [x] Replace src/tests/services/apiService.test.ts with the provided code
