@@ -1,159 +1,30 @@
 import { http, HttpResponse } from 'msw';
+import type { User, Contact, Patient } from '@topsmile/types';
+
 
 export const handlers = [
-  // Dashboard endpoint with comprehensive mock data
-  http.get('*/api/admin/dashboard', () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        contacts: {
-          total: 150,
-          byStatus: [
-            { _id: 'new', count: 45 },
-            { _id: 'contacted', count: 30 },
-            { _id: 'qualified', count: 25 },
-            { _id: 'converted', count: 20 },
-            { _id: 'closed', count: 30 }
-          ],
-          bySource: [
-            { _id: 'website_contact_form', count: 60 },
-            { _id: 'phone', count: 30 },
-            { _id: 'referral', count: 25 },
-            { _id: 'social_media', count: 35 }
-          ],
-          recentCount: 12
-        },
-        summary: {
-          totalContacts: 150,
-          newThisWeek: 25,
-          conversionRate: 18,
-          revenue: 'R$ 25.480'
-        },
-        user: {
-          name: 'Admin User',
-          role: 'admin',
-          clinicId: 'clinic-123'
-        }
-      }
-    });
-  }),
-
-  // Enhanced contacts endpoint
-  http.get('*/api/admin/contacts', () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        contacts: [
-          {
-            _id: 'contact1',
-            name: 'John Doe',
-            email: 'john@example.com',
-            phone: '(11) 99999-9999',
-            status: 'new',
-            source: 'website_contact_form',
-            createdAt: '2023-01-01T10:00:00Z'
-          },
-          {
-            _id: 'contact2',
-            name: 'Jane Smith',
-            email: 'jane@example.com',
-            phone: '(11) 88888-8888',
-            status: 'contacted',
-            source: 'phone',
-            createdAt: '2023-01-02T10:00:00Z'
-          }
-        ],
-        total: 2
-      }
-    });
-  }),
-
-  // Provider management endpoints
-  http.get('*/api/providers', () => {
-    return HttpResponse.json({
-      success: true,
-      data: [
-        {
-          _id: 'provider1',
-          name: 'Dr. Smith',
-          specialization: 'General',
-          email: 'drsmith@example.com',
-          phone: '(11) 99999-0001'
-        },
-        {
-          _id: 'provider2',
-          name: 'Dr. Johnson',
-          specialization: 'Orthodontics',
-          email: 'drjohnson@example.com',
-          phone: '(11) 99999-0002'
-        }
-      ]
-    });
-  }),
-
-  // Appointment types
-  http.get('*/api/appointment-types', () => {
-    return HttpResponse.json({
-      success: true,
-      data: [
-        { _id: 'type1', name: 'Consultation', duration: 30 },
-        { _id: 'type2', name: 'Cleaning', duration: 45 }
-      ]
-    });
-  }),
-
-  // Available time slots
-  http.get('*/api/appointments/available-slots', () => {
-    return HttpResponse.json({
-      success: true,
-      data: [
-        { time: '09:00', available: true },
-        { time: '10:00', available: true },
-        { time: '11:00', available: false },
-        { time: '14:00', available: true }
-      ]
-    });
-  }),
-
-  // Patients endpoints
-  http.get('*/api/patients', () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        patients: [],
-        total: 0
-      }
-    });
-  }),
-
-  // Appointments endpoint
-  http.get('*/api/appointments', () => {
-    return HttpResponse.json({
-      success: true,
-      data: {
-        appointments: [],
-        total: 0
-      }
-    });
-  }),
-
-  // Auth endpoints
   http.post('*/api/auth/login', async ({ request }) => {
     const body = await request.json() as { email: string; password: string };
-    if (body.email === 'admin@topsmile.com' && body.password === 'SecurePass123!') {
+    if (body.email === (process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com') && body.password === (process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!')) {
       return HttpResponse.json({
         success: true,
         data: {
           user: {
-            _id: 'user123',
+            id: 'user123',
             name: 'Admin User',
             email: 'admin@topsmile.com',
             role: 'admin'
           },
           accessToken: 'mock-access-token',
-          refreshToken: 'mock-refresh-token'
+          refreshToken: 'mock-refresh-token',
+          expiresIn: '3600'
         }
       });
+    } else if (body.email === 'test@example.com') {
+      return HttpResponse.json({
+        success: false,
+        message: 'Network error - please check your connection'
+      }, { status: 500 });
     } else {
       return HttpResponse.json({
         success: false,
@@ -162,11 +33,28 @@ export const handlers = [
     }
   }),
 
+  http.post('*/api/auth/register', async ({ request }) => {
+    const body = await request.json() as { name: string; email: string };
+    return HttpResponse.json({
+      success: true,
+      data: {
+        user: {
+          id: 'user456',
+          name: body.name,
+          email: body.email,
+          role: 'dentist'
+        },
+        accessToken: 'new-access-token',
+        refreshToken: 'new-refresh-token'
+      }
+    });
+  }),
+
   http.get('*/api/auth/me', () => {
     return HttpResponse.json({
       success: true,
       data: {
-        _id: 'user123',
+        id: 'user123',
         name: 'Current User',
         email: 'current@example.com',
         role: 'admin'
@@ -174,30 +62,161 @@ export const handlers = [
     });
   }),
 
-  // Token refresh endpoint
-  http.post('*/api/auth/refresh', () => {
+  http.get('*/api/patients', () => {
+    return HttpResponse.json({
+      success: true,
+      data: [
+        {
+          id: 'patient1',
+          firstName: 'João',
+          lastName: 'Silva',
+          email: 'joao@example.com'
+        },
+        {
+          id: 'patient2',
+          firstName: 'Maria',
+          lastName: 'Santos',
+          email: 'maria@example.com'
+        }
+      ]
+    });
+  }),
+
+  http.get('*/api/patients/:id', ({ params }) => {
+    const { id } = params;
+    if (id === 'non-existent-id') {
+      return HttpResponse.json({
+        success: false,
+        message: 'Paciente não encontrado'
+      }, { status: 404 });
+    }
+
     return HttpResponse.json({
       success: true,
       data: {
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token'
+        _id: id,
+        id: id,
+        firstName: 'João',
+        lastName: 'Silva',
+        email: 'joao@example.com',
+        phone: '(11) 99999-9999'
       }
     });
   }),
 
-  // Logout endpoint
-  http.post('*/api/auth/logout', () => {
+  http.post('*/api/patients', async ({ request }) => {
+    const body = await request.json() as { name: string; email: string; phone: string };
     return HttpResponse.json({
       success: true,
-      message: 'Logged out successfully'
+      data: {
+        id: 'new-patient-id',
+        name: body.name,
+        email: body.email,
+        phone: body.phone,
+        firstName: 'New',
+        lastName: 'Patient',
+        fullName: 'New Patient'
+      }
     });
   }),
 
-  // Other endpoints...
-  http.post('*/api/contact', () => {
+  http.patch('*/api/patients/:id', async ({ request }) => {
+    const body = await request.json() as { firstName?: string; lastName?: string; phone?: string };
     return HttpResponse.json({
       success: true,
-      data: { id: 'contact-form-id', protocol: 'PROTOCOL-123' }
+      data: {
+        id: 'patient123',
+        firstName: body.firstName || 'Updated',
+        lastName: body.lastName || 'Name',
+        phone: body.phone,
+        fullName: `${body.firstName || 'Updated'} ${body.lastName || 'Name'}`
+      }
+    });
+  }),
+
+  http.delete('*/api/patients/:id', () => {
+    return HttpResponse.json({
+      success: true,
+      message: 'Paciente removido com sucesso'
+    });
+  }),
+
+  http.get('*/api/admin/contacts', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        contacts: [
+          { id: 'contact1', name: 'John Doe', email: 'john@example.com', clinic: 'Test Clinic', phone: '123456789', specialty: 'General', status: 'new', createdAt: new Date().toISOString() },
+          { id: 'contact2', name: 'Jane Doe', email: 'jane@example.com', clinic: 'Test Clinic 2', phone: '987654321', specialty: 'Orthodontics', status: 'contacted', createdAt: new Date().toISOString() }
+        ],
+        total: 2,
+        page: 1,
+        pages: 1,
+        limit: 10
+      }
+    });
+  }),
+
+  http.post('*/api/admin/contacts', async ({ request }) => {
+    const body = await request.json() as { name: string; email: string };
+    return HttpResponse.json({
+      success: true,
+      data: {
+        id: 'new-contact-id',
+        name: body.name,
+        email: body.email
+      }
+    });
+  }),
+
+  http.get('*/api/appointments', () => {
+    return HttpResponse.json({
+      success: true,
+      data: [
+        {
+          id: 'appt1',
+          patient: 'patient1',
+          provider: 'provider1',
+          status: 'scheduled'
+        }
+      ]
+    });
+  }),
+
+  http.post('*/api/appointments', async ({ request }) => {
+    const body = await request.json() as { patient: string; provider: string; status: string };
+    return HttpResponse.json({
+      success: true,
+      data: {
+        id: 'new-appt-id',
+        patient: body.patient,
+        provider: body.provider,
+        status: body.status
+      }
+    });
+  }),
+
+  http.get('*/api/dashboard/stats', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        totalPatients: 1247,
+        todayAppointments: 12,
+        monthlyRevenue: 45680,
+        satisfaction: 4.8
+      }
+    });
+  }),
+
+  http.post('*/api/public/contact', async ({ request }) => {
+    const body = await request.json() as any;
+    return HttpResponse.json({
+      success: true,
+      data: {
+        id: 'contact-form-id',
+        protocol: 'PROTOCOL-123',
+        estimatedResponse: '2 horas'
+      }
     });
   }),
 
@@ -208,9 +227,27 @@ export const handlers = [
         timestamp: new Date().toISOString(),
         uptime: 123456,
         database: 'connected',
+        memory: { used: 100, total: 1000 },
         environment: 'test',
         version: '1.0.0'
       }
     });
-  })
+  }),
+
+  http.post('*/api/patient-auth/logout', () => {
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.get('*/api/patient-auth/me', () => {
+    return HttpResponse.json({
+      success: true,
+      data: {
+        id: 'user1',
+        patient: { id: 'patient1', name: 'John Doe', phone: '123456789' },
+        email: 'john@example.com',
+        isActive: true,
+        emailVerified: true
+      }
+    });
+  }),
 ];

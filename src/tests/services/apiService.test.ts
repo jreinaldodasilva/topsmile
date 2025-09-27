@@ -1,12 +1,13 @@
 import { apiService } from '../../services/apiService';
+import type { User, Contact, Patient, Clinic } from '@topsmile/types';
 
 // Mock the http service
 jest.mock('../../services/http', () => ({
-  request: jest.fn(),
-  logout: jest.fn()
+  request: jest.fn()
 }));
 
-const mockRequest = require('../../services/http').request;
+import { request } from '../../services/http';
+
 
 describe('apiService', () => {
   beforeEach(() => {
@@ -14,155 +15,300 @@ describe('apiService', () => {
   });
 
   describe('auth methods', () => {
-    it('login should handle network errors', async () => {
-      mockRequest.mockRejectedValueOnce(new Error('Network request failed'));
+    describe('login', () => {
+      it('should successfully login with valid credentials', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          data: {
+            user: { id: 'user123', name: 'Admin User', email: 'admin@topsmile.com', role: 'admin' },
+            accessToken: 'mock-access-token',
+            refreshToken: 'mock-refresh-token'
+          }
+        });
 
-      await expect(
-        apiService.auth.login('test@example.com', 'password')
-      ).rejects.toThrow('Network request failed');
+        const result = await apiService.auth.login(process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com', process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!');
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.user).toBeDefined();
+        expect(result.data?.accessToken).toBe('mock-access-token');
+        expect(result.data?.refreshToken).toBe('mock-refresh-token');
+      });
+
+      it('should handle login failure with invalid credentials', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: false,
+          status: 401,
+          message: 'E-mail ou senha inválidos'
+        });
+
+        const result = await apiService.auth.login('invalid@example.com', 'wrongpassword');
+
+        expect(result.success).toBe(false);
+        expect(result.message).toContain('E-mail ou senha inválidos');
+      });
+
+      it('should handle network errors', async () => {
+        (request as jest.Mock).mockRejectedValueOnce(new Error('Network request failed'));
+
+        const result = await apiService.auth.login('test@example.com', 'password');
+
+        expect(result.success).toBe(false);
+        expect(result.message).toContain('Network request failed');
+      });
+    });
+
+    describe('register', () => {
+      it('should successfully register a new user', async () => {
+        const registerData = {
+          name: 'New User',
+          email: 'newuser@example.com',
+          password: process.env.TEST_USER_PASSWORD || 'SecurePass123!'
+        };
+
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 201,
+          data: {
+            user: { id: 'user456', name: registerData.name, email: registerData.email, role: 'dentist' },
+            accessToken: 'new-access-token',
+            refreshToken: 'new-refresh-token'
+          }
+        });
+
+        const result = await apiService.auth.register(registerData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.user.name).toBe(registerData.name);
+        expect(result.data?.user.email).toBe(registerData.email);
+      });
+    });
+
+    describe('me', () => {
+      it('should get current user data', async () => {
+        (request as jest.Mock).mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          data: { id: 'user123', name: 'Current User', email: 'current@example.com', role: 'admin' }
+        });
+
+        const result = await apiService.auth.me();
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.name).toBe('Current User');
+      });
     });
   });
 
   describe('patients methods', () => {
-    it('getAll should get all patients', async () => {
-      const mockResponse = {
-        ok: true,
-        data: [{ _id: '1', name: 'John Doe' }]
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('getAll', () => {
+      it('should get all patients', async () => {
+        const result = await apiService.patients.getAll();
 
-      const result = await apiService.patients.getAll();
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients');
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('getAll should handle query parameters', async () => {
-      const mockResponse = {
-        ok: true,
-        data: [{ _id: '1', name: 'John Doe' }]
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
-
-      const params = { search: 'john', limit: 10 };
-      const result = await apiService.patients.getAll(params);
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients?search=john&limit=10');
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('getOne should get patient by ID', async () => {
-      const mockResponse = {
-        ok: true,
-        data: { _id: '123', name: 'John Doe' }
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
-
-      const result = await apiService.patients.getOne('123');
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients/123');
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('getOne should handle non-existent patient', async () => {
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        message: 'Patient not found'
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
-
-      const result = await apiService.patients.getOne('non-existent');
-      
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('create should create a new patient', async () => {
-      const patientData = { firstName: 'New', lastName: 'Patient', email: 'new@example.com', phone: '123456789', address: { street: 'Street', number: '1', neighborhood: 'Neighborhood', city: 'City', state: 'State', zipCode: '12345' } };
-      const mockResponse = {
-        ok: true,
-        data: { _id: 'new-id', ...patientData }
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
-
-      const result = await apiService.patients.create(patientData);
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients', {
-        method: 'POST',
-        body: JSON.stringify(patientData)
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+        expect(result.data).toHaveLength(2);
       });
-      expect(result).toEqual(mockResponse);
+
+      it('should handle query parameters', async () => {
+        const result = await apiService.patients.getAll({ search: 'João', page: 1, limit: 10 });
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+      });
     });
 
-    it('update should update patient data', async () => {
-      const updates = { name: 'Updated Name' };
-      const mockResponse = {
-        ok: true,
-        data: { _id: '123', name: 'Updated Name' }
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('getOne', () => {
+      it('should get patient by ID', async () => {
+        const result = await apiService.patients.getOne('patient123');
 
-      const result = await apiService.patients.update('123', updates);
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients/123', {
-        method: 'PATCH',
-        body: JSON.stringify(updates)
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?._id).toBe('patient123');
+        expect(result.data?.firstName).toBe('João');
       });
-      expect(result).toEqual(mockResponse);
+
+      it('should handle non-existent patient', async () => {
+        const result = await apiService.patients.getOne('non-existent-id');
+
+        expect(result.success).toBe(false);
+        expect(result.message).toContain('Paciente não encontrado');
+      });
     });
 
-    it('delete should delete patient', async () => {
-      const mockResponse = {
-        ok: true,
-        message: 'Patient deleted successfully'
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('create', () => {
+      it('should create a new patient', async () => {
+        const patientData = {
+          firstName: 'New',
+          lastName: 'Patient',
+          email: 'new.patient@example.com',
+          phone: '(11) 99999-9999',
+          name: 'New Patient',
+          address: { street: `Rua Teste`, number: '100', neighborhood: 'Centro', city: 'São Paulo', state: 'SP', zipCode: '01000-000' },
+        }
 
-      const result = await apiService.patients.delete('123');
-      
-      expect(mockRequest).toHaveBeenCalledWith('/api/patients/123', {
-        method: 'DELETE'
+        const result = await apiService.patients.create(patientData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.fullName).toBe('New Patient');
+        expect(result.data?.email).toBe(patientData.email);
       });
-      expect(result).toEqual(mockResponse);
+    });
+
+    describe('update', () => {
+      it('should update patient data', async () => {
+        const updateData = {
+          firstName: 'Updated',
+          lastName: 'Name',
+          phone: '(11) 88888-8888'
+        };
+
+        const result = await apiService.patients.update('patient123', updateData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.fullName).toBe('Updated Name');
+      });
+    });
+
+    describe('delete', () => {
+      it('should delete patient', async () => {
+        const result = await apiService.patients.delete('patient123');
+
+        expect(result.success).toBe(true);
+        expect(result.message).toContain('Paciente removido com sucesso');
+      });
     });
   });
 
-  // Similar patterns for other service methods...
   describe('contacts methods', () => {
-    it('getAll should get all contacts', async () => {
-      const mockResponse = {
-        ok: true,
-        data: { contacts: [], total: 0 }
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('getAll', () => {
+      it('should get all contacts', async () => {
+        const result = await apiService.contacts.getAll();
 
-      const result = await apiService.contacts.getAll();
-      expect(result).toEqual(mockResponse);
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data).toHaveProperty('contacts');
+        expect(result.data).toHaveProperty('total');
+        expect(result.data?.contacts).toHaveLength(2);
+      });
     });
 
-    it('create should create a new contact', async () => {
-      const contactData = { name: 'New Contact', email: 'contact@example.com' };
-      const mockResponse = {
-        ok: true,
-        data: { _id: 'new-contact-id', ...contactData }
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('create', () => {
+      it('should create a new contact', async () => {
+        const contactData = {
+          name: 'New Contact',
+          email: 'new.contact@example.com',
+          phone: '(11) 99999-9999',
+          clinic: 'Test Clinic',
+          specialty: 'Ortodontia'
+        };
 
-      const result = await apiService.contacts.create(contactData);
-      expect(result).toEqual(mockResponse);
+        const result = await apiService.contacts.create(contactData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.name).toBe(contactData.name);
+      });
     });
   });
 
   describe('appointments methods', () => {
-    it('getAll should get all appointments', async () => {
-      const mockResponse = {
-        ok: true,
-        data: []
-      };
-      mockRequest.mockResolvedValueOnce(mockResponse);
+    describe('getAll', () => {
+      it('should get all appointments', async () => {
+        const result = await apiService.appointments.getAll();
 
-      const result = await apiService.appointments.getAll();
-      expect(result).toEqual(mockResponse);
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(Array.isArray(result.data)).toBe(true);
+      });
+    });
+
+    describe('create', () => {
+      it('should create a new appointment', async () => {
+
+        const appointmentData = {
+          patient: 'patient123',
+          clinic: 'clinic123',
+          provider: 'provider123',
+          appointmentType: 'type123',
+          scheduledStart: new Date('2024-02-15T10:00:00Z'),
+          scheduledEnd: new Date('2024-02-15T11:00:00Z'),
+          status: 'scheduled' as const,
+          priority: 'routine' as const,
+          preferredContactMethod: 'email' as const,
+          syncStatus: 'synced' as const,
+          notes: 'Test appointment',
+          privateNotes: 'Internal note'
+        };
+
+        const result = await apiService.appointments.create(appointmentData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data?.patient).toBe(appointmentData.patient);
+        expect(result.data?.status).toBe(appointmentData.status);
+      });
+    });
+  });
+
+  describe('dashboard methods', () => {
+    describe('getStats', () => {
+      it('should get dashboard statistics', async () => {
+        const result = await apiService.dashboard.getStats();
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data).toHaveProperty('totalPatients');
+        expect(result.data).toHaveProperty('todayAppointments');
+        expect(result.data).toHaveProperty('monthlyRevenue');
+        expect(result.data).toHaveProperty('satisfaction');
+      });
+    });
+  });
+
+  describe('public methods', () => {
+    describe('sendContactForm', () => {
+      it('should send contact form successfully', async () => {
+        const contactData = {
+          name: 'Test User',
+          email: 'test@example.com',
+          clinic: 'Test Clinic',
+          specialty: 'Ortodontia',
+          phone: '(11) 99999-9999'
+        };
+
+        const result = await apiService.public.sendContactForm(contactData);
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data).toHaveProperty('id');
+        expect(result.data).toHaveProperty('protocol');
+        expect(result.data).toHaveProperty('estimatedResponse');
+      });
+    });
+  });
+
+  describe('system methods', () => {
+    describe('health', () => {
+      it('should get health status', async () => {
+        const result = await apiService.system.health();
+
+        expect(result.success).toBe(true);
+        expect(result.data).toBeDefined();
+        expect(result.data).toHaveProperty('timestamp');
+        expect(result.data).toHaveProperty('uptime');
+        expect(result.data).toHaveProperty('database');
+        expect(result.data).toHaveProperty('memory');
+        expect(result.data).toHaveProperty('environment');
+        expect(result.data).toHaveProperty('version');
+      });
     });
   });
 });

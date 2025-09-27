@@ -1,93 +1,98 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '../../pages/Login/LoginPage';
-import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from '../../contexts/AuthContext';
-import { ErrorProvider } from '../../contexts/ErrorContext';
+import { useAuthActions, useAuthState } from '../../contexts/AuthContext';
+import { render, screen } from '../utils/test-utils';
 
-// Test wrapper
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <BrowserRouter>
-    <ErrorProvider>
-      <AuthProvider>
-        {children}
-      </AuthProvider>
-    </ErrorProvider>
-  </BrowserRouter>
-);
+// Mock the AuthContext hooks
+jest.mock('../../contexts/AuthContext', () => ({
+  useAuthState: jest.fn(),
+  useAuthActions: jest.fn(),
+}));
 
 describe('LoginPage', () => {
-  it('renders login form', async () => {
-    render(
-      <TestWrapper>
-        <LoginPage />
-      </TestWrapper>
-    );
+  const mockLogin = jest.fn();
+  const mockClearError = jest.fn();
 
-    await waitFor(() => {
-      expect(screen.getByLabelText(/e-mail/i)).toBeInTheDocument();
-      expect(screen.getByLabelText(/senha/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /entrar/i })).toBeInTheDocument();
+  beforeEach(() => {
+    (useAuthState as jest.Mock).mockReturnValue({
+      loading: false,
+      error: null,
+      isAuthenticated: false,
     });
+    (useAuthActions as jest.Mock).mockReturnValue({
+      login: mockLogin,
+      clearError: mockClearError,
+    });
+    jest.clearAllMocks();
   });
 
-  it('allows user to type email and password', async () => {
-    const user = userEvent.setup();
-    
-    render(
-      <TestWrapper>
-        <LoginPage />
-      </TestWrapper>
-    );
+  it('renders login form', () => {
+    render(<LoginPage />);
+    expect(screen.getByLabelText(/E-mail/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Senha/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Entrar/i })).toBeInTheDocument();
+  });
 
-    const emailInput = await screen.findByLabelText(/e-mail/i);
-    const passwordInput = await screen.findByLabelText(/senha/i);
+  it('allows user to type email and password', () => {
+    render(<LoginPage />);
+    const emailInput = screen.getByLabelText(/E-mail/i);
+    const passwordInput = screen.getByLabelText(/Senha/i);
 
-    await user.type(emailInput, 'test@example.com');
-    await user.type(passwordInput, 'password123');
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
     expect(emailInput).toHaveValue('test@example.com');
     expect(passwordInput).toHaveValue('password123');
   });
 
-  it('toggles password visibility', async () => {
-    const user = userEvent.setup();
-    
-    render(
-      <TestWrapper>
-        <LoginPage />
-      </TestWrapper>
-    );
+  it('toggles password visibility', () => {
+    render(<LoginPage />);
+    const passwordInput = screen.getByLabelText(/Senha/i);
+    const toggleButtons = screen.getAllByRole('button');
+    const toggleButton = toggleButtons.find(btn => btn.getAttribute('type') === 'button');
 
-    const passwordInput = await screen.findByLabelText(/senha/i);
-    const toggleButton = await screen.findByRole('button', { name: /mostrar senha/i });
+    if (!toggleButton) {
+      throw new Error('Toggle button not found');
+    }
 
+    // Initially password type is password
     expect(passwordInput).toHaveAttribute('type', 'password');
-    
-    await user.click(toggleButton);
+
+    fireEvent.click(toggleButton);
+
+    // After click, type should be text
     expect(passwordInput).toHaveAttribute('type', 'text');
+
+    fireEvent.click(toggleButton);
+
+    // After second click, type should be password again
+    expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   it('shows error message on login failure', async () => {
-    const user = userEvent.setup();
-    
-    render(
-      <TestWrapper>
-        <LoginPage />
-      </TestWrapper>
-    );
+    (useAuthState as jest.Mock).mockReturnValue({
+      loading: false,
+      error: 'Invalid credentials',
+      isAuthenticated: false,
+    });
 
-    const emailInput = await screen.findByLabelText(/e-mail/i);
-    const passwordInput = await screen.findByLabelText(/senha/i);
-    const submitButton = await screen.findByRole('button', { name: /entrar/i });
+    render(<LoginPage />);
 
-    await user.type(emailInput, 'wrong@example.com');
-    await user.type(passwordInput, 'wrongpassword');
-    await user.click(submitButton);
+    const emailInput = screen.getByLabelText(/E-mail/i);
+    const passwordInput = screen.getByLabelText(/Senha/i);
+    const submitButton = screen.getByRole('button', { name: /Entrar/i });
+
+    fireEvent.change(emailInput, { target: { value: 'wrong@test.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrong' } });
+    fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/e-mail ou senha inválidos/i)).toBeInTheDocument();
+      expect(mockLogin).toHaveBeenCalledWith('wrong@test.com', 'wrong');
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(/Invalid credentials/i)).toBeInTheDocument();
     });
   });
 });
