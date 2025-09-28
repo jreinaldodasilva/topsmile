@@ -19,7 +19,6 @@ Thoroughly and meticulously perform a **static full-stack code review** of the T
 ---
 
 ## Hard constraints
-- **Do not run code.** No builds, no tests, no network calls beyond reading the raw links listed in the three input files.
 - **Do not access secrets** (.env, private keys). If files reference secrets, mark as "security observation — references to secret".
 - When assumptions are required, **explicitly label** them as `ASSUMPTION:` in the report.
 
