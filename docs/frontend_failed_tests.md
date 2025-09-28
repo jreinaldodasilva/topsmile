@@ -3,7 +3,7 @@
 ## Summary
 
 - Total Tests Executed: **201**
-- Total Failed Tests: **52**
+- Total Failed Tests: **51**
 
 # Test Suite: http service
 
@@ -14,15 +14,33 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: method.toUpperCase is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:39:24)
+    at normalizeMethod (/home/rebelde/Development/topsmile/node_modules/whatwg-fetch/dist/fetch.umd.js:352:26)
+    at new Request (/home/rebelde/Development/topsmile/node_modules/whatwg-fetch/dist/fetch.umd.js:388:19)
+    at Object.construct (/home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/ClientRequest/utils/recordRawHeaders.ts:185:33)
+    at fetchFn (/home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:52:23)
+    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:24:28)
+    at request (/home/rebelde/Development/topsmile/src/services/http.ts:97:10)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:39:37)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
 ```
 
 ---
@@ -34,15 +52,33 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: method.toUpperCase is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:66:24)
+    at normalizeMethod (/home/rebelde/Development/topsmile/node_modules/whatwg-fetch/dist/fetch.umd.js:352:26)
+    at new Request (/home/rebelde/Development/topsmile/node_modules/whatwg-fetch/dist/fetch.umd.js:388:19)
+    at Object.construct (/home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/ClientRequest/utils/recordRawHeaders.ts:185:33)
+    at fetchFn (/home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:52:23)
+    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:24:28)
+    at request (/home/rebelde/Development/topsmile/src/services/http.ts:97:10)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:66:37)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
 ```
 
 ---
@@ -54,15 +90,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:94:9)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -74,15 +108,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:109:24)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -94,15 +126,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:131:24)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -114,15 +144,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:170:24)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -134,15 +162,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:195:24)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -154,16 +180,13 @@
 
 **Error Message:**
 
-> Error: Network request failed
+> TypeError: response.clone is not a function
 
 
 **Stack Trace:**
 
 ```
-    at makeRequest (/home/rebelde/Development/topsmile/src/services/http.ts:106:13)
-    at request (/home/rebelde/Development/topsmile/src/services/http.ts:113:19)
-    at async Promise.all (index 0)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:230:36)
+    at /home/rebelde/Development/topsmile/node_modules/@mswjs/interceptors/src/interceptors/fetch/index.ts:170:42
 ```
 
 ---
@@ -187,518 +210,6 @@ Received: {"_bodyInit": undefined, "_bodyText": "", "_noBody": true, "bodyUsed":
 
 Number of calls: 1
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/http.test.ts:253:25)
-```
-
----
-
-# Test Suite: AdminDashboard
-
-## Test: AdminDashboard renders dashboard title
-
-**File/Class:** `AdminDashboard renders dashboard title`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Dashboard/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:9:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AdminDashboard renders stats cards after loading
-
-**File/Class:** `AdminDashboard renders stats cards after loading`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Total de Contatos/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:22:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AdminDashboard renders upcoming appointments section
-
-**File/Class:** `AdminDashboard renders upcoming appointments section`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Próximas Consultas/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:39:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AdminDashboard renders recent patients section
-
-**File/Class:** `AdminDashboard renders recent patients section`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Pacientes Recentes/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:47:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AdminDashboard renders pending tasks section
-
-**File/Class:** `AdminDashboard renders pending tasks section`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Tarefas Pendentes/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:55:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AdminDashboard renders quick actions section
-
-**File/Class:** `AdminDashboard renders quick actions section`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Ações Rápidas/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="dashboard"
-    >
-      <div
-        class="container"
-      >
-        <div
-          class="dashboard__loading"
-        >
-          <div
-            class="dashboard__loading-content"
-          >
-            <div
-              class="loading-shimmer dashboard__loading-header"
-            />
-            <div
-              class="dashboard__loading-grid"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-card"
-              />
-            </div>
-            <div
-              class="dashboard__loading-widgets"
-            >
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-              <div
-                class="loading-shimmer dashboard__loading-widget"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AdminDashboard.test.tsx:63:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
 ```
 
 ---
@@ -887,1012 +398,6 @@ Ignored nodes: comments, script, style
     at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
     at findByText (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:86:33)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/pages/Patient/Appointment/PatientAppointmentBooking.test.tsx:106:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-# Test Suite: LoginPage
-
-## Test: LoginPage renders login form
-
-**File/Class:** `LoginPage renders login form`
-
-
-**Error Message:**
-
-> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
-
-
-**Stack Trace:**
-
-```
-
-Check the render method of `AllTheProviders`.
-    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
-    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
-    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
-    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
-    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
-    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
-    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
-    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
-    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
-    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
-    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
-    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
-    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
-    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
-    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
-    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
-    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
-    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:31:11)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: LoginPage allows user to type email and password
-
-**File/Class:** `LoginPage allows user to type email and password`
-
-
-**Error Message:**
-
-> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
-
-
-**Stack Trace:**
-
-```
-
-Check the render method of `AllTheProviders`.
-    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
-    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
-    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
-    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
-    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
-    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
-    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
-    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
-    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
-    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
-    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
-    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
-    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
-    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
-    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
-    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
-    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
-    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:38:11)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: LoginPage toggles password visibility
-
-**File/Class:** `LoginPage toggles password visibility`
-
-
-**Error Message:**
-
-> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
-
-
-**Stack Trace:**
-
-```
-
-Check the render method of `AllTheProviders`.
-    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
-    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
-    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
-    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
-    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
-    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
-    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
-    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
-    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
-    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
-    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
-    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
-    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
-    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
-    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
-    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
-    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
-    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:50:11)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: LoginPage shows error message on login failure
-
-**File/Class:** `LoginPage shows error message on login failure`
-
-
-**Error Message:**
-
-> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
-
-
-**Stack Trace:**
-
-```
-
-Check the render method of `AllTheProviders`.
-    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
-    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
-    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
-    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
-    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
-    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
-    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
-    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
-    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
-    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
-    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
-    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
-    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
-    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
-    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
-    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
-    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
-    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:80:11)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-# Test Suite: PatientManagement
-
-## Test: PatientManagement renders patient management title
-
-**File/Class:** `PatientManagement renders patient management title`
-
-
-**Error Message:**
-
-> TestingLibraryElementError: Unable to find an element with the text: /Gerenciamento de Pacientes/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="patient-management-page"
-    >
-      <a
-        class="skip-link"
-        href="#main-content"
-      >
-        Pular para conteúdo principal
-      </a>
-      <header
-        class="header"
-        role="banner"
-      >
-        <div
-          class="container"
-        >
-          <a
-            class="skip-link"
-            href="#main-content"
-          >
-            Pular para conteúdo principal
-          </a>
-          <a
-            class="skip-link"
-            href="#main-navigation"
-          >
-            Pular para navegação principal
-          </a>
-          <div
-            class="header__logo"
-          >
-            <a
-              aria-label="TopSmile - Página inicial"
-              class="header__logo-link"
-              href="/"
-            >
-              <img
-                alt="TopSmile"
-                class="header__logo-img"
-                src="/src/assets/images/icon-192x192.png"
-              />
-              <span
-                class="header__logo-text"
-              >
-                TopSmile
-              </span>
-            </a>
-          </div>
-          <nav
-            aria-label="Navegação principal"
-            class="header__nav hide-mobile"
-            id="main-navigation"
-            role="navigation"
-          >
-            <ul
-              class="header__nav-list"
-            >
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  aria-current="page"
-                  class="header__nav-link header__nav-link--active"
-                  href="/"
-                >
-                  Home
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/features"
-                >
-                  Benefícios
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/pricing"
-                >
-                  Preços
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/contact"
-                >
-                  Contato
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <div
-            class="header__actions"
-          >
-            <div
-              class="header__auth-buttons hide-mobile"
-            >
-              <a
-                href="/login"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--ghost btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Entrar
-                  </span>
-                </button>
-              </a>
-              <a
-                href="/register"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--primary btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Começar
-                  </span>
-                </button>
-              </a>
-            </div>
-            <button
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-              aria-label="Menu de navegação"
-              class="header__mobile-menu-button show-mobile"
-            >
-              <svg
-                class="header__menu-icon"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 6h16M4 12h16M4 18h16"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-      <main
-        class="patient-management-main"
-      >
-        <div
-          class="container"
-        >
-          <div
-            class="loading-container"
-          >
-            <div
-              class="loading-spinner"
-            >
-              Carregando pacientes...
-            </div>
-          </div>
-        </div>
-      </main>
-      <footer
-        class="footer"
-        id="footer"
-      >
-        <div
-          class="footer-container"
-        >
-          <div
-            class="footer-brand"
-          >
-            <h2>
-              TopSmile
-            </h2>
-            <p>
-              Conectando você à saúde de forma simples, rápida e segura.
-            </p>
-          </div>
-          <div
-            class="footer-links"
-          >
-            <a
-              href="#hero"
-            >
-              Início
-            </a>
-            <a
-              href="#features"
-            >
-              Recursos
-            </a>
-            <a
-              href="#pricing"
-            >
-              Preços
-            </a>
-            <a
-              href="#contact"
-            >
-              Contato
-            </a>
-          </div>
-        </div>
-        <div
-          class="footer-bottom"
-        >
-          <p>
-            © 
-            2025
-             TopSmile. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
-    </div>
-  </div>
-</body>
-    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
-    at getByText (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/PatientManagement.test.tsx:9:19)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: PatientManagement renders patient list after loading
-
-**File/Class:** `PatientManagement renders patient list after loading`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Nenhum paciente encontrado/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="patient-management-page"
-    >
-      <a
-        class="skip-link"
-        href="#main-content"
-      >
-        Pular para conteúdo principal
-      </a>
-      <header
-        class="header"
-        role="banner"
-      >
-        <div
-          class="container"
-        >
-          <a
-            class="skip-link"
-            href="#main-content"
-          >
-            Pular para conteúdo principal
-          </a>
-          <a
-            class="skip-link"
-            href="#main-navigation"
-          >
-            Pular para navegação principal
-          </a>
-          <div
-            class="header__logo"
-          >
-            <a
-              aria-label="TopSmile - Página inicial"
-              class="header__logo-link"
-              href="/"
-            >
-              <img
-                alt="TopSmile"
-                class="header__logo-img"
-                src="/src/assets/images/icon-192x192.png"
-              />
-              <span
-                class="header__logo-text"
-              >
-                TopSmile
-              </span>
-            </a>
-          </div>
-          <nav
-            aria-label="Navegação principal"
-            class="header__nav hide-mobile"
-            id="main-navigation"
-            role="navigation"
-          >
-            <ul
-              class="header__nav-list"
-            >
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  aria-current="page"
-                  class="header__nav-link header__nav-link--active"
-                  href="/"
-                >
-                  Home
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/features"
-                >
-                  Benefícios
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/pricing"
-                >
-                  Preços
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/contact"
-                >
-                  Contato
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <div
-            class="header__actions"
-          >
-            <div
-              class="header__auth-buttons hide-mobile"
-            >
-              <a
-                href="/login"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--ghost btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Entrar
-                  </span>
-                </button>
-              </a>
-              <a
-                href="/register"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--primary btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Começar
-                  </span>
-                </button>
-              </a>
-            </div>
-            <button
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-              aria-label="Menu de navegação"
-              class="header__mobile-menu-button show-mobile"
-            >
-              <svg
-                class="header__menu-icon"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 6h16M4 12h16M4 18h16"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-      <main
-        class="patient-management-main"
-      >
-        <div
-          class="container"
-        >
-          <div
-            class="loading-container"
-          >
-            <div
-              class="loading-spinner"
-            >
-              Carregando pacientes...
-            </div>
-          </div>
-        </div>
-      </main>
-      <footer
-        class="footer"
-        id="footer"
-      >
-        <div
-          class="footer-container"
-        >
-          <div
-            class="footer-brand"
-          >
-            <h2>
-              TopSmile
-            </h2>
-            <p>
-              Conectando você à saúde de forma simples, rápida e segura.
-            </p>
-          </div>
-          <div
-            class="footer-links"
-          >
-            <a
-              href="#hero"
-            >
-              Início
-            </a>
-            <a
-              href="#features"
-            >
-              Recursos
-            </a>
-            <a
-              href="#pricing"
-            >
-              Preços
-            </a>
-            <a
-              href="#contact"
-            >
-              Contato
-            </a>
-          </div>
-        </div>
-        <div
-          class="footer-bottom"
-        >
-          <p>
-            © 
-            2025
-             TopSmile. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/PatientManagement.test.tsx:20:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: PatientManagement renders add patient button
-
-**File/Class:** `PatientManagement renders add patient button`
-
-
-**Error Message:**
-
-> Error: Unable to find role="button" and name `/Novo Paciente/i`
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="patient-management-page"
-    >
-      <a
-        class="skip-link"
-        href="#main-content"
-      >
-        Pular para conteúdo principal
-      </a>
-      <header
-        class="header"
-        role="banner"
-      >
-        <div
-          class="container"
-        >
-          <a
-            class="skip-link"
-            href="#main-content"
-          >
-            Pular para conteúdo principal
-          </a>
-          <a
-            class="skip-link"
-            href="#main-navigation"
-          >
-            Pular para navegação principal
-          </a>
-          <div
-            class="header__logo"
-          >
-            <a
-              aria-label="TopSmile - Página inicial"
-              class="header__logo-link"
-              href="/"
-            >
-              <img
-                alt="TopSmile"
-                class="header__logo-img"
-                src="/src/assets/images/icon-192x192.png"
-              />
-              <span
-                class="header__logo-text"
-              >
-                TopSmile
-              </span>
-            </a>
-          </div>
-          <nav
-            aria-label="Navegação principal"
-            class="header__nav hide-mobile"
-            id="main-navigation"
-            role="navigation"
-          >
-            <ul
-              class="header__nav-list"
-            >
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  aria-current="page"
-                  class="header__nav-link header__nav-link--active"
-                  href="/"
-                >
-                  Home
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/features"
-                >
-                  Benefícios
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/pricing"
-                >
-                  Preços
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/contact"
-                >
-                  Contato
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <div
-            class="header__actions"
-          >
-            <div
-              class="header__auth-buttons hide-mobile"
-            >
-              <a
-                href="/login"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--ghost btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Entrar
-                  </span>
-                </button>
-              </a>
-              <a
-                href="/register"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--primary btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Começar
-                  </span>
-                </button>
-              </a>
-            </div>
-            <button
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-              aria-label="Menu de navegação"
-              class="header__mobile-menu-button show-mobile"
-            >
-              <svg
-                class="header__menu-icon"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 6h16M4 12h16M4 18h16"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-      <main
-        class="patient-management-main"
-      >
-        <div
-          class="container"
-        >
-          <div
-            class="loading-container"
-          >
-            <div
-              class="loading-spinner"
-            >
-              Carregando pacientes...
-            </div>
-          </div>
-        </div>
-      </main>
-      <footer
-        class="footer"
-        id="footer"
-      >
-        <div
-          class="footer-container"
-        >
-          <div
-            class="footer-brand"
-          >
-            <h2>
-              TopSmile
-            </h2>
-            <p>
-              Conectando você à saúde de forma simples, rápida e segura.
-            </p>
-          </div>
-          <div
-            class="footer-links"
-          >
-            <a
-              href="#hero"
-            >
-              Início
-            </a>
-            <a
-              href="#features"
-            >
-              Recursos
-            </a>
-            <a
-              href="#pricing"
-            >
-              Preços
-            </a>
-            <a
-              href="#contact"
-            >
-              Contato
-            </a>
-          </div>
-        </div>
-        <div
-          class="footer-bottom"
-        >
-          <p>
-            © 
-            2025
-             TopSmile. Todos os direitos reservados.
-          </p>
-        </div>
-      </footer>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/PatientManagement.test.tsx:28:18)
     at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
     at new Promise (<anonymous>)
     at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
@@ -2179,14 +684,16 @@ Ignored nodes: comments, script, style
 
 ---
 
-## Test: ProviderManagement renders provider list after loading
+# Test Suite: PatientManagement
 
-**File/Class:** `ProviderManagement renders provider list after loading`
+## Test: PatientManagement renders patient management title
+
+**File/Class:** `PatientManagement renders patient management title`
 
 
 **Error Message:**
 
-> Error: Unable to find an element with the text: /Nenhum profissional encontrado/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+> TestingLibraryElementError: Unable to find an element with the text: /Gerenciamento de Pacientes/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
 
 
 **Stack Trace:**
@@ -2197,7 +704,7 @@ Ignored nodes: comments, script, style
 <body>
   <div>
     <div
-      class="provider-management-page"
+      class="patient-management-page"
     >
       <a
         class="skip-link"
@@ -2355,7 +862,7 @@ Ignored nodes: comments, script, style
         </div>
       </header>
       <main
-        class="provider-management-main"
+        class="patient-management-main"
       >
         <div
           class="container"
@@ -2366,7 +873,7 @@ Ignored nodes: comments, script, style
             <div
               class="loading-spinner"
             >
-              Carregando profissionais...
+              Carregando pacientes...
             </div>
           </div>
         </div>
@@ -2426,8 +933,11 @@ Ignored nodes: comments, script, style
     </div>
   </div>
 </body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/ProviderManagement.test.tsx:20:18)
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByText (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/PatientManagement.test.tsx:9:19)
     at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
     at new Promise (<anonymous>)
     at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
@@ -2444,14 +954,16 @@ Ignored nodes: comments, script, style
 
 ---
 
-## Test: ProviderManagement renders add provider button
+# Test Suite: ContactManagement
 
-**File/Class:** `ProviderManagement renders add provider button`
+## Test: ContactManagement renders add contact button
+
+**File/Class:** `ContactManagement renders add contact button`
 
 
 **Error Message:**
 
-> Error: Unable to find role="button" and name `/Novo Profissional/i`
+> Error: Unable to find role="button" and name `/Criar Contato/i`
 
 
 **Stack Trace:**
@@ -2462,7 +974,7 @@ Ignored nodes: comments, script, style
 <body>
   <div>
     <div
-      class="provider-management-page"
+      class="contact-management-page"
     >
       <a
         class="skip-link"
@@ -2620,20 +1132,227 @@ Ignored nodes: comments, script, style
         </div>
       </header>
       <main
-        class="provider-management-main"
+        class="contact-management-main"
       >
         <div
           class="container"
         >
-          <div
-            class="loading-container"
+          <section
+            class="page-header"
           >
             <div
-              class="loading-spinner"
+              class="header-content"
             >
-              Carregando profissionais...
+              <div
+                class="header-info"
+              >
+                <h1
+                  class="page-title"
+                >
+                  Gerenciamento de Contatos
+                </h1>
+                <p
+                  class="page-subtitle"
+                >
+                  Gerencie todos os contatos e leads da sua clínica odontológica
+                </p>
+              </div>
+              <div
+                class="header-stats"
+              >
+                <div
+                  class="stat-item"
+                >
+                  <span
+                    class="stat-number"
+                  >
+                    1,247
+                  </span>
+                  <span
+                    class="stat-label"
+                  >
+                    Total de Contatos
+                  </span>
+                </div>
+                <div
+                  class="stat-item"
+                >
+                  <span
+                    class="stat-number"
+                  >
+                    89
+                  </span>
+                  <span
+                    class="stat-label"
+                  >
+                    Novos Esta Semana
+                  </span>
+                </div>
+                <div
+                  class="stat-item"
+                >
+                  <span
+                    class="stat-number"
+                  >
+                    23%
+                  </span>
+                  <span
+                    class="stat-label"
+                  >
+                    Taxa de Conversão
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
+          <section
+            class="contact-list-section"
+          >
+            <div
+              class="contact-list"
+            >
+              <div
+                class="contact-list-header"
+              >
+                <h2>
+                  Gerenciar Contatos
+                </h2>
+                <div
+                  class="header-actions"
+                >
+                  <button
+                    aria-label="Criar novo contato"
+                    class="btn btn-primary"
+                  >
+                    Criar Contato
+                  </button>
+                  <button
+                    aria-label="Encontrar contatos duplicados"
+                    class="btn btn-secondary"
+                  >
+                    Buscar Duplicados
+                  </button>
+                </div>
+                <div
+                  class="contact-filters"
+                >
+                  <div
+                    class="search-box"
+                  >
+                    <input
+                      class="search-input"
+                      placeholder="Buscar por nome, email, clínica..."
+                      type="text"
+                      value=""
+                    />
+                  </div>
+                  <div
+                    class="status-filters"
+                  >
+                    <button
+                      aria-label="Filtrar por todos os status"
+                      class="filter-button active"
+                    >
+                      Todos
+                    </button>
+                    <button
+                      aria-label="Filtrar por status: Novo"
+                      class="filter-button "
+                    >
+                      Novos
+                    </button>
+                    <button
+                      aria-label="Filtrar por status: Contatado"
+                      class="filter-button "
+                    >
+                      Contatados
+                    </button>
+                    <button
+                      aria-label="Filtrar por status: Qualificado"
+                      class="filter-button "
+                    >
+                      Qualificados
+                    </button>
+                    <button
+                      aria-label="Filtrar por status: Convertido"
+                      class="filter-button "
+                    >
+                      Convertidos
+                    </button>
+                    <button
+                      aria-label="Filtrar por status: Fechado"
+                      class="filter-button "
+                    >
+                      Fechados
+                    </button>
+                  </div>
+                  <div
+                    class="priority-filters"
+                  >
+                    <label>
+                      Prioridade:
+                    </label>
+                    <button
+                      aria-label="Filtrar por todas as prioridades"
+                      class="filter-button active"
+                    >
+                      Todas
+                    </button>
+                    <button
+                      aria-label="Filtrar por prioridade: Alta"
+                      class="filter-button "
+                    >
+                      Alta
+                    </button>
+                    <button
+                      aria-label="Filtrar por prioridade: Média"
+                      class="filter-button "
+                    >
+                      Média
+                    </button>
+                    <button
+                      aria-label="Filtrar por prioridade: Baixa"
+                      class="filter-button "
+                    >
+                      Baixa
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div
+                aria-live="assertive"
+                class="error-banner"
+                role="alert"
+              >
+                <span>
+                  ⚠️ 
+                  Network request failed
+                </span>
+                <button>
+                  Tentar novamente
+                </button>
+              </div>
+              <div
+                class="contact-table-container"
+              >
+                <div
+                  class="empty-state"
+                >
+                  <div
+                    class="empty-icon"
+                  >
+                    📋
+                  </div>
+                  <h3>
+                    Nenhum contato encontrado
+                  </h3>
+                  <p>
+                    Você ainda não tem contatos registrados.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
       </main>
       <footer
@@ -2692,7 +1411,133 @@ Ignored nodes: comments, script, style
   </div>
 </body>
     at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/ProviderManagement.test.tsx:28:18)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/ContactManagement.test.tsx:28:18)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+# Test Suite: PatientAuthContext
+
+## Test: PatientAuthContext Initial Authentication Check handles invalid tokens on mount
+
+**File/Class:** `PatientAuthContext Initial Authentication Check handles invalid tokens on mount`
+
+
+**Error Message:**
+
+> Error: expect(received).toBeNull()
+
+
+**Stack Trace:**
+
+```
+
+Received: "invalid-token"
+
+Ignored nodes: comments, script, style
+<html>
+  <head />
+  <body>
+    <div>
+      <div>
+        <div
+          data-testid="auth-status"
+        >
+          Not Authenticated
+        </div>
+        <div
+          data-testid="loading-status"
+        >
+          Not Loading
+        </div>
+        <div
+          data-testid="error-message"
+        >
+          No Error
+        </div>
+        <div
+          data-testid="user-info"
+        >
+          No User
+        </div>
+        <button>
+          Login
+        </button>
+        <button>
+          Logout
+        </button>
+        <button>
+          Clear Error
+        </button>
+        <button>
+          Refresh Patient Data
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
+    at /home/rebelde/Development/topsmile/src/tests/contexts/PatientAuthContext.test.tsx:254:75
+    at runWithExpensiveErrorDiagnosticsDisabled (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:47:12)
+    at checkCallback (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:124:77)
+    at checkRealTimersCallback (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:118:16)
+    at Timeout.task [as _onTimeout] (/home/rebelde/Development/topsmile/node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
+    at listOnTimeout (node:internal/timers:588:17)
+    at processTimers (node:internal/timers:523:7)
+```
+
+---
+
+# Test Suite: AppointmentCalendar
+
+## Test: AppointmentCalendar renders calendar header
+
+**File/Class:** `AppointmentCalendar renders calendar header`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element with the text: /Agenda de Consultas/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div
+      class="appointment-calendar"
+    >
+      <div
+        class="loading-container"
+      >
+        <div
+          class="loading-spinner"
+        >
+          Carregando agendamentos...
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByText (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AppointmentCalendar.test.tsx:9:19)
     at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
     at new Promise (<anonymous>)
     at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
@@ -3403,398 +2248,6 @@ Ignored nodes: comments, script, style
 
 ---
 
-# Test Suite: ContactManagement
-
-## Test: ContactManagement renders add contact button
-
-**File/Class:** `ContactManagement renders add contact button`
-
-
-**Error Message:**
-
-> Error: Unable to find role="button" and name `/Criar Contato/i`
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="contact-management-page"
-    >
-      <a
-        class="skip-link"
-        href="#main-content"
-      >
-        Pular para conteúdo principal
-      </a>
-      <header
-        class="header"
-        role="banner"
-      >
-        <div
-          class="container"
-        >
-          <a
-            class="skip-link"
-            href="#main-content"
-          >
-            Pular para conteúdo principal
-          </a>
-          <a
-            class="skip-link"
-            href="#main-navigation"
-          >
-            Pular para navegação principal
-          </a>
-          <div
-            class="header__logo"
-          >
-            <a
-              aria-label="TopSmile - Página inicial"
-              class="header__logo-link"
-              href="/"
-            >
-              <img
-                alt="TopSmile"
-                class="header__logo-img"
-                src="/src/assets/images/icon-192x192.png"
-              />
-              <span
-                class="header__logo-text"
-              >
-                TopSmile
-              </span>
-            </a>
-          </div>
-          <nav
-            aria-label="Navegação principal"
-            class="header__nav hide-mobile"
-            id="main-navigation"
-            role="navigation"
-          >
-            <ul
-              class="header__nav-list"
-            >
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  aria-current="page"
-                  class="header__nav-link header__nav-link--active"
-                  href="/"
-                >
-                  Home
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/features"
-                >
-                  Benefícios
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/pricing"
-                >
-                  Preços
-                </a>
-              </li>
-              <li
-                class="header__nav-item"
-              >
-                <a
-                  class="header__nav-link "
-                  href="/contact"
-                >
-                  Contato
-                </a>
-              </li>
-            </ul>
-          </nav>
-          <div
-            class="header__actions"
-          >
-            <div
-              class="header__auth-buttons hide-mobile"
-            >
-              <a
-                href="/login"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--ghost btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Entrar
-                  </span>
-                </button>
-              </a>
-              <a
-                href="/register"
-              >
-                <button
-                  aria-busy="false"
-                  class="btn btn--primary btn--md"
-                >
-                  <span
-                    class="btn__content"
-                  >
-                    Começar
-                  </span>
-                </button>
-              </a>
-            </div>
-            <button
-              aria-controls="mobile-menu"
-              aria-expanded="false"
-              aria-label="Menu de navegação"
-              class="header__mobile-menu-button show-mobile"
-            >
-              <svg
-                class="header__menu-icon"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M4 6h16M4 12h16M4 18h16"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-      <main
-        class="contact-management-main"
-      >
-        <div
-          class="container"
-        >
-          <section
-            class="page-header"
-          >
-            <div
-              class="header-content"
-            >
-              <div
-                class="header-info"
-              >
-                <h1
-                  class="page-title"
-                >
-                  Gerenciamento de Contatos
-                </h1>
-                [...
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/ContactManagement.test.tsx:28:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-# Test Suite: PatientAuthContext
-
-## Test: PatientAuthContext Initial Authentication Check handles invalid tokens on mount
-
-**File/Class:** `PatientAuthContext Initial Authentication Check handles invalid tokens on mount`
-
-
-**Error Message:**
-
-> Error: expect(received).toBeNull()
-
-
-**Stack Trace:**
-
-```
-
-Received: "invalid-token"
-
-Ignored nodes: comments, script, style
-<html>
-  <head />
-  <body>
-    <div>
-      <div>
-        <div
-          data-testid="auth-status"
-        >
-          Not Authenticated
-        </div>
-        <div
-          data-testid="loading-status"
-        >
-          Not Loading
-        </div>
-        <div
-          data-testid="error-message"
-        >
-          No Error
-        </div>
-        <div
-          data-testid="user-info"
-        >
-          No User
-        </div>
-        <button>
-          Login
-        </button>
-        <button>
-          Logout
-        </button>
-        <button>
-          Clear Error
-        </button>
-        <button>
-          Refresh Patient Data
-        </button>
-      </div>
-    </div>
-  </body>
-</html>
-    at /home/rebelde/Development/topsmile/src/tests/contexts/PatientAuthContext.test.tsx:254:75
-    at runWithExpensiveErrorDiagnosticsDisabled (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:47:12)
-    at checkCallback (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:124:77)
-    at checkRealTimersCallback (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:118:16)
-    at Timeout.task [as _onTimeout] (/home/rebelde/Development/topsmile/node_modules/jsdom/lib/jsdom/browser/Window.js:516:19)
-    at listOnTimeout (node:internal/timers:588:17)
-    at processTimers (node:internal/timers:523:7)
-```
-
----
-
-# Test Suite: AppointmentCalendar
-
-## Test: AppointmentCalendar renders calendar header
-
-**File/Class:** `AppointmentCalendar renders calendar header`
-
-
-**Error Message:**
-
-> TestingLibraryElementError: Unable to find an element with the text: /Agenda de Consultas/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="appointment-calendar"
-    >
-      <div
-        class="loading-container"
-      >
-        <div
-          class="loading-spinner"
-        >
-          Carregando agendamentos...
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
-    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
-    at getByText (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AppointmentCalendar.test.tsx:9:19)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
-## Test: AppointmentCalendar renders calendar grid after loading
-
-**File/Class:** `AppointmentCalendar renders calendar grid after loading`
-
-
-**Error Message:**
-
-> Error: Unable to find an element with the text: /Nenhuma consulta encontrada/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
-
-
-**Stack Trace:**
-
-```
-
-Ignored nodes: comments, script, style
-<body>
-  <div>
-    <div
-      class="appointment-calendar"
-    >
-      <div
-        class="loading-container"
-      >
-        <div
-          class="loading-spinner"
-        >
-          Carregando agendamentos...
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-    at waitForWrapper (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/wait-for.js:163:27)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/AppointmentCalendar.test.tsx:20:18)
-    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
-    at new Promise (<anonymous>)
-    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
-    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
-    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
-    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
-    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
-    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
-    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
-    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
-    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
-```
-
----
-
 # Test Suite: RegisterPage
 
 ## Test: RegisterPage renders registration form fields
@@ -4259,26 +2712,43 @@ Ignored nodes: comments, script, style
 
 ---
 
-# Test Suite: ErrorContext
+# Test Suite: LoginPage
 
-## Test: ErrorContext clears all notifications
+## Test: LoginPage renders login form
 
-**File/Class:** `ErrorContext clears all notifications`
+**File/Class:** `LoginPage renders login form`
 
 
 **Error Message:**
 
-> Error: expect(received).toHaveLength(expected)
+> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
 
 
 **Stack Trace:**
 
 ```
 
-Expected length: 2
-Received length: 6
-Received array:  [<div data-testid="notification-notification-1759010151142-ymdwn4fxk"><span data-testid="notification-title">Error</span><span data-testid="notification-message">Error message</span><button>Dismiss</button></div>, <span data-testid="notification-title">Error</span>, <span data-testid="notification-message">Error message</span>, <div data-testid="notification-notification-1759010151142-i46hedsns"><span data-testid="notification-title">Warning</span><span data-testid="notification-message">Warning message</span><button>Dismiss</button></div>, <span data-testid="notification-title">Warning</span>, <span data-testid="notification-message">Warning message</span>]
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:114:52)
+Check the render method of `AllTheProviders`.
+    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
+    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
+    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
+    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
+    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
+    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
+    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
+    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
+    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
+    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
+    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
+    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
+    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
+    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:31:11)
     at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
     at new Promise (<anonymous>)
     at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
@@ -4295,24 +2765,143 @@ Received array:  [<div data-testid="notification-notification-1759010151142-ymdw
 
 ---
 
-## Test: ErrorContext logs an error and shows a notification
+## Test: LoginPage allows user to type email and password
 
-**File/Class:** `ErrorContext logs an error and shows a notification`
+**File/Class:** `LoginPage allows user to type email and password`
 
 
 **Error Message:**
 
-> Error: expect(received).toHaveLength(expected)
+> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
 
 
 **Stack Trace:**
 
 ```
 
-Expected length: 1
-Received length: 3
-Received array:  [<div data-testid="notification-notification-1759010163142-qoo38oi6s"><span data-testid="notification-title">Erro no Sistema</span><span data-testid="notification-message">Ocorreu um erro inesperado. Tente novamente ou entre em contato com o suporte.</span><button>Dismiss</button></div>, <span data-testid="notification-title">Erro no Sistema</span>, <span data-testid="notification-message">Ocorreu um erro inesperado. Tente novamente ou entre em contato com o suporte.</span>]
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:158:27)
+Check the render method of `AllTheProviders`.
+    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
+    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
+    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
+    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
+    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
+    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
+    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
+    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
+    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
+    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
+    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
+    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
+    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
+    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:38:11)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: LoginPage toggles password visibility
+
+**File/Class:** `LoginPage toggles password visibility`
+
+
+**Error Message:**
+
+> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+
+**Stack Trace:**
+
+```
+
+Check the render method of `AllTheProviders`.
+    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
+    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
+    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
+    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
+    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
+    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
+    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
+    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
+    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
+    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
+    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
+    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
+    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
+    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:50:11)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: LoginPage shows error message on login failure
+
+**File/Class:** `LoginPage shows error message on login failure`
+
+
+**Error Message:**
+
+> Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.
+
+
+**Stack Trace:**
+
+```
+
+Check the render method of `AllTheProviders`.
+    at createFiberFromTypeAndProps (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28478:17)
+    at createFiberFromElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:28504:15)
+    at reconcileSingleElement (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:13986:23)
+    at reconcileChildFibers (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:14044:35)
+    at reconcileChildren (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:19186:28)
+    at updateContextProvider (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21193:3)
+    at beginWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:21688:14)
+    at beginWork$1 (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:27465:14)
+    at performUnitOfWork (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26599:12)
+    at workLoopSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26505:5)
+    at renderRootSync (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:26473:7)
+    at recoverFromConcurrentError (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25889:20)
+    at performConcurrentWorkOnRoot (/home/rebelde/Development/topsmile/node_modules/react-dom/cjs/react-dom.development.js:25789:22)
+    at flushActQueue (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2667:24)
+    at act (/home/rebelde/Development/topsmile/node_modules/react/cjs/react.development.js:2582:11)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/act-compat.js:47:25
+    at renderRoot (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:190:26)
+    at render (/home/rebelde/Development/topsmile/node_modules/@testing-library/react/dist/pure.js:292:10)
+    at customRender (/home/rebelde/Development/topsmile/src/tests/utils/test-utils.tsx:35:12)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/components/LoginPage.test.tsx:80:11)
     at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
     at new Promise (<anonymous>)
     at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
@@ -4330,6 +2919,48 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 ---
 
 # Test Suite: apiService
+
+## Test: apiService auth methods login should successfully login with valid credentials
+
+**File/Class:** `apiService auth methods login should successfully login with valid credentials`
+
+
+**Error Message:**
+
+> Error: expect(received).toBe(expected) // Object.is equality
+
+
+**Stack Trace:**
+
+```
+
+Expected: true
+Received: undefined
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:32:32)
+```
+
+---
+
+## Test: apiService auth methods login should handle login failure with invalid credentials
+
+**File/Class:** `apiService auth methods login should handle login failure with invalid credentials`
+
+
+**Error Message:**
+
+> Error: expect(received).toBe(expected) // Object.is equality
+
+
+**Stack Trace:**
+
+```
+
+Expected: false
+Received: undefined
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:48:32)
+```
+
+---
 
 ## Test: apiService auth methods login should handle network errors
 
@@ -4363,6 +2994,48 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 ---
 
+## Test: apiService auth methods register should successfully register a new user
+
+**File/Class:** `apiService auth methods register should successfully register a new user`
+
+
+**Error Message:**
+
+> Error: expect(received).toBe(expected) // Object.is equality
+
+
+**Stack Trace:**
+
+```
+
+Expected: true
+Received: undefined
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:82:32)
+```
+
+---
+
+## Test: apiService auth methods me should get current user data
+
+**File/Class:** `apiService auth methods me should get current user data`
+
+
+**Error Message:**
+
+> Error: expect(received).toBe(expected) // Object.is equality
+
+
+**Stack Trace:**
+
+```
+
+Expected: true
+Received: undefined
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:99:32)
+```
+
+---
+
 ## Test: apiService patients methods getAll should get all patients
 
 **File/Class:** `apiService patients methods getAll should get all patients`
@@ -4370,13 +3043,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:246:15)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:242:16)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:109:24)
 ```
 
@@ -4389,13 +3063,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:246:15)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:242:16)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:118:24)
 ```
 
@@ -4408,13 +3083,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getPatient [as getOne] (/home/rebelde/Development/topsmile/src/services/apiService.ts:135:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getPatient [as getOne] (/home/rebelde/Development/topsmile/src/services/apiService.ts:135:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:128:24)
 ```
 
@@ -4427,13 +3103,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getPatient [as getOne] (/home/rebelde/Development/topsmile/src/services/apiService.ts:135:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getPatient [as getOne] (/home/rebelde/Development/topsmile/src/services/apiService.ts:135:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:137:24)
 ```
 
@@ -4446,13 +3123,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.createPatient [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:146:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.createPatient [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:144:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:155:24)
 ```
 
@@ -4465,13 +3143,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.updatePatient [as update] (/home/rebelde/Development/topsmile/src/services/apiService.ts:157:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.updatePatient [as update] (/home/rebelde/Development/topsmile/src/services/apiService.ts:153:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:172:24)
 ```
 
@@ -4484,14 +3163,13 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> TypeError: Cannot read properties of undefined (reading 'success')
 
 
 **Stack Trace:**
 
 ```
-    at Object.delete (/home/rebelde/Development/topsmile/src/services/apiService.ts:258:29)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:182:24)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:184:23)
 ```
 
 ---
@@ -4503,13 +3181,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:196:15)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getAll (/home/rebelde/Development/topsmile/src/services/apiService.ts:193:16)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:193:24)
 ```
 
@@ -4522,13 +3201,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.createContact [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:84:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.createContact [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:88:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:213:24)
 ```
 
@@ -4541,13 +3221,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getAppointments [as getAll] (/home/rebelde/Development/topsmile/src/services/apiService.ts:34:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getAppointments [as getAll] (/home/rebelde/Development/topsmile/src/services/apiService.ts:42:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:225:24)
 ```
 
@@ -4560,13 +3241,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.createAppointment [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:53:11)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.createAppointment [as create] (/home/rebelde/Development/topsmile/src/services/apiService.ts:60:12)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:251:24)
 ```
 
@@ -4579,13 +3261,14 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.getStats (/home/rebelde/Development/topsmile/src/services/apiService.ts:344:15)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.getStats (/home/rebelde/Development/topsmile/src/services/apiService.ts:342:16)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:264:24)
 ```
 
@@ -4598,14 +3281,13 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> TypeError: Cannot read properties of undefined (reading 'success')
 
 
 **Stack Trace:**
 
 ```
-    at Object.sendContactForm (/home/rebelde/Development/topsmile/src/services/apiService.ts:356:29)
-    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:287:24)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:289:23)
 ```
 
 ---
@@ -4617,14 +3299,813 @@ Received array:  [<div data-testid="notification-notification-1759010163142-qoo3
 
 **Error Message:**
 
-> TypeError: Cannot read properties of undefined (reading 'ok')
+> Error: Network request failed
 
 
 **Stack Trace:**
 
 ```
-    at Object.health (/home/rebelde/Development/topsmile/src/services/apiService.ts:362:15)
+    at ensureData (/home/rebelde/Development/topsmile/src/services/apiService.ts:27:11)
+    at Object.health (/home/rebelde/Development/topsmile/src/services/apiService.ts:361:16)
     at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/services/apiService.test.ts:301:24)
+```
+
+---
+
+# Test Suite: ErrorContext
+
+## Test: ErrorContext shows an error notification
+
+**File/Class:** `ErrorContext shows an error notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-0zhqkm1sy"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--error  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ❌
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Error
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Error message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:57:33)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext shows a warning notification
+
+**File/Class:** `ErrorContext shows a warning notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-ydbsy1b82"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--warning  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ⚠️
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Warning
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Warning message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:66:33)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext shows an info notification
+
+**File/Class:** `ErrorContext shows an info notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-wcxdxduo0"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--info  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ℹ️
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Info
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Info message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:75:33)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext shows a success notification
+
+**File/Class:** `ErrorContext shows a success notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-xc3j7tfq8"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--success  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ✅
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Success
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Success message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:84:33)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext dismisses a notification
+
+**File/Class:** `ErrorContext dismisses a notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-5z7lt1fwt"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--error  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ❌
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Error
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Error message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:93:33)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext auto-dismisses success notification
+
+**File/Class:** `ErrorContext auto-dismisses success notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-ztombwvb6"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--success  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ✅
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Success
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Success message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:121:19)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext auto-dismisses info notification
+
+**File/Class:** `ErrorContext auto-dismisses info notification`
+
+
+**Error Message:**
+
+> TestingLibraryElementError: Unable to find an element by: [data-testid="notification-notification-1759015674680-1hu26hdan"]
+
+
+**Stack Trace:**
+
+```
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <div>
+      <button>
+        Show Error
+      </button>
+      <button>
+        Show Warning
+      </button>
+      <button>
+        Show Info
+      </button>
+      <button>
+        Show Success
+      </button>
+      <button>
+        Clear All
+      </button>
+      <button>
+        Log Error
+      </button>
+    </div>
+    <div
+      aria-label="Notificações"
+      class="notification-container"
+      role="region"
+    >
+      <div
+        aria-live="polite"
+        class="notification-item notification-item--info  "
+        role="alert"
+      >
+        <div
+          class="notification-item__icon"
+        >
+          ℹ️
+        </div>
+        <div
+          class="notification-item__content"
+        >
+          <div
+            class="notification-item__header"
+          >
+            <h4
+              class="notification-item__title"
+              data-testid="notification-title"
+            >
+              Info
+            </h4>
+            <span
+              class="notification-item__time"
+            >
+              20:27
+            </span>
+          </div>
+          <p
+            class="notification-item__message"
+            data-testid="notification-message"
+          >
+            Info message
+          </p>
+        </div>
+        <button
+          aria-label="Fechar notificação"
+          class="notification-item__close"
+          type="button"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+  </div>
+</body>
+    at Object.getElementError (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/config.js:37:19)
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+    at /home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+    at getByTestId (/home/rebelde/Development/topsmile/node_modules/@testing-library/dom/dist/query-helpers.js:95:19)
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:135:19)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
+```
+
+---
+
+## Test: ErrorContext logs an error and shows a notification
+
+**File/Class:** `ErrorContext logs an error and shows a notification`
+
+
+**Error Message:**
+
+> Error: expect(jest.fn()).toHaveBeenCalled()
+
+
+**Stack Trace:**
+
+```
+
+Expected number of calls: >= 1
+Received number of calls:    0
+    at Object.<anonymous> (/home/rebelde/Development/topsmile/src/tests/contexts/ErrorContext.test.tsx:161:26)
+    at Promise.then.completed (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:391:28)
+    at new Promise (<anonymous>)
+    at callAsyncCircusFn (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/utils.js:316:10)
+    at _callCircusTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:218:40)
+    at _runTest (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:155:3)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:66:9)
+    at _runTestsForDescribeBlock (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:60:9)
+    at run (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/run.js:25:3)
+    at runAndTransformResultsToJestFormat (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:170:21)
+    at jestAdapter (/home/rebelde/Development/topsmile/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:82:19)
+    at runTestInternal (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:389:16)
+    at runTest (/home/rebelde/Development/topsmile/node_modules/jest-runner/build/runTest.js:475:34)
 ```
 
 ---
