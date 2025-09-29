@@ -7,15 +7,17 @@ import { AuthProvider } from '../../contexts/AuthContext';
 import { PatientAuthProvider } from '../../contexts/PatientAuthContext';
 import { ErrorProvider } from '../../contexts/ErrorContext';
 
-const queryClient = new QueryClient({
+// Create a fresh query client for each test to avoid state leakage
+const createTestQueryClient = () => new QueryClient({
   defaultOptions: {
-    queries: {
-      retry: false,
-    },
-  },
+    queries: { retry: false, gcTime: 0 },
+    mutations: { retry: false }
+  }
 });
 
 const AllTheProviders = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = createTestQueryClient();
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>

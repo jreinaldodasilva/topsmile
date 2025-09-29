@@ -22,8 +22,7 @@
   },
   "include": [
     "src",
-    "src/**/*.ts",
-    "src/types/**/*.d.ts"
+    "cypress"
   ],
   "exclude": [
     "node_modules"

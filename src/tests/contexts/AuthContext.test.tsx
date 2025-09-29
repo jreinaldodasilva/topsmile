@@ -499,4 +499,172 @@ describe('AuthContext', () => {
       expect(() => rtlRender(<TestHook />)).toThrow('useAuthActions must be used within an AuthProvider');
     });
   });
+
+  describe('Token Refresh Flow', () => {
+    it('should handle token refresh on 401 response', async () => {
+      const mockUser = {
+        _id: 'user123',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'admin'
+      };
+
+      // Mock initial login success
+      (apiService.auth.login as jest.Mock).mockResolvedValueOnce({
+        success: true,
+        data: {
+          user: mockUser,
+          accessToken: 'initial-token',
+          refreshToken: 'refresh-token'
+        }
+      });
+
+      render(<TestComponent />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+      });
+
+      // Perform login
+      const loginButton = screen.getByRole('button', { name: /Login/i });
+      fireEvent.click(loginButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+      });
+
+      // Simulate token expiration by mocking me() to fail with 401
+      (apiService.auth.me as jest.Mock)
+        .mockResolvedValueOnce({
+          success: false,
+          message: 'Token expired'
+        })
+        .mockResolvedValueOnce({
+          success: true,
+          data: mockUser
+        });
+
+      // Trigger refresh user data
+      const refreshButton = screen.getByRole('button', { name: /Refresh User Data/i });
+      fireEvent.click(refreshButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('user-info')).toHaveTextContent('User: Test User (admin)');
+      });
+    });
+
+    it('should handle refresh token expiration', async () => {
+      localStorageMock.setItem('topsmile_access_token', 'expired-token');
+      localStorageMock.setItem('topsmile_refresh_token', 'expired-refresh');
+
+      (apiService.auth.me as jest.Mock).mockResolvedValueOnce({
+        success: false,
+        message: 'Token expired'
+      });
+
+      render(<TestComponent />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+        expect(localStorageMock.removeItem).toHaveBeenCalledWith('topsmile_access_token');
+        expect(localStorageMock.removeItem).toHaveBeenCalledWith('topsmile_refresh_token');
+        expect(mockNavigate).toHaveBeenCalledWith('/login');
+      });
+    });
+  });
+
+  describe('Cross-tab Synchronization', () => {
+    it('should sync logout across tabs', async () => {
+      const mockUser = {
+        _id: 'user123',
+        name: 'Test User',
+        email: 'test@example.com',
+        role: 'admin'
+      };
+
+      (apiService.auth.login as jest.Mock).mockResolvedValueOnce({
+        success: true,
+        data: {
+          user: mockUser,
+          accessToken: 'access-token',
+          refreshToken: 'refresh-token'
+        }
+      });
+
+      render(<TestComponent />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+      });
+
+      // Login first
+      const loginButton = screen.getByRole('button', { name: /Login/i });
+      fireEvent.click(loginButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+      });
+
+      // Simulate logout event from another tab
+      window.dispatchEvent(new CustomEvent('topsmile-logout', {
+        detail: { key: 'default' }
+      }));
+
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+        expect(mockNavigate).toHaveBeenCalledWith('/login');
+      });
+    });
+  });
+
+  describe('Authentication Race Conditions', () => {
+    it('should handle concurrent login attempts', async () => {
+      let resolveFirstLogin: (value: any) => void;
+      let resolveSecondLogin: (value: any) => void;
+
+      const firstLoginPromise = new Promise(resolve => {
+        resolveFirstLogin = resolve;
+      });
+
+      const secondLoginPromise = new Promise(resolve => {
+        resolveSecondLogin = resolve;
+      });
+
+      (apiService.auth.login as jest.Mock)
+        .mockImplementationOnce(() => firstLoginPromise)
+        .mockImplementationOnce(() => secondLoginPromise);
+
+      render(<TestComponent />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+      });
+
+      // Start first login
+      const loginButton = screen.getByRole('button', { name: /Login/i });
+      fireEvent.click(loginButton);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('loading-status')).toHaveTextContent('Loading');
+      });
+
+      // Try second login while first is in progress - should be ignored due to loading state
+      expect(loginButton).toBeDisabled();
+
+      // Resolve first login
+      resolveFirstLogin({
+        success: true,
+        data: {
+          user: { role: 'admin', name: 'Test User', email: 'test@example.com' },
+          accessToken: 'token1',
+          refreshToken: 'refresh1'
+        }
+      });
+
+      await waitFor(() => {
+        expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
+      });
+    });
+  });
 });

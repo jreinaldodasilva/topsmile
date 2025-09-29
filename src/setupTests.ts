@@ -1,19 +1,25 @@
 // Polyfills must be loaded before any other imports
 import './textEncoderPolyfill';
-import type { SetupServerApi } from 'msw/node';
+// Import MSW server
+import { server } from './mocks/server';
 import '@testing-library/jest-dom';
 
-const server: SetupServerApi = require('./mocks/server').server;
-
-// Establish API mocking before all tests.
-beforeAll(() => server.listen?.());
+// Ensure clean state between tests
+beforeAll(() => {
+  // Establish API mocking before all tests
+  server.listen({ onUnhandledRequest: 'error' });
+});
 
 // Reset any request handlers that we may add during the tests,
 // so they don't affect other tests.
-afterEach(() => server.resetHandlers?.());
+afterEach(() => {
+  server.resetHandlers();
+  // Clear any test-specific localStorage/sessionStorage
+  localStorage.clear();
+});
 
 // Clean up after the tests are finished.
-afterAll(() => server.close?.());
+afterAll(() => server.close());
 
 // Mock localStorage
 const localStorageMock = {
