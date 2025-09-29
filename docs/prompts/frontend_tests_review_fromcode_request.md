@@ -2,8 +2,6 @@
 
 Thoroughly and meticulously perform a **static review of the frontend test suite** for the TopSmile project using only the inputs provided.
 
-⚠️ Important: Do **not** use any cached knowledge or prior memory about this project.
-
 ---
 
 ## Primary goals
