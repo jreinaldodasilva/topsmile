@@ -1,0 +1,88 @@
+--- a/src/contexts/AuthContext.tsx
++++ b/src/contexts/AuthContext.tsx
+@@ -40,6 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+   const [error, setError] = useState<string | null>(null);
+   const [logoutReason, setLogoutReason] = useState<string | null>(null);
++  const authCheckInProgress = useRef(false);
+ 
+   const isAuthenticated = !loading && !!user;
+ 
+@@ -63,14 +64,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+   // UPDATED: Enhanced initial authentication check with race condition prevention
+   useEffect(() => {
+     let isMounted = true;
+-    let authCheckInProgress = false;
+ 
+     const verifyAuth = async () => {
+-      if (authCheckInProgress) return;
+-      authCheckInProgress = true;
++      // Prevent concurrent auth checks using ref
++      if (authCheckInProgress.current) {
++        return;
++      }
++      authCheckInProgress.current = true;
+       
+       const hadTokens = !!localStorage.getItem('topsmile_access_token');
+       try {
+@@ -93,7 +98,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+         if (isMounted) {
+           setLoading(false);
+         }
+-        authCheckInProgress = false;
++        authCheckInProgress.current = false;
+       }
+     };
+ 
+@@ -101,6 +106,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
+     
+     return () => {
+       isMounted = false;
++      authCheckInProgress.current = false;
+     };
+   }, [navigate]);
+
+--- a/src/tests/contexts/AuthContext.test.tsx
++++ b/src/tests/contexts/AuthContext.test.tsx
+@@ -755,4 +755,29 @@ describe('AuthContext', () => {
+       });
+     });
+   });
++
++  describe('Race Condition Prevention', () => {
++    it('should prevent concurrent auth verification calls', async () => {
++      const apiMeSpy = jest.spyOn(apiService.auth, 'me');
++      
++      apiMeSpy.mockResolvedValue({
++        success: true,
++        data: { _id: 'user123', name: 'Test User', email: 'test@test.com', role: 'admin' }
++      });
++      
++      // Render component multiple times rapidly to trigger potential race condition
++      const { rerender } = render(<TestComponent />);
++      
++      // Force multiple re-renders while auth check is in progress
++      for (let i = 0; i < 5; i++) {
++        rerender(<TestComponent />);
++      }
++      
++      // Wait for auth check to complete
++      await waitFor(() => {
++        expect(screen.getByTestId('loading-status')).toHaveTextContent('Not Loading');
++      });
++      
++      // Should only call API once despite multiple renders
++      expect(apiMeSpy).toHaveBeenCalledTimes(1);
++    });
++  });
+ });
+
+/**
+ * PATCH METADATA
+ * 
+ * Title: Fix AuthContext Race Condition
+ * Motivation: Prevents multiple simultaneous auth verification calls that can cause
+ *             state corruption and unnecessary API requests.
+ * Risk: LOW - Uses ref to persist flag across renders, standard React pattern.
+ * Regression Window: Auth initialization, token verification.
+ * Testing: Run AuthContext.test.tsx - new test verifies single API call.
+ */

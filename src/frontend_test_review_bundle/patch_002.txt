@@ -1,0 +1,222 @@
+--- a/src/mocks/handlers.ts
++++ b/src/mocks/handlers.ts
+@@ -8,12 +8,12 @@ export const handlers = [
+       return HttpResponse.json({
+         success: true,
+         data: {
+-          user: {
+-            id: 'user123',
++          user: {
++            _id: 'user123',
+             name: 'Admin User',
+             email: 'admin@topsmile.com',
+             role: 'admin'
+           },
+           accessToken: 'mock-access-token',
+           refreshToken: 'mock-refresh-token',
+-          expiresIn: '3600'
++          expiresIn: 3600
+         }
+       });
+@@ -29,11 +29,11 @@ export const handlers = [
+       return HttpResponse.json({
+         success: true,
+         data: {
+           user: {
+-            id: 'user456',
++            _id: 'user456',
+             name: body.name,
+             email: body.email,
+             role: 'dentist'
+           },
+           accessToken: 'new-access-token',
+           refreshToken: 'new-refresh-token'
+@@ -45,7 +45,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'user123',
++        _id: 'user123',
+         name: 'Current User',
+         email: 'current@example.com',
+         role: 'admin'
+@@ -57,12 +57,12 @@ export const handlers = [
+       success: true,
+       data: [
+         {
+-          id: 'patient1',
++          _id: 'patient1',
+           firstName: 'João',
+           lastName: 'Silva',
+           email: 'joao@example.com'
+         },
+         {
+-          id: 'patient2',
++          _id: 'patient2',
+           firstName: 'Maria',
+           lastName: 'Santos',
+           email: 'maria@example.com'
+@@ -80,8 +80,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+         _id: id,
+-        id: id,
+         firstName: 'João',
+         lastName: 'Silva',
+         email: 'joao@example.com',
+@@ -95,8 +94,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'new-patient-id',
+-        name: body.name,
++        _id: 'new-patient-id',
+         email: body.email,
+         phone: body.phone,
+         firstName: 'New',
+@@ -111,7 +109,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'patient123',
++        _id: 'patient123',
+         firstName: body.firstName || 'Updated',
+         lastName: body.lastName || 'Name',
+         phone: body.phone,
+@@ -131,17 +129,26 @@ export const handlers = [
+       data: {
+         contacts: [
+           {
+-            id: 'contact1',
++            _id: 'contact1',
+             name: 'John Doe',
+             email: 'john@example.com',
+             clinic: 'Test Clinic',
+             phone: '123456789',
+             specialty: 'General',
+             status: 'new',
++            source: 'website',
+             createdAt: new Date().toISOString()
+           },
+           {
+-            id: 'contact2',
++            _id: 'contact2',
+             name: 'Jane Doe',
+             email: 'jane@example.com',
+             clinic: 'Test Clinic 2',
+             phone: '987654321',
+             specialty: 'Orthodontics',
+             status: 'contacted',
++            source: 'phone',
+             createdAt: new Date().toISOString()
+           }
+         ],
+@@ -158,7 +165,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'new-contact-id',
++        _id: 'new-contact-id',
+         name: body.name,
+         email: body.email
+       }
+@@ -171,9 +178,12 @@ export const handlers = [
+       success: true,
+       data: [
+         {
+-          id: 'appt1',
+-          patient: 'patient1',
+-          provider: 'provider1',
++          _id: 'appt1',
++          patient: { _id: 'patient1', name: 'John Doe' },
++          provider: { _id: 'provider1', name: 'Dr. Smith' },
++          appointmentType: { _id: 'type1', name: 'Consultation' },
++          scheduledStart: '2024-02-15T10:00:00Z',
++          scheduledEnd: '2024-02-15T11:00:00Z',
+           status: 'scheduled'
+         }
+       ]
+@@ -186,10 +196,13 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'new-appt-id',
+-        patient: body.patient,
+-        provider: body.provider,
++        _id: 'new-appt-id',
++        patient: { _id: body.patient },
++        provider: { _id: body.provider },
++        appointmentType: { _id: body.appointmentType },
++        scheduledStart: body.scheduledStart,
++        scheduledEnd: body.scheduledEnd,
+         status: body.status
+       }
+     });
+@@ -220,7 +233,7 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'contact-form-id',
++        _id: 'contact-form-id',
+         protocol: 'PROTOCOL-123',
+         estimatedResponse: '2 horas'
+       }
+@@ -253,9 +266,10 @@ export const handlers = [
+     return HttpResponse.json({
+       success: true,
+       data: {
+-        id: 'user1',
+-        patient: { id: 'patient1', name: 'John Doe', phone: '123456789' },
++        _id: 'user1',
++        patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
+         email: 'john@example.com',
+         isActive: true,
+         emailVerified: true
+       }
+     });
+   }),
+ ];
+
+--- a/src/tests/utils/apiMocks.ts
++++ b/src/tests/utils/apiMocks.ts
+@@ -82,7 +82,7 @@ export const handlers = [
+         success: true,
+         data: {
+           user,
+           accessToken: 'mock-access-token',
+           refreshToken: 'mock-refresh-token',
+-          expiresIn: '1h'
++          expiresIn: 3600
+         }
+       }), { status: 200 });
+     }
+@@ -102,7 +102,7 @@ export const handlers = [
+         user: newUser,
+         accessToken: 'mock-access-token',
+         refreshToken: 'mock-refresh-token',
+-        expiresIn: '1h'
++        expiresIn: 3600
+       }
+     }), { status: 201 });
+   }),
+@@ -130,7 +130,7 @@ export const handlers = [
+     return HttpResponse.json(generateMockApiResponse({
+       accessToken: 'new-mock-access-token',
+       refreshToken: 'new-mock-refresh-token',
+-      expiresIn: '1h'
++      expiresIn: 3600
+     }), { status: 200 });
+   }),
+
+/**
+ * PATCH METADATA
+ * 
+ * Title: Align MSW Response Structure with Backend
+ * Motivation: MSW handlers were returning 'id' instead of '_id' and 'expiresIn' as 
+ *             string instead of number, causing type mismatches with actual backend.
+ * Risk: LOW - Only affects test mocks, aligns with MongoDB conventions.
+ * Regression Window: All tests using MSW handlers - verify no hard-coded 'id' references.
+ * Testing: Run full test suite: npm test
+ *          Check integration tests: npm test -- --testPathPattern=integration
+ */

@@ -1,0 +1,169 @@
+--- a/src/tests/components/UI/Modal.test.tsx
++++ b/src/tests/components/UI/Modal.test.tsx
+@@ -16,6 +16,13 @@ describe('Modal', () => {
+   beforeEach(() => {
+     handleClose.mockClear();
+   });
++
++  afterEach(() => {
++    // Clean up any modal-related DOM changes
++    document.body.style.overflow = '';
++    // Remove any portal containers
++    document.querySelectorAll('[data-modal-portal]').forEach(el => el.remove());
++  });
+ 
+   it('does not render when isOpen is false', () => {
+     renderModal({ isOpen: false });
+@@ -122,8 +129,13 @@ describe('Modal', () => {
+   });
+ 
+   it('traps focus within the modal', () => {
+-    renderModal({ children: <input data-testid="input" /> });
++    const { unmount } = renderModal({ children: <input data-testid="input" /> });
+ 
++    // Store original overflow value
++    const originalOverflow = document.body.style.overflow;
++
+     // The focus management is tricky to test with JSDOM, but we can test the initial focus
+     // and that the focus trap handler is in place.
+     expect(document.body).toHaveStyle('overflow: hidden');
+@@ -131,5 +143,10 @@ describe('Modal', () => {
+     // Simulate tabbing
+     fireEvent.keyDown(document, { key: 'Tab' });
+     // In a real browser, this would cycle focus. Here we just check the event is handled.
++
++    // Clean up
++    unmount();
++    // Verify cleanup restored original state
++    expect(document.body.style.overflow).toBe(originalOverflow);
+   });
+ });
+
+--- a/src/tests/components/UI/Toast.test.tsx
++++ b/src/tests/components/UI/Toast.test.tsx
+@@ -3,9 +3,6 @@ import { render, screen, fireEvent, act } from '@testing-library/react';
+ import Toast, { ToastProps } from '../../../components/UI/Toast/Toast';
+ 
+-// Mock timers
+-jest.useFakeTimers();
+-
+ describe('Toast', () => {
+   const handleClose = jest.fn();
+ 
+@@ -23,6 +20,13 @@ describe('Toast', () => {
+ 
+   beforeEach(() => {
+     handleClose.mockClear();
++    jest.useFakeTimers();
++  });
++
++  afterEach(() => {
++    // Restore real timers after each test
++    jest.runOnlyPendingTimers();
++    jest.useRealTimers();
+   });
+ 
+   it('renders with title and message', () => {
+@@ -43,6 +47,7 @@ describe('Toast', () => {
+   it('calls onClose when the close button is clicked', () => {
+     renderToast();
+     const closeButton = screen.getByLabelText('Fechar notificação');
++    
+     fireEvent.click(closeButton);
+     
+     act(() => {
+@@ -64,6 +69,10 @@ describe('Toast', () => {
+     });
+ 
+     expect(handleClose).toHaveBeenCalledWith('toast-1');
++    
++    // Clean up any remaining timers
++    act(() => {
++      jest.runAllTimers();
++    });
+   });
+ 
+   it('does not call onClose automatically if duration is 0', () => {
+@@ -71,6 +80,11 @@ describe('Toast', () => {
+     act(() => {
+       jest.advanceTimersByTime(10000);
+     });
++    
+     expect(handleClose).not.toHaveBeenCalled();
++    
++    // Clean up
++    act(() => {
++      jest.runAllTimers();
++    });
+   });
+ 
+   it('renders an action button and handles click', () => {
+
+--- a/src/tests/contexts/ErrorContext.test.tsx
++++ b/src/tests/contexts/ErrorContext.test.tsx
+@@ -3,9 +3,6 @@ import { render, screen, fireEvent, waitFor, act } from '@testing-library/react
+ import { ErrorProvider, useError } from '../../contexts/ErrorContext';
+ 
+-// Mock timers
+-jest.useFakeTimers();
+-
+ describe('ErrorContext', () => {
+   let notificationId = '';
+ 
+@@ -48,10 +45,16 @@ describe('ErrorContext', () => {
+   };
+ 
+   beforeEach(() => {
+-    // setup();
++    jest.useFakeTimers();
+   });
+ 
+-  it('initial state is empty', () => {
++  afterEach(() => {
++    // Clean up all pending timers
++    act(() => {
++      jest.runOnlyPendingTimers();
++    });
++    jest.useRealTimers();
++  });
++
++  it('initial state is empty', () => {
+     setup();
+     expect(screen.queryByTestId(/notification-/)).toBeNull();
+   });
+@@ -106,6 +109,10 @@ describe('ErrorContext', () => {
+     await waitFor(() => {
+       expect(screen.queryByTestId(`notification-${notificationId}`)).toBeNull();
+     });
++    
++    // Clean up remaining timers
++    act(() => {
++      jest.runAllTimers();
++    });
+   });
+ 
+   it('auto-dismisses info notification', async () => {
+@@ -118,6 +125,10 @@ describe('ErrorContext', () => {
+     await waitFor(() => {
+       expect(screen.queryByTestId(`notification-${notificationId}`)).toBeNull();
+     });
++    
++    // Clean up remaining timers
++    act(() => {
++      jest.runAllTimers();
++    });
+   });
+ 
+   it('logs an error and shows a notification', () => {
+
+/**
+ * PATCH METADATA
+ * 
+ * Title: Fix Modal and Toast Test Cleanup
+ * Motivation: Tests were leaving DOM modifications and fake timers in place,
+ *             causing subsequent tests to fail or behave unpredictably.
+ * Risk: LOW - Standard cleanup pattern for RTL tests with side effects.
+ * Regression Window: All tests that run after Modal/Toast tests.
+ * Testing: Run full test suite in sequence: npm test
+ *          Verify no "Not wrapped in act()" warnings
+ */
