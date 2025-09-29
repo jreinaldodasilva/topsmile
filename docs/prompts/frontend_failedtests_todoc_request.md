@@ -1,6 +1,6 @@
 **Improved Prompt (Detailed & Structured):**
 
-"Review the test results in `junit-frontend.xml` and generate a Markdown document named `frontend_failedtests.md`. The document must contain **only the failed tests** and follow this structure:
+"Review the test results in `reports/junit-frontend_secondpart.xml` and generate a Markdown document named `docs/tests/frontend_failedtests_secondpart.md`. The document must contain **only the failed tests** and follow this structure:
 
 ---
 
