@@ -1,5 +1,6 @@
 describe('Complete Appointment Flow', () => {
   beforeEach(() => {
+    cy.clearLocalStorage();
     // Login as admin first
     cy.login('admin@example.com', 'password123');
   });

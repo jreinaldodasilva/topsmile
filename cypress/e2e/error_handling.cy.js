@@ -1,4 +1,8 @@
 describe('Error Handling', () => {
+  beforeEach(() => {
+    cy.clearLocalStorage();
+  });
+
   it('should display a 404 page for a non-existent route', () => {
     cy.visit('/non-existent-page');
     cy.get('[data-cy="not-found-page"]').should('be.visible');

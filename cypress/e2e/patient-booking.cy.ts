@@ -2,6 +2,7 @@
 
 describe('Patient Appointment Booking E2E', () => {
   beforeEach(() => {
+    cy.clearLocalStorage();
     // Assume patient is logged in
     cy.visit('/patient/appointments/new');
   });

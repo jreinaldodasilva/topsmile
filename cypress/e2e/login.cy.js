@@ -1,5 +1,6 @@
 describe('Login Flow', () => {
   beforeEach(() => {
+    cy.clearLocalStorage();
     cy.visit('/login');
   });
 

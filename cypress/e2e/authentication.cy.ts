@@ -2,6 +2,10 @@
 
 describe('Authentication E2E Flow', () => {
 
+  beforeEach(() => {
+    cy.clearLocalStorage();
+  });
+
   it('should complete login flow', () => {
     cy.login('admin@topsmile.com', 'SecurePass123!');
     // Should redirect to dashboard
