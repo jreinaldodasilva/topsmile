@@ -619,8 +619,8 @@ describe('AuthContext', () => {
 
   describe('Authentication Race Conditions', () => {
     it('should handle concurrent login attempts', async () => {
-      let resolveFirstLogin: (value: any) => void;
-      let resolveSecondLogin: (value: any) => void;
+      let resolveFirstLogin: (value: any) => void = () => {};
+      let resolveSecondLogin: (value: any) => void = () => {};
 
       const firstLoginPromise = new Promise(resolve => {
         resolveFirstLogin = resolve;

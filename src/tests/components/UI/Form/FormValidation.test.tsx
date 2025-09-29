@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import FormField from '../../../components/UI/Form/FormField';
+import FormField from '../../../../components/UI/Form/FormField';
 
 const TestForm = () => {
   const [formData, setFormData] = useState({
