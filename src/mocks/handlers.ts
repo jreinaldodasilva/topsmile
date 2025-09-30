@@ -9,17 +9,17 @@ export const handlers = [
       return HttpResponse.json({
         success: true,
         data: {
-          user: {
-            id: 'user123',
-            name: 'Admin User',
-            email: 'admin@topsmile.com',
-            role: 'admin'
-          },
-          accessToken: 'mock-access-token',
-          refreshToken: 'mock-refresh-token',
-          expiresIn: '3600'
+          user: { id: 'user123', name: 'Admin User', email: 'admin@topsmile.com', role: 'admin' }, // ✅ Use 'id' not '_id'
+           accessToken: 'mock-access-token',
+           refreshToken: 'mock-refresh-token',
+          expiresIn: 3600  // ✅ Number not string
+         }
+      }, {
+        headers: {
+          'X-Request-ID': 'mock-request-id',  // ✅ Add request ID header
+          'Set-Cookie': 'httpOnly-cookie=value; HttpOnly; Secure'  // ✅ Add cookies if used
         }
-      });
+       });
     } else if (body.email === 'test@example.com') {
       return HttpResponse.json({
         success: false,
