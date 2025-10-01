@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import type { Patient } from '@topsmile/types';
+import { authMixin } from './mixins/authMixin';
+import { emailField, passwordField } from '../utils/validators';
 
 
 export interface IPatientUser extends Document {
@@ -31,41 +32,16 @@ const PatientUserSchema = new Schema<IPatientUser>({
     required: true,
     unique: true
   },
-  email: {
-    type: String,
-    required: [true, 'E-mail é obrigatório'],
-    unique: true,
-    trim: true,
-    lowercase: true,
-    validate: {
-      validator: function (email: string) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-      },
-      message: 'E-mail inválido'
-    }
-  },
-  password: {
-    type: String,
-    required: [true, 'Senha é obrigatória'],
-    minlength: [6, 'Senha deve ter pelo menos 6 caracteres']
-  },
-  isActive: {
-    type: Boolean,
-    default: true
-  },
+  email: emailField,
+  password: passwordField,
+  ...authMixin.fields,
   emailVerified: {
     type: Boolean,
     default: false
   },
   verificationToken: String,
   resetPasswordToken: String,
-  resetPasswordExpires: Date,
-  lastLogin: Date,
-  loginAttempts: {
-    type: Number,
-    default: 0
-  },
-  lockUntil: Date
+  resetPasswordExpires: Date
 }, {
   timestamps: true,
   toJSON: {
@@ -102,33 +78,8 @@ PatientUserSchema.pre<IPatientUser>('save', async function (next: CallbackWithou
   }
 });
 
-// Instance method to compare password
-PatientUserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
-};
-
-// Instance method to check if account is locked
-PatientUserSchema.methods.isLocked = function (): boolean {
-  return !!(this.lockUntil && this.lockUntil > new Date());
-};
-
-// Instance method to increment login attempts
-PatientUserSchema.methods.incLoginAttempts = function (): void {
-  if (this.lockUntil && this.lockUntil < new Date()) {
-    this.loginAttempts = 1;
-    this.lockUntil = undefined;
-  } else {
-    this.loginAttempts += 1;
-    if (this.loginAttempts >= 5) {
-      this.lockUntil = new Date(Date.now() + 2 * 60 * 60 * 1000); // 2 hours
-    }
-  }
-};
-
-// Instance method to reset login attempts
-PatientUserSchema.methods.resetLoginAttempts = function (): void {
-  this.loginAttempts = 0;
-  this.lockUntil = undefined;
-};
+// Apply authentication methods from mixin
+Object.assign(PatientUserSchema.methods, authMixin.methods);
+Object.assign(PatientUserSchema.statics, authMixin.statics);
 
 export const PatientUser = mongoose.model<IPatientUser>('PatientUser', PatientUserSchema);

@@ -1,7 +1,8 @@
-// backend/src/models/User.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { User as IUser, UserRole } from '@topsmile/types';
+import { authMixin } from './mixins/authMixin';
+import { emailField, passwordField, commonValidators } from '../utils/validators';
 
 const UserSchema = new Schema<IUser & Document>({
     name: {
@@ -12,22 +13,11 @@ const UserSchema = new Schema<IUser & Document>({
         maxlength: [100, 'Nome deve ter no máximo 100 caracteres']
     },
     email: {
-        type: String,
-        required: [true, 'E-mail é obrigatório'],
-        unique: true,
-        trim: true,
-        lowercase: true,
-        validate: {
-            validator: function (email: string) {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-            },
-            message: 'E-mail inválido'
-        }
+        ...emailField,
+        select: true
     },
     password: {
-        type: String,
-        required: [true, 'Senha é obrigatória'],
-        minlength: [6, 'Senha deve ter pelo menos 6 caracteres'],
+        ...passwordField,
         select: false // Don't include password in queries by default
     },
     role: {
@@ -39,20 +29,7 @@ const UserSchema = new Schema<IUser & Document>({
         type: Schema.Types.ObjectId,
         ref: 'Clinic'
     },
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    lastLogin: {
-        type: Date
-    },
-    loginAttempts: {
-        type: Number,
-        default: 0
-    },
-    lockUntil: {
-        type: Date
-    },
+    ...authMixin.fields,
     passwordResetToken: {
         type: String,
         select: false
@@ -133,53 +110,9 @@ UserSchema.pre('save', async function (this: IUser & Document, next) {
     next();
 });
 
-// Compare password method
-UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
-};
-
-// Account lockout methods
-UserSchema.methods.incLoginAttempts = async function (): Promise<void> {
-    // If we have a previous lock that has expired, reset attempts
-    if (this.lockUntil && this.lockUntil < new Date()) {
-        this.loginAttempts = 0;
-        this.lockUntil = undefined;
-    }
-
-    this.loginAttempts += 1;
-
-    let lockTime = 0; // in milliseconds
-    const MAX_ATTEMPTS_SHORT_LOCK = 5;
-    const MAX_ATTEMPTS_MEDIUM_LOCK = 10;
-    const MAX_ATTEMPTS_LONG_LOCK = 15;
-
-    if (this.loginAttempts >= MAX_ATTEMPTS_LONG_LOCK) {
-        lockTime = 7 * 24 * 60 * 60 * 1000; // 7 days (effectively permanent for most cases)
-        console.warn(`User ${this.email} locked out for 7 days due to ${this.loginAttempts} failed attempts.`);
-    } else if (this.loginAttempts >= MAX_ATTEMPTS_MEDIUM_LOCK) {
-        lockTime = 24 * 60 * 60 * 1000; // 24 hours
-        console.warn(`User ${this.email} locked out for 24 hours due to ${this.loginAttempts} failed attempts.`);
-    } else if (this.loginAttempts >= MAX_ATTEMPTS_SHORT_LOCK) {
-        lockTime = 1 * 60 * 60 * 1000; // 1 hour
-        console.warn(`User ${this.email} locked out for 1 hour due to ${this.loginAttempts} failed attempts.`);
-    }
-
-    if (lockTime > 0) {
-        this.lockUntil = new Date(Date.now() + lockTime);
-    }
-
-    await this.save();
-};
-
-UserSchema.methods.resetLoginAttempts = async function (): Promise<void> {
-    this.loginAttempts = 0;
-    this.lockUntil = undefined;
-    await this.save();
-};
-
-UserSchema.methods.isLocked = function (): boolean {
-    return !!(this.lockUntil && this.lockUntil > new Date());
-};
+// Apply authentication methods from mixin
+Object.assign(UserSchema.methods, authMixin.methods);
+Object.assign(UserSchema.statics, authMixin.statics);
 
 // Indexes
 UserSchema.index({ role: 1 });

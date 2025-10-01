@@ -1,93 +1,41 @@
-// backend/src/middleware/auth.ts - FIXED VERSION
 import { Request, Response, NextFunction } from 'express';
 import { authService } from '../services/authService';
 import type { Clinic, User } from '@topsmile/types';
+import { BaseAuthMiddleware } from './shared/baseAuth';
+import { ApiResponse } from '../utils/responseHelpers';
 
 type UserRole = 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
 
-/**
- * User information attached to authenticated requests
- */
 export interface AuthUser extends User {
   clinicId?: string;
 }
 
-/**
- * Type alias for authenticated requests
- */
 export type AuthenticatedRequest = Request & {
   user?: AuthUser;
 }
 
-/**
- * Extract Bearer token from Authorization header or cookies
- */
-const extractToken = (req: Request): string | null => {
-  // Check Authorization header first
-  const authHeader = req.headers.authorization;
-  if (authHeader) {
-    const match = authHeader.match(/^Bearer\s+(.+)$/i);
-    if (match && match[1]) return match[1];
-  }
-
-  // Check cookies as fallback (if using cookie-based auth)
-  const cookies = (req as any).cookies;
-  if (cookies) {
+class StaffAuthMiddleware extends BaseAuthMiddleware {
+  protected getCookieTokens(cookies: any): string | null {
     return cookies['topsmile_access_token'] ||
            cookies['topsmile_token'] ||
            cookies['access_token'] ||
            null;
   }
 
-  return null;
-};
+  protected async verifyToken(token: string): Promise<any> {
+    return authService.verifyAccessToken(token);
+  }
 
-/**
- * Authentication middleware: verifies access token and attaches req.user
- */
-export const authenticate = async (
-  req: Request, 
-  res: Response, 
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const token = extractToken(req);
-    
-    if (!token) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Token de acesso obrigatório',
-        code: 'NO_TOKEN'
-      });
-      return;
-    }
-
-    // Verify the access token
-    const payload = authService.verifyAccessToken(token);
-    
-    // Type-safe payload extraction
+  protected async attachUserToRequest(req: Request, payload: any): Promise<void> {
     if (!payload || !payload.userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Token inválido: formato incorreto',
-        code: 'INVALID_TOKEN_FORMAT'
-      });
-      return;
+      throw new Error('Invalid token format');
     }
 
-    // Extract user information with proper typing
     const userId = payload.userId;
-    
     if (!userId) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Token inválido: dados do usuário não encontrados',
-        code: 'INVALID_TOKEN_PAYLOAD'
-      });
-      return;
+      throw new Error('Invalid token payload');
     }
 
-    // Attach user info to request
     (req as AuthenticatedRequest).user = {
       id: String(userId),
       email: payload.email,
@@ -100,84 +48,31 @@ export const authenticate = async (
     if (process.env.VERIFY_USER_ON_REQUEST === 'true') {
       const currentUser = (req as AuthenticatedRequest).user;
       if (currentUser?.id) {
-        try {
-          const user = await authService.getUserById(currentUser.id);
-          if (!user.isActive) {
-            res.status(401).json({
-              success: false,
-              message: 'Usuário inválido ou inativo',
-              code: 'USER_INACTIVE'
-            });
-            return;
-          }
-        } catch (error) {
-          res.status(401).json({
-            success: false,
-            message: 'Usuário inválido ou inativo',
-            code: 'USER_INACTIVE'
-          });
-          return;
+        const user = await authService.getUserById(currentUser.id);
+        if (!user.isActive) {
+          throw new Error('User inactive');
         }
       }
     }
-
-    next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    
-    // Handle different JWT errors with better logging
-    let message = 'Token inválido ou expirado';
-    let code = 'INVALID_TOKEN';
-    
-    if (error instanceof Error) {
-      // Log the actual error for debugging (but don't expose to client)
-      console.error('JWT Error Details:', error.message);
-      
-      if (error.message.includes('expired')) {
-        message = 'Token expirado';
-        code = 'TOKEN_EXPIRED';
-      } else if (error.message.includes('invalid')) {
-        message = 'Token inválido';
-        code = 'INVALID_TOKEN';
-      } else if (error.message.includes('malformed')) {
-        message = 'Token malformado';
-        code = 'MALFORMED_TOKEN';
-      }
-    }
-
-    res.status(401).json({ 
-      success: false, 
-      message,
-      code
-    });
-    return;
   }
-};
+}
 
-/**
- * Role-based authorization middleware factory - SECURITY FIXED
- * Usage: authorize('admin', 'manager') - allows only these roles
- */
+const staffAuth = new StaffAuthMiddleware();
+
+export const authenticate = staffAuth.authenticate;
+
 export const authorize = (...allowedRoles: string[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     const authReq = req as AuthenticatedRequest;
     if (!authReq.user) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Autenticação obrigatória',
-        code: 'NOT_AUTHENTICATED'
-      });
+      ApiResponse.unauthorized(res, 'Autenticação obrigatória', 'NOT_AUTHENTICATED');
       return;
     }
 
     const userRole = authReq.user.role;
     
     if (!userRole) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Permissões de usuário não definidas',
-        code: 'NO_ROLE'
-      });
+      ApiResponse.forbidden(res, 'Permissões de usuário não definidas', 'NO_ROLE');
       return;
     }
 
@@ -189,13 +84,7 @@ export const authorize = (...allowedRoles: string[]) => {
 
     // Check if user's role is in allowed roles
     if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
-      // SECURITY FIX: Don't expose internal role structure
-      res.status(403).json({ 
-        success: false, 
-        message: 'Acesso negado: permissão insuficiente',
-        code: 'INSUFFICIENT_ROLE'
-        // Removed: required and current fields for security
-      });
+      ApiResponse.insufficientRole(res);
       return;
     }
 
@@ -203,10 +92,6 @@ export const authorize = (...allowedRoles: string[]) => {
   };
 };
 
-/**
- * Clinic access middleware: ensures user has access to requested clinic resources
- * IMPROVED with better validation
- */
 export const ensureClinicAccess = (
   field: 'params' | 'body' | 'query' = 'params', 
   key: string = 'clinicId'
@@ -214,21 +99,13 @@ export const ensureClinicAccess = (
   return (req: Request, res: Response, next: NextFunction): void => {
     const authReq = req as AuthenticatedRequest;
     if (!authReq.user) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Autenticação obrigatória',
-        code: 'NOT_AUTHENTICATED'
-      });
+      ApiResponse.unauthorized(res, 'Autenticação obrigatória', 'NOT_AUTHENTICATED');
       return;
     }
 
     const userClinic = authReq.user.clinicId;
     if (!userClinic) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Usuário não está associado a uma clínica',
-        code: 'NO_CLINIC_ASSOCIATION'
-      });
+      ApiResponse.forbidden(res, 'Usuário não está associado a uma clínica', 'NO_CLINIC_ASSOCIATION');
       return;
     }
 
@@ -238,17 +115,11 @@ export const ensureClinicAccess = (
       return;
     }
 
-    // Get the requested clinic ID from the specified field
     const requestData = (req as any)[field];
     const requestedClinic = requestData?.[key];
     
-    // IMPROVED: Handle both string and ObjectId comparisons
     if (requestedClinic && String(requestedClinic) !== String(userClinic)) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Acesso negado: clínica não autorizada',
-        code: 'CLINIC_ACCESS_DENIED'
-      });
+      ApiResponse.forbidden(res, 'Acesso negado: clínica não autorizada', 'CLINIC_ACCESS_DENIED');
       return;
     }
 
@@ -256,48 +127,8 @@ export const ensureClinicAccess = (
   };
 };
 
-/**
- * Optional authentication middleware: adds user info if token is present but doesn't require it
- */
-export const optionalAuth = async (
-  req: Request, 
-  res: Response, 
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const token = extractToken(req);
-    
-    if (token) {
-      const payload = await authService.verifyAccessToken(token);
-      
-      if (payload && typeof payload === 'object' && 'userId' in payload) {
-        const typedPayload = payload as any;
-        const userId = typedPayload.userId || typedPayload.id;
-        
-        if (userId) {
-          (req as AuthenticatedRequest).user = {
-            id: String(userId),
-            email: typedPayload.email,
-            role: typedPayload.role as UserRole,
-            clinicId: typedPayload.clinicId,
-            name: typedPayload.name || typedPayload.email || 'Unknown User',
-          };
-        }
-      }
-    }
-    
-    next();
-  } catch (error) {
-    // Don't fail on optional auth - just continue without user info
-    console.warn('Optional auth failed:', error instanceof Error ? error.message : 'Unknown error');
-    next();
-  }
-};
+export const optionalAuth = staffAuth.optionalAuth;
 
-/**
- * Middleware to check if user owns a resource
- * IMPROVED with better type safety
- */
 export const ensureOwnership = (
   field: 'params' | 'body' | 'query' = 'params',
   key: string = 'userId'
@@ -305,11 +136,7 @@ export const ensureOwnership = (
   return (req: Request, res: Response, next: NextFunction): void => {
     const authReq = req as AuthenticatedRequest;
     if (!authReq.user) {
-      res.status(401).json({ 
-        success: false, 
-        message: 'Autenticação obrigatória',
-        code: 'NOT_AUTHENTICATED'
-      });
+      ApiResponse.unauthorized(res, 'Autenticação obrigatória', 'NOT_AUTHENTICATED');
       return;
     }
 
@@ -323,11 +150,7 @@ export const ensureOwnership = (
     const resourceUserId = requestData?.[key];
     
     if (resourceUserId && String(resourceUserId) !== String(authReq.user.id)) {
-      res.status(403).json({ 
-        success: false, 
-        message: 'Acesso negado: você só pode acessar seus próprios recursos',
-        code: 'OWNERSHIP_REQUIRED'
-      });
+      ApiResponse.forbidden(res, 'Acesso negado: você só pode acessar seus próprios recursos', 'OWNERSHIP_REQUIRED');
       return;
     }
 
@@ -335,9 +158,6 @@ export const ensureOwnership = (
   };
 };
 
-/**
- * Rate limiting aware middleware - for sensitive operations
- */
 export const sensitiveOperation = (
   req: Request, 
   res: Response, 
@@ -345,11 +165,7 @@ export const sensitiveOperation = (
 ): void => {
   const authReq = req as AuthenticatedRequest;
   if (!authReq.user) {
-    res.status(401).json({ 
-      success: false, 
-      message: 'Autenticação obrigatória',
-      code: 'NOT_AUTHENTICATED'
-    });
+    ApiResponse.unauthorized(res, 'Autenticação obrigatória', 'NOT_AUTHENTICATED');
     return;
   }
 
