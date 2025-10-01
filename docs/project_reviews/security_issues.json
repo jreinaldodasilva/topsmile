@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "critical": 5,
+    "high": 3,
+    "medium": 2,
+    "low": 1,
+    "typeSafetyIssues": 20,
+    "dependencyVulnerabilities": 9
+  },
+  "issues": [
+    {
+      "id": "SEC-001",
+      "title": "Hardcoded Credentials in Production Code",
+      "severity": "Critical",
+      "category": "auth",
+      "cwe": "CWE-798",
+      "file": "backend/src/services/emailService.ts",
+      "lineRange": "41-42",
+      "description": "Hardcoded email credentials found in production code that could be extracted by attackers",
+      "impact": {
+        "confidentiality": true,
+        "integrity": true,
+        "availability": true
+      },
+      "exploitability": "Easy",
+      "patchAvailable": true,
+      "patchFile": "patches/security/0001-remove-hardcoded-credentials.patch"
+    },
+    {
+      "id": "SEC-002", 
+      "title": "Dependency Vulnerabilities",
+      "severity": "High",
+      "category": "dependency",
+      "cwe": "CWE-1104",
+      "file": "package.json",
+      "lineRange": "N/A",
+      "description": "Multiple vulnerable dependencies including nth-check, postcss, webpack-dev-server",
+      "impact": {
+        "confidentiality": true,
+        "integrity": false,
+        "availability": true
+      },
+      "exploitability": "Moderate",
+      "patchAvailable": true,
+      "patchFile": "patches/security/0002-update-dependencies.patch"
+    },
+    {
+      "id": "SEC-003",
+      "title": "Extensive Use of 'any' Types",
+      "severity": "High", 
+      "category": "type-safety",
+      "cwe": "CWE-704",
+      "file": "backend/src/models/Appointment.ts",
+      "lineRange": "402-588",
+      "description": "Widespread use of 'any' types eliminates compile-time safety checks",
+      "impact": {
+        "confidentiality": false,
+        "integrity": true,
+        "availability": true
+      },
+      "exploitability": "Moderate",
+      "patchAvailable": true,
+      "patchFile": "patches/security/0003-type-safety-improvements.patch"
+    },
+    {
+      "id": "SEC-004",
+      "title": "Console Logging in Production",
+      "severity": "Medium",
+      "category": "exposure",
+      "cwe": "CWE-532",
+      "file": "backend/src/app.ts",
+      "lineRange": "127-621",
+      "description": "Sensitive information logged to console in production environment",
+      "impact": {
+        "confidentiality": true,
+        "integrity": false,
+        "availability": false
+      },
+      "exploitability": "Difficult",
+      "patchAvailable": true,
+      "patchFile": "patches/security/0004-proper-logging.patch"
+    },
+    {
+      "id": "SEC-005",
+      "title": "Missing Input Validation",
+      "severity": "High",
+      "category": "injection",
+      "cwe": "CWE-20",
+      "file": "Multiple API endpoints",
+      "lineRange": "N/A",
+      "description": "API endpoints lack comprehensive input validation allowing potential injection attacks",
+      "impact": {
+        "confidentiality": true,
+        "integrity": true,
+        "availability": false
+      },
+      "exploitability": "Easy",
+      "patchAvailable": true,
+      "patchFile": "patches/security/0005-input-validation.patch"
+    }
+  ]
+}
