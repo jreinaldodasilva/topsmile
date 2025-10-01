@@ -1,0 +1,182 @@
+{
+  "summary": {
+    "totalFiles": 450,
+    "filesWithDuplication": 85,
+    "duplicationRate": 0.35,
+    "exactDuplicates": 12,
+    "semanticDuplicates": 28,
+    "crossPackageDuplicates": 15
+  },
+  "hotspots": [
+    {
+      "pattern": "authentication middleware",
+      "instances": 2,
+      "locations": [
+        "backend/src/middleware/auth.ts:L15-L195",
+        "backend/src/middleware/patientAuth.ts:L12-L175"
+      ],
+      "estimatedLinesAffected": 360,
+      "consolidationEffort": "4 hours",
+      "roi": "high"
+    },
+    {
+      "pattern": "API response formatting",
+      "instances": 314,
+      "locations": [
+        "backend/src/routes/*.ts:multiple",
+        "backend/src/services/*.ts:multiple",
+        "backend/src/middleware/*.ts:multiple"
+      ],
+      "estimatedLinesAffected": 1200,
+      "consolidationEffort": "3 hours",
+      "roi": "high"
+    },
+    {
+      "pattern": "user model auth methods",
+      "instances": 2,
+      "locations": [
+        "backend/src/models/User.ts:L120-L180",
+        "backend/src/models/PatientUser.ts:L95-L135"
+      ],
+      "estimatedLinesAffected": 120,
+      "consolidationEffort": "4 hours",
+      "roi": "high"
+    },
+    {
+      "pattern": "refresh token schemas",
+      "instances": 2,
+      "locations": [
+        "backend/src/models/RefreshToken.ts:L1-L70",
+        "backend/src/models/PatientRefreshToken.ts:L1-L70"
+      ],
+      "estimatedLinesAffected": 140,
+      "consolidationEffort": "2 hours",
+      "roi": "medium"
+    },
+    {
+      "pattern": "validation messages",
+      "instances": 8,
+      "locations": [
+        "backend/src/models/User.ts:L15-L25",
+        "backend/src/models/PatientUser.ts:L20-L30",
+        "backend/src/models/Patient.ts:L10-L20"
+      ],
+      "estimatedLinesAffected": 40,
+      "consolidationEffort": "2 hours",
+      "roi": "medium"
+    }
+  ],
+  "issues": [
+    {
+      "id": "DUP-001",
+      "title": "Authentication Middleware Duplication",
+      "severity": "High",
+      "instances": 2,
+      "locations": [
+        "backend/src/middleware/auth.ts:L15-L195",
+        "backend/src/middleware/patientAuth.ts:L12-L175"
+      ],
+      "maintenanceRisk": "High",
+      "refactoringComplexity": "Medium",
+      "patchAvailable": true
+    },
+    {
+      "id": "DUP-002",
+      "title": "User Model Authentication Methods",
+      "severity": "High",
+      "instances": 2,
+      "locations": [
+        "backend/src/models/User.ts:L120-L180",
+        "backend/src/models/PatientUser.ts:L95-L135"
+      ],
+      "maintenanceRisk": "High",
+      "refactoringComplexity": "Medium",
+      "patchAvailable": true
+    },
+    {
+      "id": "DUP-003",
+      "title": "API Response Formatting",
+      "severity": "Medium",
+      "instances": 314,
+      "locations": [
+        "backend/src/routes/*.ts:multiple",
+        "backend/src/services/*.ts:multiple"
+      ],
+      "maintenanceRisk": "Medium",
+      "refactoringComplexity": "Low",
+      "patchAvailable": true
+    },
+    {
+      "id": "DUP-004",
+      "title": "Refresh Token Models",
+      "severity": "Medium",
+      "instances": 2,
+      "locations": [
+        "backend/src/models/RefreshToken.ts:L1-L70",
+        "backend/src/models/PatientRefreshToken.ts:L1-L70"
+      ],
+      "maintenanceRisk": "Medium",
+      "refactoringComplexity": "Low",
+      "patchAvailable": true
+    },
+    {
+      "id": "DUP-005",
+      "title": "Validation Error Messages",
+      "severity": "Low",
+      "instances": 8,
+      "locations": [
+        "backend/src/models/User.ts:L15-L25",
+        "backend/src/models/PatientUser.ts:L20-L30"
+      ],
+      "maintenanceRisk": "Low",
+      "refactoringComplexity": "Low",
+      "patchAvailable": true
+    }
+  ],
+  "crossPackageAnalysis": {
+    "typeDefinitions": {
+      "User": {
+        "locations": [
+          "packages/types/src/index.ts",
+          "backend/src/models/User.ts",
+          "backend/src/types/express.d.ts"
+        ],
+        "driftRisk": "medium"
+      },
+      "ApiResult": {
+        "locations": [
+          "packages/types/src/index.ts",
+          "src/services/apiService.ts",
+          "src/services/http.ts"
+        ],
+        "driftRisk": "low"
+      }
+    }
+  },
+  "redundantUtilities": [
+    {
+      "function": "comparePassword",
+      "instances": 2,
+      "canUseStandard": false,
+      "recommendation": "Extract to shared mixin"
+    },
+    {
+      "function": "email validation regex",
+      "instances": 8,
+      "canUseStandard": true,
+      "recommendation": "Use validator.js"
+    },
+    {
+      "function": "token extraction",
+      "instances": 3,
+      "canUseStandard": false,
+      "recommendation": "Create shared utility"
+    }
+  ],
+  "estimatedSavings": {
+    "totalLines": 2000,
+    "maintenanceHours": 120,
+    "bugFixEffort": "60% reduction",
+    "developmentVelocity": "25% improvement"
+  }
+}
