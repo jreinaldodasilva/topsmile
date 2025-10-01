@@ -8,11 +8,11 @@ import jwt from 'jsonwebtoken';
 // Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
 import type { Faker } from '@faker-js/faker';
 
-// Test constants to avoid hardcoded credentials
+// Test constants from environment variables
 const TEST_PASSWORDS = {
-  DEFAULT: 'TestPassword123!',
-  PATIENT: 'PatientPass123!',
-  PROVIDER: 'ProviderPass123!'
+  DEFAULT: process.env.TEST_DEFAULT_PASSWORD || 'TestPassword123!',
+  PATIENT: process.env.TEST_PATIENT_PASSWORD || 'PatientPass123!',
+  PROVIDER: process.env.TEST_PROVIDER_PASSWORD || 'ProviderPass123!'
 };
 
 let fakerInstance: Faker | undefined;
@@ -280,8 +280,15 @@ export const createRealisticAppointment = async (patientId: string, providerId: 
   return appointmentData;
 };
 
+interface AuthTokenPayload {
+  userId: string;
+  email: string;
+  role: string;
+  clinicId?: string;
+}
+
 export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string, email = 'test@example.com') => {
-  const payload: any = {
+  const payload: AuthTokenPayload = {
     userId,
     email,
     role,
@@ -289,7 +296,7 @@ export const generateAuthToken = (userId: string, role = 'admin', clinicId?: str
   if (clinicId) {
     payload.clinicId = clinicId;
   }
-  const secret = process.env.JWT_SECRET || 'test-jwt-secret-key';
+  const secret = process.env.TEST_JWT_SECRET || process.env.JWT_SECRET || 'test-jwt-secret-key';
   return jwt.sign(payload, secret, {
     expiresIn: '1h',
     issuer: 'topsmile-api',
@@ -298,15 +305,23 @@ export const generateAuthToken = (userId: string, role = 'admin', clinicId?: str
   });
 };
 
+interface PatientTokenPayload {
+  patientUserId: string;
+  patientId: string;
+  email: string;
+  clinicId: string;
+  type: 'patient';
+}
+
 export const generatePatientAuthToken = (patientUserId: string, patientId: string, clinicId: string, email: string) => {
-  const payload = {
+  const payload: PatientTokenPayload = {
     patientUserId,
     patientId,
     email,
     clinicId,
     type: 'patient'
   };
-  const secret = process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || 'test-patient-jwt-secret-key';
+  const secret = process.env.TEST_PATIENT_JWT_SECRET || process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || 'test-patient-jwt-secret-key';
   return jwt.sign(payload, secret, {
     expiresIn: '15m',
     issuer: 'topsmile-patient-portal',

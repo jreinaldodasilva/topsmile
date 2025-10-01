@@ -64,10 +64,12 @@ export const requirePatientEmailVerification = (
   }
 
   if (!req.patientUser.emailVerified) {
-    ApiResponse.error(res, 403, 'E-mail não verificado. Verifique seu e-mail antes de continuar.', 'EMAIL_NOT_VERIFIED', {
-      email: req.patientUser.email,
-      resendVerificationUrl: '/api/patient-auth/resend-verification'
-    });
+    ApiResponse.error(res, 403, 'E-mail não verificado. Verifique seu e-mail antes de continuar.', 'EMAIL_NOT_VERIFIED', [
+      {
+        msg: `E-mail ${req.patientUser.email} não verificado`,
+        param: 'emailVerified'
+      }
+    ]);
     return;
   }
 

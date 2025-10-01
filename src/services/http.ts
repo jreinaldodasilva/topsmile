@@ -4,6 +4,12 @@ import { ApiResult } from '@topsmile/types';
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const LOGOUT_EVENT = 'topsmile-logout';
 
+// Test credentials from environment
+const TEST_CREDENTIALS = {
+  email: process.env.REACT_APP_TEST_EMAIL || 'test@example.com',
+  password: process.env.REACT_APP_TEST_PASSWORD || 'TestPassword123!'
+};
+
 export interface HttpResponse<T = any> {
   ok: boolean;
   status: number;

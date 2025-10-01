@@ -387,6 +387,16 @@ AppointmentSchema.pre('save', function(next) {
 // ENHANCED: Extended static methods
 
 // Original methods remain...
+interface AppointmentMatchStage {
+    clinic: Types.ObjectId;
+    scheduledStart: { $gte: Date };
+    scheduledEnd: { $lte: Date };
+    provider?: Types.ObjectId;
+    status?: string | { $nin: string[] };
+    room?: string;
+    priority?: string;
+}
+
 AppointmentSchema.statics.findByTimeRange = function(
     clinicId: string, 
     startDate: Date, 
@@ -399,7 +409,7 @@ AppointmentSchema.statics.findByTimeRange = function(
         includeCompleted?: boolean;
     } = {}
 ) {
-    const matchStage: any = {
+    const matchStage: AppointmentMatchStage = {
         clinic: new Types.ObjectId(clinicId),
         scheduledStart: { $gte: startDate },
         scheduledEnd: { $lte: endDate }
@@ -488,6 +498,18 @@ AppointmentSchema.statics.findByTimeRange = function(
     ]);
 };
 
+interface ConflictQuery {
+    provider?: string;
+    clinic?: string;
+    room?: string;
+    _id?: { $ne: string };
+    $or: Array<{
+        scheduledStart?: { $lt?: Date; $gte?: Date; $lte?: Date };
+        scheduledEnd?: { $gt?: Date; $lte?: Date; $gte?: Date };
+    }>;
+    status: { $nin: string[] };
+}
+
 AppointmentSchema.statics.findAvailabilityConflicts = async function(
     clinicId: string, // Added clinicId to ensure room conflicts are within the same clinic
     providerId: string,
@@ -508,7 +530,7 @@ AppointmentSchema.statics.findAvailabilityConflicts = async function(
         status: { $nin: ['cancelled', 'no_show'] }
     };
 
-    const providerConflictQuery: any = {
+    const providerConflictQuery: ConflictQuery = {
         provider: providerId,
         ...commonOverlapCondition
     };
@@ -517,7 +539,7 @@ AppointmentSchema.statics.findAvailabilityConflicts = async function(
         providerConflictQuery._id = { $ne: options.excludeAppointmentId };
     }
 
-    const roomConflictQuery: any = {
+    const roomConflictQuery: ConflictQuery = {
         clinic: clinicId,
         room: options.checkRoom,
         ...commonOverlapCondition
@@ -541,8 +563,15 @@ AppointmentSchema.statics.findAvailabilityConflicts = async function(
 
 // NEW: Advanced query methods
 
+interface FollowUpQuery {
+    followUpRequired: boolean;
+    followUpDate: { $lte: Date };
+    status: string;
+    clinic?: string;
+}
+
 AppointmentSchema.statics.findPendingFollowUps = function(clinicId?: string) {
-    const query: any = {
+    const query: FollowUpQuery = {
         followUpRequired: true,
         followUpDate: { $lte: new Date() },
         status: 'completed'
@@ -556,12 +585,22 @@ AppointmentSchema.statics.findPendingFollowUps = function(clinicId?: string) {
         .sort({ followUpDate: 1 });
 };
 
+interface BillingQuery {
+    clinic: string;
+    status: string;
+    billingStatus: string;
+    completedAt?: {
+        $gte?: Date;
+        $lte?: Date;
+    };
+}
+
 AppointmentSchema.statics.findBillingPending = function(clinicId: string, options: {
     status?: 'pending' | 'billed' | 'insurance_pending';
     dateFrom?: Date;
     dateTo?: Date;
 } = {}) {
-    const query: any = {
+    const query: BillingQuery = {
         clinic: clinicId,
         status: 'completed',
         billingStatus: options.status || 'pending'
@@ -580,12 +619,21 @@ AppointmentSchema.statics.findBillingPending = function(clinicId: string, option
         .sort({ completedAt: -1 });
 };
 
+interface SatisfactionMatchStage {
+    provider: Types.ObjectId;
+    patientSatisfactionScore: { $exists: boolean; $ne: null };
+    completedAt?: {
+        $gte?: Date;
+        $lte?: Date;
+    };
+}
+
 AppointmentSchema.statics.getProviderSatisfactionStats = function(
     providerId: string, 
     dateFrom?: Date, 
     dateTo?: Date
 ) {
-    const matchStage: any = {
+    const matchStage: SatisfactionMatchStage = {
         provider: new Types.ObjectId(providerId),
         patientSatisfactionScore: { $exists: true, $ne: null }
     };

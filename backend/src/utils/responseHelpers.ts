@@ -1,29 +1,37 @@
 import { Response } from 'express';
 
-export interface ApiResponseData {
+export interface ValidationError {
+  msg: string;
+  param: string;
+  value?: unknown;
+}
+
+export interface ApiResponseData<T = unknown> {
   success: boolean;
   message?: string;
-  data?: any;
+  data?: T;
   code?: string;
-  errors?: any;
+  errors?: ValidationError[];
 }
 
 export class ApiResponse {
-  static success(res: Response, data?: any, message?: string): void {
-    res.json({
+  static success<T = unknown>(res: Response, data?: T, message?: string): void {
+    const response: ApiResponseData<T> = {
       success: true,
       data,
       message
-    });
+    };
+    res.json(response);
   }
 
-  static error(res: Response, status: number, message: string, code?: string, errors?: any): void {
-    res.status(status).json({
+  static error(res: Response, status: number, message: string, code?: string, errors?: ValidationError[]): void {
+    const response: ApiResponseData<never> = {
       success: false,
       message,
       code,
       errors
-    });
+    };
+    res.status(status).json(response);
   }
 
   // Common error responses
@@ -39,7 +47,7 @@ export class ApiResponse {
     ApiResponse.error(res, 404, message, code);
   }
 
-  static badRequest(res: Response, message = 'Dados inválidos', code = 'BAD_REQUEST', errors?: any): void {
+  static badRequest(res: Response, message = 'Dados inválidos', code = 'BAD_REQUEST', errors?: ValidationError[]): void {
     ApiResponse.error(res, 400, message, code, errors);
   }
 

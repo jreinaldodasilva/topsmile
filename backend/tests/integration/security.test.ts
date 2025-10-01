@@ -27,7 +27,7 @@ describe('Security Tests', () => {
       // Create an expired token
       const expiredToken = jwt.sign(
         { userId: testUser._id.toString(), email: testUser.email, role: testUser.role },
-        process.env.JWT_SECRET || 'test-jwt-secret-key',
+        process.env.TEST_JWT_SECRET || process.env.JWT_SECRET || 'test-jwt-secret-key',
         {
           expiresIn: '-1h', // Already expired
           issuer: 'topsmile-api',
