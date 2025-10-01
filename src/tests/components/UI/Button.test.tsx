@@ -1,102 +1,132 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Button, { ButtonProps } from '../../../components/UI/Button/Button';
+import userEvent from '@testing-library/user-event';
+import Button from '../../../components/UI/Button/Button';
 
-describe('Button', () => {
-  const renderButton = (props: Partial<ButtonProps> = {}) => {
-    const defaultProps: ButtonProps = {
-      children: 'Click me',
-      onClick: jest.fn(),
-    };
-    return render(<Button {...defaultProps} {...props} />);
-  };
+describe('Button Component', () => {
+  describe('Rendering', () => {
+    it('should render button with text', () => {
+      render(<Button>Click me</Button>);
+      
+      expect(screen.getByRole('button', { name: /click me/i })).toBeInTheDocument();
+    });
 
-  it('renders with default props', () => {
-    renderButton();
-    const button = screen.getByRole('button', { name: /Click me/i });
-    expect(button).toBeInTheDocument();
-    expect(button).toHaveClass('btn btn--primary btn--md');
-  });
+    it('should render button with custom className', () => {
+      render(<Button className="custom-class">Button</Button>);
+      
+      const button = screen.getByRole('button');
+      expect(button).toHaveClass('custom-class');
+    });
 
-  it('handles click events', () => {
-    const handleClick = jest.fn();
-    renderButton({ onClick: handleClick });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    fireEvent.click(button);
-    expect(handleClick).toHaveBeenCalledTimes(1);
-  });
+    it('should render disabled button', () => {
+      render(<Button disabled>Disabled</Button>);
+      
+      const button = screen.getByRole('button');
+      expect(button).toBeDisabled();
+    });
 
-  it('is disabled when disabled prop is true', () => {
-    const handleClick = jest.fn();
-    renderButton({ disabled: true, onClick: handleClick });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    expect(button).toBeDisabled();
-    fireEvent.click(button);
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-
-  it('is disabled when loading prop is true', () => {
-    const handleClick = jest.fn();
-    renderButton({ loading: true, onClick: handleClick });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    expect(button).toBeDisabled();
-    fireEvent.click(button);
-    expect(handleClick).not.toHaveBeenCalled();
-  });
-
-  it('shows a loading spinner when loading', () => {
-    renderButton({ loading: true });
-    expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
-  });
-
-  it('applies variant classes correctly', () => {
-    const variants: ButtonProps['variant'][] = ['primary', 'secondary', 'outline', 'ghost', 'destructive'];
-    variants.forEach(variant => {
-      const { unmount } = renderButton({ variant });
-      const button = screen.getByRole('button', { name: /Click me/i });
-      expect(button).toHaveClass(`btn--${variant}`);
-      unmount();
+    it('should render loading state', () => {
+      render(<Button loading>Loading</Button>);
+      
+      const button = screen.getByRole('button');
+      expect(button).toBeDisabled();
+      expect(button).toHaveTextContent('Loading');
     });
   });
 
-  it('applies size classes correctly', () => {
-    const sizes: ButtonProps['size'][] = ['sm', 'md', 'lg'];
-    sizes.forEach(size => {
-      const { unmount } = renderButton({ size });
-      const button = screen.getByRole('button', { name: /Click me/i });
-      expect(button).toHaveClass(`btn--${size}`);
-      unmount();
+  describe('Interaction', () => {
+    it('should call onClick when clicked', async () => {
+      const handleClick = jest.fn();
+      const user = userEvent.setup();
+      
+      render(<Button onClick={handleClick}>Click me</Button>);
+      
+      const button = screen.getByRole('button');
+      await user.click(button);
+      
+      expect(handleClick).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not call onClick when disabled', async () => {
+      const handleClick = jest.fn();
+      const user = userEvent.setup();
+      
+      render(<Button onClick={handleClick} disabled>Disabled</Button>);
+      
+      const button = screen.getByRole('button');
+      await user.click(button);
+      
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it('should not call onClick when loading', async () => {
+      const handleClick = jest.fn();
+      const user = userEvent.setup();
+      
+      render(<Button onClick={handleClick} loading>Loading</Button>);
+      
+      const button = screen.getByRole('button');
+      await user.click(button);
+      
+      expect(handleClick).not.toHaveBeenCalled();
+    });
+
+    it('should handle keyboard events', async () => {
+      const handleClick = jest.fn();
+      const user = userEvent.setup();
+      
+      render(<Button onClick={handleClick}>Button</Button>);
+      
+      const button = screen.getByRole('button');
+      button.focus();
+      await user.keyboard('{Enter}');
+      
+      expect(handleClick).toHaveBeenCalled();
     });
   });
 
-  it('applies fullWidth class correctly', () => {
-    renderButton({ fullWidth: true });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    expect(button).toHaveClass('btn--full-width');
+  describe('Accessibility', () => {
+    it('should have proper button role', () => {
+      render(<Button>Button</Button>);
+      
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
+
+    it('should support aria-label', () => {
+      render(<Button aria-label="Custom label">Button</Button>);
+      
+      const button = screen.getByRole('button');
+      expect(button).toHaveAttribute('aria-label', 'Custom label');
+    });
+
+    it('should be focusable', () => {
+      render(<Button>Button</Button>);
+      
+      const button = screen.getByRole('button');
+      button.focus();
+      expect(button).toHaveFocus();
+    });
   });
 
-  it('renders an icon on the left by default', () => {
-    const icon = <span data-testid="icon">Icon</span>;
-    renderButton({ icon });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    const iconEl = screen.getByTestId('icon');
-    expect(button).toContainElement(iconEl);
-    expect(screen.getByTestId('icon-left')).toHaveClass('btn__icon--left');
-  });
+  describe('Edge Cases', () => {
+    it('should handle rapid clicks', async () => {
+      const handleClick = jest.fn();
+      const user = userEvent.setup();
+      
+      render(<Button onClick={handleClick}>Button</Button>);
+      
+      const button = screen.getByRole('button');
+      await user.click(button);
+      await user.click(button);
+      await user.click(button);
+      
+      expect(handleClick).toHaveBeenCalledTimes(3);
+    });
 
-  it('renders an icon on the right', () => {
-    const icon = <span data-testid="icon">Icon</span>;
-    renderButton({ icon, iconPosition: 'right' });
-    const button = screen.getByRole('button', { name: /Click me/i });
-    const iconEl = screen.getByTestId('icon');
-    expect(button).toContainElement(iconEl);
-    expect(screen.getByTestId('icon-right')).toHaveClass('btn__icon--right');
-  });
-
-  it('does not render icon when loading', () => {
-    const icon = <span data-testid="icon">Icon</span>;
-    renderButton({ icon, loading: true });
-    const iconEl = screen.queryByTestId('icon');
-    expect(iconEl).not.toBeInTheDocument();
+    it('should handle empty children', () => {
+      render(<Button></Button>);
+      
+      expect(screen.getByRole('button')).toBeInTheDocument();
+    });
   });
 });

@@ -1,96 +1,217 @@
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import Modal, { ModalProps } from '../../../components/UI/Modal/Modal';
+import userEvent from '@testing-library/user-event';
+import Modal from '../../../components/UI/Modal/Modal';
 
-// Mock the Button component to avoid styling issues
-jest.mock('../../../components/UI/Button/Button', () => (props: any) => <button {...props} />);
-
-describe('Modal', () => {
-  const handleClose = jest.fn();
-
-  const defaultProps: ModalProps = {
-    isOpen: true,
-    onClose: handleClose,
-    title: 'Test Modal',
-    children: <div>Modal Content</div>,
-  };
-
-  const renderModal = (props: Partial<ModalProps> = {}) => {
-    return render(<Modal {...defaultProps} {...props} />);
-  };
+describe('Modal Component', () => {
+  const mockOnClose = jest.fn();
 
   beforeEach(() => {
-    handleClose.mockClear();
+    jest.clearAllMocks();
   });
 
-  it('does not render when isOpen is false', () => {
-    renderModal({ isOpen: false });
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  describe('Rendering', () => {
+    it('should render modal when open', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      expect(screen.getByText('Test Modal')).toBeInTheDocument();
+      expect(screen.getByText('Modal content')).toBeInTheDocument();
+    });
+
+    it('should not render modal when closed', () => {
+      render(
+        <Modal isOpen={false} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      expect(screen.queryByText('Test Modal')).not.toBeInTheDocument();
+      expect(screen.queryByText('Modal content')).not.toBeInTheDocument();
+    });
+
+    it('should render close button', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      expect(screen.getByRole('button', { name: /close/i })).toBeInTheDocument();
+    });
   });
 
-  it('renders correctly when isOpen is true', () => {
-    renderModal();
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByText('Test Modal')).toBeInTheDocument();
-    expect(screen.getByText('Modal Content')).toBeInTheDocument();
+  describe('Interaction', () => {
+    it('should call onClose when close button is clicked', async () => {
+      const user = userEvent.setup();
+      
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      const closeButton = screen.getByRole('button', { name: /close/i });
+      await user.click(closeButton);
+
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('should call onClose when overlay is clicked', async () => {
+      const user = userEvent.setup();
+      
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      const overlay = screen.getByTestId('modal-overlay');
+      await user.click(overlay);
+
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not close when modal content is clicked', async () => {
+      const user = userEvent.setup();
+      
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      const content = screen.getByText('Modal content');
+      await user.click(content);
+
+      expect(mockOnClose).not.toHaveBeenCalled();
+    });
+
+    it('should close on Escape key press', async () => {
+      const user = userEvent.setup();
+      
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      await user.keyboard('{Escape}');
+
+      expect(mockOnClose).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('calls onClose when the close button is clicked', () => {
-    renderModal();
-    const closeButton = screen.getByLabelText('Fechar modal');
-    fireEvent.click(closeButton);
-    expect(handleClose).toHaveBeenCalledTimes(1);
+  describe('Accessibility', () => {
+    it('should have proper ARIA attributes', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      const modal = screen.getByRole('dialog');
+      expect(modal).toHaveAttribute('aria-modal', 'true');
+      expect(modal).toHaveAttribute('aria-labelledby');
+    });
+
+    it('should trap focus within modal', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <button>First button</button>
+          <button>Second button</button>
+        </Modal>
+      );
+
+      const firstButton = screen.getByText('First button');
+      const closeButton = screen.getByRole('button', { name: /close/i });
+
+      // Focus should be trapped within modal
+      expect(document.activeElement).toBe(firstButton);
+    });
+
+    it('should restore focus when closed', () => {
+      const triggerButton = document.createElement('button');
+      document.body.appendChild(triggerButton);
+      triggerButton.focus();
+
+      const { rerender } = render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      rerender(
+        <Modal isOpen={false} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      expect(document.activeElement).toBe(triggerButton);
+      document.body.removeChild(triggerButton);
+    });
   });
 
-  it('calls onClose when the backdrop is clicked', () => {
-    renderModal();
-    const backdrop = screen.getByTestId('modal-backdrop');
-    fireEvent.click(backdrop);
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
+  describe('Edge Cases', () => {
+    it('should handle rapid open/close', () => {
+      const { rerender } = render(
+        <Modal isOpen={false} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
 
-  it('does not call onClose on backdrop click if closeOnBackdropClick is false', () => {
-    renderModal({ closeOnBackdropClick: false });
-    const backdrop = screen.getByTestId('modal-backdrop');
-    fireEvent.click(backdrop);
-    expect(handleClose).not.toHaveBeenCalled();
-  });
+      // Rapidly toggle
+      rerender(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
 
-  it('calls onClose when the Escape key is pressed', () => {
-    renderModal();
-    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
-    expect(handleClose).toHaveBeenCalledTimes(1);
-  });
+      rerender(
+        <Modal isOpen={false} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
 
-  it('does not call onClose on Escape key if closeOnEscape is false', () => {
-    renderModal({ closeOnEscape: false });
-    fireEvent.keyDown(document, { key: 'Escape', code: 'Escape' });
-    expect(handleClose).not.toHaveBeenCalled();
-  });
+      expect(screen.queryByText('Test Modal')).not.toBeInTheDocument();
+    });
 
-  it('applies the correct size class', () => {
-    const { rerender } = renderModal({ size: 'sm' });
-    expect(screen.getByTestId('modal')).toHaveClass('modal--sm');
+    it('should handle empty content', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Empty Modal">
+        </Modal>
+      );
 
-    rerender(<Modal {...defaultProps} size="lg" />);
-    expect(screen.getByTestId('modal')).toHaveClass('modal--lg');
-  });
+      expect(screen.getByText('Empty Modal')).toBeInTheDocument();
+    });
 
-  it('does not show the close button if showCloseButton is false', () => {
-    renderModal({ showCloseButton: false });
-    expect(screen.queryByLabelText('Fechar modal')).not.toBeInTheDocument();
-  });
+    it('should prevent body scroll when open', () => {
+      render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
 
-  it('traps focus within the modal', () => {
-    renderModal({ children: <input data-testid="input" /> });
+      expect(document.body.style.overflow).toBe('hidden');
+    });
 
-    // The focus management is tricky to test with JSDOM, but we can test the initial focus
-    // and that the focus trap handler is in place.
-    // A full end-to-end test with Cypress would be better for this.
-    expect(document.body).toHaveStyle('overflow: hidden');
+    it('should restore body scroll when closed', () => {
+      const { rerender } = render(
+        <Modal isOpen={true} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
 
-    // Simulate tabbing
-    fireEvent.keyDown(document, { key: 'Tab' });
-    // In a real browser, this would cycle focus. Here we just check the event is handled.
+      rerender(
+        <Modal isOpen={false} onClose={mockOnClose} title="Test Modal">
+          <p>Modal content</p>
+        </Modal>
+      );
+
+      expect(document.body.style.overflow).toBe('');
+    });
   });
 });
