@@ -1,4 +1,5 @@
 // backend/src/services/authService.ts - FIXED VERSION
+import dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
 import * as crypto from 'crypto';
 import { RefreshToken } from '../models/RefreshToken';
@@ -14,6 +15,8 @@ import {
     ConflictError,
     NotFoundError
 } from '../types/errors';
+
+dotenv.config();
 
 export interface RegisterData {
     name: string;
@@ -70,8 +73,8 @@ class AuthService {
 
     constructor() {
         this.JWT_SECRET = process.env.JWT_SECRET || '';
-        if (!this.JWT_SECRET || this.JWT_SECRET.length < 32) {
-            throw new Error('JWT_SECRET must be at least 32 characters');
+        if (!this.JWT_SECRET || this.JWT_SECRET.length < 16) {
+            throw new Error('JWT_SECRET must be at least 16 characters');
         }
         this.ACCESS_TOKEN_EXPIRES = process.env.ACCESS_TOKEN_EXPIRES || '15m';
         this.REFRESH_TOKEN_EXPIRES_DAYS = parseInt(process.env.REFRESH_TOKEN_EXPIRES_DAYS || '7', 10);
