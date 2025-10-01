@@ -1,3 +1,4 @@
+export {};
 /// <reference types="cypress" />
 
 describe('Patient Appointment Booking E2E', () => {

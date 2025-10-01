@@ -1,0 +1,12 @@
+diff --git a/packages/types/package.json b/packages/types/package.json
+index 1234567..abcdefg 100644
+--- a/packages/types/package.json
++++ b/packages/types/package.json
+@@ -10,7 +10,6 @@
+   "author": "",
+   "license": "ISC",
+   "devDependencies": {
+-    "@types/react-router-dom": "^5.3.3",
+     "typescript": "^5.0.4"
+   }
+ }

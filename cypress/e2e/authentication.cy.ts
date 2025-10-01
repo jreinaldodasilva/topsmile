@@ -1,3 +1,4 @@
+export {};
 /// <reference types="cypress" />
 
 describe('Authentication E2E Flow', () => {
