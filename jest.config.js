@@ -72,7 +72,6 @@ module.exports = {
   restoreMocks: true,
   detectOpenHandles: false,
   verbose: false,
-  bail: 1,
   cache: true,
   testEnvironment: 'jsdom',
 
