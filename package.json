@@ -1,6 +1,22 @@
 {
-  "name": "topsmile",
-  "version": "0.1.0",
+  "name": "topsmile-frontend",
+  "version": "1.0.0",
+  "description": "TopSmile Dental Clinic Management System - Frontend Application",
+  "author": "TopSmile Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topsmile/topsmile"
+  },
+  "keywords": [
+    "dental",
+    "clinic",
+    "management",
+    "healthcare",
+    "react",
+    "typescript",
+    "patient-portal"
+  ],
   "private": true,
   "dependencies": {
     "@stripe/react-stripe-js": "^4.0.2",
@@ -27,25 +43,34 @@
     "prepare": "cd backend && npm install",
     "start": "react-scripts start",
     "dev": "concurrently \"npm run server\" \"npm run start\"",
-    "server": "cd ./backend && npm run dev",
+    "dev:frontend": "react-scripts start",
+    "dev:backend": "cd backend && npm run dev",
+    "server": "cd backend && npm run dev",
     "build": "react-scripts build",
+    "build:all": "npm run build && cd backend && npm run build",
     "eject": "react-scripts eject",
     "test": "npm run test:all",
-    "test:all": "npm run test:frontend",
+    "test:all": "npm run test:frontend && npm run test:backend",
     "test:frontend": "jest --config jest.config.js --runInBand",
-    "test:watch:frontend": "jest --config jest.config.js --watch",
-    "test:coverage:frontend": "jest --config jest.config.js --coverage",
-    "test:backend": "cd ./backend && npm test",
-    "test:watch:backend": "cd ./backend && npm run test:watch",
-    "test:coverage:backend": "cd ./backend && npm run test:coverage",
+    "test:frontend:watch": "jest --config jest.config.js --watch",
+    "test:frontend:coverage": "jest --config jest.config.js --coverage",
+    "test:frontend:ci": "jest --config jest.config.js --ci --coverage --maxWorkers=2",
+    "test:backend": "cd backend && npm test",
+    "test:backend:watch": "cd backend && npm run test:watch",
+    "test:backend:coverage": "cd backend && npm run test:coverage",
+    "test:backend:ci": "cd backend && npm run test:ci",
     "test:e2e": "cypress run",
-    "test:coverage": "npm run test:coverage:frontend && npm run test:coverage:backend",
+    "test:e2e:open": "cypress open",
+    "test:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage",
+    "test:ci": "npm run test:frontend:ci && npm run test:backend:ci && npm run test:e2e",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "type-check": "tsc --noEmit",
     "migrate-types": "node scripts/migrate-types.js",
     "fix-type-imports": "node scripts/fix-type-imports.js",
-    "lint:types": "npm run migrate-types",
     "generate-secrets": "node scripts/generate-secrets.js"
   },
   "eslintConfig": {
@@ -112,5 +137,13 @@
     "workerDirectory": [
       "public"
     ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "jest": {
+    "preset": "react-scripts",
+    "testEnvironment": "jsdom"
   }
 }
