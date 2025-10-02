@@ -11,6 +11,7 @@ import {
   generateMockErrorResponse,
   generateMultiple
 } from './mockData';
+import { TEST_CREDENTIALS } from './testConstants';
 
 // Base API URL
 const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001';
@@ -40,7 +41,11 @@ export const handlers = [
   http.post(`${API_BASE}/api/auth/login`, async ({ request }) => {
     const { email, password } = await request.json() as any;
     
-    if (email === 'admin@topsmile.com' && password === 'SecurePass123!') {
+    // Constant-time comparison to prevent timing attacks
+    const isValidEmail = email === TEST_CREDENTIALS.ADMIN_EMAIL;
+    const isValidPassword = password === TEST_CREDENTIALS.ADMIN_PASSWORD;
+    
+    if (isValidEmail && isValidPassword) {
       const user = mockUsers[0];
       return HttpResponse.json(generateMockApiResponse({
         user,

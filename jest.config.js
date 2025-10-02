@@ -77,6 +77,6 @@ module.exports = {
   testEnvironment: 'jsdom',
 
   transformIgnorePatterns: [
-    '/node_modules/(?!(@bundled-es-modules/|msw/))'
+    '/node_modules/(?!(@bundled-es-modules/|msw/|until-async/))'
   ],
 };

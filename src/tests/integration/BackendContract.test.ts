@@ -1,6 +1,7 @@
 import { apiService } from '../../services/apiService';
 import { server } from '../../mocks/server';
 import { http, HttpResponse } from 'msw';
+import { TEST_CREDENTIALS } from '../utils/testConstants';
 
 describe('Backend API Contract Validation', () => {
   afterEach(() => {
@@ -81,7 +82,7 @@ describe('Backend API Contract Validation', () => {
       const response = await apiService.auth.register({
         name: 'Test User',
         email: 'test@test.com',
-        password: 'password123'  // No uppercase
+        password: 'testpassword123'  // No uppercase
       });
 
       expect(response.success).toBe(false);

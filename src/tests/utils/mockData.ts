@@ -302,12 +302,14 @@ export const generateBrazilianState = () => faker.helpers.arrayElement([
   'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'
 ]);
 
+import { TEST_CREDENTIALS } from './testConstants';
+
 // Common test scenarios
 export const createTestScenarios = {
   // Authentication scenarios
   validLogin: () => ({
-    email: process.env.TEST_ADMIN_EMAIL || 'admin@topsmile.com',
-    password: process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!'
+    email: TEST_CREDENTIALS.ADMIN_EMAIL,
+    password: TEST_CREDENTIALS.ADMIN_PASSWORD
   }),
   
   invalidLogin: () => ({
