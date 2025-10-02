@@ -1,21 +1,21 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PatientForm from '../../../components/Admin/Forms/PatientForm';
-import { apiService } from '../../../services/apiService';
 import type { Patient } from '../../../../packages/types/src/index';
 
 // Mock the API service
+const mockCreate = jest.fn();
+const mockUpdate = jest.fn();
+
 jest.mock('../../../services/apiService', () => ({
   apiService: {
     patients: {
-      create: jest.fn(),
-      update: jest.fn()
+      create: mockCreate,
+      update: mockUpdate
     }
   }
 }));
-
-const mockApiService = apiService as jest.Mocked<typeof apiService>;
 
 describe('PatientForm Component', () => {
   const mockOnSave = jest.fn();
@@ -138,7 +138,7 @@ describe('PatientForm Component', () => {
   describe('Form Submission', () => {
     it('should create new patient with valid data', async () => {
       const user = userEvent.setup();
-      mockApiService.patients.create.mockResolvedValue({
+      mockCreate.mockResolvedValue({
         success: true,
         data: mockPatient
       });
@@ -154,7 +154,7 @@ describe('PatientForm Component', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(mockApiService.patients.create).toHaveBeenCalledWith(
+        expect(mockCreate).toHaveBeenCalledWith(
           expect.objectContaining({
             firstName: 'João',
             phone: '(11) 99999-9999'
@@ -166,7 +166,7 @@ describe('PatientForm Component', () => {
 
     it('should handle API errors during submission', async () => {
       const user = userEvent.setup();
-      mockApiService.patients.create.mockResolvedValue({
+      mockCreate.mockResolvedValue({
         success: false,
         message: 'Email já existe'
       });

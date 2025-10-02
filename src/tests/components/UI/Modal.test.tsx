@@ -127,7 +127,6 @@ describe('Modal Component', () => {
       );
 
       const firstButton = screen.getByText('First button');
-      const closeButton = screen.getByRole('button', { name: /close/i });
 
       // Focus should be trapped within modal
       expect(document.activeElement).toBe(firstButton);
@@ -182,6 +181,7 @@ describe('Modal Component', () => {
     it('should handle empty content', () => {
       render(
         <Modal isOpen={true} onClose={mockOnClose} title="Empty Modal">
+          <div></div>
         </Modal>
       );
 

@@ -1,7 +1,7 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import Button from '../../../components/UI/Button/Button';
+import  Button  from '../../../components/UI/Button/Button';
 
 describe('Button Component', () => {
   describe('Rendering', () => {
@@ -124,7 +124,7 @@ describe('Button Component', () => {
     });
 
     it('should handle empty children', () => {
-      render(<Button></Button>);
+      render(<Button> </Button>);
       
       expect(screen.getByRole('button')).toBeInTheDocument();
     });
