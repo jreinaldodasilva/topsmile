@@ -8,12 +8,7 @@ import jwt from 'jsonwebtoken';
 // Important: @faker-js/faker v8 is ESM-only. We avoid a top-level import so this file works under CommonJS test runners.
 import type { Faker } from '@faker-js/faker';
 
-// Test constants from environment variables
-const TEST_PASSWORDS = {
-  DEFAULT: process.env.TEST_DEFAULT_PASSWORD || 'TestPassword123!',
-  PATIENT: process.env.TEST_PATIENT_PASSWORD || 'PatientPass123!',
-  PROVIDER: process.env.TEST_PROVIDER_PASSWORD || 'ProviderPass123!'
-};
+import { TEST_CREDENTIALS } from './testConstants';
 
 let fakerInstance: Faker | undefined;
 
@@ -38,7 +33,7 @@ export const createTestUser = async (overrides = {}): Promise<IUser> => {
   const defaultUser = {
     name: 'Test User',
     email: `test${userCounter}@example.com`,
-    password: TEST_PASSWORDS.DEFAULT,
+    password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
     role: 'admin' as const,
   };
 
@@ -92,7 +87,7 @@ export const createTestUserWithClinic = async (overrides = {}): Promise<IUser> =
   const defaultUser = {
     name: 'Test User',
     email: `test${userCounter}@example.com`,
-    password: TEST_PASSWORDS.DEFAULT,
+    password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
     role: 'admin' as const,
     clinic: clinic._id,
   };
@@ -175,7 +170,7 @@ export const createTestPatientUser = async (patientId: string, overrides = {}) =
   const defaultPatientUser = {
     patient: patientId,
     email: 'patient.user@example.com',
-    password: TEST_PASSWORDS.PATIENT,
+    password: TEST_CREDENTIALS.PATIENT_PASSWORD,
     isActive: true,
     emailVerified: false
   };
@@ -247,7 +242,7 @@ export const createRealisticProvider = async (overrides = {}) => {
   const providerData = { ...defaultProvider, ...overrides };
   const user = new User({
     ...providerData,
-    password: TEST_PASSWORDS.PROVIDER,
+    password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
     role: 'dentist'
   });
   return await user.save();
@@ -287,7 +282,7 @@ interface AuthTokenPayload {
   clinicId?: string;
 }
 
-export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string, email = 'test@example.com') => {
+export const generateAuthToken = (userId: string, role = 'admin', clinicId?: string, email = 'test@example.com', expiresIn = '1h') => {
   const payload: AuthTokenPayload = {
     userId,
     email,
@@ -296,9 +291,9 @@ export const generateAuthToken = (userId: string, role = 'admin', clinicId?: str
   if (clinicId) {
     payload.clinicId = clinicId;
   }
-  const secret = process.env.TEST_JWT_SECRET || process.env.JWT_SECRET || 'test-jwt-secret-key';
+  const secret = TEST_CREDENTIALS.JWT_SECRET;
   return jwt.sign(payload, secret, {
-    expiresIn: '1h',
+    expiresIn,
     issuer: 'topsmile-api',
     audience: 'topsmile-client',
     algorithm: 'HS256'
@@ -321,7 +316,7 @@ export const generatePatientAuthToken = (patientUserId: string, patientId: strin
     clinicId,
     type: 'patient'
   };
-  const secret = process.env.TEST_PATIENT_JWT_SECRET || process.env.PATIENT_JWT_SECRET || process.env.JWT_SECRET || 'test-patient-jwt-secret-key';
+  const secret = TEST_CREDENTIALS.PATIENT_JWT_SECRET;
   return jwt.sign(payload, secret, {
     expiresIn: '15m',
     issuer: 'topsmile-patient-portal',

@@ -5,14 +5,7 @@ import { User } from '../../src/models/User';
 import { authenticate } from '../../src/middleware/auth';
 // Import and use auth routes
 import authRoutes from '../../src/routes/auth';
-
-// Test constants using environment variables
-const TEST_PASSWORDS = {
-  SECURE: process.env.TEST_ADMIN_PASSWORD || 'SecurePass123!',
-  TEST: process.env.TEST_USER_PASSWORD || 'TestPassword123!',
-  NEW: process.env.TEST_NEW_PASSWORD || 'NewPass123!',
-  LOGIN: process.env.TEST_USER_PASSWORD || 'LoginPass123!'
-};
+import { TEST_CREDENTIALS } from '../testConstants';
 
 // Create a test app with real middleware
 const app = express();
@@ -46,7 +39,7 @@ describe('Auth Routes Integration', () => {
     testUser = await createTestUser({
       name: 'Test User',
       email: 'test@example.com',
-      password: TEST_PASSWORDS.TEST,
+      password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       role: 'admin'
     });
 
@@ -58,7 +51,7 @@ describe('Auth Routes Integration', () => {
       const userData = {
         name: 'João Silva',
         email: 'joao@example.com',
-        password: TEST_PASSWORDS.SECURE,
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       };
 
       const response = await request(app)
@@ -93,7 +86,7 @@ describe('Auth Routes Integration', () => {
       const userData = {
         name: 'Test User',
         email: 'test@example.com', // Same email as testUser
-        password: TEST_PASSWORDS.SECURE,
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       };
 
       const response = await request(app)
@@ -110,7 +103,7 @@ describe('Auth Routes Integration', () => {
     it('should login user successfully', async () => {
       const loginData = {
         email: 'test@example.com',
-        password: TEST_PASSWORDS.TEST,
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       };
 
       const response = await request(app)
@@ -177,8 +170,8 @@ describe('Auth Routes Integration', () => {
   describe('PATCH /api/auth/change-password', () => {
     it('should change password successfully', async () => {
       const changePasswordData = {
-        currentPassword: TEST_PASSWORDS.TEST,
-        newPassword: TEST_PASSWORDS.NEW,
+        currentPassword: TEST_CREDENTIALS.DEFAULT_PASSWORD,
+        newPassword: TEST_CREDENTIALS.ADMIN_PASSWORD,
       };
 
       const response = await request(app)
@@ -193,7 +186,7 @@ describe('Auth Routes Integration', () => {
 
     it('should return 400 for invalid new password', async () => {
       const changePasswordData = {
-        currentPassword: TEST_PASSWORDS.TEST,
+        currentPassword: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         newPassword: 'weak',
       };
 
@@ -228,7 +221,7 @@ describe('Auth Routes Integration', () => {
         .post('/api/auth/login')
         .send({
           email: 'test@example.com',
-          password: TEST_PASSWORDS.TEST
+          password: TEST_CREDENTIALS.DEFAULT_PASSWORD
         });
 
       const refreshToken = loginResponse.body.data.refreshToken;

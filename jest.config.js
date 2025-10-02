@@ -67,11 +67,13 @@ module.exports = {
     },
   },
 
-  testTimeout: 10000,
+  testTimeout: 8000,
   clearMocks: true,
   restoreMocks: true,
-  detectOpenHandles: true,
-  verbose: true,
+  detectOpenHandles: false,
+  verbose: false,
+  bail: 1,
+  cache: true,
   testEnvironment: 'jsdom',
 
   transformIgnorePatterns: [

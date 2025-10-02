@@ -3,21 +3,24 @@ import { MongoMemoryServer } from 'mongodb-memory-server';
 import './customMatchers';
 import '../src/models/Provider';
 import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
-import redisClient from '../src/config/redis';
+import { setupRedisMock } from './mocks/redis.mock';
+import { setupSendGridMock } from './mocks/sendgrid.mock';
+import { TEST_CREDENTIALS } from './testConstants';
 
 let mongoServer: MongoMemoryServer;
+let mockRedisClient: any;
+let mockSendGridClient: any;
 
 beforeAll(async () => {
   console.log('Setting up test database with MongoDB Memory Server...');
-  // Set JWT_SECRET for tests if not already set
-  if (!process.env.JWT_SECRET) {
-    process.env.JWT_SECRET = 'test-jwt-secret-key';
-  }
   
-  // Set PATIENT_JWT_SECRET for patient auth tests
-  if (!process.env.PATIENT_JWT_SECRET) {
-    process.env.PATIENT_JWT_SECRET = 'test-patient-jwt-secret-key';
-  }
+  // Set JWT secrets from test constants
+  process.env.JWT_SECRET = TEST_CREDENTIALS.JWT_SECRET;
+  process.env.PATIENT_JWT_SECRET = TEST_CREDENTIALS.PATIENT_JWT_SECRET;
+  
+  // Setup mocks
+  mockRedisClient = setupRedisMock();
+  mockSendGridClient = setupSendGridMock();
 
   // Start MongoDB Memory Server for test isolation
   mongoServer = await MongoMemoryServer.create();
@@ -40,12 +43,12 @@ afterAll(async () => {
     console.log('MongoDB Memory Server stopped');
   }
 
-  // Close Redis connection properly
-  try {
-    await redisClient.quit();
-    console.log('Redis connection closed');
-  } catch (error) {
-    console.warn('Error closing Redis connection:', error);
+  // Clean up mocks
+  if (mockRedisClient) {
+    mockRedisClient.clear();
+  }
+  if (mockSendGridClient) {
+    mockSendGridClient.clear();
   }
 });
 
@@ -55,6 +58,14 @@ afterEach(async () => {
     await tokenBlacklistService.clear();
   } catch (error) {
     console.warn('Failed to clear token blacklist:', error);
+  }
+
+  // Clear mock data
+  if (mockRedisClient) {
+    mockRedisClient.clear();
+  }
+  if (mockSendGridClient) {
+    mockSendGridClient.clear();
   }
 
   // Clear all collections after each test, but only if connected

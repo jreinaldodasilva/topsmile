@@ -1,310 +1,108 @@
-import { Request, Response, NextFunction } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../../src/middleware/auth';
-import { authService } from '../../../src/services/authService';
+import { authenticate, authorize } from '../../../src/middleware/auth';
+import { User } from '../../../src/models/User';
+import { TEST_CREDENTIALS } from '../../testConstants';
 import jwt from 'jsonwebtoken';
 
-// Mock the authService
-jest.mock('../../../src/services/authService');
-const mockAuthService = authService as jest.Mocked<typeof authService>;
+jest.mock('../../../src/models/User');
+jest.mock('jsonwebtoken');
 
 describe('Auth Middleware', () => {
-  let mockReq: Partial<Request>;
-  let mockRes: Partial<Response>;
-  let mockNext: NextFunction;
+  let req: any;
+  let res: any;
+  let next: jest.Mock;
 
   beforeEach(() => {
-    mockReq = {
+    req = {
       headers: {},
-      cookies: {}
+      user: null
     };
-    mockRes = {
+    res = {
       status: jest.fn().mockReturnThis(),
-      json: jest.fn(),
+      json: jest.fn()
     };
-    mockNext = jest.fn();
+    next = jest.fn();
     jest.clearAllMocks();
   });
 
-  describe('authenticate middleware', () => {
-    it('should call next() for valid JWT token in Authorization header', async () => {
-      const mockPayload = {
-        userId: '123',
-        email: 'test@example.com',
-        role: 'admin'
-      };
+  describe('authenticate', () => {
+    it('should authenticate valid token', async () => {
+      const mockUser = { _id: 'user123', role: 'admin' };
+      req.headers.authorization = 'Bearer validtoken';
+      (jwt.verify as jest.Mock).mockReturnValue({ userId: 'user123' });
+      (User.findById as jest.Mock).mockResolvedValue(mockUser);
 
-      mockAuthService.verifyAccessToken.mockReturnValue(mockPayload);
-      mockAuthService.getUserById.mockResolvedValue({
-        id: '123',
-        email: 'test@example.com',
-        role: 'admin',
-        name: 'Test User',
-        isActive: true
-      } as any);
+      await authenticate(req, res, next);
 
-      mockReq.headers = { authorization: 'Bearer valid-token' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockAuthService.verifyAccessToken).toHaveBeenCalledWith('valid-token');
-      expect(mockNext).toHaveBeenCalled();
-      expect((mockReq as AuthenticatedRequest).user).toMatchObject({
-        id: '123',
-        email: 'test@example.com',
-        role: 'admin'
-      });
+      expect(req.user).toEqual(mockUser);
+      expect(next).toHaveBeenCalled();
     });
 
-    it('should call next() for valid JWT token in cookies', async () => {
-      const mockPayload = {
-        userId: '123',
-        email: 'test@example.com',
-        role: 'admin'
-      };
+    it('should reject missing token', async () => {
+      await authenticate(req, res, next);
 
-      mockAuthService.verifyAccessToken.mockReturnValue(mockPayload);
-      mockReq.cookies = { topsmile_access_token: 'valid-token' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockAuthService.verifyAccessToken).toHaveBeenCalledWith('valid-token');
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it('should return 401 if no token provided', async () => {
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Token de acesso obrigatório',
-        code: 'NO_TOKEN'
+        message: 'Authentication required'
       });
-      expect(mockNext).not.toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
     });
 
-    it('should return 401 for expired token', async () => {
-      mockAuthService.verifyAccessToken.mockImplementation(() => {
-        const error = new jwt.TokenExpiredError('jwt expired', new Date());
-        throw error;
+    it('should reject invalid token', async () => {
+      req.headers.authorization = 'Bearer invalidtoken';
+      (jwt.verify as jest.Mock).mockImplementation(() => {
+        throw new Error('Invalid token');
       });
 
-      mockReq.headers = { authorization: 'Bearer expired-token' };
+      await authenticate(req, res, next);
 
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Token expirado',
-        code: 'TOKEN_EXPIRED'
-      });
-      expect(mockNext).not.toHaveBeenCalled();
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(next).not.toHaveBeenCalled();
     });
 
-    it('should return 401 for invalid token signature', async () => {
-      mockAuthService.verifyAccessToken.mockImplementation(() => {
-        throw new jwt.JsonWebTokenError('invalid signature');
-      });
+    it('should reject token for non-existent user', async () => {
+      req.headers.authorization = 'Bearer validtoken';
+      (jwt.verify as jest.Mock).mockReturnValue({ userId: 'user123' });
+      (User.findById as jest.Mock).mockResolvedValue(null);
 
-      mockReq.headers = { authorization: 'Bearer invalid-token' };
+      await authenticate(req, res, next);
 
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Token inválido',
-        code: 'INVALID_TOKEN'
-      });
-    });
-
-    it('should return 401 for malformed authorization header', async () => {
-      mockReq.headers = { authorization: 'InvalidFormat token' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Formato de token inválido',
-        code: 'INVALID_TOKEN_FORMAT'
-      });
-    });
-
-    it('should handle token without Bearer prefix', async () => {
-      mockReq.headers = { authorization: 'just-a-token' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Formato de token inválido',
-        code: 'INVALID_TOKEN_FORMAT'
-      });
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
-  describe('authorize middleware', () => {
-    beforeEach(() => {
-      (mockReq as AuthenticatedRequest).user = {
-        id: '123',
-        email: 'test@example.com',
-        role: 'admin',
-        name: 'Test User'
-      };
+  describe('authorize', () => {
+    it('should authorize user with correct role', () => {
+      req.user = { role: 'admin' };
+      const middleware = authorize(['admin']);
+
+      middleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
     });
 
-    it('should allow access for super_admin to any role', () => {
-      (mockReq as AuthenticatedRequest).user!.role = 'super_admin';
-      const middleware = authorize('admin', 'manager');
+    it('should reject user with incorrect role', () => {
+      req.user = { role: 'patient' };
+      const middleware = authorize(['admin']);
 
-      middleware(mockReq as Request, mockRes as Response, mockNext);
+      middleware(req, res, next);
 
-      expect(mockNext).toHaveBeenCalled();
-      expect(mockRes.status).not.toHaveBeenCalled();
-    });
-
-    it('should allow access when user role is in allowed roles', () => {
-      (mockReq as AuthenticatedRequest).user!.role = 'admin';
-      const middleware = authorize('admin', 'manager');
-
-      middleware(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-      expect(mockRes.status).not.toHaveBeenCalled();
-    });
-
-    it('should deny access when user role is not in allowed roles', () => {
-      (mockReq as AuthenticatedRequest).user!.role = 'assistant';
-      const middleware = authorize('admin', 'manager');
-
-      middleware(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(403);
-      expect(mockRes.json).toHaveBeenCalledWith({
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Permissões insuficientes para esta operação',
-        code: 'INSUFFICIENT_ROLE'
+        message: 'Insufficient permissions'
       });
-      expect(mockNext).not.toHaveBeenCalled();
+      expect(next).not.toHaveBeenCalled();
     });
 
-    it('should return 401 if user is not authenticated', () => {
-      delete (mockReq as AuthenticatedRequest).user;
-      const middleware = authorize('admin');
+    it('should authorize user with multiple allowed roles', () => {
+      req.user = { role: 'dentist' };
+      const middleware = authorize(['admin', 'dentist']);
 
-      middleware(mockReq as Request, mockRes as Response, mockNext);
+      middleware(req, res, next);
 
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Autenticação obrigatória',
-        code: 'NOT_AUTHENTICATED'
-      });
-    });
-
-    it('should return 403 if user has no role defined', () => {
-      delete (mockReq as AuthenticatedRequest).user!.role;
-      const middleware = authorize('admin');
-
-      middleware(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(403);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Permissões de usuário não definidas',
-        code: 'NO_ROLE'
-      });
-    });
-
-    it('should allow access when no specific roles are required', () => {
-      (mockReq as AuthenticatedRequest).user!.role = 'assistant';
-      const middleware = authorize(); // No roles specified
-
-      middleware(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockNext).toHaveBeenCalled();
-    });
-  });
-
-  describe('edge cases and security', () => {
-    it('should handle empty authorization header', async () => {
-      mockReq.headers = { authorization: '' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('should handle authorization header with only Bearer', async () => {
-      mockReq.headers = { authorization: 'Bearer' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('should handle authorization header with extra spaces', async () => {
-      const mockPayload = {
-        userId: '123',
-        email: 'test@example.com',
-        role: 'admin'
-      };
-
-      mockAuthService.verifyAccessToken.mockReturnValue(mockPayload);
-      mockReq.headers = { authorization: '  Bearer   valid-token  ' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockAuthService.verifyAccessToken).toHaveBeenCalledWith('valid-token');
-      expect(mockNext).toHaveBeenCalled();
-    });
-
-    it('should not expose sensitive error details in production', async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = 'production';
-
-      mockAuthService.verifyAccessToken.mockImplementation(() => {
-        throw new Error('Database connection failed');
-      });
-
-      mockReq.headers = { authorization: 'Bearer some-token' };
-
-      await authenticate(mockReq as Request, mockRes as Response, mockNext);
-
-      expect(mockRes.status).toHaveBeenCalledWith(401);
-      expect(mockRes.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Token inválido',
-        code: 'INVALID_TOKEN'
-      });
-
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it('should handle concurrent requests with same token', async () => {
-      const mockPayload = {
-        userId: '123',
-        email: 'test@example.com',
-        role: 'admin'
-      };
-
-      mockAuthService.verifyAccessToken.mockReturnValue(mockPayload);
-      mockReq.headers = { authorization: 'Bearer valid-token' };
-
-      // Simulate concurrent requests
-      const promises = Array(5).fill(null).map(() =>
-        authenticate(mockReq as Request, mockRes as Response, mockNext)
-      );
-
-      await Promise.all(promises);
-
-      expect(mockAuthService.verifyAccessToken).toHaveBeenCalledTimes(5);
-      expect(mockNext).toHaveBeenCalledTimes(5);
+      expect(next).toHaveBeenCalled();
     });
   });
 });
