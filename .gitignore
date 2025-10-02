@@ -29,6 +29,7 @@
 .env.production.local
 .env
 /backend/.env
+/backend/.env.test
 
 npm-debug.log*
 yarn-debug.log*
