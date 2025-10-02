@@ -20,8 +20,14 @@ npm test
 # Run only frontend tests
 npm run test:frontend
 
+# Run a specific front-end test:
+npm run test:frontend test-file-path
+
 # Run only backend tests
 npm run test:backend
+
+# Run a specific back-end test:
+npm run test:backend test-file-path
 
 # Run with coverage
 npm run test:coverage
