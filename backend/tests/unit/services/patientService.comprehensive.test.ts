@@ -57,9 +57,10 @@ describe('PatientService - Core Business Logic', () => {
 
       for (const testCase of testCases) {
         const patientData = getValidPatientData();
-        delete (patientData as any)[testCase.field];
+        const data: any = { ...patientData };
+        data[testCase.field] = undefined;
 
-        await expect(patientService.createPatient(patientData))
+        await expect(patientService.createPatient(data))
           .rejects.toThrow(testCase.error);
       }
     });
@@ -127,7 +128,7 @@ describe('PatientService - Core Business Logic', () => {
       // Create patient with same data in different clinic
       const sameDataDifferentClinic = {
         ...patientData,
-        clinic: otherClinic._id.toString()
+        clinic: otherClinic._id!.toString()
       };
 
       const result = await patientService.createPatient(sameDataDifferentClinic);
@@ -156,7 +157,7 @@ describe('PatientService - Core Business Logic', () => {
     });
 
     it('should create patient without optional email', async () => {
-      const patientData = getValidPatientData();
+      const patientData: any = { ...getValidPatientData() };
       delete patientData.email;
 
       const result = await patientService.createPatient(patientData);
@@ -172,12 +173,12 @@ describe('PatientService - Core Business Logic', () => {
       const created = await patientService.createPatient(patientData);
 
       const result = await patientService.getPatientById(
-        created._id.toString(),
+        created._id!.toString(),
         testClinic._id.toString()
       );
 
       expect(result).toBeDefined();
-      expect(result!._id.toString()).toBe(created._id.toString());
+      expect(result!._id.toString()).toBe(created._id!.toString());
     });
 
     it('should return null for non-existent patient', async () => {
@@ -201,8 +202,8 @@ describe('PatientService - Core Business Logic', () => {
       const created = await patientService.createPatient(patientData);
 
       const result = await patientService.getPatientById(
-        created._id.toString(),
-        otherClinic._id.toString()
+        created._id!.toString(),
+        otherClinic._id!.toString()
       );
 
       expect(result).toBeNull();
@@ -387,7 +388,7 @@ describe('PatientService - Core Business Logic', () => {
       });
       
       await patientService.updatePatient(
-        allPatients.patients[0]._id.toString(),
+        allPatients.patients[0]._id!.toString(),
         testClinic._id.toString(),
         { status: 'inactive' }
       );
@@ -453,10 +454,10 @@ describe('PatientService - Core Business Logic', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result!.medicalHistory.allergies).toEqual(medicalHistory.allergies);
-      expect(result!.medicalHistory.medications).toEqual(medicalHistory.medications);
-      expect(result!.medicalHistory.conditions).toEqual(medicalHistory.conditions);
-      expect(result!.medicalHistory.notes).toBe(medicalHistory.notes);
+      expect(result!.medicalHistoryallergies).toEqual(medicalHistory.allergies);
+      expect(result!.medicalHistorymedications).toEqual(medicalHistory.medications);
+      expect(result!.medicalHistoryconditions).toEqual(medicalHistory.conditions);
+      expect(result!.medicalHistorynotes).toBe(medicalHistory.notes);
     });
 
     it('should handle partial medical history updates', async () => {
@@ -471,9 +472,9 @@ describe('PatientService - Core Business Logic', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result!.medicalHistory.allergies).toEqual(['Penicilina']);
-      expect(result!.medicalHistory.medications).toEqual([]);
-      expect(result!.medicalHistory.conditions).toEqual([]);
+      expect(result!.medicalHistoryallergies).toEqual(['Penicilina']);
+      expect(result!.medicalHistorymedications).toEqual([]);
+      expect(result!.medicalHistoryconditions).toEqual([]);
     });
 
     it('should return null for non-existent patient', async () => {
@@ -515,7 +516,7 @@ describe('PatientService - Core Business Logic', () => {
         phone: '(11) 88888-8888'
       });
       await patientService.updatePatient(
-        inactivePatient._id.toString(),
+        inactivePatient._id!.toString(),
         testClinic._id.toString(),
         { status: 'inactive' }
       );
@@ -528,7 +529,7 @@ describe('PatientService - Core Business Logic', () => {
         phone: '(11) 77777-7777'
       });
       await patientService.updateMedicalHistory(
-        patientWithHistory._id.toString(),
+        patientWithHistory._id!.toString(),
         testClinic._id.toString(),
         { allergies: ['Penicilina'] }
       );
@@ -559,7 +560,7 @@ describe('PatientService - Core Business Logic', () => {
       
       // Deactivate patient
       inactivePatient = await patientService.updatePatient(
-        patient._id.toString(),
+        patient._id!.toString(),
         testClinic._id.toString(),
         { status: 'inactive' }
       );
@@ -567,7 +568,7 @@ describe('PatientService - Core Business Logic', () => {
 
     it('should reactivate inactive patient', async () => {
       const result = await patientService.reactivatePatient(
-        inactivePatient._id.toString(),
+        inactivePatient._id!.toString(),
         testClinic._id.toString()
       );
 
@@ -584,7 +585,7 @@ describe('PatientService - Core Business Logic', () => {
       });
 
       await expect(patientService.reactivatePatient(
-        inactivePatient._id.toString(),
+        inactivePatient._id!.toString(),
         testClinic._id.toString()
       )).rejects.toThrow('Já existe um paciente ativo com este telefone nesta clínica');
     });
@@ -598,7 +599,7 @@ describe('PatientService - Core Business Logic', () => {
       });
 
       await expect(patientService.reactivatePatient(
-        inactivePatient._id.toString(),
+        inactivePatient._id!.toString(),
         testClinic._id.toString()
       )).rejects.toThrow('Já existe um paciente ativo com este e-mail nesta clínica');
     });
@@ -677,7 +678,7 @@ describe('PatientService - Core Business Logic', () => {
       // Try to update with invalid email
       try {
         await patientService.updatePatient(
-          patient._id.toString(),
+          patient._id!.toString(),
           testClinic._id.toString(),
           { email: 'invalid-email-format' }
         );

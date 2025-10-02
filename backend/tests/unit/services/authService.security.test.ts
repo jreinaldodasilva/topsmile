@@ -142,7 +142,7 @@ describe('AuthService Security Tests', () => {
       // Test invalid password
       const invalidPasswordPromise = authService.login({
         email: 'security@example.com',
-        password: 'wrongpassword'
+        password: 'WrongPassword!'
       });
 
       const [emailError, passwordError] = await Promise.allSettled([
@@ -174,7 +174,7 @@ describe('AuthService Security Tests', () => {
       const failedAttempts = Array(6).fill(null).map(() =>
         authService.login({
           email: userData.email,
-          password: 'wrongpassword'
+          password: 'WrongPassword!'
         }).catch(e => e)
       );
 
@@ -201,7 +201,7 @@ describe('AuthService Security Tests', () => {
         try {
           await authService.login({
             email: userData.email,
-            password: 'wrongpassword'
+            password: 'WrongPassword!'
           });
         } catch (e) {
           // Expected to fail

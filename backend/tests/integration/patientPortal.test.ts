@@ -111,7 +111,7 @@ describe('Patient Portal Integration Tests', () => {
       .post('/api/patient/auth/login')
       .send({
         email: 'testpatient@example.com',
-        password: 'WrongPassword123!'
+        password: 'WrongPassword!'
       });
     expect(res.statusCode).toBe(401);
     expect(res.body.success).toBe(false);
@@ -221,7 +221,7 @@ describe('Patient Portal Integration Tests', () => {
           .post('/api/patient/auth/login')
           .send({
             email: 'testpatient@example.com',
-            password: 'WrongPassword123!'
+            password: 'WrongPassword!'
           })
       );
     }

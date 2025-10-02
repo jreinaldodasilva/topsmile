@@ -63,8 +63,7 @@ export class MockRedisClient {
     const item = this.store.get(key);
     if (!item) return 0;
     
-    item.expiry = Date.now() + seconds * 1000;
-    this.store.set(key, item);
+    this.store.set(key, { ...item, expiry: Date.now() + seconds * 1000 });
     return 1;
   }
 
@@ -93,12 +92,5 @@ export const createMockRedisClient = (): MockRedisClient => {
 
 // Jest mock setup
 export const setupRedisMock = (): MockRedisClient => {
-  const mockClient = createMockRedisClient();
-  
-  jest.mock('../src/config/redis', () => ({
-    __esModule: true,
-    default: mockClient,
-  }));
-  
-  return mockClient;
+  return createMockRedisClient();
 };

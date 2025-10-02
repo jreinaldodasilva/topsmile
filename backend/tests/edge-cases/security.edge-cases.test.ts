@@ -200,7 +200,7 @@ describe('Security Edge Cases', () => {
           .post('/api/auth/login')
           .send({
             email: 'admin@test.com',
-            password: 'wrongpassword'
+            password: 'WrongPassword!'
           })
       );
 

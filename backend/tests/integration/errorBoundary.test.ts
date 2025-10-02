@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { createTestUser, generateAuthToken } from '../testHelpers';
 import authRoutes from '../../src/routes/auth';
+import { TEST_CREDENTIALS } from '../testConstants';
 
 const app = express();
 app.use(express.json());
@@ -28,7 +29,7 @@ describe('Error Boundary Tests', () => {
     testUser = await createTestUser({
       name: 'Error Test User',
       email: 'error@example.com',
-      password: 'ErrorPass123!',
+      password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       role: 'admin'
     });
     authToken = generateAuthToken(testUser._id.toString(), testUser.role);
@@ -52,7 +53,7 @@ describe('Error Boundary Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'error@example.com',
-          password: 'ErrorPass123!'
+          password: TEST_CREDENTIALS.DEFAULT_PASSWORD
         });
 
       // Should handle the error gracefully
@@ -69,7 +70,7 @@ describe('Error Boundary Tests', () => {
         .post('/api/auth/login')
         .send({
           email: 'error@example.com',
-          password: 'ErrorPass123!'
+          password: TEST_CREDENTIALS.DEFAULT_PASSWORD
         })
         .expect(200); // Should still work if no external dependencies
 
@@ -95,7 +96,7 @@ describe('Error Boundary Tests', () => {
         .send({
           name: largePayload,
           email: 'large@example.com',
-          password: 'SecurePass123!'
+          password: TEST_CREDENTIALS.DEFAULT_PASSWORD
         });
 
       // Should either reject or handle gracefully
@@ -110,7 +111,7 @@ describe('Error Boundary Tests', () => {
           .post('/api/auth/login')
           .send({
             email: 'error@example.com',
-            password: 'ErrorPass123!'
+            password: TEST_CREDENTIALS.DEFAULT_PASSWORD
           })
       );
 

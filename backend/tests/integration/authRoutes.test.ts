@@ -130,7 +130,7 @@ describe('Auth Routes Integration', () => {
     it('should return 401 for invalid credentials', async () => {
       const loginData = {
         email: 'invalid@example.com',
-        password: 'wrongpassword',
+        password: 'WrongPassword!',
       };
 
       const response = await request(app)

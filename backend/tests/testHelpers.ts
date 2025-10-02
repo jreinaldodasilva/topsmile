@@ -26,7 +26,7 @@ async function ensureFaker(): Promise<Faker> {
   return fakerInstance;
 }
 
-let userCounter = 0;
+let userCounter = Date.now();
 
 export const createTestUser = async (overrides = {}): Promise<IUser> => {
   userCounter++;
@@ -183,10 +183,8 @@ export const createTestPatientUser = async (patientId: string, overrides = {}) =
 // Enhanced test data factories using faker
 export const createRealisticPatient = async (overrides = {}) => {
   const f = await ensureFaker();
-  const fullName = f.person.fullName();
-  const nameParts = fullName.split(' ');
-  const firstName = nameParts[0];
-  const lastName = nameParts.slice(1).join(' ') || 'Silva';
+  const firstName = f.person.firstName();
+  const lastName = f.person.lastName();
   
   const defaultPatient = {
     firstName,
@@ -297,7 +295,7 @@ export const generateAuthToken = (userId: string, role = 'admin', clinicId?: str
     issuer: 'topsmile-api',
     audience: 'topsmile-client',
     algorithm: 'HS256'
-  });
+  } as jwt.SignOptions);
 };
 
 interface PatientTokenPayload {
@@ -322,5 +320,7 @@ export const generatePatientAuthToken = (patientUserId: string, patientId: strin
     issuer: 'topsmile-patient-portal',
     audience: 'topsmile-patients',
     algorithm: 'HS256'
-  });
+  } as jwt.SignOptions);
 };
+
+export const createTestProvider = createRealisticProvider;

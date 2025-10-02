@@ -4,6 +4,7 @@ import { Patient } from '../../../src/models/Patient';
 import { PatientRefreshToken } from '../../../src/models/PatientRefreshToken';
 import { createTestClinic } from '../../testHelpers';
 import { ValidationError, UnauthorizedError, ConflictError, NotFoundError } from '../../../src/types/errors';
+import { TEST_CREDENTIALS } from '../testConstants';
 
 describe('PatientAuthService', () => {
   let testClinic: any;
@@ -19,7 +20,7 @@ describe('PatientAuthService', () => {
         lastName: 'Silva',
         email: 'joao@example.com',
         phone: '(11) 99999-9999',
-        password: 'SecurePass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString(),
         dateOfBirth: new Date('1990-01-01'),
         gender: 'male' as const
@@ -57,7 +58,7 @@ describe('PatientAuthService', () => {
         lastName: 'Santos',
         email: 'maria.portal@example.com',
         phone: '(11) 98888-8888',
-        password: 'SecurePass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -74,7 +75,7 @@ describe('PatientAuthService', () => {
         lastName: 'User',
         email: 'duplicate@example.com',
         phone: '(11) 99999-9999',
-        password: 'SecurePass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -109,7 +110,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'login@example.com',
         phone: '(11) 99999-9999',
-        password: 'LoginPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -121,7 +122,7 @@ describe('PatientAuthService', () => {
     it('should login with correct credentials', async () => {
       const loginData = {
         email: 'login@example.com',
-        password: 'LoginPass123!'
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD
       };
 
       const result = await patientAuthService.login(loginData);
@@ -136,7 +137,7 @@ describe('PatientAuthService', () => {
     it('should throw error for invalid email', async () => {
       const loginData = {
         email: 'nonexistent@example.com',
-        password: 'LoginPass123!'
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD
       };
 
       await expect(patientAuthService.login(loginData))
@@ -146,7 +147,7 @@ describe('PatientAuthService', () => {
     it('should throw error for invalid password', async () => {
       const loginData = {
         email: 'login@example.com',
-        password: 'WrongPassword123!'
+        password: 'WrongPassword!'
       };
 
       await expect(patientAuthService.login(loginData))
@@ -156,7 +157,7 @@ describe('PatientAuthService', () => {
     it('should handle account lockout after failed attempts', async () => {
       const loginData = {
         email: 'login@example.com',
-        password: 'WrongPassword123!'
+        password: 'WrongPassword!'
       };
 
       // Attempt multiple failed logins
@@ -171,7 +172,7 @@ describe('PatientAuthService', () => {
       // Account should be locked now
       await expect(patientAuthService.login({
         email: 'login@example.com',
-        password: 'LoginPass123!' // Even correct password should fail
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD // Even correct password should fail
       })).rejects.toThrow(UnauthorizedError);
     });
   });
@@ -186,7 +187,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'refresh@example.com',
         phone: '(11) 99999-9999',
-        password: 'RefreshPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -225,7 +226,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'profile@example.com',
         phone: '(11) 99999-9999',
-        password: 'ProfilePass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -269,7 +270,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'password@example.com',
         phone: '(11) 99999-9999',
-        password: 'OldPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -280,14 +281,14 @@ describe('PatientAuthService', () => {
     it('should change password successfully', async () => {
       await expect(patientAuthService.changePassword(
         testPatientUser._id.toString(),
-        'OldPass123!',
-        'NewPass123!'
+        TEST_CREDENTIALS.DEFAULT_PASSWORD,
+        TEST_CREDENTIALS.ADMIN_PASSWORD
       )).resolves.not.toThrow();
 
       // Verify new password works
       const loginResult = await patientAuthService.login({
         email: 'password@example.com',
-        password: 'NewPass123!'
+        password: TEST_CREDENTIALS.ADMIN_PASSWORD
       });
 
       expect(loginResult.success).toBe(true);
@@ -296,8 +297,8 @@ describe('PatientAuthService', () => {
     it('should throw error for incorrect current password', async () => {
       await expect(patientAuthService.changePassword(
         testPatientUser._id.toString(),
-        'WrongPass123!',
-        'NewPass123!'
+        'WrongPassword!',
+        TEST_CREDENTIALS.ADMIN_PASSWORD
       )).rejects.toThrow(UnauthorizedError);
     });
   });
@@ -311,7 +312,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'logout@example.com',
         phone: '(11) 99999-9999',
-        password: 'LogoutPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -341,7 +342,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'token@example.com',
         phone: '(11) 99999-9999',
-        password: 'TokenPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -374,7 +375,7 @@ describe('PatientAuthService', () => {
         lastName: 'Test',
         email: 'delete@example.com',
         phone: '(11) 99999-9999',
-        password: 'DeletePass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         clinicId: testClinic._id.toString()
       };
 
@@ -385,7 +386,7 @@ describe('PatientAuthService', () => {
     it('should delete account successfully', async () => {
       await expect(patientAuthService.deleteAccount(
         testPatientUser._id.toString(),
-        'DeletePass123!'
+        TEST_CREDENTIALS.DEFAULT_PASSWORD
       )).resolves.not.toThrow();
 
       // Verify account is deleted
@@ -396,7 +397,7 @@ describe('PatientAuthService', () => {
     it('should throw error for incorrect password', async () => {
       await expect(patientAuthService.deleteAccount(
         testPatientUser._id.toString(),
-        'WrongPass123!'
+        'WrongPassword!'
       )).rejects.toThrow(UnauthorizedError);
     });
   });

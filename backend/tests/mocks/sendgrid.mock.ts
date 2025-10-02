@@ -97,11 +97,6 @@ export const mockSendGridClient = new MockSendGridClient();
 
 // Jest mock setup
 export const setupSendGridMock = (): MockSendGridClient => {
-  jest.mock('@sendgrid/mail', () => ({
-    setApiKey: jest.fn(),
-    send: jest.fn().mockImplementation((msg) => mockSendGridClient.send(msg)),
-  }));
-
   return mockSendGridClient;
 };
 

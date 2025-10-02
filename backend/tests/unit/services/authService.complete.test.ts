@@ -69,7 +69,7 @@ describe('AuthService', () => {
     it('should throw error for invalid credentials', async () => {
       (User.findOne as jest.Mock).mockResolvedValue(null);
 
-      await expect(authService.login('test@example.com', 'wrongpassword'))
+      await expect(authService.login('test@example.com', 'WrongPassword!'))
         .rejects.toThrow('Invalid credentials');
     });
 
@@ -77,7 +77,7 @@ describe('AuthService', () => {
       mockUser.comparePassword.mockResolvedValue(false);
       (User.findOne as jest.Mock).mockResolvedValue(mockUser);
 
-      await expect(authService.login('test@example.com', 'wrongpassword'))
+      await expect(authService.login('test@example.com', 'WrongPassword!'))
         .rejects.toThrow('Invalid credentials');
     });
   });

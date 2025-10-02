@@ -4,6 +4,7 @@ import { User } from '../../src/models/User';
 import { RefreshToken } from '../../src/models/RefreshToken';
 import authRoutes from '../../src/routes/auth';
 import { errorHandler } from '../../src/middleware/errorHandler';
+import { TEST_CREDENTIALS } from '../testConstants';
 
 // Create test app with real middleware stack
 const app = express();
@@ -23,7 +24,7 @@ describe('Critical Authentication Flow Integration Tests', () => {
       const userData = {
         name: 'Integration Test User',
         email: 'integration@example.com',
-        password: 'SecurePass123!'
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD
       };
 
       // 1. Register
@@ -89,7 +90,7 @@ describe('Critical Authentication Flow Integration Tests', () => {
       const userData = {
         name: 'Password Change User',
         email: 'passchange@example.com',
-        password: 'OldPass123!'
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD
       };
 
       // Register user
@@ -136,7 +137,7 @@ describe('Critical Authentication Flow Integration Tests', () => {
       const userData = {
         name: 'Password Reset User',
         email: 'reset@example.com',
-        password: 'OldPass123!'
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD
       };
 
       // Register user
@@ -345,7 +346,7 @@ describe('Critical Authentication Flow Integration Tests', () => {
     it('should enforce login rate limits', async () => {
       const loginData = {
         email: 'ratelimit@example.com',
-        password: 'wrongpassword'
+        password: 'WrongPassword!'
       };
 
       // Make multiple failed login attempts

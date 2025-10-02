@@ -183,7 +183,7 @@ describe('Patient Auth Routes Integration', () => {
     it('should return 401 for invalid credentials', async () => {
       const loginData = {
         email: 'login@example.com',
-        password: 'WrongPassword123!'
+        password: 'WrongPassword!'
       };
 
       const response = await request(app)

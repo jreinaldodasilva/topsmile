@@ -107,7 +107,7 @@ describe('Authentication Security Tests', () => {
     it('should rate limit login attempts', async () => {
       const loginData = {
         email: 'nonexistent@example.com',
-        password: 'wrongpassword',
+        password: 'WrongPassword!',
       };
 
       // Make multiple failed login attempts

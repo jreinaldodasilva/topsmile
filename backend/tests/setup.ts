@@ -70,17 +70,13 @@ afterEach(async () => {
 
   // Clear all collections after each test, but only if connected
   if (mongoose.connection.readyState === 1) {
-    const collections = mongoose.connection.collections;
+    const collections = Object.values(mongoose.connection.collections);
 
-    for (const key in collections) {
-      const collection = collections[key];
-      if (collection) {
-        try {
-          await collection.deleteMany({});
-        } catch (error) {
-          // Ignore cleanup errors if database is disconnected
-          console.warn(`Failed to clean collection ${key}:`, error);
-        }
+    for (const collection of collections) {
+      try {
+        await collection.deleteMany({});
+      } catch (error) {
+        console.warn(`Failed to clean collection ${collection.name}:`, error);
       }
     }
   }

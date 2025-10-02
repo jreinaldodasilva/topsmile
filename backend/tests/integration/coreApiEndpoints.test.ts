@@ -8,6 +8,7 @@ import appointmentRoutes from '../../src/routes/appointments';
 import patientRoutes from '../../src/routes/patients';
 import { authenticate } from '../../src/middleware/auth';
 import { errorHandler } from '../../src/middleware/errorHandler';
+import { TEST_CREDENTIALS } from '../testConstants';
 
 // Create test app with real middleware stack
 const app = express();
@@ -32,7 +33,7 @@ describe('Core API Endpoints Integration Tests', () => {
     testUser = await createTestUser({
       name: 'Test Admin',
       email: 'admin@example.com',
-      password: 'AdminPass123!',
+      password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
       role: 'admin',
       clinic: testClinic._id
     });
@@ -369,7 +370,7 @@ describe('Core API Endpoints Integration Tests', () => {
       testProvider = await createTestUser({
         name: 'Dr. Maria',
         email: 'dr.maria@example.com',
-        password: 'DoctorPass123!',
+        password: TEST_CREDENTIALS.DEFAULT_PASSWORD,
         role: 'dentist',
         clinic: testClinic._id
       });
@@ -456,13 +457,13 @@ describe('Core API Endpoints Integration Tests', () => {
         // Try to create overlapping appointment
         const overlappingAppointment = {
           ...firstAppointment,
-          patient: (await createTestPatient({ 
+          patient: (await createTestPatient({  
             firstName: 'Maria', 
             lastName: 'Santos',
             email: 'maria@example.com',
             phone: '(11) 88888-8888',
             clinic: testClinic._id 
-          }))._id.toString(),
+          }))._id!.toString(),
           scheduledStart: new Date(baseTime + 30 * 60 * 1000).toISOString(), // 30 min overlap
           scheduledEnd: new Date(baseTime + 90 * 60 * 1000).toISOString()
         };
