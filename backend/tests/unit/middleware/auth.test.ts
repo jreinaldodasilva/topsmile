@@ -16,17 +16,17 @@ describe('Auth Middleware', () => {
   });
 
   describe('authenticate', () => {
-    it('should reject missing token', () => {
-      authenticate(mockReq as Request, mockRes as Response, mockNext);
+    it('should reject missing token', async () => {
+      await authenticate(mockReq as Request, mockRes as Response, mockNext);
       
       expect(mockRes.status).toHaveBeenCalledWith(401);
       expect(mockNext).not.toHaveBeenCalled();
     });
 
-    it('should reject invalid token', () => {
+    it('should reject invalid token', async () => {
       mockReq.headers = { authorization: 'Bearer invalid' };
       
-      authenticate(mockReq as Request, mockRes as Response, mockNext);
+      await authenticate(mockReq as Request, mockRes as Response, mockNext);
       
       expect(mockRes.status).toHaveBeenCalledWith(401);
     });
@@ -34,7 +34,7 @@ describe('Auth Middleware', () => {
 
   describe('authorize', () => {
     it('should allow authorized role', () => {
-      mockReq.user = { role: 'admin' };
+      mockReq.user = { name: 'Test User', email: 'test@example.com', role: 'admin' };
       
       authorize('admin')(mockReq as Request, mockRes as Response, mockNext);
       
@@ -42,7 +42,7 @@ describe('Auth Middleware', () => {
     });
 
     it('should reject unauthorized role', () => {
-      mockReq.user = { role: 'staff' };
+      mockReq.user = { name: 'Test User', email: 'test@example.com', role: 'assistant' };
       
       authorize('admin')(mockReq as Request, mockRes as Response, mockNext);
       

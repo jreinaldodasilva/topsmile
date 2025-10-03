@@ -17,6 +17,9 @@ describe('PatientService', () => {
     email: 'joao@example.com',
     phone: '(11) 99999-9999',
     cpf: '111.444.777-35',
+    address: {
+      zipCode: '01310-100'
+    },
     clinic: testClinic._id.toString()
   });
 

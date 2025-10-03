@@ -15,10 +15,10 @@ describe('AuthService', () => {
         password: 'Password123!'
       });
 
-      const result = await authService.login('test@example.com', 'Password123!');
+      const result = await authService.login({ email: 'test@example.com', password: 'Password123!' });
       
-      expect(result.accessToken).toBeDefined();
-      expect(result.user.email).toBe('test@example.com');
+      expect(result.data.accessToken).toBeDefined();
+      expect(result.data.user.email).toBe('test@example.com');
     });
 
     it('should reject invalid password', async () => {
@@ -28,23 +28,23 @@ describe('AuthService', () => {
       });
 
       await expect(
-        authService.login('test@example.com', 'WrongPassword')
+        authService.login({ email: 'test@example.com', password: 'WrongPassword' })
       ).rejects.toThrow();
     });
   });
 
-  describe('validateToken', () => {
+  describe('verifyAccessToken', () => {
     it('should validate valid token', async () => {
       const user = await createTestUser(testClinic);
-      const { accessToken } = await authService.login(user.email, 'Password123!');
+      const result = await authService.login({ email: user.email, password: 'Password123!' });
       
-      const decoded = authService.validateToken(accessToken);
+      const decoded = authService.verifyAccessToken(result.data.accessToken);
       
       expect(decoded.userId).toBe(user._id.toString());
     });
 
     it('should reject invalid token', () => {
-      expect(() => authService.validateToken('invalid')).toThrow();
+      expect(() => authService.verifyAccessToken('invalid')).toThrow();
     });
   });
 });

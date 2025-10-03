@@ -29,7 +29,7 @@ describe('Auth Routes', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.accessToken).toBeDefined();
+      expect(response.body.data.accessToken).toBeDefined();
     });
 
     it('should reject invalid credentials', async () => {

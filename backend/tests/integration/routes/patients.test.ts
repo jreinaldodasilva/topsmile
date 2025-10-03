@@ -16,8 +16,18 @@ describe('Patient Routes', () => {
     testClinic = await createTestClinic();
     const user = await createTestUser(testClinic);
     authToken = jwt.sign(
-      { userId: user._id, role: 'admin', clinicId: testClinic._id },
-      process.env.JWT_SECRET || 'test-secret'
+      { 
+        userId: user._id.toString(), 
+        email: user.email,
+        role: 'admin', 
+        clinicId: testClinic._id.toString() 
+      },
+      process.env.JWT_SECRET || 'test-secret',
+      {
+        issuer: 'topsmile-api',
+        audience: 'topsmile-client',
+        algorithm: 'HS256'
+      }
     );
   });
 
@@ -30,7 +40,10 @@ describe('Patient Routes', () => {
           firstName: 'João',
           lastName: 'Silva',
           phone: '(11) 99999-9999',
-          email: 'joao@example.com'
+          email: 'joao@example.com',
+          address: {
+            zipCode: '01310-100'
+          }
         });
 
       expect(response.status).toBe(201);
@@ -42,7 +55,10 @@ describe('Patient Routes', () => {
         firstName: 'João',
         lastName: 'Silva',
         phone: '(11) 99999-9999',
-        email: 'joao@example.com'
+        email: 'joao@example.com',
+        address: {
+          zipCode: '01310-100'
+        }
       };
 
       await request(app)
@@ -66,7 +82,7 @@ describe('Patient Routes', () => {
         .set('Authorization', `Bearer ${authToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.patients).toBeInstanceOf(Array);
     });
   });
 });
