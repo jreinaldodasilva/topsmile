@@ -42,6 +42,7 @@
     "test:parallel": "jest --config jest.parallel.config.js",
     "test:fast": "jest --onlyChanged --passWithNoTests --maxWorkers=4",
     "test:transactions": "jest --testPathPattern=tests/transactions --runInBand",
+    "test:rate-limiting": "jest --testPathPattern=tests/rate-limiting --runInBand",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",

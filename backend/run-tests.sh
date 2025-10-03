@@ -128,20 +128,27 @@ main() {
             echo "----------------------------------"
             npm run test:fast
             ;;
+        "rate-limiting")
+            echo ""
+            echo "🚦 Running Rate Limiting Tests"
+            echo "----------------------------"
+            npm run test:rate-limiting
+            ;;
         "all"|"")
             run_all_tests
             ;;
         *)
-            echo "Usage: $0 [unit|integration|coverage|compliance|parallel|fast|all]"
+            echo "Usage: $0 [unit|integration|coverage|compliance|parallel|fast|rate-limiting|all]"
             echo ""
             echo "Options:"
-            echo "  unit        - Run only unit tests"
-            echo "  integration - Run only integration tests"
-            echo "  coverage    - Run all tests with coverage report"
-            echo "  compliance  - Run HIPAA compliance tests"
-            echo "  parallel    - Run tests in parallel mode"
-            echo "  fast        - Run only changed files tests"
-            echo "  all         - Run all tests (default)"
+            echo "  unit         - Run only unit tests"
+            echo "  integration  - Run only integration tests"
+            echo "  coverage     - Run all tests with coverage report"
+            echo "  compliance   - Run HIPAA compliance tests"
+            echo "  parallel     - Run tests in parallel mode"
+            echo "  fast         - Run only changed files tests"
+            echo "  rate-limiting - Run rate limiting tests"
+            echo "  all          - Run all tests (default)"
             exit 1
             ;;
     esac
