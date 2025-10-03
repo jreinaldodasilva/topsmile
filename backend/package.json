@@ -44,6 +44,8 @@
     "test:transactions": "jest --testPathPattern=tests/transactions --runInBand",
     "test:rate-limiting": "jest --testPathPattern=tests/rate-limiting --runInBand",
     "test:contract": "jest --testPathPattern=tests/contract --runInBand",
+    "test:analytics": "jest --testPathPattern=tests/analytics --runInBand",
+    "generate-report": "node scripts/generate-test-report.js",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",

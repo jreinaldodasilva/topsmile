@@ -140,11 +140,23 @@ main() {
             echo "------------------------"
             npm run test:contract
             ;;
+        "analytics")
+            echo ""
+            echo "📈 Running Analytics Tests"
+            echo "--------------------------"
+            npm run test:analytics
+            ;;
+        "report")
+            echo ""
+            echo "📄 Generating Test Report"
+            echo "------------------------"
+            npm run generate-report
+            ;;
         "all"|"")
             run_all_tests
             ;;
         *)
-            echo "Usage: $0 [unit|integration|coverage|compliance|parallel|fast|rate-limiting|contract|all]"
+            echo "Usage: $0 [unit|integration|coverage|compliance|parallel|fast|rate-limiting|contract|analytics|report|all]"
             echo ""
             echo "Options:"
             echo "  unit          - Run only unit tests"
@@ -155,6 +167,8 @@ main() {
             echo "  fast          - Run only changed files tests"
             echo "  rate-limiting - Run rate limiting tests"
             echo "  contract      - Run API contract tests"
+            echo "  analytics     - Run analytics system tests"
+            echo "  report        - Generate comprehensive test report"
             echo "  all           - Run all tests (default)"
             exit 1
             ;;
