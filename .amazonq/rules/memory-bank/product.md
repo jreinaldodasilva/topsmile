@@ -1,57 +1,99 @@
-# TopSmile Dental Clinic Management System
+# TopSmile - Product Overview
 
-## Project Overview
-TopSmile is a comprehensive dental clinic management system designed to streamline healthcare operations for dental practices. The platform provides a complete solution for managing patient appointments, provider schedules, and clinic administration through both web and mobile interfaces.
+## Purpose
+TopSmile is a comprehensive dental clinic management platform designed to streamline operations for dental practices. It provides end-to-end solutions for patient management, appointment scheduling, provider coordination, and payment processing.
 
-## Core Value Proposition
-- **Unified Healthcare Management**: Centralized platform for all dental clinic operations
-- **Patient-Centric Experience**: Intuitive patient portal for booking and managing appointments
-- **Provider Efficiency**: Streamlined scheduling and patient management tools
-- **Scalable Architecture**: Modern full-stack solution built for growth
+## Value Proposition
+- **Centralized Management**: Single platform for all clinic operations
+- **Real-Time Scheduling**: Dynamic appointment booking with provider availability tracking
+- **Secure Payments**: Integrated Stripe payment processing for seamless billing
+- **Role-Based Access**: Granular permissions for admin, manager, and staff roles
+- **Patient Portal**: Self-service booking and profile management for patients
 
-## Key Features & Capabilities
+## Key Features
 
 ### Patient Management
-- Patient registration and profile management
-- Appointment booking and scheduling system
-- Patient portal with authentication
-- Medical history and treatment tracking
-- Payment processing integration with Stripe
+- Patient registration and profile creation
+- Medical history tracking and documentation
+- Patient authentication and secure access
+- Contact information management
 
-### Provider & Staff Management
-- Provider availability and schedule management
-- Multi-provider appointment coordination
-- Staff authentication and role-based access
-- Administrative dashboard and controls
-
-### Appointment System
-- Real-time appointment scheduling
-- Calendar integration and management
-- Automated notifications and reminders
+### Appointment Scheduling
+- Real-time appointment booking system
+- Provider availability management
+- Calendar integration with visual scheduling
 - Appointment status tracking and updates
+- Conflict detection and prevention
 
-### Technical Features
-- Responsive web application (React/TypeScript)
-- RESTful API backend (Node.js/Express)
-- Real-time data synchronization
-- Comprehensive testing suite (unit, integration, E2E)
-- Performance monitoring and analytics
+### Provider Dashboard
+- Schedule management and coordination
+- Patient appointment overview
+- Availability configuration
+- Provider-specific analytics
+
+### Payment Integration
+- Stripe-powered payment processing
+- Secure transaction handling
+- Payment history and receipts
+- Multiple payment method support
+
+### Access Control
+- Role-based authentication (Admin, Manager, Staff, Patient)
+- JWT-based secure authentication
+- Permission-based feature access
+- Protected routes and API endpoints
+
+### Analytics & Reporting
+- Appointment analytics
+- Performance monitoring
+- Usage statistics
+- Custom reporting capabilities
 
 ## Target Users
 
-### Primary Users
-- **Dental Clinics**: Small to medium-sized dental practices seeking digital transformation
-- **Patients**: Individuals needing convenient appointment booking and management
-- **Healthcare Providers**: Dentists and dental staff requiring efficient practice management
+### Clinic Administrators
+- Manage overall clinic operations
+- Configure system settings
+- Monitor performance metrics
+- Manage staff and providers
 
-### Use Cases
-- **Patient Booking**: Online appointment scheduling with provider selection
-- **Clinic Administration**: Staff management of schedules, patients, and appointments
-- **Practice Analytics**: Insights into appointment patterns and clinic performance
-- **Mobile Access**: On-the-go appointment management for both patients and providers
+### Clinic Managers
+- Oversee daily operations
+- Coordinate appointments
+- Handle patient inquiries
+- Generate reports
 
-## Business Impact
-- Reduces administrative overhead through automation
-- Improves patient satisfaction with self-service capabilities
-- Enhances provider efficiency with streamlined workflows
-- Provides data-driven insights for practice optimization
+### Dental Providers
+- Manage personal schedules
+- View patient information
+- Update availability
+- Track appointments
+
+### Clinic Staff
+- Schedule appointments
+- Register patients
+- Process payments
+- Handle administrative tasks
+
+### Patients
+- Book appointments online
+- Manage personal profiles
+- View appointment history
+- Make payments
+
+## Use Cases
+
+### Appointment Booking
+Patients can browse available time slots, select preferred providers, and book appointments in real-time with instant confirmation.
+
+### Schedule Management
+Providers can set their availability, block time slots, and manage their daily schedules with automatic conflict detection.
+
+### Patient Registration
+New patients can register through the portal, providing medical history and contact information for streamlined onboarding.
+
+### Payment Processing
+Secure payment collection at appointment booking or completion with automatic receipt generation and payment tracking.
+
+### Multi-Role Coordination
+Different user roles collaborate seamlessly with appropriate access levels to patient data, scheduling, and administrative functions.

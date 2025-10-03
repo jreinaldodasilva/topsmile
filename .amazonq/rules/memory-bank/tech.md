@@ -1,162 +1,209 @@
-# Technology Stack & Development Setup
+# TopSmile - Technology Stack
 
-## Core Technologies
+## Programming Languages
+- **TypeScript 4.9.5 / 5.9.2**: Primary language for type safety
+- **JavaScript**: Legacy support and configuration files
 
-### Frontend Stack
-- **React 18.2.0**: Modern React with hooks and concurrent features
-- **TypeScript 4.9.5**: Type-safe JavaScript development
-- **React Router 6.30.1**: Client-side routing and navigation
-- **TanStack Query 5.89.0**: Server state management and caching
-- **Framer Motion 10.16.5**: Animation and motion graphics
+## Frontend Stack
 
-### Backend Stack
-- **Node.js 18+**: JavaScript runtime environment
+### Core Framework
+- **React 18.2.0**: UI library with concurrent features
+- **React DOM 18.2.0**: DOM rendering
+- **React Router DOM 6.30.1**: Client-side routing
+
+### State Management
+- **TanStack Query 5.89.0**: Server state management, caching, and synchronization
+- **React Context API**: Global state for auth and errors
+
+### UI & Styling
+- **Framer Motion 10.16.5**: Animation library
+- **React Icons 4.12.0**: Icon components
+- **React Calendar 6.0.0**: Calendar component
+- **React Slick 0.29.0**: Carousel component
+- **CSS Modules**: Component-scoped styling
+
+### Payment Processing
+- **Stripe React 4.0.2**: Stripe Elements integration
+- **Stripe.js 2.1.0**: Stripe SDK
+
+### Utilities
+- **Luxon 3.7.1**: Date/time manipulation
+- **Web Vitals 3.5.0**: Performance monitoring
+
+### Build Tools
+- **React Scripts 5.0.1**: Create React App build system
+- **Webpack**: Module bundler (via CRA)
+- **Babel**: JavaScript transpiler (via CRA)
+
+## Backend Stack
+
+### Runtime & Framework
+- **Node.js >=18.0.0**: JavaScript runtime
 - **Express 4.21.2**: Web application framework
-- **TypeScript 5.9.2**: Type-safe server development
-- **MongoDB**: NoSQL database with Mongoose ODM
-- **Redis**: Caching and session management
+- **TypeScript 5.9.2**: Type-safe development
+
+### Database
+- **MongoDB 8.18.0**: NoSQL database
+- **Mongoose 8.18.0**: ODM for MongoDB
+- **MongoDB Memory Server 10.2.0**: In-memory DB for testing
+
+### Caching & Queues
+- **Redis 5.8.2**: Caching and session storage
+- **IORedis 5.7.0**: Redis client
+- **BullMQ 5.58.2**: Job queue system
+
+### Authentication & Security
+- **JWT (jsonwebtoken 9.0.2)**: Token-based authentication
+- **Bcrypt 6.0.0 / Bcryptjs 3.0.2**: Password hashing
+- **Helmet 7.2.0**: Security headers
+- **CORS 2.8.5**: Cross-origin resource sharing
+- **CSURF 1.11.0**: CSRF protection
+- **Express Rate Limit 7.5.1**: Rate limiting
+- **Express Mongo Sanitize 2.2.0**: NoSQL injection prevention
+- **Express Validator 7.2.1**: Request validation
+
+### Utilities
+- **Date-fns 4.1.0**: Date manipulation
+- **Date-fns-tz 3.2.0**: Timezone support
+- **Luxon 3.7.1**: Alternative date library
+- **UUID 13.0.0**: Unique ID generation
+- **Zod 3.22.4**: Schema validation
+- **DOMPurify 2.26.0**: XSS sanitization
+
+### Logging
+- **Pino 9.11.0**: High-performance logging
+- **Pino-HTTP 10.5.0**: HTTP request logging
+- **Pino-Pretty 13.1.1**: Log formatting (dev)
+
+### Email
+- **Nodemailer 6.10.1**: Email sending
+
+### API Documentation
+- **Swagger JSDoc 6.2.8**: API documentation generation
+- **Swagger UI Express 5.0.1**: Interactive API docs
 
 ### Development Tools
-- **Jest**: Unit and integration testing framework
-- **Cypress**: End-to-end testing automation
-- **ESLint**: Code linting and style enforcement
-- **Prettier**: Code formatting
-- **Nodemon**: Development server auto-restart
+- **Nodemon 3.1.10**: Auto-restart on file changes
+- **TS-Node 10.9.2**: TypeScript execution
+- **TSConfig Paths 4.2.0**: Path mapping support
 
-## Key Dependencies
+## Testing Stack
 
-### Frontend Dependencies
-```json
-{
-  "@stripe/react-stripe-js": "^4.0.2",
-  "@tanstack/react-query": "^5.89.0",
-  "framer-motion": "^10.16.5",
-  "react-calendar": "^6.0.0",
-  "react-icons": "^4.12.0",
-  "luxon": "^3.7.1"
-}
-```
+### Test Frameworks
+- **Jest 27.5.1 / 29.7.0**: Unit and integration testing
+- **Cypress 15.1.0**: End-to-end testing
+- **Supertest 7.1.4**: HTTP assertion library
 
-### Backend Dependencies
-```json
-{
-  "express": "^4.21.2",
-  "mongoose": "^8.18.0",
-  "jsonwebtoken": "^9.0.2",
-  "bcryptjs": "^3.0.2",
-  "express-validator": "^7.2.1",
-  "helmet": "^7.2.0",
-  "cors": "^2.8.5"
-}
-```
+### Testing Utilities
+- **Testing Library React 16.3.0**: React component testing
+- **Testing Library Jest-DOM 6.8.0**: DOM matchers
+- **Testing Library User Event 14.6.1**: User interaction simulation
+- **Jest Axe 10.0.0**: Accessibility testing
+- **MSW 2.11.2**: API mocking
+- **Faker.js 8.4.1 / 10.0.0**: Test data generation
 
-### Testing & Quality
-```json
-{
-  "jest": "^29.7.0",
-  "cypress": "^15.1.0",
-  "@testing-library/react": "^16.3.0",
-  "supertest": "^7.1.4",
-  "msw": "^2.11.2"
-}
-```
+### Performance Testing
+- **K6**: Load and stress testing
+- **Jest benchmarks**: Performance benchmarking
+
+### Contract Testing
+- **Pact 12.1.0**: Consumer-driven contract testing
+
+### Test Reporting
+- **Jest JUnit 16.0.0**: JUnit XML reports for CI/CD
+
+## Shared Packages
+
+### Local Packages
+- **@topsmile/types**: Shared TypeScript types between frontend and backend
+
+## Development Tools
+
+### Code Quality
+- **ESLint 8.57.1**: Linting
+- **TypeScript ESLint**: TypeScript-specific linting rules
+- **Prettier**: Code formatting (implicit via ESLint)
+
+### Version Control
+- **Git**: Source control
+- **GitHub Actions**: CI/CD pipelines
+
+### Package Management
+- **npm >=9.0.0**: Package manager
+- **Workspaces**: Monorepo management
+
+### Build Scripts
+- **Concurrently 9.2.0**: Run multiple commands
+- **Cross-env 10.0.0**: Cross-platform environment variables
+
+### Analysis Tools
+- **Source Map Explorer 2.5.3**: Bundle analysis
+- **Webpack Bundle Analyzer 4.10.2**: Bundle visualization
+
+## Environment Requirements
+
+### Node.js
+- Minimum version: 18.0.0
+- Recommended: Latest LTS
+
+### npm
+- Minimum version: 9.0.0
+
+### MongoDB
+- Minimum version: 5.0
+- Recommended: Latest stable
+
+### Redis
+- Required for caching and job queues
+- Recommended: Latest stable
 
 ## Development Commands
 
-### Frontend Development
+### Frontend
 ```bash
-npm start                    # Start development server
-npm run dev                  # Start both frontend and backend
+npm start                    # Start dev server
 npm run build               # Production build
-npm run test:frontend       # Run frontend tests
-npm run test:frontend:watch # Watch mode testing
-npm run lint               # Code linting
-npm run type-check         # TypeScript validation
+npm run test:frontend       # Run tests
+npm run test:e2e           # E2E tests
+npm run lint               # Lint code
+npm run type-check         # TypeScript check
 ```
 
-### Backend Development
+### Backend
 ```bash
-cd backend
-npm run dev                 # Start development server with hot reload
-npm run build              # Compile TypeScript to JavaScript
-npm run start              # Start production server
-npm test                   # Run all backend tests
-npm run test:unit          # Unit tests only
-npm run test:integration   # Integration tests only
-npm run test:coverage      # Generate coverage report
+cd backend && npm run dev   # Start dev server
+cd backend && npm test      # Run all tests
+cd backend && npm run test:unit        # Unit tests
+cd backend && npm run test:integration # Integration tests
+cd backend && npm run test:security    # Security tests
+cd backend && npm run test:k6          # Load tests
+cd backend && npm run build            # Production build
 ```
 
-### Full Stack Commands
+### Full Stack
 ```bash
-npm run dev                # Start both frontend and backend
+npm run dev                 # Start both frontend and backend
+npm run test:all           # Run all tests
 npm run build:all          # Build both applications
-npm run test:all           # Run all tests (frontend + backend)
-npm run test:e2e           # End-to-end testing with Cypress
-npm run test:ci            # CI pipeline testing
+npm run test:ci            # CI test suite
 ```
 
-## Environment Configuration
+## Browser Support
 
-### Required Environment Variables
-```bash
-# Frontend (.env)
-REACT_APP_API_URL=http://localhost:5000
-REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_...
+### Production
+- >0.2% market share
+- Not dead browsers
+- Not Opera Mini
 
-# Backend (backend/.env)
-NODE_ENV=development
-PORT=5000
-MONGODB_URI=mongodb://localhost:27017/topsmile
-JWT_SECRET=your-jwt-secret
-STRIPE_SECRET_KEY=sk_test_...
-REDIS_URL=redis://localhost:6379
-```
+### Development
+- Latest Chrome
+- Latest Firefox
+- Latest Safari
 
-## Build & Deployment
-
-### Production Build Process
-1. **Type Checking**: Validate TypeScript across all packages
-2. **Testing**: Run comprehensive test suite
-3. **Frontend Build**: Create optimized React production bundle
-4. **Backend Build**: Compile TypeScript to JavaScript
-5. **Asset Optimization**: Minimize and compress static assets
-
-### System Requirements
-- **Node.js**: >= 18.0.0
-- **npm**: >= 9.0.0
-- **MongoDB**: >= 5.0
-- **Redis**: >= 6.0 (optional, for caching)
-
-### Development Setup
-```bash
-# Clone and install dependencies
-git clone <repository-url>
-cd topsmile
-npm install
-
-# Setup environment files
-cp .env.example .env
-cp backend/.env.example backend/.env
-
-# Start development servers
-npm run dev
-```
-
-## Architecture Decisions
-
-### Frontend Choices
-- **React Query**: Chosen for server state management over Redux for simpler async operations
-- **Framer Motion**: Selected for smooth animations and micro-interactions
-- **React Calendar**: Integrated for appointment scheduling interface
-
-### Backend Choices
-- **Express**: Lightweight and flexible web framework
-- **Mongoose**: ODM for MongoDB with schema validation
-- **JWT**: Stateless authentication for scalability
-- **Helmet**: Security middleware for production safety
-
-### Testing Strategy
-- **Jest**: Primary testing framework for both frontend and backend
-- **Cypress**: E2E testing for critical user workflows
-- **MSW**: API mocking for isolated frontend testing
-- **MongoDB Memory Server**: In-memory database for backend testing
+## Deployment Considerations
+- Node.js 18+ runtime required
+- MongoDB connection required
+- Redis instance required
+- Environment variables must be configured
+- HTTPS recommended for production
+- Stripe webhook endpoints needed for payments
