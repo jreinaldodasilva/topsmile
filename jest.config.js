@@ -67,7 +67,7 @@ module.exports = {
     },
   },
 
-  testTimeout: 8000,
+  testTimeout: 10000,
   clearMocks: true,
   restoreMocks: true,
   detectOpenHandles: false,

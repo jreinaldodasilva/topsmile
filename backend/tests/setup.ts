@@ -1,3 +1,9 @@
+// CRITICAL: Set environment variables BEFORE any imports that use them
+import { TEST_CREDENTIALS } from './testConstants';
+process.env.JWT_SECRET = TEST_CREDENTIALS.JWT_SECRET;
+process.env.PATIENT_JWT_SECRET = TEST_CREDENTIALS.PATIENT_JWT_SECRET;
+process.env.NODE_ENV = 'test';
+
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import './customMatchers';
@@ -5,7 +11,6 @@ import '../src/models/Provider';
 import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
 import { setupRedisMock } from './mocks/redis.mock';
 import { setupSendGridMock } from './mocks/sendgrid.mock';
-import { TEST_CREDENTIALS } from './testConstants';
 
 let mongoServer: MongoMemoryServer;
 let mockRedisClient: any;
@@ -13,10 +18,6 @@ let mockSendGridClient: any;
 
 beforeAll(async () => {
   console.log('Setting up test database with MongoDB Memory Server...');
-  
-  // Set JWT secrets from test constants
-  process.env.JWT_SECRET = TEST_CREDENTIALS.JWT_SECRET;
-  process.env.PATIENT_JWT_SECRET = TEST_CREDENTIALS.PATIENT_JWT_SECRET;
   
   // Setup mocks
   mockRedisClient = setupRedisMock();

@@ -5,6 +5,7 @@ import { createTestClinic } from '../testHelpers';
 import { Patient } from '../../src/models/Patient';
 import { PatientUser } from '../../src/models/PatientUser';
 import patientAuthRoutes from '../../src/routes/patientAuth';
+import { errorHandler } from '../../src/middleware/errorHandler';
 
 // Create a test app with real middleware
 const app = express();
@@ -17,6 +18,7 @@ process.env.NODE_ENV = 'test';
 
 // Use real patient auth routes
 app.use('/api/patient-auth', patientAuthRoutes);
+app.use(errorHandler);
 
 describe('Patient Auth Routes Integration', () => {
   let testClinic: any;

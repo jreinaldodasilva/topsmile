@@ -95,7 +95,7 @@ router.get("/providers/:providerId/availability", async (req: Request, res: Resp
 
     const slots = await schedulingService.getAvailableSlots({
       clinicId: authReq.user!.clinicId!,
-      providerId,
+      provider,
       appointmentTypeId: appointmentTypeId as string,
       date: targetDate
     });
@@ -119,15 +119,15 @@ router.get("/providers/:providerId/availability", async (req: Request, res: Resp
 
 // Validation for booking appointments
 const bookingValidation = [
-  body('patientId')
+  body('patient')
     .isMongoId()
     .withMessage('ID do paciente inválido'),
   
-  body('providerId')
+  body('provider')
     .isMongoId()
     .withMessage('ID do profissional inválido'),
     
-  body('appointmentTypeId')
+  body('appointmentType')
     .isMongoId()
     .withMessage('ID do tipo de agendamento inválido'),
     
@@ -218,13 +218,13 @@ router.post("/", bookingValidation, async (req: Request, res: Response) => {
       });
     }
 
-    const { patientId, providerId, appointmentTypeId, scheduledStart, notes, priority } = authReq.body;
+    const { patient, provider, appointmentType, scheduledStart, notes, priority } = authReq.body;
 
     const appointment = await schedulingService.createAppointmentModel({
       clinicId: authReq.user!.clinicId!,
-      patientId,
-      providerId,
-      appointmentTypeId,
+      patient,
+      provider,
+      appointmentType,
       scheduledStart: new Date(scheduledStart),
       notes,
       priority,
@@ -261,13 +261,13 @@ router.post("/book", bookingValidation, async (req: Request, res: Response) => {
       });
     }
 
-    const { patientId, providerId, appointmentTypeId, scheduledStart, notes, priority } = authReq.body;
+    const { patient, provider, appointmentType, scheduledStart, notes, priority } = authReq.body;
 
     const appointment = await schedulingService.createAppointmentModel({
       clinicId: authReq.user!.clinicId!,
-      patientId,
-      providerId,
-      appointmentTypeId,
+      patient,
+      provider,
+      appointmentType,
       scheduledStart: new Date(scheduledStart),
       notes,
       priority,
@@ -992,8 +992,8 @@ router.post("/patient/book",
       const appointment = await schedulingService.createAppointmentModel({
         clinicId: (req.patient!.clinic as any).toString(),
         patientId: (req.patient!._id as any).toString(),
-        providerId,
-        appointmentTypeId,
+      provider,
+      appointmentType,
         scheduledStart: new Date(scheduledStart),
         notes,
         priority,

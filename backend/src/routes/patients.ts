@@ -35,7 +35,7 @@ const createPatientValidation = [
         .isLength({ min: 10, max: 15 })
         .withMessage('Telefone deve ter entre 10 e 15 caracteres'),
     
-    body('birthDate')
+    body('dateOfBirth')
         .optional()
         .isISO8601()
         .withMessage('Data de nascimento inválida'),
@@ -158,7 +158,7 @@ const updatePatientValidation = [
         .isLength({ min: 10, max: 15 })
         .withMessage('Telefone deve ter entre 10 e 15 caracteres'),
     
-    body('birthDate')
+    body('dateOfBirth')
         .optional()
         .isISO8601()
         .withMessage('Data de nascimento inválida'),

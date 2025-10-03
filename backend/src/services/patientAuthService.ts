@@ -293,8 +293,7 @@ class PatientAuthService {
 
       const isMatch = await patientUser.comparePassword(data.password);
       if (!isMatch) {
-        patientUser.incLoginAttempts();
-        await patientUser.save();
+        await patientUser.incLoginAttempts();
         throw new UnauthorizedError('E-mail ou senha incorretos');
       }
 
