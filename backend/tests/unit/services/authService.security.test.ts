@@ -153,10 +153,12 @@ describe('AuthService Security Tests', () => {
       expect(emailError.status).toBe('rejected');
       expect(passwordError.status).toBe('rejected');
       
-      if (emailError.status === 'rejected' && passwordError.status === 'rejected') {
-        expect(emailError.reason.message).toBe(passwordError.reason.message);
-        expect(emailError.reason.message).toBe('E-mail ou senha inválidos');
-      }
+      const emailMessage = emailError.status === 'rejected' ? emailError.reason.message : '';
+      const passwordMessage = passwordError.status === 'rejected' ? passwordError.reason.message : '';
+      
+      expect(emailMessage).toBe('E-mail ou senha inválidos');
+      expect(passwordMessage).toBe('E-mail ou senha inválidos');
+      expect(emailMessage).toBe(passwordMessage);
     });
   });
 
@@ -198,14 +200,10 @@ describe('AuthService Security Tests', () => {
 
       // Make some failed attempts
       for (let i = 0; i < 3; i++) {
-        try {
-          await authService.login({
-            email: userData.email,
-            password: 'WrongPassword!'
-          });
-        } catch (e) {
-          // Expected to fail
-        }
+        await authService.login({
+          email: userData.email,
+          password: 'WrongPassword!'
+        }).catch(() => {});
       }
 
       // Successful login should reset attempts

@@ -13,62 +13,48 @@ describe('SchedulingService', () => {
   let testAppointmentType: any;
 
   beforeEach(async () => {
-    try {
-      testClinic = await createTestClinic();
-      console.log('Test clinic created:', testClinic._id);
+    testClinic = await createTestClinic();
+    testUser = await createTestUser({ clinic: testClinic._id });
 
-      testUser = await createTestUser({ clinic: testClinic._id });
-      console.log('Test user created:', testUser._id);
+    testPatient = await Patient.create({
+      firstName: 'Test',
+      lastName: 'Patient',
+      phone: '(11) 99999-9999',
+      email: 'patient@example.com',
+      clinic: testClinic._id,
+      status: 'active'
+    });
 
-      // Create test patient
-      testPatient = await Patient.create({
-        firstName: 'Test',
-        lastName: 'Patient',
-        phone: '(11) 99999-9999',
-        email: 'patient@example.com',
-        clinic: testClinic._id,
-        status: 'active'
-      });
-      console.log('Test patient created:', testPatient._id);
+    testProvider = await Provider.create({
+      name: 'Dr. Test Provider',
+      email: 'provider@example.com',
+      phone: '(11) 88888-8888',
+      clinic: testClinic._id,
+      specialties: ['general_dentistry'],
+      licenseNumber: 'CRO-12345',
+      isActive: true,
+      timeZone: 'America/Sao_Paulo',
+      workingHours: {
+        monday: { start: '08:00', end: '18:00', isWorking: true },
+        tuesday: { start: '08:00', end: '18:00', isWorking: true },
+        wednesday: { start: '08:00', end: '18:00', isWorking: true },
+        thursday: { start: '08:00', end: '18:00', isWorking: true },
+        friday: { start: '08:00', end: '18:00', isWorking: true },
+        saturday: { start: '08:00', end: '12:00', isWorking: false },
+        sunday: { start: '08:00', end: '12:00', isWorking: false }
+      }
+    });
 
-      // Create test provider
-      testProvider = await Provider.create({
-        name: 'Dr. Test Provider',
-        email: 'provider@example.com',
-        phone: '(11) 88888-8888',
-        clinic: testClinic._id,
-        specialties: ['general_dentistry'],
-        licenseNumber: 'CRO-12345',
-        isActive: true,
-        timeZone: 'America/Sao_Paulo', // Set timezone explicitly
-        workingHours: {
-          monday: { start: '08:00', end: '18:00', isWorking: true },
-          tuesday: { start: '08:00', end: '18:00', isWorking: true },
-          wednesday: { start: '08:00', end: '18:00', isWorking: true },
-          thursday: { start: '08:00', end: '18:00', isWorking: true },
-          friday: { start: '08:00', end: '18:00', isWorking: true },
-          saturday: { start: '08:00', end: '12:00', isWorking: false },
-          sunday: { start: '08:00', end: '12:00', isWorking: false }
-        }
-      });
-      console.log('Test provider created:', testProvider._id);
-
-      // Create test appointment type
-      testAppointmentType = await AppointmentType.create({
-        name: 'Consulta Geral',
-        duration: 60,
-        color: '#3B82F6',
-        category: 'consultation',
-        clinic: testClinic._id,
-        isActive: true,
-        bufferBefore: 15,
-        bufferAfter: 15
-      });
-      console.log('Test appointment type created:', testAppointmentType._id);
-    } catch (error) {
-      console.error('Error in beforeEach:', error);
-      throw error;
-    }
+    testAppointmentType = await AppointmentType.create({
+      name: 'Consulta Geral',
+      duration: 60,
+      color: '#3B82F6',
+      category: 'consultation',
+      clinic: testClinic._id,
+      isActive: true,
+      bufferBefore: 15,
+      bufferAfter: 15
+    });
   });
 
   describe('createAppointment', () => {
@@ -287,12 +273,11 @@ describe('SchedulingService', () => {
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBeGreaterThan(0);
       
-      if (result.length > 0) {
-        expect(result[0]).toHaveProperty('start');
-        expect(result[0]).toHaveProperty('end');
-        expect(result[0]).toHaveProperty('available');
-        expect(result[0]!.available).toBe(true);
-      }
+      const firstSlot = result[0];
+      expect(firstSlot).toHaveProperty('start');
+      expect(firstSlot).toHaveProperty('end');
+      expect(firstSlot).toHaveProperty('available');
+      expect(firstSlot?.available).toBe(true);
     });
 
     it('should return empty array for non-existent appointment type', async () => {

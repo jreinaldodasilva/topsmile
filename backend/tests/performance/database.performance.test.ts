@@ -129,30 +129,12 @@ describe('Database Performance Tests', () => {
 
   describe('Connection Handling', () => {
     it('should handle connection timeouts gracefully', async () => {
-      // Mock connection timeout
-      const originalTimeout = mongoose.connection.db?.serverConfig?.options?.socketTimeoutMS;
+      const startTime = performance.now();
+      const error = await Patient.find({}).maxTimeMS(100).catch(e => e);
+      const endTime = performance.now();
       
-      try {
-        // Set very short timeout
-        if (mongoose.connection.db?.serverConfig?.options) {
-          mongoose.connection.db.serverConfig.options.socketTimeoutMS = 1;
-        }
-
-        const startTime = performance.now();
-        
-        try {
-          await Patient.find({}).maxTimeMS(100);
-        } catch (error) {
-          const endTime = performance.now();
-          expect(endTime - startTime).toBeLessThan(200);
-          expect(error).toBeDefined();
-        }
-      } finally {
-        // Restore original timeout
-        if (mongoose.connection.db?.serverConfig?.options && originalTimeout) {
-          mongoose.connection.db.serverConfig.options.socketTimeoutMS = originalTimeout;
-        }
-      }
+      expect(endTime - startTime).toBeLessThan(200);
+      expect(error).toBeDefined();
     });
   });
 });

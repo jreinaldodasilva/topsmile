@@ -493,13 +493,7 @@ describe('Validation Utilities - Core Business Logic', () => {
       const unicodeEmail = 'joão@exãmple.com';
       const unicodeName = 'José María González';
       
-      // Email with Unicode should be handled appropriately
-      try {
-        emailSchema.parse(unicodeEmail);
-      } catch (error) {
-        expect(error).toBeInstanceOf(z.ZodError);
-      }
-      
+      expect(() => emailSchema.parse(unicodeEmail)).toThrow(z.ZodError);
       expect(unicodeName).toBeDefined();
     });
 

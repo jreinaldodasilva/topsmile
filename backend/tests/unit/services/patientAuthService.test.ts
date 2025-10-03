@@ -4,7 +4,7 @@ import { Patient } from '../../../src/models/Patient';
 import { PatientRefreshToken } from '../../../src/models/PatientRefreshToken';
 import { createTestClinic } from '../../testHelpers';
 import { ValidationError, UnauthorizedError, ConflictError, NotFoundError } from '../../../src/types/errors';
-import { TEST_CREDENTIALS } from '../testConstants';
+import { TEST_CREDENTIALS } from '../../testConstants';
 
 describe('PatientAuthService', () => {
   let testClinic: any;
@@ -162,11 +162,7 @@ describe('PatientAuthService', () => {
 
       // Attempt multiple failed logins
       for (let i = 0; i < 5; i++) {
-        try {
-          await patientAuthService.login(loginData);
-        } catch (error) {
-          // Expected to fail
-        }
+        await patientAuthService.login(loginData).catch(() => {});
       }
 
       // Account should be locked now

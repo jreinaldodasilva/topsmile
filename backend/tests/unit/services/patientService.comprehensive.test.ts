@@ -178,7 +178,7 @@ describe('PatientService - Core Business Logic', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result!._id.toString()).toBe(created._id!.toString());
+      expect(result!._id!.toString()).toBe(created._id!.toString());
     });
 
     it('should return null for non-existent patient', async () => {
@@ -649,13 +649,7 @@ describe('PatientService - Core Business Logic', () => {
         lastName: 'y'.repeat(1000)
       };
 
-      // Should either succeed or fail gracefully
-      try {
-        const result = await patientService.createPatient(patientData);
-        expect(result).toBeDefined();
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-      }
+      await expect(patientService.createPatient(patientData)).rejects.toThrow();
     });
 
     it('should handle special characters in names', async () => {
@@ -675,16 +669,11 @@ describe('PatientService - Core Business Logic', () => {
       const patientData = getValidPatientData();
       const patient = await patientService.createPatient(patientData);
 
-      // Try to update with invalid email
-      try {
-        await patientService.updatePatient(
-          patient._id!.toString(),
-          testClinic._id.toString(),
-          { email: 'invalid-email-format' }
-        );
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-      }
+      await expect(patientService.updatePatient(
+        patient._id!.toString(),
+        testClinic._id.toString(),
+        { email: 'invalid-email-format' }
+      )).rejects.toThrow();
     });
   });
 });

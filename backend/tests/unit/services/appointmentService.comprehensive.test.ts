@@ -150,7 +150,7 @@ describe('AppointmentService - Core Business Logic', () => {
       const result = await appointmentService.getAppointmentById(created._id!.toString(), testClinic._id.toString());
 
       expect(result).toBeDefined();
-      expect(result!._id.toString()).toBe(created._id!.toString());
+      expect(result!._id!.toString()).toBe(created._id!.toString());
     });
 
     it('should return null for non-existent appointment', async () => {
@@ -499,13 +499,8 @@ describe('AppointmentService - Core Business Logic', () => {
         notes: 'x'.repeat(10000) // Very long notes
       };
 
-      // Should either succeed or fail gracefully
-      try {
-        const result = await appointmentService.createAppointment(appointmentData);
-        expect(result).toBeDefined();
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-      }
+      const result = await appointmentService.createAppointment(appointmentData);
+      expect(result).toBeDefined();
     });
   });
 });

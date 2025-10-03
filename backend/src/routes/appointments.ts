@@ -95,7 +95,7 @@ router.get("/providers/:providerId/availability", async (req: Request, res: Resp
 
     const slots = await schedulingService.getAvailableSlots({
       clinicId: authReq.user!.clinicId!,
-      provider,
+      providerId,
       appointmentTypeId: appointmentTypeId as string,
       date: targetDate
     });
@@ -222,9 +222,9 @@ router.post("/", bookingValidation, async (req: Request, res: Response) => {
 
     const appointment = await schedulingService.createAppointmentModel({
       clinicId: authReq.user!.clinicId!,
-      patient,
-      provider,
-      appointmentType,
+      patientId: patient,
+      providerId: provider,
+      appointmentTypeId: appointmentType,
       scheduledStart: new Date(scheduledStart),
       notes,
       priority,
@@ -265,9 +265,9 @@ router.post("/book", bookingValidation, async (req: Request, res: Response) => {
 
     const appointment = await schedulingService.createAppointmentModel({
       clinicId: authReq.user!.clinicId!,
-      patient,
-      provider,
-      appointmentType,
+      patientId: patient,
+      providerId: provider,
+      appointmentTypeId: appointmentType,
       scheduledStart: new Date(scheduledStart),
       notes,
       priority,
@@ -992,8 +992,8 @@ router.post("/patient/book",
       const appointment = await schedulingService.createAppointmentModel({
         clinicId: (req.patient!.clinic as any).toString(),
         patientId: (req.patient!._id as any).toString(),
-      provider,
-      appointmentType,
+        providerId,
+        appointmentTypeId,
         scheduledStart: new Date(scheduledStart),
         notes,
         priority,
