@@ -110,16 +110,23 @@ main() {
         "coverage")
             run_coverage
             ;;
+        "compliance")
+            echo ""
+            echo "🏥 Running HIPAA Compliance Tests"
+            echo "-------------------------------"
+            npm run test:compliance
+            ;;
         "all"|"")
             run_all_tests
             ;;
         *)
-            echo "Usage: $0 [unit|integration|coverage|all]"
+            echo "Usage: $0 [unit|integration|coverage|compliance|all]"
             echo ""
             echo "Options:"
             echo "  unit        - Run only unit tests"
             echo "  integration - Run only integration tests"
             echo "  coverage    - Run all tests with coverage report"
+            echo "  compliance  - Run HIPAA compliance tests"
             echo "  all         - Run all tests (default)"
             exit 1
             ;;
