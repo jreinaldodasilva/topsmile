@@ -1,84 +1,28 @@
-// CRITICAL: Set environment variables BEFORE any imports that use them
-import { TEST_CREDENTIALS } from './testConstants';
-process.env.JWT_SECRET = TEST_CREDENTIALS.JWT_SECRET;
-process.env.PATIENT_JWT_SECRET = TEST_CREDENTIALS.PATIENT_JWT_SECRET;
-process.env.NODE_ENV = 'test';
-
-import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import './customMatchers';
-import '../src/models/Provider';
-import { tokenBlacklistService } from '../src/services/tokenBlacklistService';
-import { setupRedisMock } from './mocks/redis.mock';
-import { setupSendGridMock } from './mocks/sendgrid.mock';
+import mongoose from 'mongoose';
 
-let mongoServer: MongoMemoryServer;
-let mockRedisClient: any;
-let mockSendGridClient: any;
+let mongoServer: MongoMemoryServer | null = null;
 
 beforeAll(async () => {
-  console.log('Setting up test database with MongoDB Memory Server...');
-  
-  // Setup mocks
-  mockRedisClient = setupRedisMock();
-  mockSendGridClient = setupSendGridMock();
-
-  // Start MongoDB Memory Server for test isolation
   mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
-  console.log('Connecting to MongoDB Memory Server at:', mongoUri);
-
-  // Connect to the in-memory database
-  await mongoose.connect(mongoUri);
-  console.log('Connected to test database');
-});
+  const uri = mongoServer.getUri();
+  await mongoose.connect(uri);
+}, 60000);
 
 afterAll(async () => {
-  // Close database connection
-  await mongoose.disconnect();
-  console.log('Disconnected from test database');
-
-  // Stop MongoDB Memory Server
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
   if (mongoServer) {
     await mongoServer.stop();
-    console.log('MongoDB Memory Server stopped');
   }
-
-  // Clean up mocks
-  if (mockRedisClient) {
-    mockRedisClient.clear();
-  }
-  if (mockSendGridClient) {
-    mockSendGridClient.clear();
-  }
-});
+}, 60000);
 
 afterEach(async () => {
-  try {
-    // Clear the Redis blacklist
-    await tokenBlacklistService.clear();
-  } catch (error) {
-    console.warn('Failed to clear token blacklist:', error);
-  }
-
-  // Clear mock data
-  if (mockRedisClient) {
-    mockRedisClient.clear();
-  }
-  if (mockSendGridClient) {
-    mockSendGridClient.clear();
-  }
-
-  // Clear all collections after each test, but only if connected
   if (mongoose.connection.readyState === 1) {
-    const collections = Object.values(mongoose.connection.collections);
-
-    for (const collection of collections) {
-      try {
-        await collection.deleteMany({});
-      } catch (error) {
-        console.warn(`Failed to clean collection ${collection.name}:`, error);
-      }
+    const collections = mongoose.connection.collections;
+    for (const key in collections) {
+      await collections[key].deleteMany({});
     }
   }
 });
