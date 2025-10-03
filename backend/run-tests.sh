@@ -8,10 +8,16 @@ set -e
 echo "🧪 Starting TopSmile Backend Test Suite"
 echo "========================================"
 
+# Load test environment variables
+if [ -f ".env.test" ]; then
+    export $(cat .env.test | grep -v '^#' | xargs)
+    echo "✅ Loaded test environment variables"
+else
+    echo "⚠️  .env.test not found, using defaults"
+fi
+
 # Set test environment
 export NODE_ENV=test
-export JWT_SECRET=test-jwt-secret-key-for-testing-only
-export PATIENT_JWT_SECRET=test-patient-jwt-secret-key-for-testing-only
 
 # Colors for output
 RED='\033[0;31m'

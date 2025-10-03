@@ -1,10 +1,16 @@
-// Test constants - use environment variables for security
+// Test constants - secure credential management
+const generateSecureTestCredential = (type: string): string => {
+  const timestamp = Date.now().toString();
+  const random = Math.random().toString(36).substring(2);
+  return `${type}_${timestamp}_${random}`;
+};
+
 export const TEST_CREDENTIALS = {
-  DEFAULT_PASSWORD: process.env.TEST_DEFAULT_PASSWORD || 'TestPass123!',
-  PATIENT_PASSWORD: process.env.TEST_PATIENT_PASSWORD || 'PatientPass123!',
-  ADMIN_PASSWORD: process.env.TEST_ADMIN_PASSWORD || 'AdminPass123!',
-  JWT_SECRET: process.env.TEST_JWT_SECRET || 'test-jwt-secret-key-change-in-production',
-  PATIENT_JWT_SECRET: process.env.TEST_PATIENT_JWT_SECRET || 'test-patient-jwt-secret-key'
+  DEFAULT_PASSWORD: process.env.TEST_DEFAULT_PASSWORD || generateSecureTestCredential('pass'),
+  PATIENT_PASSWORD: process.env.TEST_PATIENT_PASSWORD || generateSecureTestCredential('patient'),
+  ADMIN_PASSWORD: process.env.TEST_ADMIN_PASSWORD || generateSecureTestCredential('admin'),
+  JWT_SECRET: process.env.TEST_JWT_SECRET || generateSecureTestCredential('jwt'),
+  PATIENT_JWT_SECRET: process.env.TEST_PATIENT_JWT_SECRET || generateSecureTestCredential('patient_jwt')
 } as const;
 
 // Validation to ensure secrets are properly set in CI/production
