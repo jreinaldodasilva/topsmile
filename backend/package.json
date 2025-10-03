@@ -43,6 +43,7 @@
     "test:fast": "jest --onlyChanged --passWithNoTests --maxWorkers=4",
     "test:transactions": "jest --testPathPattern=tests/transactions --runInBand",
     "test:rate-limiting": "jest --testPathPattern=tests/rate-limiting --runInBand",
+    "test:contract": "jest --testPathPattern=tests/contract --runInBand",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
@@ -111,7 +112,9 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2",
-    "k6": "^0.0.0"
+    "k6": "^0.0.0",
+    "@pact-foundation/pact": "^12.1.0",
+    "ajv": "^8.12.0"
   },
   "engines": {
     "node": ">=18.0.0",
