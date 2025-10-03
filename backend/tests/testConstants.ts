@@ -2,7 +2,7 @@
 const generateSecureTestCredential = (type: string): string => {
   const timestamp = Date.now().toString();
   const random = Math.random().toString(36).substring(2);
-  return `${type}_${timestamp}_${random}`;
+  return `Test${type}Pass123!`;
 };
 
 export const TEST_CREDENTIALS = {
