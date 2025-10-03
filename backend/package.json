@@ -37,6 +37,7 @@
     "test:k6": "./scripts/run-k6-tests.sh",
     "test:k6:auth": "./scripts/run-k6-tests.sh auth",
     "test:k6:stress": "./scripts/run-k6-tests.sh stress",
+    "test:benchmarks": "jest --testPathPattern=tests/performance --runInBand --verbose",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",

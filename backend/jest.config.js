@@ -27,6 +27,12 @@ module.exports = {
       lines: 75,
       statements: 75,
     },
+    './tests/performance/**': {
+      branches: 60,
+      functions: 60,
+      lines: 60,
+      statements: 60,
+    },
     './src/services/authService.ts': {
       branches: 85,
       functions: 85,
