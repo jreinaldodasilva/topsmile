@@ -33,6 +33,7 @@
     "test:performance": "jest --testPathPattern=tests/performance --runInBand",
     "test:edge-cases": "jest --testPathPattern=tests/edge-cases --runInBand",
     "test:compliance": "jest --testPathPattern=tests/compliance --runInBand",
+    "test:payments": "jest --testPathPattern=tests/payments --runInBand",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
