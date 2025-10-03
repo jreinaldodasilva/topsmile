@@ -34,6 +34,9 @@
     "test:edge-cases": "jest --testPathPattern=tests/edge-cases --runInBand",
     "test:compliance": "jest --testPathPattern=tests/compliance --runInBand",
     "test:payments": "jest --testPathPattern=tests/payments --runInBand",
+    "test:k6": "./scripts/run-k6-tests.sh",
+    "test:k6:auth": "./scripts/run-k6-tests.sh auth",
+    "test:k6:stress": "./scripts/run-k6-tests.sh stress",
     "test:fast": "jest --onlyChanged --passWithNoTests",
     "test:ci": "jest --ci --coverage --maxWorkers=2",
     "lint": "eslint src/**/*.ts tests/**/*.ts",
@@ -101,7 +104,8 @@
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "k6": "^0.0.0"
   },
   "engines": {
     "node": ">=18.0.0",
