@@ -10,6 +10,7 @@ declare global {
       toBeValidEmail(): R;
       toBeValidPhone(): R;
       toHaveValidTokenStructure(): R;
+      toHaveSecurityHeaders(): R;
     }
   }
 }
@@ -82,6 +83,23 @@ expect.extend({
       message: () => `Expected ${received} to have valid JWT structure`,
       pass: isValid
     };
+  },
+
+  toHaveSecurityHeaders(received: any) {
+    const requiredHeaders = [
+      'x-content-type-options',
+      'x-frame-options',
+      'strict-transport-security'
+    ];
+
+    const hasAllHeaders = requiredHeaders.every(header => 
+      received.headers && received.headers[header]
+    );
+
+    return {
+      message: () => `Expected response to have security headers: ${requiredHeaders.join(', ')}`,
+      pass: hasAllHeaders
+    };
   }
 });
 
@@ -104,6 +122,10 @@ export const expectValidPhone = (phone: string) => {
 
 export const expectValidToken = (token: string) => {
   expect(token).toHaveValidTokenStructure();
+};
+
+export const expectSecurityHeaders = (response: any) => {
+  expect(response).toHaveSecurityHeaders();
 };
 
 // Domain-specific assertion helpers
