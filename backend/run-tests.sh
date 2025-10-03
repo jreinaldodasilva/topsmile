@@ -116,17 +116,31 @@ main() {
             echo "-------------------------------"
             npm run test:compliance
             ;;
+        "parallel")
+            echo ""
+            echo "⚡ Running Tests in Parallel"
+            echo "-------------------------"
+            npm run test:parallel
+            ;;
+        "fast")
+            echo ""
+            echo "🚀 Running Fast Tests (Changed Files)"
+            echo "----------------------------------"
+            npm run test:fast
+            ;;
         "all"|"")
             run_all_tests
             ;;
         *)
-            echo "Usage: $0 [unit|integration|coverage|compliance|all]"
+            echo "Usage: $0 [unit|integration|coverage|compliance|parallel|fast|all]"
             echo ""
             echo "Options:"
             echo "  unit        - Run only unit tests"
             echo "  integration - Run only integration tests"
             echo "  coverage    - Run all tests with coverage report"
             echo "  compliance  - Run HIPAA compliance tests"
+            echo "  parallel    - Run tests in parallel mode"
+            echo "  fast        - Run only changed files tests"
             echo "  all         - Run all tests (default)"
             exit 1
             ;;

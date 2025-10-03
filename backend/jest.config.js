@@ -71,7 +71,7 @@ module.exports = {
   },
   globalSetup: undefined,
   globalTeardown: undefined,
-  maxWorkers: '50%', // Use 50% of CPU cores for faster execution
+  maxWorkers: process.env.CI ? 2 : '75%', // Optimize for CI vs local development
   testPathIgnorePatterns: [
     '/node_modules/',
     '/coverage/',
