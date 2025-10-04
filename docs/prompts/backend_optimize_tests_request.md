@@ -1,0 +1,2 @@
+Now, optimize the backend tests by removing all unnecessary tests. If necessary, delete redundant test files. Then, organize the tests within a better infrastructure.
+Remove the tests that we won't use anymore.
