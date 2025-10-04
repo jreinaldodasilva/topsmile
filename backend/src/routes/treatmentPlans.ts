@@ -1,8 +1,10 @@
 // backend/src/routes/treatmentPlans.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
-import { body, param, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 import { TreatmentPlan } from '../models/TreatmentPlan';
+import { treatmentPlanService } from '../services/treatmentPlanService';
+import { CDT_CODES, CDT_CATEGORIES, getCDTCodesByCategory } from '../config/cdtCodes';
 
 const router: express.Router = express.Router();
 
@@ -139,18 +141,13 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
     }
 });
 
-router.patch('/:id/accept', param('id').isMongoId(), async (req: Request, res: Response) => {
+router.patch('/:id/accept', param('id').isMongoId(), body('acceptedBy').trim().notEmpty(), async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     
     try {
-        const plan = await TreatmentPlan.findOneAndUpdate(
-            { _id: authReq.params.id, clinic: authReq.user!.clinic },
-            {
-                status: 'accepted',
-                acceptedAt: new Date(),
-                acceptedBy: authReq.body.acceptedBy || 'patient'
-            },
-            { new: true }
+        const plan = await treatmentPlanService.acceptTreatmentPlan(
+            authReq.params.id,
+            authReq.body.acceptedBy
         );
 
         if (!plan) {
@@ -172,6 +169,88 @@ router.patch('/:id/accept', param('id').isMongoId(), async (req: Request, res: R
             message: error.message || 'Erro ao aceitar plano'
         });
     }
+});
+
+router.patch('/:id/phase/:phaseNumber', 
+    param('id').isMongoId(),
+    param('phaseNumber').isInt({ min: 1 }),
+    body('status').isIn(['pending', 'in_progress', 'completed']),
+    async (req: Request, res: Response) => {
+        const authReq = req as AuthenticatedRequest;
+        
+        try {
+            const plan = await treatmentPlanService.updatePhaseStatus(
+                authReq.params.id,
+                parseInt(authReq.params.phaseNumber),
+                authReq.body.status
+            );
+
+            if (!plan) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Plano ou fase não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Status da fase atualizado',
+                data: plan
+            });
+        } catch (error: any) {
+            console.error('Error updating phase status:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao atualizar fase'
+            });
+        }
+    }
+);
+
+router.post('/estimate-insurance',
+    body('patientId').isMongoId(),
+    body('procedures').isArray({ min: 1 }),
+    async (req: Request, res: Response) => {
+        try {
+            const estimates = await treatmentPlanService.estimateInsuranceCoverage(
+                req.body.patientId,
+                req.body.procedures
+            );
+
+            return res.json({
+                success: true,
+                data: estimates
+            });
+        } catch (error: any) {
+            console.error('Error estimating insurance:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao estimar cobertura'
+            });
+        }
+    }
+);
+
+router.get('/cdt-codes/all', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: CDT_CODES
+    });
+});
+
+router.get('/cdt-codes/categories', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: CDT_CATEGORIES
+    });
+});
+
+router.get('/cdt-codes/category/:category', async (req: Request, res: Response) => {
+    const codes = getCDTCodesByCategory(req.params.category);
+    return res.json({
+        success: true,
+        data: codes
+    });
 });
 
 export default router;
