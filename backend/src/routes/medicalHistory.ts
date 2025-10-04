@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
 import { MedicalHistory } from '../models/MedicalHistory';
+import { MEDICAL_CONDITIONS, DENTAL_CONDITIONS, COMMON_ALLERGIES } from '../config/medicalConditions';
 
 const router: express.Router = express.Router();
 
@@ -126,6 +127,52 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar registro'
+        });
+    }
+});
+
+router.get('/conditions/medical', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: MEDICAL_CONDITIONS
+    });
+});
+
+router.get('/conditions/dental', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: DENTAL_CONDITIONS
+    });
+});
+
+router.get('/allergies/common', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: COMMON_ALLERGIES
+    });
+});
+
+router.get('/patient/:patientId/latest', param('patientId').isMongoId(), async (req: Request, res: Response) => {
+    const authReq = req as AuthenticatedRequest;
+    
+    try {
+        const record = await MedicalHistory.findOne({
+            patient: authReq.params.patientId,
+            clinic: authReq.user!.clinic
+        })
+        .sort({ recordDate: -1 })
+        .populate('recordedBy', 'name')
+        .lean();
+
+        return res.json({
+            success: true,
+            data: record
+        });
+    } catch (error: any) {
+        console.error('Error fetching latest medical history:', error);
+        return res.status(400).json({
+            success: false,
+            message: error.message || 'Erro ao buscar histórico'
         });
     }
 });

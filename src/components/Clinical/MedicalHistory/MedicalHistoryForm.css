@@ -1,0 +1,88 @@
+.medical-history-form {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.form-section {
+  margin-bottom: 24px;
+}
+
+.form-section label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 16px;
+}
+
+.form-section textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.condition-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.condition-checkbox:hover {
+  background: #f0f0f0;
+}
+
+.condition-checkbox input {
+  cursor: pointer;
+}
+
+.social-history {
+  display: flex;
+  gap: 24px;
+}
+
+.social-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.social-item select {
+  padding: 8px 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.save-history-btn {
+  width: 100%;
+  padding: 14px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 24px;
+}
+
+.save-history-btn:hover {
+  background: #1976d2;
+}

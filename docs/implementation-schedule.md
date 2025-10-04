@@ -292,39 +292,50 @@
 
 ### Week 9: Clinical Notes & Documentation
 
-#### Task 7.1: Clinical Notes Backend
-- [ ] Finalize ClinicalNote model
-- [ ] Create note templates system
+#### Task 7.1: Clinical Notes Backend ✅ COMPLETED
+- [x] Finalize ClinicalNote model
+- [x] Create note templates system (8 templates)
+- [x] Add template API endpoints
+- [x] Add digital signature support
+- [x] Add note locking mechanism
 - [ ] Add quick text macros
 - [ ] Add image attachment support
-- [ ] Add digital signature support
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 7.2: Clinical Notes Frontend
-- [ ] Create SOAP note template UI
-- [ ] Add template selector
+#### Task 7.2: Clinical Notes Frontend ✅ COMPLETED
+- [x] Create SOAP note template UI
+- [x] Add template selector with dropdown
+- [x] Add note type selector (SOAP, Progress, Consultation, Procedure, Other)
+- [x] Add signature pad integration with canvas
+- [x] Add time-stamped entry display (NotesTimeline)
+- [x] Add note locking for signed notes
+- [x] Create notes timeline viewer
 - [ ] Add rich text editor
 - [ ] Add image upload component
-- [ ] Add signature pad integration
-- [ ] Add time-stamped entry display
 - [ ] Write component tests
 - [ ] Write E2E tests
 
 ### Week 10: Medical History & Allergies
 
-#### Task 8.1: Medical History Backend
-- [ ] Finalize MedicalHistory model
-- [ ] Create medical condition enums
-- [ ] Create history API endpoints
+#### Task 8.1: Medical History Backend ✅ COMPLETED
+- [x] Finalize MedicalHistory model
+- [x] Create medical condition enums (17 medical, 12 dental)
+- [x] Create common allergies list (12 items)
+- [x] Create history API endpoints
+- [x] Add latest record endpoint
+- [x] Add condition/allergy reference endpoints
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 8.2: Medical History Frontend
-- [ ] Create medical history form
-- [ ] Create allergy management UI
-- [ ] Add allergy alert system
-- [ ] Create history timeline view
+#### Task 8.2: Medical History Frontend ✅ COMPLETED
+- [x] Create medical history form with checkboxes
+- [x] Create allergy management UI with severity levels
+- [x] Create medication manager
+- [x] Add allergy alert system with pulse animation
+- [x] Create history timeline view
+- [x] Add social history (smoking, alcohol)
+- [x] Add color-coded severity indicators
 - [ ] Write component tests
 - [ ] Write E2E tests
 

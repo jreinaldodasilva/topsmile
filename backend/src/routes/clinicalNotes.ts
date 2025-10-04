@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
 import { ClinicalNote } from '../models/ClinicalNote';
+import { NOTE_TEMPLATES, getTemplateById, getTemplatesByType } from '../config/noteTemplates';
 
 const router: express.Router = express.Router();
 
@@ -183,6 +184,35 @@ router.patch('/:id/sign', param('id').isMongoId(), async (req: Request, res: Res
             message: error.message || 'Erro ao assinar nota'
         });
     }
+});
+
+router.get('/templates/all', async (req: Request, res: Response) => {
+    return res.json({
+        success: true,
+        data: NOTE_TEMPLATES
+    });
+});
+
+router.get('/templates/:id', async (req: Request, res: Response) => {
+    const template = getTemplateById(req.params.id);
+    if (!template) {
+        return res.status(404).json({
+            success: false,
+            message: 'Template não encontrado'
+        });
+    }
+    return res.json({
+        success: true,
+        data: template
+    });
+});
+
+router.get('/templates/type/:noteType', async (req: Request, res: Response) => {
+    const templates = getTemplatesByType(req.params.noteType);
+    return res.json({
+        success: true,
+        data: templates
+    });
 });
 
 export default router;
