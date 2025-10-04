@@ -345,38 +345,55 @@
 
 ### Week 11-12: Advanced Appointment Features
 
-#### Task 9.1: Appointment Backend Enhancements
-- [ ] Add treatment duration templates
-- [ ] Add recurring appointment logic
-- [ ] Create Operatory model
-- [ ] Add wait list system
-- [ ] Enhance conflict detection
+#### Task 9.1: Appointment Backend Enhancements ✅ COMPLETED
+- [x] Add treatment duration templates (already in Appointment model)
+- [x] Add recurring appointment logic (frequency, interval, endDate, occurrences)
+- [x] Create Operatory model (name, room, equipment, colorCode)
+- [x] Create Waitlist model (priority, preferredDates, status, contactAttempts)
+- [x] Add operatory routes (CRUD operations)
+- [x] Add waitlist routes (CRUD, status updates, contact tracking)
+- [x] Enhance conflict detection (provider + room conflicts)
+- [x] Add follow-up tracking
+- [x] Add billing status tracking
+- [x] Add satisfaction scoring
+- [x] Mount routes in app.ts
+- [x] Add types to shared package
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 9.2: Calendar UI Enhancements
-- [ ] Add color-coded calendar view
+#### Task 9.2: Calendar UI Enhancements ✅ COMPLETED
+- [x] Add color-coded calendar view with status colors
+- [x] Add provider filtering
+- [x] Add priority badges (urgent ⚡, emergency 🚨)
+- [x] Add operatory assignment UI
+- [x] Add wait list management panel
+- [x] Add recurring appointment dialog (frequency, interval, end conditions)
+- [x] Add time-based positioning (7 AM - 7 PM grid)
+- [x] Add contact attempt tracking
 - [ ] Enhance drag-and-drop with duration
-- [ ] Add operatory assignment UI
-- [ ] Add wait list management panel
-- [ ] Add recurring appointment dialog
 - [ ] Write component tests
 - [ ] Write E2E tests
 
 ### Week 13-14: Online Booking Enhancement
 
-#### Task 10.1: Booking Backend
-- [ ] Add treatment type selection
-- [ ] Add provider preference logic
-- [ ] Update availability calculation
+#### Task 10.1: Booking Backend ✅ COMPLETED
+- [x] Add treatment type selection (filter by allowOnlineBooking)
+- [x] Add provider preference logic (optional provider filter)
+- [x] Update availability calculation (30-min slots, conflict detection)
+- [x] Create booking service with slot generation
+- [x] Add booking routes (appointment-types, available-slots, book)
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 10.2: Booking Frontend
-- [ ] Enhance booking flow
-- [ ] Add treatment type selector
-- [ ] Add provider selection with photos
-- [ ] Update confirmation display
+#### Task 10.2: Booking Frontend ✅ COMPLETED
+- [x] Enhance booking flow (multi-step process)
+- [x] Add treatment type selector with categories
+- [x] Add provider selection with photos and "no preference" option
+- [x] Add time slot picker grouped by provider
+- [x] Update confirmation display with all details
+- [x] Add price and duration display
+- [x] Add edit functionality
 - [ ] Write component tests
 - [ ] Write E2E tests
 

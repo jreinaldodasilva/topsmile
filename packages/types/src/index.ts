@@ -998,6 +998,41 @@ export type CreateInsuranceDTO = {
   };
 };
 
+// ADDED: Operatory types
+export type Operatory = {
+  id?: string;
+  _id?: string;
+  clinic: string | Clinic;
+  name: string;
+  room: string;
+  isActive: boolean;
+  equipment: string[];
+  colorCode?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Waitlist types
+export type Waitlist = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider?: string | Provider;
+  appointmentType: string | AppointmentType;
+  preferredDates: (string | Date)[];
+  preferredTimes: string[];
+  priority: 'routine' | 'urgent' | 'emergency';
+  notes?: string;
+  status: 'active' | 'scheduled' | 'cancelled' | 'expired';
+  contactAttempts: number;
+  lastContactDate?: string | Date;
+  expiresAt: string | Date;
+  createdBy: string | User;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
 export type CreateMedicalHistoryDTO = {
   patient: string;
   recordDate?: string | Date;

@@ -1,0 +1,101 @@
+.booking-confirmation {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.confirmation-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #4caf50;
+  color: white;
+  font-size: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.booking-confirmation h2 {
+  margin: 0 0 30px 0;
+  font-size: 28px;
+}
+
+.confirmation-details {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 30px;
+  text-align: left;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row.price {
+  padding-top: 16px;
+  margin-top: 8px;
+  border-top: 2px solid #e0e0e0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.label {
+  color: #666;
+}
+
+.value {
+  font-weight: 600;
+  color: #333;
+}
+
+.detail-row.price .value {
+  color: #2196f3;
+}
+
+.confirmation-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.edit-btn,
+.confirm-btn {
+  padding: 14px 32px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.edit-btn {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.edit-btn:hover {
+  background: #e0e0e0;
+}
+
+.confirm-btn {
+  background: #4caf50;
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}

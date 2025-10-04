@@ -1,0 +1,75 @@
+.provider-selector {
+  padding: 20px;
+}
+
+.provider-selector h3 {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+}
+
+.providers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.provider-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.provider-card:hover {
+  border-color: #2196f3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.provider-card.selected {
+  border-color: #2196f3;
+  background: #e3f2fd;
+}
+
+.provider-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 12px;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: #2196f3;
+}
+
+.provider-photo.no-preference {
+  background: #e3f2fd;
+  font-size: 40px;
+}
+
+.provider-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.provider-card h4 {
+  margin: 0 0 8px 0;
+  font-size: 16px;
+}
+
+.provider-card p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.specialties {
+  font-style: italic;
+}

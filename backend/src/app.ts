@@ -50,6 +50,9 @@ import auditLogsRoutes from "./routes/auditLogs";
 import sessionsRoutes from "./routes/sessions";
 import permissionsRoutes from "./routes/permissions";
 import roleManagementRoutes from "./routes/roleManagement";
+import operatoriesRoutes from "./routes/operatories";
+import waitlistRoutes from "./routes/waitlist";
+import bookingRoutes from "./routes/booking";
 
 // Contact routes
 import contactRoutes from "./routes/contact";
@@ -477,6 +480,9 @@ app.use("/api/audit-logs", auditLogsRoutes);
 app.use("/api/sessions", sessionsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/role-management", roleManagementRoutes);
+app.use("/api/operatories", operatoriesRoutes);
+app.use("/api/waitlist", waitlistRoutes);
+app.use("/api/booking", bookingRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {
