@@ -19,7 +19,7 @@ export type User = {
   _id?: string;
   name: string;
   email: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'assistant';
+  role: 'super_admin' | 'admin' | 'manager' | 'dentist' | 'hygienist' | 'receptionist' | 'lab_technician' | 'assistant';
   clinic?: string;
   isActive?: boolean;
   lastLogin?: string | Date;
@@ -619,6 +619,9 @@ export const UserRole = {
   ADMIN: 'admin',
   MANAGER: 'manager',
   DENTIST: 'dentist',
+  HYGIENIST: 'hygienist',
+  RECEPTIONIST: 'receptionist',
+  LAB_TECHNICIAN: 'lab_technician',
   ASSISTANT: 'assistant'
 } as const;
 

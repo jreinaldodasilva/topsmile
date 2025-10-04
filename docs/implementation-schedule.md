@@ -171,23 +171,36 @@
 
 ### Week 3: Role Enhancement
 
-#### Task 3.1: Add New Roles
-- [ ] Add Dentist role to User model
-- [ ] Add Hygienist role to User model
-- [ ] Add Receptionist role to User model
-- [ ] Add Lab Technician role to User model
-- [ ] Update role enums in types package
+#### Task 3.1: Add New Roles ✅ COMPLETED
+- [x] Add Dentist role to User model (already existed)
+- [x] Add Hygienist role to User model
+- [x] Add Receptionist role to User model
+- [x] Add Lab Technician role to User model
+- [x] Update role enums in types package
+- [x] Update User type with new roles
+- [x] Rebuild types package
 
-#### Task 3.2: Update Authorization Middleware
-- [ ] Create granular permission system
-- [ ] Add resource-level access control
-- [ ] Update authorize middleware
+#### Task 3.2: Update Authorization Middleware ✅ COMPLETED
+- [x] Create granular permission system (11 permission types)
+- [x] Define role-based permissions for all 8 roles
+- [x] Add resource-level access control middleware
+- [x] Create requirePermission middleware
+- [x] Create checkResourceOwnership middleware
+- [x] Create requireClinicAccess middleware
+- [x] Create permission viewing routes
+- [x] Add helper functions (hasPermission, hasAnyPermission, hasAllPermissions)
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 
-#### Task 3.3: Role Management API
-- [ ] Create role assignment routes
-- [ ] Create permission checking routes
-- [ ] Add role management service
+#### Task 3.3: Role Management API ✅ COMPLETED
+- [x] Create role assignment routes
+- [x] Add role assignment validation (admin can't assign super_admin)
+- [x] Add clinic-level access control (admin only manages own clinic)
+- [x] Create permission checking routes
+- [x] Create user listing by role
+- [x] Create role statistics endpoint
+- [x] Add audit logging for role changes
+- [x] Mount routes in app.ts
 - [ ] Write integration tests
 
 ### Week 4: Role Management UI

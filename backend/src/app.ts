@@ -48,6 +48,8 @@ import smsVerificationRoutes from "./routes/smsVerification";
 import passwordPolicyRoutes from "./routes/passwordPolicy";
 import auditLogsRoutes from "./routes/auditLogs";
 import sessionsRoutes from "./routes/sessions";
+import permissionsRoutes from "./routes/permissions";
+import roleManagementRoutes from "./routes/roleManagement";
 
 // Contact routes
 import contactRoutes from "./routes/contact";
@@ -473,6 +475,8 @@ app.use("/api/sms-verification", smsVerificationRoutes);
 app.use("/api/password-policy", passwordPolicyRoutes);
 app.use("/api/audit-logs", auditLogsRoutes);
 app.use("/api/sessions", sessionsRoutes);
+app.use("/api/permissions", permissionsRoutes);
+app.use("/api/role-management", roleManagementRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {
