@@ -1,0 +1,110 @@
+.chart-history {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 24px;
+}
+
+.chart-history h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.no-history {
+    color: #666;
+    font-style: italic;
+    text-align: center;
+    padding: 20px;
+}
+
+.history-timeline {
+    position: relative;
+    padding-left: 40px;
+}
+
+.history-timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #ddd;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -40px;
+    top: 0;
+    width: 32px;
+    height: 32px;
+    background: #007bff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.version-number {
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.timeline-content {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #007bff;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.timeline-date {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.view-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.view-btn:hover {
+    background: #0056b3;
+}
+
+.timeline-details {
+    font-size: 13px;
+}
+
+.provider-name {
+    color: #666;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.version-notes {
+    margin: 8px 0 0 0;
+    color: #555;
+    font-size: 13px;
+    font-style: italic;
+}

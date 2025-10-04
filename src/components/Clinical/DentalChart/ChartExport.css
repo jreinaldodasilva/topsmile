@@ -1,0 +1,61 @@
+.chart-export {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 24px;
+}
+
+.chart-export h4 {
+    margin: 0 0 16px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.export-options {
+    display: flex;
+    gap: 12px;
+}
+
+.export-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+.print-btn {
+    background: #17a2b8;
+    color: white;
+}
+
+.print-btn:hover {
+    background: #138496;
+}
+
+.pdf-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.pdf-btn:hover {
+    background: #c82333;
+}
+
+@media print {
+    .chart-export {
+        display: none;
+    }
+}

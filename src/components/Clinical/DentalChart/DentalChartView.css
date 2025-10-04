@@ -1,0 +1,47 @@
+.dental-chart-view {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dental-chart-view .chart-header {
+    margin-bottom: 20px;
+}
+
+.dental-chart-view h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.dental-chart-view svg {
+    display: block;
+    margin: 20px auto;
+    max-width: 100%;
+    height: auto;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #333;
+    border-radius: 3px;
+}
