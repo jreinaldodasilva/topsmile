@@ -53,6 +53,8 @@ import roleManagementRoutes from "./routes/roleManagement";
 import operatoriesRoutes from "./routes/operatories";
 import waitlistRoutes from "./routes/waitlist";
 import bookingRoutes from "./routes/booking";
+import familyRoutes from "./routes/family";
+import documentsRoutes from "./routes/documents";
 
 // Contact routes
 import contactRoutes from "./routes/contact";
@@ -483,6 +485,8 @@ app.use("/api/role-management", roleManagementRoutes);
 app.use("/api/operatories", operatoriesRoutes);
 app.use("/api/waitlist", waitlistRoutes);
 app.use("/api/booking", bookingRoutes);
+app.use("/api/family", familyRoutes);
+app.use("/api/documents", documentsRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {
