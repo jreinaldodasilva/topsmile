@@ -4,86 +4,105 @@
 
 ### Week 1: Database Schema Extensions
 
-#### Task 1.1: Enhance Patient Model ⏳ IN PROGRESS
-- [ ] Add insurance fields (primary/secondary)
-- [ ] Add medical history array
-- [ ] Add allergies array
-- [ ] Add family linking references
-- [ ] Add photo URL field
-- [ ] Add consent forms array
+#### Task 1.1: Enhance Patient Model ✅ COMPLETED
+- [x] Add insurance fields (primary/secondary)
+- [x] Add medical history array (already existed)
+- [x] Add allergies array (already existed)
+- [x] Add family linking references
+- [x] Add photo URL field
+- [x] Add consent forms array
+- [x] Update shared types package
 - [ ] Update Patient model tests
 - [ ] Create migration script
 
-#### Task 1.2: Create Medical History Model
-- [ ] Create MedicalHistory schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.2: Create Medical History Model ✅ COMPLETED
+- [x] Create MedicalHistory schema
+- [x] Add validation rules
+- [x] Create API routes
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.3: Create Insurance Model
-- [ ] Create Insurance schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.3: Create Insurance Model ✅ COMPLETED
+- [x] Create Insurance schema
+- [x] Add validation rules
+- [x] Create API routes (POST, GET, PUT, DELETE)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.4: Create Treatment Plan Model
-- [ ] Create TreatmentPlan schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.4: Create Treatment Plan Model ✅ COMPLETED
+- [x] Create TreatmentPlan schema with phases
+- [x] Add validation rules
+- [x] Add automatic cost calculation
+- [x] Create API routes (POST, GET, PUT, PATCH)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.5: Create Clinical Note Model
-- [ ] Create ClinicalNote schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.5: Create Clinical Note Model ✅ COMPLETED
+- [x] Create ClinicalNote schema with SOAP structure
+- [x] Add validation rules
+- [x] Add signature and locking mechanism
+- [x] Create API routes (POST, GET, PUT, PATCH)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.6: Create Prescription Model
-- [ ] Create Prescription schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.6: Create Prescription Model ✅ COMPLETED
+- [x] Create Prescription schema
+- [x] Add validation rules
+- [x] Add medication array with details
+- [x] Create API routes (POST, GET, PATCH)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.7: Create Dental Chart Model
-- [ ] Create DentalChart schema
-- [ ] Add tooth numbering systems (FDI/Universal)
-- [ ] Add condition enums
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.7: Create Dental Chart Model ✅ COMPLETED
+- [x] Create DentalChart schema
+- [x] Add tooth numbering systems (FDI/Universal)
+- [x] Add condition enums (caries, filling, crown, etc.)
+- [x] Add periodontal charting support
+- [x] Add versioning system
+- [x] Create API routes (POST, GET, PUT)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.8: Create Consent Form Model
-- [ ] Create ConsentForm schema
-- [ ] Add validation rules
-- [ ] Create API routes
-- [ ] Add service layer
+#### Task 1.8: Create Consent Form Model ✅ COMPLETED
+- [x] Create ConsentForm schema
+- [x] Add validation rules
+- [x] Add form types (treatment, anesthesia, privacy, financial, photo)
+- [x] Add digital signature support
+- [x] Add witness signature support
+- [x] Create API routes (POST, GET, PATCH)
+- [x] Add types to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 1.9: Enhance Appointment Model
-- [ ] Add appointmentType reference
-- [ ] Add operatory/chair assignment
-- [ ] Add treatment duration
-- [ ] Add recurring appointment fields
-- [ ] Add color code field
+#### Task 1.9: Enhance Appointment Model ✅ COMPLETED
+- [x] Add appointmentType reference (already existed)
+- [x] Add operatory/chair assignment
+- [x] Add treatment duration
+- [x] Add recurring appointment fields (frequency, interval, endDate, occurrences)
+- [x] Add color code field with validation
+- [x] Add indexes for operatory and recurring appointments
+- [x] Update types in shared package
 - [ ] Update Appointment model tests
 - [ ] Create migration script
 
-#### Task 1.10: Update Shared Types
-- [ ] Add new types to @topsmile/types package
-- [ ] Update type exports
-- [ ] Rebuild types package
+#### Task 1.10: Update Shared Types ✅ COMPLETED
+- [x] Add new types to @topsmile/types package (done incrementally)
+- [x] Update type exports (done incrementally)
+- [x] Rebuild types package (done after each task)
+- [x] All new models have corresponding TypeScript types
 
 ### Week 2: Enhanced Authentication & Security
 

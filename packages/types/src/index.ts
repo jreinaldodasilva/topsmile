@@ -172,6 +172,35 @@ export type Patient = CreatePatientDTO & {
     conditions?: string[];
     notes?: string;
   };
+  insurance?: {
+    primary?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      subscriberName?: string;
+      subscriberRelationship?: 'self' | 'spouse' | 'child' | 'other';
+      effectiveDate?: string | Date;
+      expirationDate?: string | Date;
+    };
+    secondary?: {
+      provider?: string;
+      policyNumber?: string;
+      groupNumber?: string;
+      subscriberName?: string;
+      subscriberRelationship?: 'self' | 'spouse' | 'child' | 'other';
+      effectiveDate?: string | Date;
+      expirationDate?: string | Date;
+    };
+  };
+  familyMembers?: string[] | Patient[];
+  photoUrl?: string;
+  consentForms?: Array<{
+    formType: string;
+    signedAt: string | Date;
+    signatureUrl?: string;
+    documentUrl?: string;
+    version?: string;
+  }>;
   status?: 'active' | 'inactive';
   createdAt?: string | Date;
   updatedAt?: string | Date;
@@ -192,10 +221,20 @@ export type CreateAppointmentDTO = {
   syncStatus: 'synced' | 'pending' | 'error';
   notes?: string;
   privateNotes?: string;
+  operatory?: string;
+  colorCode?: string;
+  treatmentDuration?: number;
+  isRecurring?: boolean;
+  recurringPattern?: {
+    frequency?: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+    interval?: number;
+    endDate?: Date;
+    occurrences?: number;
+  };
 };
 
 // UPDATED: Appointment type to build upon CreateAppointmentDTO.
-export type Appointment = CreateAppointmentDTO & {
+export type Appointment = Omit<CreateAppointmentDTO, 'operatory' | 'colorCode' | 'treatmentDuration' | 'isRecurring' | 'recurringPattern'> & {
   id?: string;
   _id?: string;
   actualStart?: string | Date;
@@ -219,7 +258,17 @@ export type Appointment = CreateAppointmentDTO & {
   completedAt?: Date;
   duration?: number;
   waitTime?: number;
+  operatory?: string;
   room?: string;
+  colorCode?: string;
+  treatmentDuration?: number;
+  isRecurring?: boolean;
+  recurringPattern?: {
+    frequency?: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+    interval?: number;
+    endDate?: Date;
+    occurrences?: number;
+  };
   equipment?: string[];
   followUpRequired?: boolean;
   followUpDate?: Date;
@@ -560,3 +609,373 @@ export const UserRole = {
   DENTIST: 'dentist',
   ASSISTANT: 'assistant'
 } as const;
+
+// ADDED: Medical History types
+export type MedicalHistory = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  recordDate: string | Date;
+  chiefComplaint?: string;
+  presentIllness?: string;
+  pastMedicalHistory?: string[];
+  pastDentalHistory?: string[];
+  medications?: Array<{
+    name: string;
+    dosage?: string;
+    frequency?: string;
+    startDate?: string | Date;
+    endDate?: string | Date;
+  }>;
+  allergies?: Array<{
+    allergen: string;
+    reaction: string;
+    severity: 'mild' | 'moderate' | 'severe';
+  }>;
+  chronicConditions?: string[];
+  surgicalHistory?: Array<{
+    procedure: string;
+    date: string | Date;
+    notes?: string;
+  }>;
+  familyHistory?: string[];
+  socialHistory?: {
+    smoking?: 'never' | 'former' | 'current';
+    alcohol?: 'never' | 'occasional' | 'regular';
+    occupation?: string;
+  };
+  vitalSigns?: {
+    bloodPressure?: string;
+    heartRate?: number;
+    temperature?: number;
+    weight?: number;
+  };
+  recordedBy: string | User;
+  notes?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Insurance types
+export type Insurance = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  type: 'primary' | 'secondary';
+  provider: string;
+  policyNumber: string;
+  groupNumber?: string;
+  subscriberName: string;
+  subscriberRelationship: 'self' | 'spouse' | 'child' | 'other';
+  subscriberDOB?: string | Date;
+  effectiveDate: string | Date;
+  expirationDate?: string | Date;
+  coverageDetails?: {
+    annualMaximum?: number;
+    deductible?: number;
+    deductibleMet?: number;
+    coinsurance?: number;
+    copay?: number;
+  };
+  isActive: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Treatment Plan types
+export type TreatmentPlan = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  title: string;
+  description?: string;
+  status: 'draft' | 'proposed' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
+  phases: Array<{
+    phaseNumber: number;
+    title: string;
+    description?: string;
+    procedures: Array<{
+      code: string;
+      description: string;
+      tooth?: string;
+      surface?: string;
+      cost: number;
+      insuranceCoverage?: number;
+      patientCost?: number;
+    }>;
+    estimatedDuration?: number;
+    status: 'pending' | 'in_progress' | 'completed';
+    startDate?: string | Date;
+    completedDate?: string | Date;
+  }>;
+  totalCost: number;
+  totalInsuranceCoverage: number;
+  totalPatientCost: number;
+  acceptedAt?: string | Date;
+  acceptedBy?: string;
+  notes?: string;
+  createdBy: string | User;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Clinical Note types
+export type ClinicalNote = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  appointment?: string | Appointment;
+  noteType: 'soap' | 'progress' | 'consultation' | 'procedure' | 'other';
+  template?: string;
+  subjective?: string;
+  objective?: string;
+  assessment?: string;
+  plan?: string;
+  content?: string;
+  attachments?: Array<{
+    url: string;
+    type: string;
+    filename: string;
+  }>;
+  signature?: {
+    signedBy: string | User;
+    signedAt: string | Date;
+    signatureUrl?: string;
+  };
+  isLocked: boolean;
+  createdBy: string | User;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Prescription types
+export type Prescription = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  appointment?: string | Appointment;
+  medications: Array<{
+    name: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
+    quantity: number;
+    instructions?: string;
+  }>;
+  diagnosis?: string;
+  notes?: string;
+  status: 'draft' | 'active' | 'completed' | 'cancelled';
+  prescribedDate: string | Date;
+  expirationDate?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Dental Chart types
+export type DentalChart = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  provider: string | Provider;
+  chartDate: string | Date;
+  numberingSystem: 'fdi' | 'universal';
+  teeth: Array<{
+    toothNumber: string;
+    conditions: Array<{
+      type: 'caries' | 'filling' | 'crown' | 'bridge' | 'implant' | 'extraction' | 'root_canal' | 'missing' | 'other';
+      surface?: string;
+      status: 'existing' | 'planned' | 'completed';
+      notes?: string;
+      date?: string | Date;
+    }>;
+  }>;
+  periodontal?: {
+    probingDepths?: Record<string, number[]>;
+    bleeding?: Record<string, boolean[]>;
+    recession?: Record<string, number[]>;
+  };
+  notes?: string;
+  version: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Consent Form types
+export type ConsentForm = {
+  id?: string;
+  _id?: string;
+  patient: string | Patient;
+  clinic: string | Clinic;
+  formType: 'treatment_consent' | 'anesthesia_consent' | 'privacy_policy' | 'financial_agreement' | 'photo_release' | 'other';
+  title: string;
+  content: string;
+  version: string;
+  signedAt?: string | Date;
+  signedBy?: string;
+  signatureUrl?: string;
+  witnessName?: string;
+  witnessSignature?: string;
+  status: 'pending' | 'signed' | 'declined' | 'expired';
+  expirationDate?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+export type CreateConsentFormDTO = {
+  patient: string;
+  formType: 'treatment_consent' | 'anesthesia_consent' | 'privacy_policy' | 'financial_agreement' | 'photo_release' | 'other';
+  title: string;
+  content: string;
+  version?: string;
+  expirationDate?: string | Date;
+};
+
+export type CreateDentalChartDTO = {
+  patient: string;
+  provider: string;
+  chartDate?: string | Date;
+  numberingSystem?: 'fdi' | 'universal';
+  teeth?: Array<{
+    toothNumber: string;
+    conditions: Array<{
+      type: 'caries' | 'filling' | 'crown' | 'bridge' | 'implant' | 'extraction' | 'root_canal' | 'missing' | 'other';
+      surface?: string;
+      status?: 'existing' | 'planned' | 'completed';
+      notes?: string;
+      date?: string | Date;
+    }>;
+  }>;
+  periodontal?: {
+    probingDepths?: Record<string, number[]>;
+    bleeding?: Record<string, boolean[]>;
+    recession?: Record<string, number[]>;
+  };
+  notes?: string;
+};
+
+export type CreatePrescriptionDTO = {
+  patient: string;
+  provider: string;
+  appointment?: string;
+  medications: Array<{
+    name: string;
+    dosage: string;
+    frequency: string;
+    duration: string;
+    quantity: number;
+    instructions?: string;
+  }>;
+  diagnosis?: string;
+  notes?: string;
+  prescribedDate?: string | Date;
+  expirationDate?: string | Date;
+};
+
+export type CreateClinicalNoteDTO = {
+  patient: string;
+  provider: string;
+  appointment?: string;
+  noteType: 'soap' | 'progress' | 'consultation' | 'procedure' | 'other';
+  template?: string;
+  subjective?: string;
+  objective?: string;
+  assessment?: string;
+  plan?: string;
+  content?: string;
+  attachments?: Array<{
+    url: string;
+    type: string;
+    filename: string;
+  }>;
+};
+
+export type CreateTreatmentPlanDTO = {
+  patient: string;
+  provider: string;
+  title: string;
+  description?: string;
+  phases: Array<{
+    phaseNumber: number;
+    title: string;
+    description?: string;
+    procedures: Array<{
+      code: string;
+      description: string;
+      tooth?: string;
+      surface?: string;
+      cost: number;
+      insuranceCoverage?: number;
+    }>;
+    estimatedDuration?: number;
+  }>;
+  notes?: string;
+};
+
+export type CreateInsuranceDTO = {
+  patient: string;
+  type: 'primary' | 'secondary';
+  provider: string;
+  policyNumber: string;
+  groupNumber?: string;
+  subscriberName: string;
+  subscriberRelationship: 'self' | 'spouse' | 'child' | 'other';
+  subscriberDOB?: string | Date;
+  effectiveDate: string | Date;
+  expirationDate?: string | Date;
+  coverageDetails?: {
+    annualMaximum?: number;
+    deductible?: number;
+    deductibleMet?: number;
+    coinsurance?: number;
+    copay?: number;
+  };
+};
+
+export type CreateMedicalHistoryDTO = {
+  patient: string;
+  recordDate?: string | Date;
+  chiefComplaint?: string;
+  presentIllness?: string;
+  pastMedicalHistory?: string[];
+  pastDentalHistory?: string[];
+  medications?: Array<{
+    name: string;
+    dosage?: string;
+    frequency?: string;
+    startDate?: string | Date;
+    endDate?: string | Date;
+  }>;
+  allergies?: Array<{
+    allergen: string;
+    reaction: string;
+    severity?: 'mild' | 'moderate' | 'severe';
+  }>;
+  chronicConditions?: string[];
+  surgicalHistory?: Array<{
+    procedure: string;
+    date: string | Date;
+    notes?: string;
+  }>;
+  familyHistory?: string[];
+  socialHistory?: {
+    smoking?: 'never' | 'former' | 'current';
+    alcohol?: 'never' | 'occasional' | 'regular';
+    occupation?: string;
+  };
+  vitalSigns?: {
+    bloodPressure?: string;
+    heartRate?: number;
+    temperature?: number;
+    weight?: number;
+  };
+  notes?: string;
+};

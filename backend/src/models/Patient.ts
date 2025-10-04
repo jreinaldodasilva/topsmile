@@ -205,6 +205,57 @@ const PatientSchema = new Schema<IPatient & Document>({
             maxlength: [2000, 'Observações médicas muito longas (máximo 2000 caracteres)']
         }
     },
+    insurance: {
+        primary: {
+            provider: String,
+            policyNumber: String,
+            groupNumber: String,
+            subscriberName: String,
+            subscriberRelationship: {
+                type: String,
+                enum: ['self', 'spouse', 'child', 'other']
+            },
+            effectiveDate: Date,
+            expirationDate: Date
+        },
+        secondary: {
+            provider: String,
+            policyNumber: String,
+            groupNumber: String,
+            subscriberName: String,
+            subscriberRelationship: {
+                type: String,
+                enum: ['self', 'spouse', 'child', 'other']
+            },
+            effectiveDate: Date,
+            expirationDate: Date
+        }
+    },
+    familyMembers: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Patient'
+    }],
+    photoUrl: {
+        type: String,
+        trim: true,
+        validate: {
+            validator: (url: string) => !url || /^https?:\/\/.+/.test(url),
+            message: 'URL da foto inválida'
+        }
+    },
+    consentForms: [{
+        formType: {
+            type: String,
+            required: true
+        },
+        signedAt: {
+            type: Date,
+            required: true
+        },
+        signatureUrl: String,
+        documentUrl: String,
+        version: String
+    }],
     status: {
         type: String,
         enum: ['active', 'inactive'],

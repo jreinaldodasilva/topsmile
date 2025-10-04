@@ -97,10 +97,40 @@ const AppointmentSchema = new Schema<IAppointment & Document>({
     },
 
     // NEW: Advanced features
+    operatory: {
+        type: String,
+        maxlength: 50,
+        index: true
+    },
     room: {
         type: String,
         maxlength: 50,
-        index: true // For room-based queries
+        index: true
+    },
+    colorCode: {
+        type: String,
+        maxlength: 7,
+        validate: {
+            validator: (v: string) => !v || /^#[0-9A-F]{6}$/i.test(v),
+            message: 'Código de cor inválido'
+        }
+    },
+    treatmentDuration: {
+        type: Number,
+        min: 0
+    },
+    isRecurring: {
+        type: Boolean,
+        default: false
+    },
+    recurringPattern: {
+        frequency: {
+            type: String,
+            enum: ['daily', 'weekly', 'biweekly', 'monthly']
+        },
+        interval: Number,
+        endDate: Date,
+        occurrences: Number
     },
     equipment: [{
         type: String,
@@ -251,7 +281,18 @@ AppointmentSchema.index({
 
 // NEW: Enhanced indexes for advanced features
 
-// 6. Room availability queries
+// 6. Operatory/Room availability queries
+AppointmentSchema.index({ 
+    clinic: 1,
+    operatory: 1,
+    scheduledStart: 1, 
+    scheduledEnd: 1,
+    status: 1
+}, { 
+    name: 'operatory_availability',
+    background: true
+});
+
 AppointmentSchema.index({ 
     clinic: 1,
     room: 1,
@@ -260,6 +301,15 @@ AppointmentSchema.index({
     status: 1
 }, { 
     name: 'room_availability',
+    background: true
+});
+
+// Recurring appointments index
+AppointmentSchema.index({ 
+    isRecurring: 1,
+    'recurringPattern.endDate': 1
+}, { 
+    name: 'recurring_appointments',
     background: true
 });
 
@@ -475,7 +525,12 @@ AppointmentSchema.statics.findByTimeRange = function(
                 completedAt: 1,
                 duration: 1,
                 waitTime: 1,
+                operatory: 1,
                 room: 1,
+                colorCode: 1,
+                treatmentDuration: 1,
+                isRecurring: 1,
+                recurringPattern: 1,
                 equipment: 1,
                 followUpRequired: 1,
                 followUpDate: 1,

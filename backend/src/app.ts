@@ -36,6 +36,13 @@ import formsRoutes from "./routes/forms";
 import docsRoutes from "./routes/docs";
 
 import patientAuthRoutes from "./routes/patientAuth";
+import medicalHistoryRoutes from "./routes/medicalHistory";
+import insuranceRoutes from "./routes/insurance";
+import treatmentPlansRoutes from "./routes/treatmentPlans";
+import clinicalNotesRoutes from "./routes/clinicalNotes";
+import prescriptionsRoutes from "./routes/prescriptions";
+import dentalChartsRoutes from "./routes/dentalCharts";
+import consentFormsRoutes from "./routes/consentForms";
 
 // Contact routes
 import contactRoutes from "./routes/contact";
@@ -445,6 +452,13 @@ app.use("/api/docs", docsRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/patient-auth", patientAuthRoutes);
+app.use("/api/medical-history", medicalHistoryRoutes);
+app.use("/api/insurance", insuranceRoutes);
+app.use("/api/treatment-plans", treatmentPlansRoutes);
+app.use("/api/clinical-notes", clinicalNotesRoutes);
+app.use("/api/prescriptions", prescriptionsRoutes);
+app.use("/api/dental-charts", dentalChartsRoutes);
+app.use("/api/consent-forms", consentFormsRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {
