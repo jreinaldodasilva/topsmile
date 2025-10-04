@@ -1,7 +1,7 @@
 # TopSmile - Product Overview
 
 ## Purpose
-TopSmile is a comprehensive dental clinic management platform designed to streamline operations for dental practices. It provides an integrated solution for patient management, appointment scheduling, provider coordination, and payment processing.
+TopSmile is a comprehensive dental clinic management platform designed to streamline operations for dental practices. It provides end-to-end solutions for patient management, appointment scheduling, provider coordination, and payment processing.
 
 ## Value Proposition
 - **Centralized Management**: Single platform for all clinic operations
@@ -21,14 +21,15 @@ TopSmile is a comprehensive dental clinic management platform designed to stream
 ### Appointment Scheduling
 - Real-time appointment booking system
 - Provider availability management
-- Calendar integration with conflict detection
+- Calendar integration with visual scheduling
 - Appointment status tracking and updates
+- Conflict detection and prevention
 
 ### Provider Dashboard
 - Schedule management and coordination
-- Patient appointment overview
+- Patient information access
+- Appointment overview and management
 - Provider-specific availability settings
-- Multi-provider support
 
 ### Payment Integration
 - Stripe-powered payment processing
@@ -46,29 +47,32 @@ TopSmile is a comprehensive dental clinic management platform designed to stream
 
 ### Clinic Administrators
 - Manage overall clinic operations
-- Configure system settings and users
-- Access comprehensive reports and analytics
+- Configure system settings and permissions
+- Monitor appointments and staff activities
+- Access comprehensive reporting
 
 ### Clinic Managers
 - Coordinate provider schedules
-- Manage patient appointments
+- Manage patient relationships
 - Handle billing and payments
+- Oversee daily operations
 
 ### Clinic Staff
-- Process patient registrations
-- Schedule appointments
+- Book and manage appointments
 - Update patient information
+- Process payments
+- Coordinate with providers
 
 ### Patients
 - Book appointments online
 - Manage personal profiles
 - View appointment history
-- Make payments
+- Make secure payments
 
 ## Use Cases
 
-1. **New Patient Registration**: Staff registers new patients with medical history
-2. **Appointment Booking**: Patients book appointments based on provider availability
-3. **Schedule Management**: Providers update their availability and view appointments
-4. **Payment Processing**: Patients pay for services through integrated Stripe checkout
-5. **Administrative Oversight**: Admins monitor clinic operations and manage users
+1. **New Patient Registration**: Patients can register online, provide medical history, and book their first appointment
+2. **Appointment Booking**: Real-time availability checking and instant booking confirmation
+3. **Schedule Management**: Providers can set availability, view appointments, and manage their calendar
+4. **Payment Processing**: Secure online payments with automatic receipt generation
+5. **Administrative Oversight**: Admins can monitor all activities, manage users, and generate reports

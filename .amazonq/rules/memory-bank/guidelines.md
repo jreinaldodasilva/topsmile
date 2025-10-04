@@ -3,443 +3,498 @@
 ## Code Quality Standards
 
 ### File Headers and Comments
-- Include file path comments at the top of files: `// backend/src/routes/providers.ts`
-- Use descriptive comments for complex logic and business rules
-- Document version changes and fixes: `// FIXED VERSION with Critical Configuration Improvements`
-- Add inline comments for non-obvious code sections
+- Include file path in header comments: `// backend/src/routes/providers.ts`
+- Use JSDoc comments for API documentation with Swagger annotations
+- Portuguese language for user-facing messages and error strings
+- English for code, variables, and technical documentation
 
 ### Naming Conventions
-- **Variables/Functions**: camelCase (`createAppointmentModel`, `isTimeSlotAvailable`)
-- **Classes/Types**: PascalCase (`SchedulingService`, `TimeSlot`, `AvailabilityQuery`)
-- **Constants**: UPPER_SNAKE_CASE (`TEST_CREDENTIALS`, `ADMIN_EMAIL`)
-- **Files**: camelCase for services/utilities, PascalCase for components
-- **Database Models**: PascalCase (`AppointmentModel`, `ProviderModel`)
-- **Interfaces**: PascalCase with descriptive names (`CreateAppointmentData`, `SchedulingResult`)
+- **Variables/Functions**: camelCase (e.g., `createProviderValidation`, `scheduledStart`)
+- **Types/Interfaces**: PascalCase (e.g., `IAppointment`, `TimeSlot`, `AvailabilityQuery`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `TEST_CREDENTIALS`, `ADMIN_EMAIL`)
+- **Files**: camelCase for services/utilities, PascalCase for models/components
+- **Database Fields**: camelCase (e.g., `scheduledStart`, `patientId`, `clinicId`)
+- **Enum Values**: UPPER_SNAKE_CASE (e.g., `AppointmentStatus.SCHEDULED`)
 
-### Code Organization
-- Group related validation rules together
-- Separate concerns: routes, services, models, middleware
-- Use barrel exports for cleaner imports
-- Keep files focused on single responsibility
-- Extract reusable logic into utility functions
+### Code Formatting
+- **Indentation**: 4 spaces (backend), 2 spaces (frontend)
+- **Line Length**: Keep reasonable, break long validation chains
+- **Semicolons**: Always use semicolons
+- **Quotes**: Single quotes for strings
+- **Trailing Commas**: Use in multi-line objects/arrays
 
-### Portuguese Language Standard
-- **All user-facing messages in Portuguese**: Error messages, validation messages, API responses
-- **Code in English**: Variable names, function names, comments
-- Examples:
-  - ✅ `message: 'Profissional não encontrado'`
-  - ✅ `withMessage('Nome deve ter entre 2 e 100 caracteres')`
-  - ✅ `console.log('✅ Proxy trust enabled for production environment')`
+### Error Handling
+- Always use try-catch blocks in async functions
+- Return structured error responses: `{ success: boolean, error?: string, data?: T }`
+- Log errors with `console.error()` before returning
+- Portuguese error messages for user-facing errors
+- Include context in error messages (e.g., provider ID, appointment ID)
 
 ## Backend Patterns
 
 ### Route Structure
 ```typescript
-// Import dependencies
-import express from 'express';
-import { authenticate, authorize } from '../middleware/auth';
+// 1. Import dependencies
+import express, { Request, Response } from 'express';
+import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
 import { body, query, validationResult } from 'express-validator';
 
-// Define validation rules as constants
-const createValidation = [
-  body('field').trim().isLength({ min: 2, max: 100 })
-    .withMessage('Portuguese error message'),
-];
+// 2. Create router
+const router: express.Router = express.Router();
 
-// Apply authentication to all routes
+// 3. Apply global middleware
 router.use(authenticate);
 
-// Define routes with Swagger documentation
+// 4. Define validation rules as constants
+const createValidation = [
+    body('field').trim().isLength({ min: 2 }).withMessage('Mensagem em português')
+];
+
+// 5. Define routes with Swagger documentation
 /**
  * @swagger
- * /api/endpoint:
+ * /api/resource:
  *   post:
- *     summary: Portuguese description
+ *     summary: Descrição em português
  */
-router.post('/', 
-  authorize('super_admin', 'admin', 'manager'),
-  createValidation,
-  async (req: Request, res: Response) => {
+router.post('/', authorize('admin'), createValidation, async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
-    // Implementation
-  }
-);
-```
-
-### Service Layer Pattern
-```typescript
-class ServiceName {
-  // Public methods for business logic
-  async publicMethod(params): Promise<Result> {
     try {
-      // Validation
-      // Business logic
-      // Database operations
-      return { success: true, data };
-    } catch (error) {
-      console.error('Error description:', error);
-      return { success: false, error: error.message };
+        // Validate input
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Dados inválidos',
+                errors: errors.array()
+            });
+        }
+        
+        // Business logic
+        const result = await service.method(authReq.body);
+        
+        // Success response with metadata
+        return res.status(201).json({
+            success: true,
+            message: 'Operação realizada com sucesso',
+            data: result,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
+        });
+    } catch (error: any) {
+        console.error('Error description:', error);
+        return res.status(400).json({
+            success: false,
+            message: error.message || 'Erro genérico'
+        });
     }
-  }
+});
 
-  // Private helper methods
-  private async helperMethod(params): Promise<Type> {
-    // Implementation
-  }
-}
-
-export const serviceName = new ServiceName();
+// 6. Export router
+export default router;
 ```
 
-### Transaction Handling
-- Skip transactions in test environment: `const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID`
-- Use sessions for critical operations: `const session = await mongoose.startSession()`
-- Always commit or abort: `await session.commitTransaction()` / `await session.abortTransaction()`
-- Clean up in finally block: `session.endSession()`
-- Pass session to all database operations within transaction
-
-### Error Handling
+### Mongoose Models
 ```typescript
-try {
-  // Operation
-  return res.status(200).json({
-    success: true,
-    message: 'Portuguese success message',
-    data: result,
-    meta: {
-      timestamp: new Date().toISOString(),
-      requestId: (req as any).requestId
+// 1. Import dependencies
+import mongoose, { Document, Schema, Types } from 'mongoose';
+import { ModelType } from '@topsmile/types';
+
+// 2. Define schema with comprehensive validation
+const ModelSchema = new Schema<ModelType & Document>({
+    field: {
+        type: String,
+        required: [true, 'Mensagem em português'],
+        index: true,
+        maxlength: [100, 'Mensagem de validação']
+    },
+    reference: {
+        type: Schema.Types.ObjectId,
+        ref: 'OtherModel',
+        required: true,
+        index: true
     }
-  });
-} catch (error: any) {
-  console.error('Error context:', error);
-  return res.status(400).json({
-    success: false,
-    message: error.message || 'Portuguese fallback message'
-  });
+}, {
+    timestamps: true,
+    toJSON: {
+        transform: function(doc, ret: any) {
+            ret.id = ret._id;
+            delete ret['_id'];
+            delete ret['__v'];
+            return ret;
+        }
+    }
+});
+
+// 3. Create compound indexes for performance
+ModelSchema.index({ 
+    field1: 1, 
+    field2: 1, 
+    field3: 1 
+}, { 
+    name: 'descriptive_index_name',
+    background: true
+});
+
+// 4. Add pre-save middleware for validation/calculations
+ModelSchema.pre('save', function(next) {
+    // Validation logic
+    if (this.startDate >= this.endDate) {
+        return next(new Error('Mensagem de erro em português'));
+    }
+    
+    // Calculations
+    if (this.isModified('status')) {
+        // Status-specific logic
+    }
+    
+    next();
+});
+
+// 5. Add static methods for complex queries
+ModelSchema.statics.customQuery = function(params) {
+    return this.aggregate([
+        { $match: { field: params.value } },
+        { $lookup: { from: 'collection', localField: 'field', foreignField: '_id', as: 'joined' } },
+        { $unwind: { path: '$joined', preserveNullAndEmptyArrays: true } }
+    ]);
+};
+
+// 6. Export model
+export const Model = mongoose.model<ModelType & Document>('Model', ModelSchema);
+```
+
+### Service Layer
+```typescript
+// 1. Define interfaces for type safety
+export interface ServiceResult<T> {
+    success: boolean;
+    data?: T;
+    error?: string;
+    warnings?: string[];
 }
+
+// 2. Create service class
+class ServiceName {
+    /**
+     * Method with comprehensive error handling
+     */
+    async methodName(params: ParamsType): Promise<ServiceResult<ReturnType>> {
+        // Skip transactions in test environment
+        const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
+        const session = isTestEnv ? null : await mongoose.startSession();
+        
+        try {
+            if (!isTestEnv) {
+                session!.startTransaction();
+            }
+            
+            // Validate inputs
+            if (!params.required) {
+                throw new Error('Dados obrigatórios não fornecidos');
+            }
+            
+            // Business logic with session support
+            const result = await Model.findById(params.id)
+                .session(session || undefined);
+            
+            if (!isTestEnv) {
+                await session!.commitTransaction();
+            }
+            
+            return { success: true, data: result };
+            
+        } catch (error) {
+            if (!isTestEnv && session) {
+                await session.abortTransaction();
+            }
+            console.error('Error in methodName:', error);
+            
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Erro desconhecido'
+            };
+        } finally {
+            if (!isTestEnv && session) {
+                session.endSession();
+            }
+        }
+    }
+    
+    /**
+     * Private helper methods with lean queries for performance
+     */
+    private async helperMethod(id: string): Promise<Type[]> {
+        return await Model.find({ field: id }).lean();
+    }
+}
+
+// 3. Export singleton instance
+export const serviceName = new ServiceName();
 ```
 
 ### Validation Patterns
 - Use express-validator for input validation
-- Define validation arrays as constants
-- Validate all user inputs before processing
-- Use custom validators for complex rules
-- Provide Portuguese error messages
-- Check validation results: `const errors = validationResult(req)`
-
-### API Response Format
-```typescript
-// Success response
-{
-  success: true,
-  data: { /* result */ },
-  message?: 'Optional message',
-  meta: {
-    timestamp: new Date().toISOString(),
-    requestId: req.requestId
-  }
-}
-
-// Error response
-{
-  success: false,
-  message: 'Error description in Portuguese',
-  errors?: [/* validation errors */]
-}
-
-// Paginated response
-{
-  success: true,
-  data: {
-    items: [],
-    total: number,
-    page: number,
-    totalPages: number,
-    hasNext: boolean,
-    hasPrev: boolean
-  }
-}
-```
-
-### Database Queries
-- Use `.lean()` for read-only queries to improve performance
-- Use `.populate()` to include related documents
-- Add indexes for frequently queried fields
-- Use projection to limit returned fields
-- Implement pagination for list endpoints
-
-### Security Middleware
-- Apply authentication: `router.use(authenticate)`
-- Apply authorization: `authorize('super_admin', 'admin')`
-- Validate clinic context: `if (!authReq.user?.clinicId) { return res.status(400)... }`
-- Sanitize inputs with express-mongo-sanitize
-- Apply rate limiting to sensitive endpoints
-- Use CSRF protection for state-changing operations
+- Define validation rules as constants before routes
+- Portuguese validation messages
+- Comprehensive validation: type, length, format, enum values
+- Custom validators for complex logic
+- Sanitization: trim(), normalizeEmail(), isMongoId()
 
 ## Frontend Patterns
 
-### Component Structure
-```typescript
-import { useState, useEffect } from 'react';
-import type { TypeName } from '@topsmile/types';
-
-interface ComponentProps {
-  prop: string;
-}
-
-export const ComponentName: React.FC<ComponentProps> = ({ prop }) => {
-  // State declarations
-  const [state, setState] = useState<Type>(initialValue);
-  
-  // Custom hooks
-  const { method } = useCustomHook();
-  
-  // Effects
-  useEffect(() => {
-    // Effect logic
-  }, [dependencies]);
-  
-  // Event handlers
-  const handleEvent = () => {
-    // Handler logic
-  };
-  
-  return (
-    // JSX
-  );
-};
-```
-
-### Custom Hooks Pattern
-```typescript
-export const useHookName = (options: Options = {}) => {
-  const { option1 = defaultValue } = options;
-  
-  const ref = useRef<Type | null>(null);
-  
-  const method = useCallback((params) => {
-    // Implementation
-  }, [dependencies]);
-  
-  useEffect(() => {
-    // Setup
-    return () => {
-      // Cleanup
-    };
-  }, [dependencies]);
-  
-  return {
-    method,
-    // Other exports
-  };
-};
-```
-
-### Test Data Generation
-- Use @faker-js/faker for realistic test data
-- Create generator functions with overrides parameter
-- Generate Brazilian-specific data (CPF, phone, zip code)
-- Provide mock API response helpers
-- Create test scenario builders
-
-### Accessibility Patterns
-- Provide ARIA labels and descriptions
-- Implement keyboard navigation
-- Support screen reader announcements
-- Manage focus for modals and dialogs
-- Check color contrast ratios
-- Use semantic HTML elements
-
-## Testing Standards
-
 ### Test Structure
 ```typescript
-describe('Feature/Component', () => {
-  beforeEach(() => {
-    // Setup
-  });
-  
-  afterEach(() => {
-    // Cleanup
-  });
-  
-  it('should describe expected behavior', async () => {
-    // Arrange
-    const input = generateMockData();
+// 1. Mock dependencies at top
+const mockDependency = {
+    method: jest.fn()
+};
+
+jest.mock('module', () => ({
+    export: jest.fn(() => Promise.resolve(mockDependency))
+}));
+
+// 2. Setup test utilities
+const localStorageMock = (() => {
+    let store: Record<string, string> = {};
+    return {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => { store[key] = value; },
+        clear: () => { store = {}; }
+    };
+})();
+
+// 3. Describe test suite
+describe('ServiceName', () => {
+    beforeEach(() => {
+        mockDependency.method.mockClear();
+        localStorageMock.clear();
+        jest.clearAllTimers();
+        jest.useFakeTimers();
+    });
     
-    // Act
-    const result = await functionUnderTest(input);
+    afterEach(() => {
+        jest.useRealTimers();
+    });
     
-    // Assert
-    expect(result).toMatchObject(expected);
-  });
+    // 4. Group related tests
+    describe('methodName', () => {
+        it('should handle success case', async () => {
+            // Arrange
+            mockDependency.method.mockResolvedValueOnce({ success: true });
+            
+            // Act
+            const result = await service.method();
+            
+            // Assert
+            expect(result.success).toBe(true);
+            expect(mockDependency.method).toHaveBeenCalledWith(
+                expect.objectContaining({ field: 'value' })
+            );
+        });
+        
+        it('should handle error case', async () => {
+            // Arrange
+            mockDependency.method.mockRejectedValueOnce(new Error('Error'));
+            
+            // Act
+            const result = await service.method();
+            
+            // Assert
+            expect(result.success).toBe(false);
+            expect(result.error).toBe('Error');
+        });
+    });
 });
 ```
 
-### Mock Data Patterns
-- Use faker for dynamic test data
-- Provide override parameters for customization
-- Generate realistic Brazilian data
-- Create scenario builders for common cases
-- Use consistent data structures
+### Mock Data Generation
+```typescript
+// Use @faker-js/faker for realistic test data
+import { faker } from '@faker-js/faker';
 
-## Configuration Standards
+export const generateMockEntity = (overrides = {}) => ({
+    _id: faker.database.mongodbObjectId(),
+    name: faker.name.fullName(),
+    email: faker.internet.email(),
+    status: faker.helpers.arrayElement(['active', 'inactive']),
+    createdAt: faker.date.past().toISOString(),
+    ...overrides
+});
 
-### Environment Variables
-- Validate required variables on startup
-- Provide development defaults
-- Use descriptive variable names
-- Document all environment variables
-- Fail fast in production if critical variables missing
+// Brazilian-specific generators
+export const generateBrazilianPhone = () => faker.helpers.replaceSymbols('(##) #####-####');
+export const generateBrazilianCPF = () => faker.helpers.replaceSymbols('###.###.###-##');
+```
 
-### Middleware Configuration
-- Apply security headers with helmet
-- Configure CORS with multiple origins
-- Implement tiered rate limiting
-- Add request ID tracking
-- Enable MongoDB sanitization
-- Configure body parser limits
+## Database Patterns
 
-### Logging Standards
-- Use pino for structured logging
-- Log errors with context
-- Include request IDs in logs
-- Log rate limit violations
-- Log security events
-- Use appropriate log levels
+### Indexing Strategy
+1. **Primary Queries**: Index fields used in WHERE clauses
+2. **Compound Indexes**: Order by selectivity (most selective first)
+3. **Sorting**: Include sort fields in indexes
+4. **Unique Constraints**: Use partial filters for soft deletes
+5. **Background Creation**: Always use `background: true` for production
 
-## Performance Optimization
+### Common Index Patterns
+```typescript
+// Time-range queries
+Schema.index({ clinic: 1, scheduledStart: 1, status: 1 });
 
-### Database Performance
-- Use lean queries for read operations
-- Implement proper indexing
-- Use projection to limit fields
-- Batch operations when possible
-- Cache frequently accessed data
-- Use connection pooling
+// Availability checks
+Schema.index({ provider: 1, scheduledStart: 1, scheduledEnd: 1, status: 1 });
+
+// Prevent duplicates with partial filter
+Schema.index(
+    { provider: 1, scheduledStart: 1 },
+    { 
+        unique: true,
+        partialFilterExpression: { status: { $nin: ['cancelled'] } }
+    }
+);
+```
 
 ### Query Optimization
-- Avoid N+1 queries with populate
-- Use aggregation for complex queries
-- Implement pagination
-- Limit result sets
-- Use select to reduce payload
+- Use `.lean()` for read-only queries (better performance)
+- Use `.select()` to limit returned fields
+- Populate only necessary fields: `.populate('field', 'name email')`
+- Use aggregation for complex queries with joins
+- Batch operations when possible
 
-### Code Optimization
-- Process items in parallel with Promise.all
-- Implement safety limits (max iterations)
-- Use efficient data structures
-- Avoid unnecessary re-renders
-- Lazy load components and routes
+## API Response Patterns
 
-## Common Code Idioms
-
-### Type Casting Pattern
+### Success Response
 ```typescript
-const authReq = req as AuthenticatedRequest;
-const providerId = (provider._id as any).toString();
-```
-
-### Conditional Query Building
-```typescript
-const query: any = { baseField: value };
-if (optionalParam) {
-  query.optionalField = optionalParam;
+{
+    success: true,
+    data: result,
+    message?: 'Mensagem de sucesso',
+    meta: {
+        timestamp: new Date().toISOString(),
+        requestId: requestId
+    }
 }
 ```
 
-### Array Parameter Handling
+### Error Response
 ```typescript
-let specialties: string[] | undefined;
-if (req.query.specialties) {
-  if (typeof req.query.specialties === 'string') {
-    specialties = [req.query.specialties];
-  } else if (Array.isArray(req.query.specialties)) {
-    specialties = req.query.specialties as string[];
-  }
+{
+    success: false,
+    message: 'Mensagem de erro em português',
+    errors?: validationErrors,
+    error?: errorDetails
 }
 ```
 
-### Date Parsing with Timezone
+### Paginated Response
 ```typescript
-const parseTimeToDate = (date: Date, timeString: string, timeZone: string): Date => {
-  const parts = timeString.split(':');
-  const hours = Number(parts[0]);
-  const minutes = Number(parts[1]);
-  const dateStr = format(date, 'yyyy-MM-dd');
-  const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
-  const dateTimeStr = `${dateStr}T${timeStr}`;
-  return parseISO(formatInTimeZone(new Date(dateTimeStr), timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"));
-};
-```
-
-### Result Type Pattern
-```typescript
-interface SchedulingResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  warnings?: string[];
+{
+    success: true,
+    data: {
+        items: results,
+        total: totalCount,
+        page: currentPage,
+        totalPages: totalPages,
+        hasNext: hasNextPage,
+        hasPrev: hasPreviousPage
+    }
 }
 ```
 
-## Swagger Documentation
+## Security Practices
 
-### Route Documentation Pattern
-```typescript
-/**
- * @swagger
- * /api/endpoint:
- *   method:
- *     summary: Brief description in Portuguese
- *     description: Detailed description in Portuguese
- *     tags: [TagName]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path/query
- *         name: paramName
- *         required: true/false
- *         schema:
- *           type: string
- *         description: Parameter description
- *     responses:
- *       200:
- *         description: Success description
- *       400:
- *         description: Error description
- */
-```
+### Authentication & Authorization
+- Always use `authenticate` middleware on protected routes
+- Use `authorize(...roles)` for role-based access
+- Cast request to `AuthenticatedRequest` to access user data
+- Validate `clinicId` from authenticated user, not request body
+- Check resource ownership before operations
 
-## Import Organization
+### Input Validation
+- Validate all user inputs with express-validator
+- Sanitize inputs: trim, normalizeEmail, escape HTML
+- Use MongoDB sanitization: express-mongo-sanitize
+- Validate ObjectIds with `isMongoId()`
+- Whitelist allowed values with `isIn([])`
 
-### Import Order
-1. External dependencies (express, mongoose, etc.)
-2. Type imports from @topsmile/types
-3. Internal services and models
-4. Middleware
-5. Utilities and helpers
+### Data Protection
+- Never expose sensitive fields in responses
+- Use `toJSON` transform to remove `_id`, `__v`, passwords
+- Implement field-level access control
+- Hash passwords with bcrypt
+- Use JWT for stateless authentication
 
-### Type Import Pattern
-```typescript
-import type { User, Patient, Appointment } from '@topsmile/types';
-```
+## Performance Best Practices
 
-## Best Practices Summary
+### Database
+- Create indexes for all query patterns
+- Use lean queries for read operations
+- Implement pagination for large datasets
+- Use aggregation for complex analytics
+- Cache frequently accessed data with Redis
 
-1. **Always validate inputs** before processing
-2. **Use transactions** for critical multi-step operations
-3. **Provide Portuguese messages** for all user-facing text
-4. **Include request IDs** in API responses
-5. **Log errors with context** for debugging
-6. **Use lean queries** for better performance
-7. **Implement proper error handling** with try-catch
-8. **Apply authentication and authorization** to protected routes
-9. **Generate realistic test data** with faker
-10. **Document APIs** with Swagger annotations
-11. **Check clinic context** for multi-tenant operations
-12. **Use TypeScript strictly** for type safety
-13. **Implement accessibility** features in frontend
-14. **Optimize database queries** with indexes and projection
-15. **Handle edge cases** and provide meaningful errors
+### API
+- Implement rate limiting
+- Use compression middleware
+- Optimize payload sizes
+- Implement request timeouts
+- Use connection pooling
+
+### Code
+- Avoid N+1 queries with proper population
+- Use Promise.all for parallel operations
+- Implement exponential backoff for retries
+- Clean up resources in finally blocks
+- Use transactions for multi-document operations
+
+## Testing Standards
+
+### Test Coverage
+- Unit tests for services and utilities
+- Integration tests for API endpoints
+- E2E tests for critical user flows
+- Mock external dependencies (Stripe, email)
+- Use in-memory MongoDB for tests
+
+### Test Patterns
+- Arrange-Act-Assert structure
+- Clear test descriptions in Portuguese or English
+- Mock timers for time-dependent tests
+- Clean up state in beforeEach/afterEach
+- Test both success and error cases
+- Test edge cases and boundary conditions
+
+## Documentation Standards
+
+### Code Comments
+- JSDoc for public APIs and complex functions
+- Inline comments for non-obvious logic
+- TODO comments with context and assignee
+- Swagger annotations for API endpoints
+- Portuguese for user-facing documentation
+
+### API Documentation
+- Use Swagger/OpenAPI annotations
+- Document all parameters and responses
+- Include example requests/responses
+- Document error codes and meanings
+- Keep documentation in sync with code
+
+## Type Safety
+
+### TypeScript Usage
+- Use strict mode
+- Define interfaces for all data structures
+- Use type imports: `import type { Type } from 'module'`
+- Avoid `any` - use `unknown` or proper types
+- Use generics for reusable components
+- Define result types for service methods
+
+### Shared Types
+- Store common types in `@topsmile/types` package
+- Import types from shared package
+- Keep frontend and backend types in sync
+- Use enums for fixed value sets
+- Document complex types with comments

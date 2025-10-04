@@ -1,7 +1,7 @@
 # TopSmile - Project Structure
 
 ## Architecture Overview
-TopSmile follows a monorepo structure with separate frontend and backend applications, plus shared type definitions. The architecture is a client-server model with React frontend communicating with Express REST API backend.
+TopSmile follows a monorepo structure with separate frontend and backend applications, plus shared type definitions. The architecture is a classic client-server model with React frontend and Express backend.
 
 ## Directory Structure
 
@@ -11,114 +11,100 @@ topsmile/
 │   ├── components/               # Reusable UI components
 │   │   ├── Admin/               # Admin-specific components
 │   │   ├── Auth/                # Authentication components
-│   │   ├── Payment/             # Stripe payment components
+│   │   ├── Payment/             # Payment processing UI
 │   │   ├── UI/                  # Generic UI components
 │   │   └── ...                  # Feature-specific components
 │   ├── pages/                   # Route-level page components
 │   │   ├── Admin/               # Admin dashboard pages
 │   │   ├── Patient/             # Patient portal pages
-│   │   ├── Calendar/            # Appointment calendar
-│   │   └── ...                  # Other pages
+│   │   ├── Calendar/            # Scheduling interface
+│   │   └── ...                  # Other page components
 │   ├── contexts/                # React Context providers
-│   │   ├── AuthContext.tsx      # Authentication state
-│   │   └── PatientAuthContext.tsx
 │   ├── hooks/                   # Custom React hooks
-│   │   ├── useAccessibility.ts  # Accessibility utilities
-│   │   ├── useApiQuery.ts       # API data fetching
-│   │   └── useApiState.ts       # API state management
 │   ├── services/                # API communication layer
-│   │   ├── apiService.ts        # Main API client
-│   │   ├── http.ts              # HTTP utilities
-│   │   └── paymentService.ts    # Stripe integration
+│   ├── providers/               # App-level providers (Query, etc.)
 │   ├── mocks/                   # MSW mock handlers
 │   ├── tests/                   # Frontend test suites
+│   ├── styles/                  # Global styles and CSS variables
 │   └── utils/                   # Utility functions
 │
-├── backend/                     # Express API server
+├── backend/                     # Express backend API
 │   ├── src/
-│   │   ├── routes/              # API route handlers
-│   │   │   ├── providers.ts     # Provider endpoints
-│   │   │   ├── appointments.ts  # Appointment endpoints
-│   │   │   └── patients.ts      # Patient endpoints
-│   │   ├── services/            # Business logic layer
-│   │   │   ├── schedulingService.ts
-│   │   │   └── ...
-│   │   ├── models/              # MongoDB schemas
-│   │   ├── middleware/          # Express middleware
-│   │   ├── config/              # Configuration files
-│   │   ├── utils/               # Backend utilities
-│   │   └── app.ts               # Express app entry
-│   ├── tests/                   # Backend test suites
-│   │   ├── unit/                # Unit tests
-│   │   ├── integration/         # Integration tests
-│   │   └── e2e/                 # End-to-end tests
-│   └── docs/                    # Backend documentation
+│   │   ├── config/             # Configuration files
+│   │   ├── middleware/         # Express middleware
+│   │   ├── models/             # MongoDB/Mongoose models
+│   │   ├── routes/             # API route handlers
+│   │   ├── services/           # Business logic layer
+│   │   ├── types/              # Backend-specific types
+│   │   ├── utils/              # Utility functions
+│   │   └── app.ts              # Express app entry point
+│   ├── tests/                  # Backend test suites
+│   │   ├── unit/               # Unit tests
+│   │   ├── integration/        # Integration tests
+│   │   ├── e2e/                # End-to-end tests
+│   │   └── fixtures/           # Test data fixtures
+│   └── scripts/                # Build and utility scripts
 │
 ├── packages/types/              # Shared TypeScript types
-│   └── src/                     # Type definitions
+│   └── src/                    # Type definitions used by both frontend and backend
 │
-├── cypress/                     # E2E test suite
-│   ├── e2e/                     # Cypress test specs
-│   └── support/                 # Cypress utilities
+├── cypress/                     # E2E testing framework
+│   ├── e2e/                    # Cypress test specs
+│   └── support/                # Cypress commands and setup
 │
 ├── public/                      # Static assets
-├── scripts/                     # Build and utility scripts
-└── docs/                        # Project documentation
+├── docs/                        # Documentation and prompts
+├── scripts/                     # Root-level utility scripts
+└── reports/                     # Test and coverage reports
 ```
 
-## Core Components
+## Core Components and Relationships
 
 ### Frontend Architecture
-- **Component Layer**: Reusable React components with TypeScript
-- **Page Layer**: Route-level components for different views
-- **State Management**: React Context + TanStack Query for server state
-- **API Layer**: Centralized API service with HTTP client
-- **Routing**: React Router v6 with protected routes
-- **Styling**: CSS modules with global variables
+- **Component Layer**: Organized by feature (Admin, Auth, Payment) and generic UI components
+- **Page Layer**: Route-level components that compose smaller components
+- **Context Layer**: Global state management (AuthContext, ErrorContext, PatientAuthContext)
+- **Service Layer**: API communication abstraction (apiService, paymentService)
+- **Provider Layer**: App-level providers including TanStack Query for data fetching
 
 ### Backend Architecture
-- **Route Layer**: Express route handlers with validation
-- **Service Layer**: Business logic and data operations
-- **Model Layer**: Mongoose schemas for MongoDB
+- **Route Layer**: Express route handlers defining API endpoints
+- **Service Layer**: Business logic separated from route handlers
+- **Model Layer**: Mongoose schemas defining data structure
 - **Middleware Layer**: Authentication, validation, error handling
-- **Configuration**: Environment-based config management
+- **Config Layer**: Database, environment, and service configurations
 
 ### Shared Types
-- Centralized TypeScript definitions in `packages/types`
-- Imported by both frontend and backend
-- Ensures type consistency across the stack
+- **packages/types**: Centralized TypeScript definitions shared between frontend and backend
+- Ensures type safety across the full stack
+- Includes models for Appointment, Patient, Provider, User, etc.
 
 ## Architectural Patterns
 
 ### Frontend Patterns
-- **Component Composition**: Small, reusable components
-- **Custom Hooks**: Encapsulated logic for reusability
-- **Context Providers**: Global state management
-- **Query Hooks**: TanStack Query for server state
-- **Lazy Loading**: Code splitting for performance
+- **Component Composition**: Small, reusable components composed into larger features
+- **Custom Hooks**: Encapsulated logic (useApiQuery, useAccessibility, usePerformanceMonitor)
+- **Context API**: Global state management for authentication and errors
+- **TanStack Query**: Server state management with caching and synchronization
+- **Lazy Loading**: Code splitting with React.lazy for performance
 
 ### Backend Patterns
-- **RESTful API**: Standard HTTP methods and status codes
-- **Service Layer**: Separation of business logic from routes
-- **Middleware Chain**: Request processing pipeline
-- **Error Handling**: Centralized error middleware
-- **Validation**: Express-validator for input validation
+- **MVC-like Structure**: Routes → Services → Models separation
+- **Middleware Chain**: Authentication, validation, sanitization, error handling
+- **Service Layer**: Business logic abstraction from HTTP concerns
+- **Repository Pattern**: Mongoose models act as data access layer
+- **Dependency Injection**: Services receive dependencies for testability
 
 ### Data Flow
-1. User interaction in React component
-2. API call through service layer
-3. HTTP request to Express backend
-4. Route handler validates and processes
-5. Service layer executes business logic
-6. MongoDB operations through Mongoose
-7. Response sent back to frontend
-8. TanStack Query updates cache
-9. React component re-renders with new data
+1. **Frontend Request**: Component → Service → API call
+2. **Backend Processing**: Route → Middleware → Service → Model → Database
+3. **Response**: Database → Model → Service → Route → Frontend
+4. **State Update**: TanStack Query cache → Component re-render
 
-## Key Relationships
-
-- **Frontend ↔ Backend**: REST API over HTTP
-- **Backend ↔ Database**: Mongoose ODM with MongoDB
-- **Backend ↔ Cache**: Redis for session and data caching
-- **Frontend ↔ Payment**: Stripe.js for payment processing
-- **Both ↔ Types**: Shared TypeScript definitions
+## Key Integrations
+- **MongoDB**: Primary database via Mongoose ODM
+- **Redis**: Caching and session management
+- **Stripe**: Payment processing integration
+- **JWT**: Authentication token management
+- **MSW**: API mocking for testing
+- **Cypress**: E2E testing framework
