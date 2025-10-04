@@ -106,44 +106,67 @@
 
 ### Week 2: Enhanced Authentication & Security
 
-#### Task 2.1: MFA Implementation
-- [ ] Add MFA fields to User model
-- [ ] Create TOTP service
-- [ ] Create MFA setup routes
-- [ ] Create MFA verification middleware
-- [ ] Add backup codes generation
+#### Task 2.1: MFA Implementation ✅ COMPLETED
+- [x] Add MFA fields to User model
+- [x] Create TOTP service with otplib
+- [x] Create MFA setup routes (setup, verify, disable, backup-codes)
+- [x] Create MFA verification middleware
+- [x] Add backup codes generation and verification
+- [x] Add QR code generation
+- [x] Update User type in shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 2.2: SMS Verification (Twilio)
-- [ ] Install Twilio SDK
-- [ ] Create Twilio service
-- [ ] Add SMS verification routes
-- [ ] Add phone verification to auth flow
+#### Task 2.2: SMS Verification (Twilio) ✅ COMPLETED
+- [x] Install Twilio SDK
+- [x] Create SMS service with Twilio integration
+- [x] Add verification code generation and storage
+- [x] Add SMS verification routes (send, verify)
+- [x] Add phone and phoneVerified fields to User model
+- [x] Add Twilio configuration to .env.example
+- [x] Update User type in shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 - [ ] Write integration tests
 
-#### Task 2.3: Enhanced Password Policies
-- [ ] Add password complexity validation
-- [ ] Add password expiration logic
-- [ ] Add password history tracking
-- [ ] Update auth middleware
+#### Task 2.3: Enhanced Password Policies ✅ COMPLETED
+- [x] Add password complexity validation (8+ chars, uppercase, lowercase, number)
+- [x] Add password expiration logic (90 days)
+- [x] Add password history tracking (last 5 passwords)
+- [x] Add password reuse prevention
+- [x] Add force password change flag
+- [x] Create password policy middleware
+- [x] Create password change routes
+- [x] Update User model with password fields
+- [x] Update User type in shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 
-#### Task 2.4: User Audit Logging
-- [ ] Create AuditLog model
-- [ ] Create audit logging middleware
-- [ ] Add login attempt tracking
-- [ ] Add data access logging
-- [ ] Add admin action logging
-- [ ] Create audit log viewer API
+#### Task 2.4: User Audit Logging ✅ COMPLETED
+- [x] Create AuditLog model
+- [x] Create audit logging middleware
+- [x] Create audit service with helper methods
+- [x] Add login attempt tracking
+- [x] Add data access logging (automatic for all API calls)
+- [x] Add admin action logging
+- [x] Create audit log viewer API (list, by user, by resource)
+- [x] Add comprehensive indexes for performance
+- [x] Add AuditLog type to shared package
+- [x] Mount routes and middleware in app.ts
 - [ ] Write unit tests
 
-#### Task 2.5: Session Management
-- [ ] Add device tracking to sessions
-- [ ] Add concurrent session limits
-- [ ] Add force logout capability
-- [ ] Update session middleware
+#### Task 2.5: Session Management ✅ COMPLETED
+- [x] Create Session model with device tracking
+- [x] Add device info parsing (browser, OS, device type)
+- [x] Add concurrent session limits (max 5 per user)
+- [x] Add force logout capability (revoke single/all sessions)
+- [x] Create session service with helper methods
+- [x] Add automatic session cleanup (hourly)
+- [x] Create session management routes
+- [x] Add TTL index for automatic expiration
+- [x] Add Session type to shared package
+- [x] Mount routes in app.ts
 - [ ] Write unit tests
 
 ### Week 3: Role Enhancement

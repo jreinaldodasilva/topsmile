@@ -37,6 +37,40 @@ const UserSchema = new Schema<IUser & Document>({
     passwordResetExpires: {
         type: Date,
         select: false
+    },
+    mfaEnabled: {
+        type: Boolean,
+        default: false
+    },
+    mfaSecret: {
+        type: String,
+        select: false
+    },
+    mfaBackupCodes: {
+        type: [String],
+        select: false
+    },
+    phoneVerified: {
+        type: Boolean,
+        default: false
+    },
+    phone: {
+        type: String,
+        trim: true
+    },
+    passwordHistory: {
+        type: [{
+            password: String,
+            changedAt: Date
+        }],
+        select: false,
+        default: []
+    },
+    passwordChangedAt: Date,
+    passwordExpiresAt: Date,
+    forcePasswordChange: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true,
@@ -105,8 +139,43 @@ UserSchema.pre('validate', function(this: IUser & Document, next) {
 UserSchema.pre('save', async function (this: IUser & Document, next) {
     if (!this.isModified('password')) return next();
 
+    const maxPasswordHistory = 5;
+    const passwordExpiryDays = 90;
+
+    if (!this.isNew && this.passwordHistory) {
+        for (const oldPassword of this.passwordHistory.slice(0, maxPasswordHistory)) {
+            const isReused = await bcrypt.compare(this.password, oldPassword.password);
+            if (isReused) {
+                return next(new Error('Senha não pode ser igual às últimas 5 senhas utilizadas'));
+            }
+        }
+    }
+
     const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(this.password, salt);
+
+    if (!this.isNew) {
+        if (!this.passwordHistory) {
+            this.passwordHistory = [];
+        }
+        this.passwordHistory.unshift({
+            password: this.password,
+            changedAt: new Date()
+        });
+        if (this.passwordHistory.length > maxPasswordHistory) {
+            this.passwordHistory = this.passwordHistory.slice(0, maxPasswordHistory);
+        }
+    }
+
+    this.password = hashedPassword;
+    this.passwordChangedAt = new Date();
+    
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + passwordExpiryDays);
+    this.passwordExpiresAt = expiryDate;
+    
+    this.forcePasswordChange = false;
+
     next();
 });
 

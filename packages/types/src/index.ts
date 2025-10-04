@@ -23,6 +23,18 @@ export type User = {
   clinic?: string;
   isActive?: boolean;
   lastLogin?: string | Date;
+  mfaEnabled?: boolean;
+  mfaSecret?: string;
+  mfaBackupCodes?: string[];
+  phone?: string;
+  phoneVerified?: boolean;
+  passwordHistory?: Array<{
+    password: string;
+    changedAt: Date;
+  }>;
+  passwordChangedAt?: Date;
+  passwordExpiresAt?: Date;
+  forcePasswordChange?: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   [key: string]: any;
@@ -826,6 +838,49 @@ export type ConsentForm = {
   witnessSignature?: string;
   status: 'pending' | 'signed' | 'declined' | 'expired';
   expirationDate?: string | Date;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+// ADDED: Audit Log types
+// ADDED: Session types
+export type Session = {
+  id?: string;
+  _id?: string;
+  user: string | User;
+  refreshToken?: string;
+  deviceInfo: {
+    userAgent: string;
+    browser?: string;
+    os?: string;
+    device?: string;
+  };
+  ipAddress: string;
+  lastActivity: string | Date;
+  expiresAt: string | Date;
+  isActive: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
+export type AuditLog = {
+  id?: string;
+  _id?: string;
+  user?: string | User;
+  action: 'login' | 'logout' | 'create' | 'read' | 'update' | 'delete' | 'failed_login' | 'password_change' | 'mfa_setup' | 'mfa_disable' | 'export' | 'import';
+  resource: string;
+  resourceId?: string;
+  method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  path: string;
+  ipAddress: string;
+  userAgent?: string;
+  statusCode?: number;
+  changes?: {
+    before?: any;
+    after?: any;
+  };
+  metadata?: Record<string, any>;
+  clinic?: string | Clinic;
   createdAt?: string | Date;
   updatedAt?: string | Date;
 };

@@ -43,6 +43,11 @@ import clinicalNotesRoutes from "./routes/clinicalNotes";
 import prescriptionsRoutes from "./routes/prescriptions";
 import dentalChartsRoutes from "./routes/dentalCharts";
 import consentFormsRoutes from "./routes/consentForms";
+import mfaRoutes from "./routes/mfa";
+import smsVerificationRoutes from "./routes/smsVerification";
+import passwordPolicyRoutes from "./routes/passwordPolicy";
+import auditLogsRoutes from "./routes/auditLogs";
+import sessionsRoutes from "./routes/sessions";
 
 // Contact routes
 import contactRoutes from "./routes/contact";
@@ -440,6 +445,10 @@ app.use("/api", checkDatabaseConnection);
 // Apply the response wrapper middleware
 app.use(responseWrapper);
 
+// Apply audit logging middleware (after auth, before routes)
+import { auditLogger } from './middleware/auditLogger';
+app.use('/api', auditLogger);
+
 // Mount routes
 app.use("/api/auth", authRoutes);
 app.use("/api/calendar", calendarRoutes);
@@ -459,6 +468,11 @@ app.use("/api/clinical-notes", clinicalNotesRoutes);
 app.use("/api/prescriptions", prescriptionsRoutes);
 app.use("/api/dental-charts", dentalChartsRoutes);
 app.use("/api/consent-forms", consentFormsRoutes);
+app.use("/api/mfa", mfaRoutes);
+app.use("/api/sms-verification", smsVerificationRoutes);
+app.use("/api/password-policy", passwordPolicyRoutes);
+app.use("/api/audit-logs", auditLogsRoutes);
+app.use("/api/sessions", sessionsRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {
