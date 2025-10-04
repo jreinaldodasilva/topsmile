@@ -1,9 +1,9 @@
-# Optimized Test Structure
+# Backend Test Structure and Running Guidelines
 
 ## Directory Organization
 
 ```
-tests-new/
+tests/
 ├── unit/                    # Fast, isolated unit tests
 │   ├── services/           # Business logic tests
 │   ├── middleware/         # Middleware tests
@@ -48,20 +48,6 @@ tests-new/
 - **Files**:
   - `patient-registration.test.ts` - New patient signup
   - `appointment-booking.test.ts` - Book appointment flow
-
-## Removed Test Categories
-
-### ❌ Deleted (Redundant/Over-engineered)
-- **Contract tests** - Unnecessary for monorepo
-- **K6 load tests** - Move to separate performance testing
-- **Analytics tests** - Not core functionality
-- **Parallel test infrastructure** - Jest handles this
-- **Multiple auth test files** - Consolidated into one
-- **Multiple performance test files** - Use integration tests
-- **Compliance tests** - Consolidated into patient tests
-- **Edge case files** - Integrated into main tests
-- **Transaction tests** - Covered by integration tests
-- **Rate limiting tests** - Move to integration
 
 ## Running Tests
 
