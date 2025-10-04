@@ -1,0 +1,61 @@
+.permission-matrix {
+    background: white;
+    padding: 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 24px;
+}
+
+.permission-matrix h3 {
+    margin: 0 0 20px 0;
+    color: #333;
+}
+
+.matrix-container {
+    overflow-x: auto;
+}
+
+.permission-matrix table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.permission-matrix th,
+.permission-matrix td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+.permission-matrix th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+    position: sticky;
+    top: 0;
+}
+
+.permission-matrix .permission-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.permission-matrix .permission-cell {
+    text-align: center;
+}
+
+.permission-matrix .check {
+    color: #28a745;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.permission-matrix .cross {
+    color: #dc3545;
+    font-size: 18px;
+}
+
+.permission-matrix tbody tr:hover {
+    background: #f8f9fa;
+}
