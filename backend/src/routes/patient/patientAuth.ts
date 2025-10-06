@@ -1,9 +1,9 @@
 import express, { Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../services/patientAuthService';
-import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../middleware/patientAuth';
-import { patientAuthLimiter, passwordResetLimiter } from '../middleware/rateLimiter';
-import { isAppError } from '../types/errors';
+import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../../services/patientAuthService';
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../../middleware/patientAuth';
+import { patientAuthLimiter, passwordResetLimiter } from '../../middleware/rateLimiter';
+import { isAppError } from '../../types/errors';
 import type { Patient } from '@topsmile/types';
 
 
@@ -120,7 +120,7 @@ router.post('/register',
                 requiresEmailVerification
             }, 'Conta criada com sucesso', req));
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Patient registration error:', error);
             
             if (isAppError(error)) {
@@ -187,7 +187,7 @@ router.post('/login',
                 requiresEmailVerification
             }, 'Login realizado com sucesso', req));
 
-        } catch (error) {
+        } catch (error: any) {
             console.error('Patient login error:', error);
             
             if (isAppError(error)) {
@@ -226,7 +226,7 @@ router.post('/refresh', async (req: express.Request, res: Response) => {
 
         return res.json(standardResponse({ expiresIn }, 'Token atualizado com sucesso', req));
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Patient refresh token error:', error);
         if (isAppError(error)) {
             return res.status(error.statusCode).json({ success: false, message: error.message });
@@ -256,7 +256,7 @@ router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequ
 
         return res.json(standardResponse(null, 'Logout realizado com sucesso', req));
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Patient logout error:', error);
         if (isAppError(error)) {
             return res.status(error.statusCode).json({ success: false, message: error.message });
@@ -288,7 +288,7 @@ router.patch('/profile',
             const updatedPatient = await patientAuthService.updateProfile((req.patient!._id as any), req.body);
 
             return res.json(standardResponse(updatedPatient, 'Perfil atualizado com sucesso', req));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Patient profile update error:', error);
             
             if (isAppError(error)) {
@@ -330,7 +330,7 @@ router.patch('/change-password',
             await patientAuthService.changePassword(req.patientUser!.id, currentPassword, newPassword);
 
             return res.json(standardResponse(null, 'Senha alterada com sucesso', req));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Patient change password error:', error);
             
             if (isAppError(error)) {
@@ -365,7 +365,7 @@ router.post('/resend-verification',
             await patientAuthService.resendVerificationEmail(req.body.email);
 
             return res.json(standardResponse(null, 'Se o e-mail estiver registrado, um novo link de verificação foi enviado.', req));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Resend verification email error:', error);
             
             if (isAppError(error)) {
@@ -401,7 +401,7 @@ router.delete('/account',
             await patientAuthService.deleteAccount(req.patientUser!.id, req.body.password);
 
             return res.json(standardResponse(null, 'Conta deletada com sucesso', req));
-        } catch (error) {
+        } catch (error: any) {
             console.error('Patient account deletion error:', error);
 
             if (isAppError(error)) {
@@ -425,7 +425,7 @@ router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, 
             patient: req.patient,
             patientUser: req.patientUser
         }, 'Perfil obtido com sucesso', req));
-    } catch (error) {
+    } catch (error: any) {
         console.error('Patient get me error:', error);
 
         if (isAppError(error)) {

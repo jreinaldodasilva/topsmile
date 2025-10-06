@@ -1,9 +1,9 @@
 // backend/src/routes/medicalHistory.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
-import { MedicalHistory } from '../models/MedicalHistory';
-import { MEDICAL_CONDITIONS, DENTAL_CONDITIONS, COMMON_ALLERGIES } from '../config/medicalConditions';
+import { MedicalHistory } from '../../models/MedicalHistory';
+import { MEDICAL_CONDITIONS, DENTAL_CONDITIONS, COMMON_ALLERGIES } from '../../config/medicalConditions';
 
 const router: express.Router = express.Router();
 

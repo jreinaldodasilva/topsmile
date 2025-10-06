@@ -1,7 +1,7 @@
 // backend/src/routes/analytics.ts
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 
-const router = express.Router();
+const router: Router = express.Router();
 
 router.post('/vitals', async (req: Request, res: Response) => {
     try {

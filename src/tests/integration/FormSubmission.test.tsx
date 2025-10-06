@@ -5,18 +5,16 @@ import { Input, Button } from '../../components/common';
 import { useForm } from '../../hooks/useForm';
 
 const LoginForm = ({ onSubmit }: { onSubmit: (values: any) => void }) => {
-  const { values, errors, handleChange, handleSubmit } = useForm(
-    { email: '', password: '' },
-    {
-      validate: (values) => {
-        const errors: any = {};
-        if (!values.email) errors.email = 'Email is required';
-        if (!values.password) errors.password = 'Password is required';
-        return errors;
-      },
-      onSubmit
-    }
-  );
+  const { values, errors, handleChange, handleSubmit } = useForm({
+    initialValues: { email: '', password: '' },
+    validate: (values) => {
+      const errors: any = {};
+      if (!values.email) errors.email = 'Email is required';
+      if (!values.password) errors.password = 'Password is required';
+      return errors;
+    },
+    onSubmit
+  });
 
   return (
     <form onSubmit={handleSubmit}>
@@ -24,7 +22,7 @@ const LoginForm = ({ onSubmit }: { onSubmit: (values: any) => void }) => {
         label="Email"
         name="email"
         value={values.email}
-        onChange={handleChange}
+        onChange={(e: any) => handleChange('email', e.target.value)}
         error={errors.email}
       />
       <Input
@@ -32,7 +30,7 @@ const LoginForm = ({ onSubmit }: { onSubmit: (values: any) => void }) => {
         name="password"
         type="password"
         value={values.password}
-        onChange={handleChange}
+        onChange={(e: any) => handleChange('password', e.target.value)}
         error={errors.password}
       />
       <Button type="submit">Login</Button>

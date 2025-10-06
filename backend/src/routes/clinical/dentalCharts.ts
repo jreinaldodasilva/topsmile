@@ -1,8 +1,8 @@
 // backend/src/routes/dentalCharts.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
-import { DentalChart } from '../models/DentalChart';
+import { DentalChart } from '../../models/DentalChart';
 
 const router: express.Router = express.Router();
 

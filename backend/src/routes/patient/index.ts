@@ -7,7 +7,7 @@ import insuranceRoutes from './insurance';
 import familyRoutes from './family';
 import documentsRoutes from './documents';
 
-const router = Router();
+const router: Router = Router();
 
 router.use('/auth', patientAuthRoutes);
 router.use('/', patientsRoutes);

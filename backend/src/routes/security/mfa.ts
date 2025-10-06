@@ -1,9 +1,9 @@
 // backend/src/routes/mfa.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { body, validationResult } from 'express-validator';
-import { User } from '../models/User';
-import { mfaService } from '../services/mfaService';
+import { User } from '../../models/User';
+import { mfaService } from '../../services/mfaService';
 
 const router: express.Router = express.Router();
 

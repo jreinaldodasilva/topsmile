@@ -7,7 +7,7 @@ import { appointmentService } from '../../features/appointments/services/appoint
 jest.mock('../../features/appointments/services/appointmentService');
 
 const AppointmentList = () => {
-  const [appointments, setAppointments] = React.useState([]);
+  const [appointments, setAppointments] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(false);
 
   const loadAppointments = async () => {

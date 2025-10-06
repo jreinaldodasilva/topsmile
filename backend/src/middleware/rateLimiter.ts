@@ -49,3 +49,6 @@ export const rateLimiters = {
         'Muitas requisições. Tente novamente em 15 minutos.'
     )
 };
+
+export const patientAuthLimiter = rateLimiters.auth;
+export const passwordResetLimiter = rateLimiters.passwordReset;

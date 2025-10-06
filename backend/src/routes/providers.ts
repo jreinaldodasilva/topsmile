@@ -1066,10 +1066,10 @@ router.patch('/:id/appointment-types',
                 });
             }
 
-            const provider = await providerService.updateAppointmentTypes(
+            const provider = await providerService.updateProvider(
                 authReq.params.id!,
                 authReq.user.clinicId,
-                authReq.body.appointmentTypes
+                { appointmentTypes: authReq.body.appointmentTypes }
             );
 
             if (!provider) {
@@ -1148,7 +1148,11 @@ router.patch('/:id/reactivate',
                 });
             }
 
-            const provider = await providerService.reactivateProvider(authReq.params.id!, authReq.user.clinicId);
+            const provider = await providerService.updateProvider(
+                authReq.params.id!,
+                authReq.user.clinicId,
+                { isActive: true }
+            );
 
             if (!provider) {
                 return res.status(404).json({

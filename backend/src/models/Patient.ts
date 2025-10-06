@@ -263,10 +263,16 @@ const PatientSchema = new Schema<IPatient & Document>({
 }, {
     ...baseSchemaOptions,
     toJSON: {
-        ...baseSchemaOptions.toJSON,
-        virtuals: true
+        virtuals: true,
+        transform: (doc: any, ret: any) => {
+            ret.id = ret._id?.toString();
+            delete ret._id;
+            delete ret.__v;
+            if (ret.isDeleted) delete ret.isDeleted;
+            return ret;
+        }
     }
-});
+} as any);
 
 PatientSchema.pre('save', function(this: IPatient & Document, next) {
     // Normalize phone number
@@ -322,7 +328,7 @@ PatientSchema.pre('save', function(this: IPatient & Document, next) {
 });
 
 // Virtual for fullName
-PatientSchema.virtual('fullName').get(function() {
+PatientSchema.virtual('fullName').get(function(this: any) {
   return `${this.firstName} ${this.lastName}`.trim();
 });
 

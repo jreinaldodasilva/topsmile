@@ -6,7 +6,7 @@ import operatoriesRoutes from './operatories';
 import waitlistRoutes from './waitlist';
 import bookingRoutes from './booking';
 
-const router = Router();
+const router: Router = Router();
 
 router.use('/appointments', appointmentsRoutes);
 router.use('/calendar', calendarRoutes);

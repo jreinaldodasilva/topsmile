@@ -30,7 +30,7 @@ export const TreatmentTypeSelectorExample: React.FC<TreatmentTypeSelectorExample
     if (loading) return <div>Carregando tipos de consulta...</div>;
     if (error) return <div>Erro: {error}</div>;
 
-    const categories = ['all', ...new Set(appointmentTypes.map(t => t.category))];
+    const categories = ['all', ...Array.from(new Set(appointmentTypes.map(t => t.category)))];
     const filteredTypes = selectedCategory === 'all'
         ? appointmentTypes
         : appointmentTypes.filter(t => t.category === selectedCategory);

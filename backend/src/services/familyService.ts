@@ -21,13 +21,13 @@ class FamilyService {
                 throw new NotFoundError('Alguns membros da família');
             }
 
-            primary.familyMembers = memberIds.map(id => new mongoose.Types.ObjectId(id));
+            primary.familyMembers = memberIds.map(id => new mongoose.Types.ObjectId(id)) as any;
             await primary.save({ session });
 
             for (const member of members) {
-                if (!member.familyMembers) member.familyMembers = [];
-                if (!member.familyMembers.some(id => id.toString() === primaryPatientId)) {
-                    member.familyMembers.push(new mongoose.Types.ObjectId(primaryPatientId));
+                if (!member.familyMembers) member.familyMembers = [] as any;
+                if (member.familyMembers && !member.familyMembers.some((id: any) => id.toString() === primaryPatientId)) {
+                    (member.familyMembers as any).push(new mongoose.Types.ObjectId(primaryPatientId));
                 }
                 await member.save({ session });
             }
@@ -52,14 +52,14 @@ class FamilyService {
 
             if (!primary || !member) throw new NotFoundError('Paciente');
 
-            primary.familyMembers = primary.familyMembers?.filter(
-                id => id.toString() !== memberId
-            ) || [];
+            primary.familyMembers = (primary.familyMembers?.filter(
+                (id: any) => id.toString() !== memberId
+            ) || []) as any;
             await primary.save({ session });
 
-            member.familyMembers = member.familyMembers?.filter(
-                id => id.toString() !== primaryPatientId
-            ) || [];
+            member.familyMembers = (member.familyMembers?.filter(
+                (id: any) => id.toString() !== primaryPatientId
+            ) || []) as any;
             await member.save({ session });
 
             await session.commitTransaction();

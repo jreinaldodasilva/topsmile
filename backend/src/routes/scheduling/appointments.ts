@@ -1,10 +1,10 @@
 // backend/src/routes/appointments.ts
 import express, { Request, Response, NextFunction } from "express";
-import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
-import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../middleware/patientAuth";
-import { schedulingService } from "../services/schedulingService";
+import { authenticate, authorize, AuthenticatedRequest } from "../../middleware/auth";
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../../middleware/patientAuth";
+import { schedulingService } from "../../services/schedulingService";
 import type { Patient, Appointment as AppointmentType } from '@topsmile/types';
-import { Appointment } from "../models/Appointment";
+import { Appointment } from "../../models/Appointment";
 import { body, validationResult } from 'express-validator';
 
 const router: express.Router = express.Router();

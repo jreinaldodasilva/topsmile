@@ -1,10 +1,10 @@
 // backend/src/routes/treatmentPlans.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { body, param, query, validationResult } from 'express-validator';
-import { TreatmentPlan } from '../models/TreatmentPlan';
-import { treatmentPlanService } from '../services/treatmentPlanService';
-import { CDT_CODES, CDT_CATEGORIES, getCDTCodesByCategory } from '../config/cdtCodes';
+import { TreatmentPlan } from '../../models/TreatmentPlan';
+import { treatmentPlanService } from '../../services/treatmentPlanService';
+import { CDT_CODES, CDT_CATEGORIES, getCDTCodesByCategory } from '../../config/cdtCodes';
 
 const router: express.Router = express.Router();
 

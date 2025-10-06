@@ -31,7 +31,7 @@ export const TreatmentTypeSelector: React.FC<TreatmentTypeSelectorProps> = ({
       });
   }, [clinicId]);
 
-  const categories = ['all', ...new Set(types.map(t => t.category))];
+  const categories = ['all', ...Array.from(new Set(types.map(t => t.category)))];
   const filteredTypes = selectedCategory === 'all'
     ? types
     : types.filter(t => t.category === selectedCategory);

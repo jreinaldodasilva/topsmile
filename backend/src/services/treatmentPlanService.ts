@@ -13,9 +13,9 @@ export interface InsuranceEstimate {
     coveragePercentage: number;
 }
 
-class TreatmentPlanService extends BaseService<ITreatmentPlan> {
+class TreatmentPlanService extends BaseService<any> {
     constructor() {
-        super(TreatmentPlan);
+        super(TreatmentPlan as any);
     }
     async estimateInsuranceCoverage(
         patientId: string,
@@ -42,11 +42,11 @@ class TreatmentPlanService extends BaseService<ITreatmentPlan> {
 
             if (cdtCode) {
                 if (cdtCode.category === 'Preventivo') {
-                    coveragePercentage = insurance.coverageDetails?.preventive || 0;
+                    coveragePercentage = (insurance.coverageDetails as any)?.preventive || 0;
                 } else if (cdtCode.category === 'Restaurador') {
-                    coveragePercentage = insurance.coverageDetails?.basic || 0;
+                    coveragePercentage = (insurance.coverageDetails as any)?.basic || 0;
                 } else if (['Prótese', 'Ortodontia'].includes(cdtCode.category)) {
-                    coveragePercentage = insurance.coverageDetails?.major || 0;
+                    coveragePercentage = (insurance.coverageDetails as any)?.major || 0;
                 }
             }
 

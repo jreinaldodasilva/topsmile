@@ -169,7 +169,7 @@ class AuthService {
     }
 
     // FIXED: Verify access token with proper error handling and typing
-    verifyAccessToken(token: string): TokenPayload {
+    async verifyAccessToken(token: string): Promise<TokenPayload> {
         try {
             if (!token || typeof token !== 'string') {
                 throw new UnauthorizedError('Token inválido');
@@ -287,7 +287,7 @@ class AuthService {
 
         try {
             // Decode token to get expiration time
-            const decoded = this.verifyAccessToken(accessToken);
+            const decoded = await this.verifyAccessToken(accessToken);
             const expiresAt = new Date(decoded.exp! * 1000); // JWT exp is in seconds
 
             // Add to blacklist
@@ -646,7 +646,7 @@ class AuthService {
     async refreshToken(oldToken: string): Promise<string> {
         console.warn('refreshToken method is deprecated. Use refreshAccessToken instead.');
         try {
-            const decoded = this.verifyAccessToken(oldToken);
+            const decoded = await this.verifyAccessToken(oldToken);
             const user = await this.getUserById(decoded.userId);
 
             if (!user || !user.isActive) {

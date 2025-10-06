@@ -48,7 +48,7 @@ export abstract class BaseService<T extends Document> {
      */
     async findById(id: string): Promise<T | null> {
         try {
-            return await this.model.findById(id).lean();
+            return await this.model.findById(id).lean() as any;
         } catch (error) {
             throw new AppError(`Erro ao buscar ${this.model.modelName}`, 500);
         }
@@ -61,7 +61,7 @@ export abstract class BaseService<T extends Document> {
      */
     async findOne(filter: FilterQuery<T>): Promise<T | null> {
         try {
-            return await this.model.findOne(filter).lean();
+            return await this.model.findOne(filter).lean() as any;
         } catch (error) {
             throw new AppError(`Erro ao buscar ${this.model.modelName}`, 500);
         }
@@ -74,7 +74,7 @@ export abstract class BaseService<T extends Document> {
      */
     async findAll(filter: FilterQuery<T> = {}): Promise<T[]> {
         try {
-            return await this.model.find(filter).lean();
+            return await this.model.find(filter).lean() as any;
         } catch (error) {
             throw new AppError(`Erro ao listar ${this.model.modelName}`, 500);
         }
@@ -95,7 +95,7 @@ export abstract class BaseService<T extends Document> {
 
         try {
             const [items, total] = await Promise.all([
-                this.model.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+                this.model.find(filter).sort(sort).skip(skip).limit(limit).lean() as any,
                 this.model.countDocuments(filter)
             ]);
 
@@ -140,7 +140,7 @@ export abstract class BaseService<T extends Document> {
             return await this.model.findByIdAndUpdate(id, data, { 
                 new: true,
                 runValidators: true 
-            }).lean();
+            }).lean() as any;
         } catch (error) {
             throw new AppError(`Erro ao atualizar ${this.model.modelName}`, 500);
         }
@@ -171,7 +171,7 @@ export abstract class BaseService<T extends Document> {
                 id,
                 { isDeleted: true, deletedAt: new Date() } as any,
                 { new: true }
-            ).lean();
+            ).lean() as any;
         } catch (error) {
             throw new AppError(`Erro ao deletar ${this.model.modelName}`, 500);
         }

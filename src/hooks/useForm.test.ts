@@ -6,15 +6,15 @@ describe('useForm', () => {
   const initialValues = { email: '', password: '' };
 
   it('initializes with default values', () => {
-    const { result } = renderHook(() => useForm(initialValues));
+    const { result } = renderHook(() => useForm({ initialValues, onSubmit: jest.fn() }));
     expect(result.current.values).toEqual(initialValues);
     expect(result.current.errors).toEqual({});
   });
 
   it('handles input changes', () => {
-    const { result } = renderHook(() => useForm(initialValues));
+    const { result } = renderHook(() => useForm({ initialValues, onSubmit: jest.fn() }));
     act(() => {
-      result.current.handleChange({ target: { name: 'email', value: 'test@example.com' } } as any);
+      result.current.handleChange('email', 'test@example.com');
     });
     expect(result.current.values.email).toBe('test@example.com');
   });
@@ -26,7 +26,7 @@ describe('useForm', () => {
       return errors;
     };
     const onSubmit = jest.fn();
-    const { result } = renderHook(() => useForm(initialValues, { validate, onSubmit }));
+    const { result } = renderHook(() => useForm({ initialValues, validate, onSubmit }));
     
     act(() => {
       result.current.handleSubmit({ preventDefault: jest.fn() } as any);
@@ -38,7 +38,7 @@ describe('useForm', () => {
 
   it('calls onSubmit when valid', () => {
     const onSubmit = jest.fn();
-    const { result } = renderHook(() => useForm({ email: 'test@example.com' }, { onSubmit }));
+    const { result } = renderHook(() => useForm({ initialValues: { email: 'test@example.com' }, onSubmit }));
     
     act(() => {
       result.current.handleSubmit({ preventDefault: jest.fn() } as any);
@@ -48,15 +48,15 @@ describe('useForm', () => {
   });
 
   it('resets form', () => {
-    const { result } = renderHook(() => useForm(initialValues));
+    const { result } = renderHook(() => useForm({ initialValues, onSubmit: jest.fn() }));
     
     act(() => {
-      result.current.handleChange({ target: { name: 'email', value: 'test@example.com' } } as any);
+      result.current.handleChange('email', 'test@example.com');
     });
     expect(result.current.values.email).toBe('test@example.com');
     
     act(() => {
-      result.current.reset();
+      result.current.resetForm();
     });
     expect(result.current.values).toEqual(initialValues);
   });

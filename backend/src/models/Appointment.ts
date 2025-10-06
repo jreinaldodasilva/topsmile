@@ -198,7 +198,7 @@ const AppointmentSchema = new Schema<IAppointment & Document>({
         enum: ['synced', 'pending', 'error'],
         default: 'synced'
     }
-}, baseSchemaOptions);
+}, baseSchemaOptions as any);
 
 // ENHANCED: All original performance indexes plus new ones
 
@@ -355,7 +355,7 @@ AppointmentSchema.index({
 });
 
 // ENHANCED: Pre-save middleware with additional features
-AppointmentSchema.pre('save', function(next) {
+AppointmentSchema.pre('save', function(this: any, next) {
     // Original validation
     if (this.scheduledStart >= this.scheduledEnd) {
         return next(new Error('Hora de início deve ser anterior à hora de término'));
@@ -418,8 +418,6 @@ AppointmentSchema.pre('save', function(next) {
 });
 
 // ENHANCED: Extended static methods
-
-// Original methods remain...
 interface AppointmentMatchStage {
     clinic: Types.ObjectId;
     scheduledStart: { $gte: Date };

@@ -46,21 +46,22 @@ class BookingService {
 
             let currentTime = new Date(startOfDay);
             while (currentTime < endOfDay) {
+                const slotStart = new Date(currentTime);
                 const slotEnd = new Date(currentTime.getTime() + duration * 60000);
                 
                 const hasConflict = existingAppointments.some(apt => {
                     const aptStart = new Date(apt.scheduledStart);
                     const aptEnd = new Date(apt.scheduledEnd);
-                    return (currentTime < aptEnd && slotEnd > aptStart);
+                    return (slotStart < aptEnd && slotEnd > aptStart);
                 });
 
                 if (!hasConflict) {
                     slots.push({
-                        start: new Date(currentTime),
+                        start: slotStart,
                         end: slotEnd,
-                        providerId: provider._id.toString(),
-                        providerName: provider.name,
-                        providerPhoto: provider.photoUrl
+                        providerId: (provider._id as any)?.toString() || '',
+                        providerName: provider.name || '',
+                        providerPhoto: provider.photoUrl || undefined
                     });
                 }
 
@@ -106,7 +107,7 @@ class BookingService {
             scheduledStart: data.scheduledStart,
             scheduledEnd,
             status: 'scheduled',
-            notes: data.notes,
+            notes: data.notes || '',
             createdBy: data.patientId
         });
 

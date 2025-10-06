@@ -49,9 +49,9 @@ export interface AppointmentFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-class AppointmentService extends BaseService<IAppointment> {
+class AppointmentService extends BaseService<any> {
   constructor() {
-    super(AppointmentModel);
+    super(AppointmentModel as any);
   }
 
   async createAppointment(data: CreateAppointmentData): Promise<IAppointment> {

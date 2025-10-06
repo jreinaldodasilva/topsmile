@@ -28,7 +28,7 @@ export async function paginate<T extends Document>(
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
-        model.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+        model.find(filter).sort(sort).skip(skip).limit(limit).lean() as any,
         model.countDocuments(filter)
     ]);
 

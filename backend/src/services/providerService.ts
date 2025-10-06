@@ -47,9 +47,9 @@ export interface ProviderSearchResult {
     hasPrev: boolean;
 }
 
-class ProviderService extends BaseService<IProvider> {
+class ProviderService extends BaseService<any> {
     constructor() {
-        super(ProviderModel);
+        super(ProviderModel as any);
     }
 
     private getDefaultWorkingHours() {

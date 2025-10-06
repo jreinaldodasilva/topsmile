@@ -1,8 +1,8 @@
 // backend/src/routes/booking.ts
 import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { bookingService } from '../services/bookingService';
-import { AppointmentType } from '../models/AppointmentType';
+import { bookingService } from '../../services/bookingService';
+import { AppointmentType } from '../../models/AppointmentType';
 
 const router: express.Router = express.Router();
 

@@ -20,7 +20,8 @@ describe('usePerformanceMonitor', () => {
   });
 
   it('logs stats on unmount in development', () => {
-    process.env.NODE_ENV = 'development';
+    const originalEnv = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = 'development';
     const { unmount } = renderHook(() => usePerformanceMonitor('TestComponent'));
     unmount();
     expect(console.log).toHaveBeenCalledWith(
@@ -30,5 +31,6 @@ describe('usePerformanceMonitor', () => {
         lifetime: expect.any(String)
       })
     );
+    (process.env as any).NODE_ENV = originalEnv;
   });
 });

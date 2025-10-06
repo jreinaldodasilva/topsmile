@@ -1,8 +1,8 @@
 // backend/src/routes/waitlist.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
-import { Waitlist } from '../models/Waitlist';
+import { Waitlist } from '../../models/Waitlist';
 
 const router: express.Router = express.Router();
 

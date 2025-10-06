@@ -6,7 +6,7 @@ import passwordPolicyRoutes from './passwordPolicy';
 import sessionsRoutes from './sessions';
 import auditLogsRoutes from './auditLogs';
 
-const router = Router();
+const router: Router = Router();
 
 router.use('/mfa', mfaRoutes);
 router.use('/sms-verification', smsVerificationRoutes);

@@ -1,8 +1,8 @@
 // backend/src/routes/insurance.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
 import { body, param, validationResult } from 'express-validator';
-import { Insurance } from '../models/Insurance';
+import { Insurance } from '../../models/Insurance';
 
 const router: express.Router = express.Router();
 

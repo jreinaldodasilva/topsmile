@@ -7,12 +7,12 @@ describe('ErrorInterceptor', () => {
 
   beforeEach(() => {
     delete (window as any).location;
-    window.location = { ...originalLocation, href: '' } as any;
+    (window as any).location = { ...originalLocation, href: '' };
     localStorage.clear();
   });
 
   afterEach(() => {
-    window.location = originalLocation;
+    (window as any).location = originalLocation;
   });
 
   it('should throw NetworkError for network failures', () => {

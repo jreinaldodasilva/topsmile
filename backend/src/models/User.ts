@@ -75,17 +75,16 @@ const UserSchema = new Schema<IUser & Document>({
 }, {
     ...baseSchemaOptions,
     toJSON: {
-        ...baseSchemaOptions.toJSON,
-        transform: function (doc, ret) {
-            ret.id = ret._id;
-            delete (ret as any)._id;
-            delete (ret as any).__v;
-            delete (ret as any).password;
+        transform: function (doc: any, ret: any) {
+            ret.id = ret._id?.toString();
+            delete ret._id;
+            delete ret.__v;
+            delete ret.password;
             if (ret.isDeleted) delete ret.isDeleted;
             return ret;
         }
     }
-});
+} as any);
 
 // Password strength validation - runs before other validations
 UserSchema.pre('validate', function(this: IUser & Document, next) {

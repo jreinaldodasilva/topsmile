@@ -1,9 +1,9 @@
 // backend/src/routes/sessions.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
 import { param, validationResult } from 'express-validator';
-import { sessionService } from '../services/sessionService';
-import { Session } from '../models/Session';
+import { sessionService } from '../../services/sessionService';
+import { Session } from '../../models/Session';
 
 const router: express.Router = express.Router();
 

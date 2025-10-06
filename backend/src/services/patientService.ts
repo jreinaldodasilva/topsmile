@@ -28,9 +28,9 @@ export interface PatientSearchResult {
     hasPrev: boolean;
 }
 
-class PatientService extends BaseService<IPatient> {
+class PatientService extends BaseService<any> {
     constructor() {
-        super(PatientModel);
+        super(PatientModel as any);
     }
 
     private normalizePhone(phone: string): string {
