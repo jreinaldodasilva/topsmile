@@ -43,9 +43,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Clear local state first
       setUser(null);
 
-      // Remove tokens from localStorage
-      localStorage.removeItem('topsmile_access_token');
-      localStorage.removeItem('topsmile_refresh_token');
+      // SECURITY FIX: Tokens in httpOnly cookies only
+      // No localStorage to clear
 
       // Notify backend and clear tokens for the default context
       await httpLogout();
@@ -71,7 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (authCheckInProgress) return;
       authCheckInProgress = true;
       
-      const hadTokens = !!localStorage.getItem('topsmile_access_token');
+      // SECURITY FIX: Rely on httpOnly cookies only
       try {
         const userResponse = await apiService.auth.me();
 
@@ -81,20 +80,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(userResponse.data);
         } else {
           setUser(null);
-          // Clear invalid tokens
-          localStorage.removeItem('topsmile_access_token');
-          localStorage.removeItem('topsmile_refresh_token');
-          // Navigate to login if tokens were present but invalid
-          if (hadTokens) navigate('/login');
         }
       } catch (err) {
         if (!isMounted) return;
         setUser(null);
-        // Clear invalid tokens on error
-        localStorage.removeItem('topsmile_access_token');
-        localStorage.removeItem('topsmile_refresh_token');
-        // Navigate to login if tokens were present but invalid
-        if (hadTokens) navigate('/login');
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -110,7 +99,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [navigate]);
 
-  // UPDATED: Enhanced login function with secure token storage
+  // SECURITY FIX: Tokens stored in httpOnly cookies by backend
   const login = useCallback(async (email: string, password: string, rememberMe: boolean = false): Promise<AuthResult> => {
     try {
       setError(null);
@@ -119,11 +108,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.login(email, password);
 
       if (response.success && response.data) {
-        const { user, accessToken, refreshToken } = response.data;
+        const { user } = response.data;
 
-        // Store tokens securely
-        localStorage.setItem('topsmile_access_token', accessToken);
-        localStorage.setItem('topsmile_refresh_token', refreshToken);
+        // Tokens automatically stored in httpOnly cookies by backend
+        // No localStorage storage needed
 
         // Update state
         setUser(user);
@@ -152,7 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [navigate]);
 
-  // ADDED: Register function with secure token storage
+  // SECURITY FIX: Tokens stored in httpOnly cookies by backend
   const register = useCallback(async (data: RegisterRequest): Promise<AuthResult> => {
     try {
       setError(null);
@@ -161,11 +149,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = await apiService.auth.register(data);
 
       if (response.success && response.data) {
-        const { user, accessToken, refreshToken } = response.data;
+        const { user } = response.data;
 
-        // Store tokens securely
-        localStorage.setItem('topsmile_access_token', accessToken);
-        localStorage.setItem('topsmile_refresh_token', refreshToken);
+        // Tokens automatically stored in httpOnly cookies by backend
+        // No localStorage storage needed
 
         // Update state
         setUser(user);
