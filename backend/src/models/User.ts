@@ -70,7 +70,7 @@ const UserSchema = new Schema<IUser & Document>({
     forcePasswordChange: {
         type: Boolean,
         default: false
-    }
+    },
     ...baseSchemaFields
 }, {
     ...baseSchemaOptions,

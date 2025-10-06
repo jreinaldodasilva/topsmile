@@ -6,3 +6,4 @@
 // - PatientCard
 // - PatientDetails
 // - MedicalHistoryForm
+export {};

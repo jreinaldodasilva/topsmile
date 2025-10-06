@@ -56,8 +56,8 @@ class AppointmentService extends BaseApiService {
         return this.patch(`${this.endpoint}/${id}/reschedule`, { newStart, reason, rescheduleBy });
     }
 
-    async delete(id: string): Promise<{ success: boolean }> {
-        return this.delete(`${this.endpoint}/${id}`);
+    async deleteAppointment(id: string): Promise<{ success: boolean }> {
+        return super.delete(`${this.endpoint}/${id}`);
     }
 
     async getProviderAvailability(providerId: string, date: string, appointmentTypeId: string): Promise<{ success: boolean; data: any[] }> {

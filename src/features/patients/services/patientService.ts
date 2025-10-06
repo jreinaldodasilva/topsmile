@@ -57,8 +57,8 @@ class PatientService extends BaseApiService {
         return this.patch(`${this.endpoint}/${id}/medical-history`, medicalHistory);
     }
 
-    async delete(id: string): Promise<{ success: boolean }> {
-        return this.delete(`${this.endpoint}/${id}`);
+    async deletePatient(id: string): Promise<{ success: boolean }> {
+        return super.delete(`${this.endpoint}/${id}`);
     }
 
     async reactivate(id: string): Promise<{ success: boolean; data: Patient }> {
