@@ -2,52 +2,61 @@
 
 ## Code Quality Standards
 
-### TypeScript Configuration
-- **Strict Mode**: TypeScript strict mode enabled across the project
-- **Type Safety**: Explicit types required, avoid `any` unless absolutely necessary
-- **Import Types**: Use type imports from `@topsmile/types` for shared interfaces
-- **Type Annotations**: Function parameters and return types must be explicitly typed
+### TypeScript Usage
+- **Strict Mode**: All code uses TypeScript strict mode
+- **Type Safety**: Explicit types for function parameters and return values
+- **Type Imports**: Use `import type` for type-only imports from `@topsmile/types`
+- **No Any**: Avoid `any` type; use proper typing or `unknown` with type guards
+- **Interface vs Type**: Prefer `interface` for object shapes, `type` for unions/intersections
 
 ### Code Formatting
-- **Indentation**: 4 spaces for TypeScript/JavaScript files
-- **Line Length**: Aim for 120 characters maximum
+- **Indentation**: 2 spaces (no tabs)
 - **Semicolons**: Required at end of statements
-- **Quotes**: Single quotes for strings, double quotes in JSX
-- **Trailing Commas**: Used in multi-line objects and arrays
-- **Arrow Functions**: Preferred over function expressions
+- **Quotes**: Single quotes for strings (except JSON)
+- **Line Length**: Keep lines under 100 characters when practical
+- **Trailing Commas**: Use in multi-line arrays and objects
 
 ### Naming Conventions
-- **Files**: camelCase for utilities, PascalCase for components/models
-- **Components**: PascalCase (e.g., `PatientNavigation.tsx`)
-- **Services**: camelCase with 'Service' suffix (e.g., `schedulingService`)
-- **Models**: PascalCase matching entity name (e.g., `Patient.ts`)
-- **Interfaces**: PascalCase with 'I' prefix for type definitions (e.g., `IPatient`)
-- **Constants**: UPPER_SNAKE_CASE for true constants
-- **Variables**: camelCase for local variables and parameters
-- **Private Methods**: Prefix with underscore is not used; rely on TypeScript `private` keyword
+- **Files**: camelCase for utilities, PascalCase for components (e.g., `emailService.ts`, `LoginPage.tsx`)
+- **Components**: PascalCase (e.g., `PatientDashboard`, `AppointmentCard`)
+- **Functions**: camelCase (e.g., `createAppointment`, `validateEmail`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_EMAIL_RETRIES`, `ROLE_HIERARCHY`)
+- **Interfaces**: PascalCase, no "I" prefix (e.g., `User`, `ResourcePermissions`)
+- **Types**: PascalCase (e.g., `UserRole`, `EmailTask`)
+- **Private Methods**: camelCase with `private` keyword (e.g., `private processQueue()`)
 
-### Documentation Standards
-- **JSDoc Comments**: Required for all public APIs and complex functions
-- **Swagger Documentation**: All API endpoints documented with @swagger tags
-- **Portuguese Messages**: User-facing messages in Portuguese (Brazilian)
-- **English Code**: Code, variables, and internal comments in English
-- **Inline Comments**: Used sparingly, only for complex logic explanation
+### Documentation
+- **JSDoc Comments**: Use for public APIs and complex functions
+- **Swagger/OpenAPI**: Document all API endpoints with `@swagger` tags
+- **Portuguese Messages**: All user-facing messages in Portuguese (BR)
+- **Code Comments**: Explain "why" not "what" - code should be self-documenting
 
 ## Backend Patterns
 
-### Route Structure
+### API Route Structure
 ```typescript
-// Standard route pattern
-router.METHOD("/path", 
-  authenticate,                    // Authentication middleware
-  authorize('role1', 'role2'),    // Authorization middleware
-  validationMiddleware,            // Request validation
+// Standard pattern observed in appointments.ts
+router.method("/path", 
+  middleware1,
+  middleware2,
+  validationArray,
   async (req: Request, res: Response) => {
     const authReq = req as AuthenticatedRequest;
     try {
-      // Business logic via service layer
-      const result = await service.method(authReq.user!.clinicId!, params);
+      // Validation
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Dados inválidos',
+          errors: errors.array()
+        });
+      }
       
+      // Business logic
+      const result = await service.method(params);
+      
+      // Success response
       return res.status(200).json({
         success: true,
         data: result,
@@ -58,7 +67,7 @@ router.METHOD("/path",
       });
     } catch (err: any) {
       console.error('Error description:', err);
-      return res.status(400).json({
+      return res.status(500).json({
         success: false,
         error: err.message
       });
@@ -68,32 +77,16 @@ router.METHOD("/path",
 ```
 
 ### Response Format
-All API responses follow consistent structure:
+All API responses follow this structure:
 ```typescript
 // Success response
 {
   success: true,
-  data: <result>,
-  meta: {
+  data: any,
+  meta?: {
     timestamp: string,
-    requestId: string
-  }
-}
-
-// Error response
-{
-  success: false,
-  error: string,
-  message?: string,
-  errors?: ValidationError[]
-}
-
-// Paginated response
-{
-  success: true,
-  data: {
-    items: <array>,
-    pagination: {
+    requestId?: string,
+    pagination?: {
       page: number,
       limit: number,
       total: number,
@@ -101,616 +94,317 @@ All API responses follow consistent structure:
       hasNext: boolean,
       hasPrev: boolean
     }
-  },
-  meta: { ... }
+  }
+}
+
+// Error response
+{
+  success: false,
+  message?: string,
+  error?: string,
+  code?: string,
+  errors?: ValidationError[],
+  details?: any
 }
 ```
+
+### Validation Pattern
+- Use `express-validator` for request validation
+- Define validation arrays before routes
+- Validate early, return 400 with detailed errors
+- Portuguese error messages
+
+```typescript
+const validationArray = [
+  body('field')
+    .isType()
+    .withMessage('Mensagem de erro em português'),
+  body('optional')
+    .optional()
+    .isType()
+];
+```
+
+### Authentication & Authorization
+- All protected routes use `authenticate` middleware
+- Role-based access with `authorize(...roles)` middleware
+- Resource permissions with `requirePermission(resource, action)`
+- Clinic isolation with `requireSameClinic()`
+- Patient routes use `authenticatePatient` + `requirePatientEmailVerification`
+
+### Error Handling
+- Try-catch blocks in all async route handlers
+- Log errors with `console.error()` including context
+- Return appropriate HTTP status codes (400, 401, 403, 404, 500)
+- Include error messages in response
+- Never expose sensitive information in errors
 
 ### Service Layer Pattern
 ```typescript
 class ServiceName {
-  /**
-   * Method description
-   * IMPROVED/FIXED/ADDED tags indicate recent changes
-   */
-  async methodName(params: ParamsType): Promise<ResultType> {
-    // Transaction handling for critical operations
-    const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
-    const session = isTestEnv ? null : await mongoose.startSession();
-    
-    try {
-      if (!isTestEnv) {
-        session!.startTransaction();
-      }
-      
-      // Validation
-      if (!requiredParam) {
-        throw new Error('Mensagem de erro em português');
-      }
-      
-      // Business logic with session support
-      const result = await Model.findById(id).session(session);
-      
-      if (!isTestEnv) {
-        await session!.commitTransaction();
-      }
-      
-      return {
-        success: true,
-        data: result
-      };
-      
-    } catch (error) {
-      if (!isTestEnv && session) {
-        await session.abortTransaction();
-      }
-      console.error('Error context:', error);
-      
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Erro genérico'
-      };
-    } finally {
-      if (!isTestEnv && session) {
-        session.endSession();
-      }
-    }
+  private property: Type;
+  private readonly CONSTANT = value;
+  
+  constructor() {
+    // Initialization
+  }
+  
+  private privateMethod(): ReturnType {
+    // Internal logic
+  }
+  
+  async publicMethod(params: Type): Promise<ReturnType> {
+    // Business logic
+    // Call private methods
+    // Return result
   }
 }
 
 export const serviceName = new ServiceName();
 ```
 
-### Model Patterns
-```typescript
-// Schema definition with validation
-const ModelSchema = new Schema<IModel & Document>({
-  ...baseSchemaFields,           // Timestamps and soft delete
-  ...clinicScopedFields,         // Multi-tenancy support
-  
-  fieldName: {
-    type: String,
-    required: [true, 'Mensagem de erro em português'],
-    trim: true,
-    minlength: [2, 'Mensagem de validação'],
-    maxlength: [100, 'Mensagem de validação'],
-    validate: {
-      validator: (value: string) => /regex/.test(value),
-      message: 'Mensagem de validação em português'
-    }
-  }
-}, {
-  ...baseSchemaOptions,
-  toJSON: { virtuals: true }
-});
+### Async Queue Pattern
+- Use queues for non-critical async operations (emails, notifications)
+- Implement retry logic with exponential backoff
+- Track retry attempts and max retries
+- Process queue in background without blocking requests
+- Example: `emailService` with `emailQueue` and `processQueue()`
 
-// Pre-save hooks for data normalization
-ModelSchema.pre('save', function(next) {
-  // Normalize data (phone, CPF, etc.)
-  next();
-});
-
-// Virtual fields
-ModelSchema.virtual('computedField').get(function() {
-  return this.field1 + this.field2;
-});
-
-// Optimized compound indexes
-ModelSchema.index({ clinic: 1, field1: 1, field2: 1 }, { 
-  name: 'descriptive_index_name', 
-  background: true 
-});
-
-export const Model = mongoose.model<IModel & Document>('Model', ModelSchema);
-```
-
-### Validation Patterns
-```typescript
-// Express-validator usage
-const validationRules = [
-  body('fieldName')
-    .isMongoId()
-    .withMessage('Mensagem de erro em português'),
-  
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('E-mail inválido'),
-  
-  body('phone')
-    .matches(/^\(\d{2}\) \d{4,5}-\d{4}$/)
-    .withMessage('Telefone deve estar no formato brasileiro'),
-  
-  body('optional')
-    .optional()
-    .isLength({ max: 500 })
-    .withMessage('Campo muito longo')
-];
-
-// Validation check in route
-const errors = validationResult(req);
-if (!errors.isEmpty()) {
-  return res.status(400).json({
-    success: false,
-    message: 'Dados inválidos',
-    errors: errors.array()
-  });
-}
-```
-
-### Custom Validators
-```typescript
-// Brazilian-specific validators
-const validateCPF = (cpf: string | undefined): boolean => {
-  if (cpf == null) return true; // Optional field
-  const cleanCPF = cpf.replace(/[^\d]/g, '');
-  if (cleanCPF.length !== 11 || /^(\d)\1{10}$/.test(cleanCPF)) {
-    return false;
-  }
-  // CPF validation algorithm
-  // ... (checksum validation)
-  return true;
-};
-
-const validateBrazilianPhone = (phone: string | undefined): boolean => {
-  if (phone == null) return false;
-  const cleanPhone = phone.replace(/[^\d]/g, '');
-  const isMobile = cleanPhone.length === 11;
-  const isLandline = cleanPhone.length === 10;
-  if (!(isMobile || isLandline)) return false;
-  const areaCode = parseInt(cleanPhone.substring(0, 2));
-  return areaCode >= 11 && areaCode <= 99;
-};
-
-const validateBrazilianZipCode = (zipCode: string | undefined): boolean => {
-  if (zipCode == null) return true;
-  return /^\d{5}-?\d{3}$/.test(zipCode);
-};
-```
-
-### Error Handling
-```typescript
-// Consistent error handling pattern
-try {
-  // Operation
-} catch (err: any) {
-  console.error('Descriptive error context:', err);
-  return res.status(statusCode).json({
-    success: false,
-    error: err.message
-  });
-}
-
-// Service layer error handling
-catch (error) {
-  console.error('Error context:', error);
-  return {
-    success: false,
-    error: error instanceof Error ? error.message : 'Fallback message'
-  };
-}
-```
+### Database Patterns
+- Use Mongoose models for MongoDB
+- Populate related documents with `.populate()`
+- Select specific fields to minimize data transfer
+- Check clinic access before operations
+- Use indexes for frequently queried fields
 
 ## Frontend Patterns
 
 ### Component Structure
 ```typescript
-// Functional component with TypeScript
-interface ComponentProps {
+import React from 'react';
+import { useHook } from '../hooks/useHook';
+import type { ComponentProps } from '@topsmile/types';
+
+interface Props {
   prop1: string;
   prop2?: number;
-  onAction: (data: DataType) => void;
 }
 
-export const ComponentName: React.FC<ComponentProps> = ({ 
-  prop1, 
-  prop2 = defaultValue,
-  onAction 
-}) => {
+const ComponentName: React.FC<Props> = ({ prop1, prop2 }) => {
   // Hooks at top
-  const [state, setState] = useState<StateType>(initialValue);
-  const { data, isLoading, error } = useApiQuery<DataType>('/api/endpoint');
+  const { data, loading } = useHook();
   
   // Event handlers
-  const handleAction = useCallback((event: React.MouseEvent) => {
-    // Handler logic
-    onAction(data);
-  }, [data, onAction]);
+  const handleEvent = () => {
+    // Logic
+  };
   
-  // Effects
-  useEffect(() => {
-    // Effect logic
-  }, [dependencies]);
+  // Render logic
+  if (loading) return <div>Loading...</div>;
   
-  // Early returns for loading/error states
-  if (isLoading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage error={error} />;
-  
-  // Main render
   return (
-    <div className="component-name">
-      {/* JSX content */}
+    <div>
+      {/* JSX */}
     </div>
   );
 };
+
+export default ComponentName;
+```
+
+### Accessibility Requirements
+- **WCAG 2.1 AA Compliance**: All components must meet accessibility standards
+- **Semantic HTML**: Use proper HTML5 elements (header, nav, main, section, article)
+- **ARIA Attributes**: Add `aria-label`, `aria-labelledby`, `aria-describedby` where needed
+- **Keyboard Navigation**: All interactive elements accessible via keyboard
+- **Tab Order**: Logical tab order with `tabIndex="0"` for focusable elements
+- **Focus Management**: Visible focus indicators, focus traps for modals
+- **Screen Readers**: Use `aria-live` regions for dynamic content
+- **Color Contrast**: Minimum 4.5:1 for normal text, 3:1 for large text
+- **Form Labels**: Every input has associated label or `aria-label`
+- **Heading Hierarchy**: Proper h1-h6 structure without skipping levels
+
+### Testing Patterns
+```typescript
+describe('Component/Feature Name', () => {
+  it('should describe expected behavior', async () => {
+    // Arrange
+    const { container } = render(
+      <Provider>
+        <Component />
+      </Provider>
+    );
+    
+    // Act
+    const element = container.querySelector('selector');
+    
+    // Assert
+    expect(element).toHaveAttribute('expected');
+  });
+  
+  it('should have no accessibility violations', async () => {
+    const { container } = render(<Component />);
+    const results = await axe(container);
+    expect(results).toHaveNoViolations();
+  });
+});
 ```
 
 ### State Management
-```typescript
-// Zustand store pattern
-interface StoreState {
-  data: DataType[];
-  selectedItem: DataType | null;
-  isLoading: boolean;
-  error: string | null;
-}
+- **React Query**: Server state, caching, and data fetching
+- **Zustand**: Global UI state (auth, app settings)
+- **React Context**: Scoped state (auth, errors)
+- **Local State**: Component-specific state with `useState`
 
-interface StoreActions {
-  setData: (data: DataType[]) => void;
-  selectItem: (item: DataType | null) => void;
-  clearError: () => void;
-}
+### API Integration
+- Use centralized `apiService` for all API calls
+- Handle loading, error, and success states
+- Use React Query for automatic caching and refetching
+- Type API responses with shared types from `@topsmile/types`
 
-export const useStore = create<StoreState & StoreActions>((set) => ({
-  // Initial state
-  data: [],
-  selectedItem: null,
-  isLoading: false,
-  error: null,
-  
-  // Actions
-  setData: (data) => set({ data }),
-  selectItem: (item) => set({ selectedItem: item }),
-  clearError: () => set({ error: null })
-}));
-```
+## Security Practices
 
-### API Service Pattern
-```typescript
-// Service class with retry logic
-class ServiceName {
-  private readonly MAX_RETRIES = 3;
-  private readonly RETRY_INTERVALS = [1000, 2000, 5000];
-  
-  async method(params: ParamsType): Promise<ResultType> {
-    try {
-      const response = await fetch('/api/endpoint', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(params)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      return result;
-    } catch (error) {
-      console.error('Error context:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Error message'
-      };
-    }
-  }
-  
-  // Retry logic for critical operations
-  async retryMethod(params: ParamsType, retryCount: number = 0): Promise<ResultType> {
-    if (retryCount >= this.MAX_RETRIES) {
-      return { success: false, error: 'Maximum retry attempts exceeded' };
-    }
-    
-    const interval = this.RETRY_INTERVALS[retryCount] || 5000;
-    await new Promise(resolve => setTimeout(resolve, interval));
-    
-    return this.method(params);
-  }
-}
+### Authentication
+- JWT tokens with refresh mechanism
+- Secure token storage (httpOnly cookies preferred)
+- Token expiration and renewal
+- Multi-factor authentication (MFA) support
+- Session management with device tracking
 
-export const serviceName = new ServiceName();
-```
+### Authorization
+- Role-based access control (RBAC)
+- Resource-level permissions
+- Clinic-level data isolation
+- Ownership verification for user resources
 
-### Custom Hooks
-```typescript
-// Reusable hook pattern
-export const useCustomHook = <T>(initialValue: T) => {
-  const [state, setState] = useState<T>(initialValue);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  
-  const performAction = useCallback(async (params: ParamsType) => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const result = await apiCall(params);
-      setState(result);
-      return result;
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Unknown error');
-      setError(error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-  
-  return { state, isLoading, error, performAction };
-};
-```
+### Input Validation
+- Validate all user input on backend
+- Sanitize HTML content with DOMPurify
+- Prevent MongoDB injection with express-mongo-sanitize
+- Use parameterized queries
+- Validate file uploads
 
-## Database Patterns
+### Security Headers
+- Helmet.js for security headers
+- CORS configuration
+- CSRF protection with csurf
+- Rate limiting with express-rate-limit
+- Content Security Policy (CSP)
 
-### Multi-Tenancy
-- All models include `clinic` field for data isolation
-- Queries always filter by `clinicId` from authenticated user
-- Indexes include `clinic` as first field in compound indexes
-
-### Indexing Strategy
-```typescript
-// Compound indexes for common queries
-Schema.index({ clinic: 1, status: 1, date: -1 }, { 
-  name: 'clinic_status_date', 
-  background: true 
-});
-
-// Unique indexes with clinic scope
-Schema.index({ clinic: 1, email: 1 }, { 
-  unique: true, 
-  sparse: true,
-  name: 'clinic_email_unique'
-});
-
-// Text indexes for search
-Schema.index({ 
-  firstName: 'text', 
-  lastName: 'text', 
-  email: 'text' 
-}, { 
-  name: 'patient_search' 
-});
-```
-
-### Query Optimization
-```typescript
-// Use lean() for read-only queries
-const results = await Model.find(query).lean();
-
-// Select only needed fields
-const results = await Model.find(query)
-  .select('field1 field2 field3')
-  .lean();
-
-// Populate with field selection
-const results = await Model.find(query)
-  .populate('relation', 'name email')
-  .lean();
-
-// Parallel queries for better performance
-const [data1, data2] = await Promise.all([
-  Model1.find(query1).lean(),
-  Model2.find(query2).lean()
-]);
-```
-
-## Security Patterns
-
-### Authentication Flow
-1. JWT tokens stored in localStorage
-2. Access token (15min) + Refresh token (7 days)
-3. Token refresh on 401 responses
-4. Automatic logout on refresh failure
-
-### Authorization Checks
-```typescript
-// Route-level authorization
-router.post('/endpoint', 
-  authenticate,
-  authorize('admin', 'manager'),
-  handler
-);
-
-// Permission-based checks
-if (!hasPermission(user.role, 'patients:write')) {
-  return res.status(403).json({ 
-    success: false, 
-    error: 'Acesso negado' 
-  });
-}
-
-// Clinic-scoped data access
-if (resource.clinic.toString() !== user.clinicId) {
-  return res.status(403).json({ 
-    success: false, 
-    error: 'Acesso negado' 
-  });
-}
-```
-
-### Input Sanitization
-- All user inputs validated with express-validator
-- MongoDB queries sanitized with express-mongo-sanitize
-- HTML content sanitized with DOMPurify
-- File uploads validated for type and size
-
-## Testing Patterns
-
-### Unit Tests
-```typescript
-describe('ServiceName', () => {
-  describe('methodName', () => {
-    it('should return expected result for valid input', async () => {
-      const result = await service.method(validParams);
-      expect(result.success).toBe(true);
-      expect(result.data).toBeDefined();
-    });
-    
-    it('should handle error case appropriately', async () => {
-      const result = await service.method(invalidParams);
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-    });
-  });
-});
-```
-
-### Integration Tests
-```typescript
-describe('API Endpoint', () => {
-  it('should create resource successfully', async () => {
-    const response = await request(app)
-      .post('/api/endpoint')
-      .set('Authorization', `Bearer ${token}`)
-      .send(validData)
-      .expect(201);
-    
-    expect(response.body.success).toBe(true);
-    expect(response.body.data).toMatchObject(expectedShape);
-  });
-});
-```
+### Data Protection
+- Hash passwords with bcrypt (10+ rounds)
+- Never log sensitive data (passwords, tokens, PII)
+- Encrypt sensitive data at rest
+- Use HTTPS in production
+- Audit logging for sensitive operations
 
 ## Performance Optimization
 
-### Code Splitting
+### Backend
+- Database indexing for frequent queries
+- Connection pooling (MongoDB, Redis)
+- Caching with Redis
+- Pagination for large datasets
+- Lazy loading of related documents
+- Rate limiting to prevent abuse
+
+### Frontend
+- Code splitting with React.lazy()
+- Image optimization
+- Bundle size monitoring
+- Memoization with React.memo, useMemo, useCallback
+- Virtual scrolling for long lists
+- Debouncing/throttling for expensive operations
+
+## Internationalization
+
+### Language
+- **Primary Language**: Portuguese (Brazil)
+- **User Messages**: All UI text in Portuguese
+- **Error Messages**: Portuguese with technical details
+- **API Documentation**: English (Swagger/OpenAPI)
+- **Code Comments**: English
+- **Variable Names**: English
+
+### Date/Time
+- Use `date-fns` or `luxon` for date manipulation
+- Store dates in UTC
+- Display dates in user's timezone
+- Format dates according to Brazilian standards (DD/MM/YYYY)
+
+## Git Workflow
+
+### Commit Messages
+- Use conventional commits format
+- Write in English
+- Be descriptive but concise
+- Reference issue numbers when applicable
+
+### Branch Strategy
+- `main`: Production-ready code
+- `develop`: Integration branch
+- `feature/*`: New features
+- `fix/*`: Bug fixes
+- `refactor/*`: Code refactoring
+
+## Testing Requirements
+
+### Coverage Targets
+- Unit tests: >80% coverage
+- Integration tests: Critical paths
+- E2E tests: User workflows
+- Accessibility tests: All components
+
+### Test Organization
+- Co-locate tests with source files or in `tests/` directory
+- Use descriptive test names
+- Follow AAA pattern (Arrange, Act, Assert)
+- Mock external dependencies
+- Use test fixtures for consistent data
+
+## Common Patterns
+
+### Error Handling
 ```typescript
-// Lazy load components
-const ComponentName = lazy(() => import('./ComponentName'));
-
-// Use with Suspense
-<Suspense fallback={<LoadingSpinner />}>
-  <ComponentName />
-</Suspense>
-```
-
-### Memoization
-```typescript
-// Memoize expensive computations
-const memoizedValue = useMemo(() => {
-  return expensiveComputation(data);
-}, [data]);
-
-// Memoize callbacks
-const memoizedCallback = useCallback(() => {
-  doSomething(a, b);
-}, [a, b]);
-```
-
-### Query Optimization
-- Use TanStack Query for automatic caching
-- Implement pagination for large datasets
-- Use lean() queries for read-only operations
-- Batch database operations when possible
-
-## Common Idioms
-
-### Date Handling
-```typescript
-// Use date-fns for date operations
-import { format, addMinutes, startOfDay, endOfDay } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
-
-// Format dates consistently
-const formatted = format(date, 'yyyy-MM-dd HH:mm:ss');
-
-// Timezone-aware operations
-const dateInTz = formatInTimeZone(date, timezone, 'yyyy-MM-dd HH:mm:ss');
-```
-
-### Async Operations
-```typescript
-// Parallel operations
-const results = await Promise.all([
-  operation1(),
-  operation2(),
-  operation3()
-]);
-
-// Sequential with error handling
-for (const item of items) {
-  try {
-    await processItem(item);
-  } catch (error) {
-    console.error(`Failed to process ${item.id}:`, error);
-    // Continue or break based on requirements
-  }
+try {
+  const result = await operation();
+  return result;
+} catch (err: any) {
+  console.error('Context:', err);
+  throw new CustomError('User message', err);
 }
 ```
+
+### Async/Await
+- Always use async/await over promises
+- Handle errors with try-catch
+- Avoid callback hell
+- Use Promise.all() for parallel operations
 
 ### Type Guards
 ```typescript
-// Type narrowing
-function isErrorResponse(response: any): response is ErrorResponse {
-  return response && typeof response.error === 'string';
-}
-
-if (isErrorResponse(result)) {
-  // TypeScript knows result is ErrorResponse here
-  console.error(result.error);
+function isType(value: unknown): value is Type {
+  return typeof value === 'object' && value !== null && 'property' in value;
 }
 ```
 
-## Frequently Used Annotations
+### Shared Types
+- Import from `@topsmile/types` package
+- Never duplicate type definitions
+- Use type imports: `import type { User } from '@topsmile/types'`
+- Run `npm run migrate-types` to check for issues
 
-### Swagger/OpenAPI
-```typescript
-/**
- * @swagger
- * /api/endpoint:
- *   post:
- *     summary: Descrição em português
- *     description: Descrição detalhada em português
- *     tags: [TagName]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [field1, field2]
- *             properties:
- *               field1:
- *                 type: string
- *     responses:
- *       200:
- *         description: Sucesso
- *       400:
- *         description: Dados inválidos
- *       401:
- *         description: Não autorizado
- */
-```
+## Code Review Checklist
 
-### JSDoc Comments
-```typescript
-/**
- * Method description
- * IMPROVED: Recent enhancement description
- * FIXED: Bug fix description
- * ADDED: New feature description
- * 
- * @param param1 - Parameter description
- * @param param2 - Parameter description
- * @returns Return value description
- * @throws Error description
- */
-```
-
-## Best Practices Summary
-
-1. **Always validate input** - Use express-validator on backend, form validation on frontend
-2. **Handle errors gracefully** - Consistent error responses, user-friendly messages in Portuguese
-3. **Use transactions** - For critical operations that modify multiple documents
-4. **Optimize queries** - Use indexes, lean queries, field selection, and pagination
-5. **Type everything** - Explicit TypeScript types, avoid `any`
-6. **Test thoroughly** - Unit tests for logic, integration tests for APIs, E2E for flows
-7. **Document APIs** - Swagger annotations for all endpoints
-8. **Secure by default** - Authentication, authorization, input validation, sanitization
-9. **Performance matters** - Code splitting, memoization, lazy loading, caching
-10. **Consistent patterns** - Follow established patterns for maintainability
+- [ ] TypeScript strict mode compliance
+- [ ] Proper error handling
+- [ ] Input validation
+- [ ] Security considerations
+- [ ] Accessibility compliance
+- [ ] Test coverage
+- [ ] Documentation (JSDoc, Swagger)
+- [ ] Portuguese user messages
+- [ ] No console.log in production code
+- [ ] Proper type imports from @topsmile/types
+- [ ] Response format consistency
+- [ ] Authentication/authorization checks
