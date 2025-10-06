@@ -31,6 +31,7 @@ import authRoutes from "./routes/auth";
 import clinicalRoutes from "./routes/clinical";
 import schedulingRoutes from "./routes/scheduling";
 import patientRoutes from "./routes/patient";
+import patientAuthRoutes from "./routes/patient/patientAuth";
 import securityRoutes from "./routes/security";
 import providersRoutes from "./routes/providers";
 import appointmentTypesRoutes from "./routes/appointmentTypes";
@@ -53,6 +54,8 @@ import logger from "./config/logger";
 import pinoHttp from "pino-http";
 
 import { responseWrapper } from "./middleware/normalizeResponse";
+import { auditLogger } from './middleware/auditLogger';
+
 
 dotenv.config();
 
@@ -170,11 +173,22 @@ const validateEnv = () => {
 
 validateEnv();
 
-const httpLogger = pinoHttp({ logger });
+const httpLogger = pinoHttp({ 
+  logger,
+  customSuccessMessage: (req, res) => `${req.method} ${req.url} completed`,
+  customErrorMessage: (req, res, err) => `${req.method} ${req.url} failed`,
+  customLogLevel: (req, res, err) => {
+    if (res.statusCode >= 500) return 'error';
+    if (res.statusCode >= 400) return 'warn';
+    return 'info';
+  }
+});
 
 // ...
 
-app.use(httpLogger);
+if (process.env.NODE_ENV !== 'test') {
+  app.use(httpLogger);
+}
 
 // ...
 
@@ -271,6 +285,7 @@ const configureSecurityMiddleware = () => {
         "Authorization",
         "X-Device-ID",
         "X-Patient-ID",
+        "X-CSRF-Token",
         "x-correlation-id",
         "x-client-version",
       ],
@@ -308,7 +323,7 @@ const contactLimiter = createRateLimit(
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // 10 auth attempts
+  max: process.env.NODE_ENV === "production" ? 10 : 100, // 10 in prod, 100 in dev
   message: {
     success: false,
     message:
@@ -412,14 +427,22 @@ app.get("/api/csrf-token", (req: any, res: any, next: any) => {
 });
 
 // CSRF protection for state-changing operations
-const applyCSRF = (req: any, res: any, next: any) => {
+const applyCSRF = (req: any, res: any, next: any): void => {
   if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
     csrfProtection(req, res, next);
+    return;
   }
   next();
 };
 
-app.use("/api/auth", applyCSRF);
+app.use("/api/auth", (req, res, next) => {
+  if (req.path === "/refresh") return next();
+  applyCSRF(req, res, next);
+});
+app.use("/api/patient-auth", (req, res, next) => {
+  if (req.path === "/refresh") return next();
+  applyCSRF(req, res, next);
+});
 app.use("/api/contact", applyCSRF);
 app.use("/api/appointments", applyCSRF);
 app.use("/api/patients", applyCSRF);
@@ -436,11 +459,11 @@ app.use("/api", checkDatabaseConnection);
 app.use(responseWrapper);
 
 // Apply audit logging middleware (after auth, before routes)
-import { auditLogger } from './middleware/auditLogger';
 app.use('/api', auditLogger);
 
 // Mount routes
 app.use("/api/auth", authRoutes);
+app.use("/api/patient-auth", patientAuthRoutes);
 app.use("/api/clinical", authenticate, clinicalRoutes);
 app.use("/api/scheduling", authenticate, schedulingRoutes);
 app.use("/api/patients", authenticate, patientRoutes);

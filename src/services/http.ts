@@ -6,6 +6,7 @@ export const LOGOUT_EVENT = 'topsmile-logout';
 
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
+let csrfToken: string | null = null;
 
 const subscribeTokenRefresh = (cb: (token: string) => void) => {
   refreshSubscribers.push(cb);
@@ -102,10 +103,24 @@ export async function request<T = any>(
   const maxRetries = 3;
 
   const makeRequest = async () => {
-    const headers = new Headers({
+    // Fetch CSRF token if needed for state-changing operations
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(restOfOptions.method || 'GET') && !csrfToken) {
+      try {
+        const csrfRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: 'include' });
+        if (csrfRes.ok) {
+          const data = await csrfRes.json();
+          csrfToken = data.csrfToken;
+        }
+      } catch (e) {
+        console.warn('Failed to fetch CSRF token:', e);
+      }
+    }
+
+    const headers: HeadersInit = {
       'Content-Type': 'application/json',
-      ...(restOfOptions.headers || {})
-    });
+      ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+      ...(restOfOptions.headers as Record<string, string> || {})
+    };
 
     let config: RequestInit = {
       ...restOfOptions,
