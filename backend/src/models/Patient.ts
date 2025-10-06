@@ -1,6 +1,8 @@
-// backend/src/models/Patient.ts (Future feature)
+// backend/src/models/Patient.ts
 import mongoose, { Document, Schema } from 'mongoose';
 import { Patient as IPatient } from '@topsmile/types';
+import { baseSchemaFields, baseSchemaOptions } from './base/baseSchema';
+import { clinicScopedFields } from './mixins';
 
 const validateCPF = (cpf: string | undefined): boolean => {
   if (cpf == null) return true; // Optional field
@@ -93,6 +95,8 @@ const validateMedicalArray = (arr: string[]): boolean => {
 };
 
 const PatientSchema = new Schema<IPatient & Document>({
+    ...baseSchemaFields,
+    ...clinicScopedFields,
     firstName: {
         type: String,
         required: [true, 'Nome é obrigatório'],
@@ -166,11 +170,6 @@ const PatientSchema = new Schema<IPatient & Document>({
                 message: 'CEP deve estar no formato XXXXX-XXX'
             }
         }
-    },
-    clinic: {
-        type: Schema.Types.ObjectId,
-        ref: 'Clinic',
-        required: true
     },
     emergencyContact: {
         name: String,
@@ -262,15 +261,10 @@ const PatientSchema = new Schema<IPatient & Document>({
         default: 'active'
     }
 }, {
-    timestamps: true,
+    ...baseSchemaOptions,
     toJSON: {
-        virtuals: true,
-        transform: function (doc, ret) {
-            ret.id = ret._id;
-            delete (ret as any)._id;
-            delete (ret as any).__v;
-            return ret;
-        }
+        ...baseSchemaOptions.toJSON,
+        virtuals: true
     }
 });
 
@@ -332,11 +326,10 @@ PatientSchema.virtual('fullName').get(function() {
   return `${this.firstName} ${this.lastName}`.trim();
 });
 
-// Indexes
-PatientSchema.index({ clinic: 1 });
-PatientSchema.index({ email: 1 });
-PatientSchema.index({ phone: 1 });
-PatientSchema.index({ status: 1 });
-PatientSchema.index({ email: 1, phone: 1 });
+// Optimized compound indexes
+PatientSchema.index({ clinic: 1, status: 1, lastName: 1, firstName: 1 }, { name: 'clinic_patient_list', background: true });
+PatientSchema.index({ clinic: 1, phone: 1 }, { name: 'clinic_phone_lookup', background: true });
+PatientSchema.index({ clinic: 1, email: 1 }, { name: 'clinic_email_lookup', background: true });
+PatientSchema.index({ clinic: 1, cpf: 1 }, { name: 'clinic_cpf_lookup', background: true, sparse: true });
 
 export const Patient = mongoose.model<IPatient & Document>('Patient', PatientSchema);

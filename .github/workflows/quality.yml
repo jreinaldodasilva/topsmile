@@ -1,0 +1,71 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+      
+      - name: Lint frontend
+        run: npm run lint
+      
+      - name: Lint backend
+        run: cd backend && npm run lint
+
+  type-check:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd backend && npm ci
+      
+      - name: Type check frontend
+        run: npm run type-check
+      
+      - name: Type check backend
+        run: cd backend && npm run type-check
+
+  security-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+      
+      - name: Audit backend dependencies
+        run: cd backend && npm audit --audit-level=moderate
+        continue-on-error: true

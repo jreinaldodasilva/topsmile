@@ -1,0 +1,24 @@
+/* Form Design Tokens */
+:root {
+  --input-height-sm: 32px;
+  --input-height-md: 40px;
+  --input-height-lg: 48px;
+  --input-padding-x: 12px;
+  --input-padding-y: 8px;
+  --input-radius: 6px;
+  --input-border-width: 1px;
+  --input-border-color: #d1d5db;
+  --input-border-color-focus: #3b82f6;
+  --input-border-color-error: #ef4444;
+  --input-bg: white;
+  --input-bg-disabled: #f3f4f6;
+  --input-text-color: #1f2937;
+  --input-placeholder-color: #9ca3af;
+  --label-font-size: 14px;
+  --label-font-weight: 500;
+  --label-color: #374151;
+  --error-color: #ef4444;
+  --error-font-size: 12px;
+  --helper-font-size: 12px;
+  --helper-color: #6b7280;
+}

@@ -1,29 +1,23 @@
-import { lazy } from 'react';
-import type { Patient } from '@topsmile/types';
-
-
-// Lazy load heavy components to improve initial bundle size
-export const LazyContactManagement = lazy(() => import('../pages/Admin/ContactManagement'));
-
-export const LazyCalendarPage = lazy(() => import('../pages/Calendar/CalendarPage'));
-
-export const LazyPatientDashboard = lazy(() => import('../pages/Patient/Dashboard/PatientDashboard'));
-
-export const LazyFormRenderer = lazy(() => import('../pages/FormRenderer/FormRendererPage'));
-
-export const LazyPaymentComponents = lazy(() => import('../components/Payment/PaymentRetryModal'));
-
-// Utility function to preload components
+// src/utils/lazyImports.ts
 export const preloadComponent = (componentImport: () => Promise<any>) => {
-  const componentImportFunc = componentImport;
-  componentImportFunc();
+  componentImport();
 };
 
-// Preload critical components after initial render
 export const preloadCriticalComponents = () => {
-  // Preload components that are likely to be used soon
   setTimeout(() => {
-    preloadComponent(() => import('../pages/Admin/ContactManagement'));
-    preloadComponent(() => import('../pages/Calendar/CalendarPage'));
+    preloadComponent(() => import('../pages/Login/LoginPage'));
+    preloadComponent(() => import('../pages/Patient/Login/PatientLoginPage'));
   }, 2000);
+};
+
+export const preloadAdminComponents = () => {
+  preloadComponent(() => import('../pages/Admin/ContactManagement'));
+  preloadComponent(() => import('../pages/Admin/PatientManagement'));
+  preloadComponent(() => import('../pages/Admin/AppointmentCalendar'));
+};
+
+export const preloadPatientComponents = () => {
+  preloadComponent(() => import('../pages/Patient/Dashboard/PatientDashboard'));
+  preloadComponent(() => import('../pages/Patient/Appointment/PatientAppointmentsList'));
+  preloadComponent(() => import('../pages/Patient/Appointment/PatientAppointmentBooking'));
 };

@@ -21,6 +21,10 @@ Welcome to the TopSmile Dental Practice Management System documentation. This in
 ### 🚀 Deployment
 - **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** - Production deployment guide with migration scripts
 
+### 🔧 Refactoring
+- **[Refactoring Plan](REFACTORING_PLAN.md)** - Comprehensive 6-week refactoring strategy
+- **[Refactoring Quick Start](REFACTORING_QUICKSTART.md)** - Week 1 immediate action items
+
 ---
 
 ## 🗂️ Documentation by Topic
@@ -33,7 +37,9 @@ Welcome to the TopSmile Dental Practice Management System documentation. This in
 ### For Developers
 1. [Quick Reference](QUICK_REFERENCE.md) - API endpoints, commands, and common patterns
 2. [Implementation Summary](IMPLEMENTATION_SUMMARY.md) - Technical specifications and architecture
-3. [README](../README.md) - Setup and development workflow
+3. [Refactoring Plan](REFACTORING_PLAN.md) - Code consolidation and optimization strategy
+4. [Refactoring Quick Start](REFACTORING_QUICKSTART.md) - Immediate refactoring tasks
+5. [README](../README.md) - Setup and development workflow
 
 ### For DevOps/System Administrators
 1. [Deployment Checklist](DEPLOYMENT_CHECKLIST.md) - Complete deployment guide
@@ -114,6 +120,9 @@ Welcome to the TopSmile Dental Practice Management System documentation. This in
 - **API Endpoints**: 20+
 - **Frontend Components**: 40+
 - **Database Indexes**: 50+
+- **Routes**: 30+ individual files
+- **Services**: 18 service files
+- **Refactoring Status**: Planning phase
 
 See [Accomplishments Report](ACCOMPLISHMENTS.md#-by-the-numbers) for detailed metrics.
 
@@ -153,6 +162,9 @@ See [Implementation Schedule](implementation-schedule.md) for detailed progress 
 ## 🔄 Document Updates
 
 ### Version History
+- **v1.1** (December 2024) - Refactoring documentation added
+  - Refactoring Plan
+  - Refactoring Quick Start
 - **v1.0** (December 2024) - Initial documentation set
   - Implementation Summary
   - Quick Reference
@@ -222,6 +234,6 @@ For technical questions:
 
 ---
 
-**Index Version**: 1.0  
+**Index Version**: 1.1  
 **Last Updated**: December 2024  
 **Maintained By**: TopSmile Development Team

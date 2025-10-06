@@ -1,0 +1,35 @@
+Index Analysis Results
+======================
+Date: December 2024
+Database: TopSmile
+
+Key Findings:
+-------------
+1. Most indexes show 0 operations (unused since last server restart)
+2. All indexes have "Last used" dates, indicating they were created but not actively used
+3. Many single-field indexes that could be covered by compound indexes
+
+Collections Analyzed:
+--------------------
+- contacts: 17 indexes (most unused)
+- appointments: Multiple indexes
+- patients: Multiple indexes
+- providers: Multiple indexes
+- users: Multiple indexes
+
+Recommendations:
+---------------
+1. Remove unused single-field indexes covered by compound indexes
+2. Keep compound indexes for common query patterns
+3. Monitor index usage after removal
+4. Consider adding missing compound indexes for frequent queries
+
+Action Items:
+------------
+- Review each collection's query patterns
+- Remove redundant indexes
+- Add missing compound indexes
+- Re-run analysis after changes
+
+Note: Index usage stats reset on server restart, so low usage may not indicate truly unused indexes.
+Consider monitoring over a longer period in production.

@@ -1,6 +1,8 @@
 // backend/src/services/appointmentTypeService.ts
 import { AppointmentType as IAppointmentType } from '@topsmile/types';
 import { AppointmentType as AppointmentTypeModel } from '../models/AppointmentType';
+import { cacheService, CacheKeys } from '../utils/cache';
+import { CacheInvalidator } from '../utils/cacheInvalidation';
 import mongoose from 'mongoose';
 
 export interface CreateAppointmentTypeData {
@@ -111,10 +113,19 @@ class AppointmentTypeService {
                 throw new Error('ID do tipo de agendamento inválido');
             }
 
+            // Try cache first
+            const cacheKey = CacheKeys.appointmentType(typeId);
+            const cached = await cacheService.get<IAppointmentType>(cacheKey);
+            if (cached) return cached;
+
             const appointmentType = await AppointmentTypeModel.findOne({
                 _id: typeId,
                 clinic: clinicId
             }).populate('clinic', 'name');
+
+            if (appointmentType) {
+                await cacheService.set(cacheKey, appointmentType, 600);
+            }
 
             return appointmentType;
         } catch (error) {
@@ -179,7 +190,12 @@ class AppointmentTypeService {
                 }
             });
 
-            return await appointmentType.save();
+            const updated = await appointmentType.save();
+            
+            // Invalidate cache
+            await CacheInvalidator.invalidateAppointmentType(typeId, clinicId);
+            
+            return updated;
         } catch (error) {
             if (error instanceof Error) {
                 throw error;
@@ -206,6 +222,10 @@ class AppointmentTypeService {
                 { new: true }
             );
 
+            if (appointmentType) {
+                await CacheInvalidator.invalidateAppointmentType(typeId, clinicId);
+            }
+            
             return !!appointmentType;
         } catch (error) {
             if (error instanceof Error) {
@@ -300,12 +320,21 @@ class AppointmentTypeService {
                 throw new Error('ID da clínica inválido');
             }
 
-            return await AppointmentTypeModel.find({
+            // Try cache first
+            const cacheKey = CacheKeys.appointmentTypes(clinicId);
+            const cached = await cacheService.get<IAppointmentType[]>(cacheKey);
+            if (cached) return cached;
+
+            const types = await AppointmentTypeModel.find({
                 clinic: clinicId,
                 isActive
             })
             .sort({ name: 1 })
             .populate('clinic', 'name');
+
+            await cacheService.set(cacheKey, types, 600);
+            
+            return types;
         } catch (error) {
             if (error instanceof Error) {
                 throw error;

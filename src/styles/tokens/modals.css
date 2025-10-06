@@ -1,0 +1,15 @@
+/* Modal Design Tokens */
+:root {
+  --modal-overlay-bg: rgba(0, 0, 0, 0.5);
+  --modal-bg: white;
+  --modal-radius: 12px;
+  --modal-padding: 24px;
+  --modal-max-width-sm: 400px;
+  --modal-max-width-md: 600px;
+  --modal-max-width-lg: 800px;
+  --modal-header-padding: 20px 24px;
+  --modal-body-padding: 24px;
+  --modal-footer-padding: 16px 24px;
+  --modal-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --modal-z-index: 1000;
+}

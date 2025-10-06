@@ -33,12 +33,10 @@ const ContactSchema = new Schema<IContact & Document>(
     status: {
       type: String,
       default: "new",
-      index: true,
     },
     source: {
       type: String,
       default: "website_contact_form",
-      index: true, // IMPROVED: Add index for analytics
     },
     notes: {
       type: String,
@@ -52,17 +50,13 @@ const ContactSchema = new Schema<IContact & Document>(
     assignedToClinic: {
       type: Schema.Types.ObjectId,
       ref: "Clinic",
-      index: true, // CRITICAL: Index for data isolation
     },
     followUpDate: {
       type: Date,
-      index: true, // IMPROVED: Index for follow-up queries
     },
-    // ADDED: Priority field for lead management
     priority: {
       type: String,
       default: "normal",
-      index: true,
     },
     leadScore: {
       type: Number,
@@ -70,7 +64,6 @@ const ContactSchema = new Schema<IContact & Document>(
     },
     lastContactedAt: {
       type: Date,
-      index: true,
     },
     conversionDetails: {
       convertedAt: Date,
@@ -105,17 +98,8 @@ const ContactSchema = new Schema<IContact & Document>(
   }
 );
 
-// IMPROVED: Performance indexes for common queries
-ContactSchema.index({ email: 1 });
-ContactSchema.index({ status: 1, createdAt: -1 }); // Status with time sorting
-ContactSchema.index({ assignedToClinic: 1, status: 1 }); // Clinic isolation + status
-ContactSchema.index({ priority: 1, status: 1 }); // Priority management
-ContactSchema.index({ createdAt: -1 }); // Chronological queries
-ContactSchema.index({ followUpDate: 1, status: 1 }); // Follow-up management
-ContactSchema.index({ leadScore: -1 }); // Lead scoring queries
-ContactSchema.index({ source: 1, createdAt: -1 }); // Source analytics
-
-// CRITICAL: Add compound index for dashboard queries
+// Optimized indexes - removed redundant single-field indexes
+// Compound index covers: assignedToClinic, status, priority, createdAt queries
 ContactSchema.index(
   {
     assignedToClinic: 1,
@@ -129,7 +113,10 @@ ContactSchema.index(
   }
 );
 
-// ADDED: Text search index for name, email, clinic
+// Follow-up queries
+ContactSchema.index({ followUpDate: 1, status: 1 });
+
+// Text search
 ContactSchema.index(
   {
     name: "text",
@@ -141,14 +128,6 @@ ContactSchema.index(
     name: "contact_text_search",
   }
 );
-
-// IMPROVED: Compound indexes for complex queries
-ContactSchema.index({
-  assignedToClinic: 1,
-  status: 1,
-  priority: -1,
-  createdAt: -1,
-}); // Clinic dashboard queries
 
 // ADDED: Pre-save middleware for data validation
 ContactSchema.pre("save", function (this: IContact & Document, next) {

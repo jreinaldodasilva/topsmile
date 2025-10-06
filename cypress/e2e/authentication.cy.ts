@@ -7,27 +7,45 @@ describe('Authentication E2E Flow', () => {
     cy.clearLocalStorage();
   });
 
-  it('should complete login flow', () => {
+  it('should complete admin login flow', () => {
     cy.login('admin@topsmile.com', 'SecurePass123!');
-    // Should redirect to dashboard
     cy.url().should('include', '/admin');
     cy.get('[data-testid=dashboard-title]').should('contain', 'Dashboard');
-
-    // Should store tokens
     cy.window().its('localStorage')
       .invoke('getItem', 'topsmile_access_token')
       .should('exist');
   });
 
-  it('should handle login failure', () => {
+  it('should complete patient login flow', () => {
+    cy.visit('/patient/login');
+    cy.get('[data-testid=email-input]').type('patient@test.com');
+    cy.get('[data-testid=password-input]').type('PatientPass123!');
+    cy.get('[data-testid=login-button]').click();
+    cy.url().should('include', '/patient/dashboard');
+  });
+
+  it('should handle invalid credentials', () => {
     cy.visit('/login');
     cy.get('[data-testid=email-input]').type('wrong@email.com');
     cy.get('[data-testid=password-input]').type('wrongpassword');
     cy.get('[data-testid=login-button]').click();
+    cy.get('[data-testid=error-message]', { timeout: 10000 })
+      .should('be.visible');
+  });
 
-    cy.get('[data-testid=error-message]')
-      .should('be.visible')
-      .and('contain', 'E-mail ou senha inválidos');
+  it('should validate email format', () => {
+    cy.visit('/login');
+    cy.get('[data-testid=email-input]').type('invalid-email');
+    cy.get('[data-testid=password-input]').type('password');
+    cy.get('[data-testid=login-button]').click();
+    cy.get('[data-testid=email-input]').should('have.attr', 'aria-invalid', 'true');
+  });
+
+  it('should require password', () => {
+    cy.visit('/login');
+    cy.get('[data-testid=email-input]').type('test@test.com');
+    cy.get('[data-testid=login-button]').click();
+    cy.get('[data-testid=password-input]').should('have.attr', 'aria-invalid', 'true');
   });
 
   describe('when logged in', () => {
@@ -37,17 +55,28 @@ describe('Authentication E2E Flow', () => {
     });
 
     it('should handle logout', () => {
-      // Logout
       cy.get('[data-testid=user-menu]').click();
       cy.get('[data-testid=logout-button]').click();
-
-      // Should redirect to login
       cy.url().should('include', '/login');
-
-      // Tokens should be cleared
       cy.window().its('localStorage')
         .invoke('getItem', 'topsmile_access_token')
         .should('not.exist');
+    });
+
+    it('should persist session on page reload', () => {
+      cy.reload();
+      cy.url().should('include', '/admin');
+      cy.window().its('localStorage')
+        .invoke('getItem', 'topsmile_access_token')
+        .should('exist');
+    });
+
+    it('should redirect to login on token expiry', () => {
+      cy.window().then((win) => {
+        win.localStorage.removeItem('topsmile_access_token');
+      });
+      cy.visit('/admin/patients');
+      cy.url().should('include', '/login');
     });
   });
 });

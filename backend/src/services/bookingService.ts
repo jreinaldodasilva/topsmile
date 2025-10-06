@@ -2,7 +2,7 @@
 import { Appointment } from '../models/Appointment';
 import { Provider } from '../models/Provider';
 import { AppointmentType } from '../models/AppointmentType';
-import mongoose from 'mongoose';
+import { NotFoundError, ConflictError } from '../utils/errors';
 
 interface AvailabilitySlot {
     start: Date;
@@ -20,7 +20,7 @@ class BookingService {
         providerPreference?: string
     ): Promise<AvailabilitySlot[]> {
         const appointmentType = await AppointmentType.findById(appointmentTypeId);
-        if (!appointmentType) throw new Error('Tipo de agendamento não encontrado');
+        if (!appointmentType) throw new NotFoundError('Tipo de agendamento');
 
         const duration = appointmentType.duration || 30;
         const startOfDay = new Date(date);
@@ -80,7 +80,7 @@ class BookingService {
         notes?: string;
     }) {
         const appointmentType = await AppointmentType.findById(data.appointmentTypeId);
-        if (!appointmentType) throw new Error('Tipo de agendamento não encontrado');
+        if (!appointmentType) throw new NotFoundError('Tipo de agendamento');
 
         const duration = appointmentType.duration || 30;
         const scheduledEnd = new Date(data.scheduledStart.getTime() + duration * 60000);
@@ -95,7 +95,7 @@ class BookingService {
         });
 
         if (conflicts.length > 0) {
-            throw new Error('Horário não disponível');
+            throw new ConflictError('Horário não disponível');
         }
 
         const appointment = new Appointment({

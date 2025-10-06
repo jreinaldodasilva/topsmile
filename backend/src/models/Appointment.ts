@@ -1,18 +1,17 @@
-// backend/src/models/Appointment.ts - ENHANCED VERSION with Advanced Features
+// backend/src/models/Appointment.ts
 import mongoose, { Document, Schema, Types } from 'mongoose';
 import { Appointment as IAppointment, AppointmentStatus, UserRole } from '@topsmile/types';
+import { baseSchemaFields, baseSchemaOptions } from './base/baseSchema';
+import { clinicScopedFields, auditableFields } from './mixins';
 
 const AppointmentSchema = new Schema<IAppointment & Document>({
+    ...baseSchemaFields,
+    ...clinicScopedFields,
+    ...auditableFields,
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
         required: [true, 'Paciente é obrigatório'],
-        index: true
-    },
-    clinic: {
-        type: Schema.Types.ObjectId,
-        ref: 'Clinic',
-        required: [true, 'Clínica é obrigatória'],
         index: true
     },
     provider: {
@@ -198,24 +197,8 @@ const AppointmentSchema = new Schema<IAppointment & Document>({
         type: String,
         enum: ['synced', 'pending', 'error'],
         default: 'synced'
-    },
-
-    createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
     }
-}, {
-    timestamps: true,
-    toJSON: {
-        transform: function(doc, ret: any) {
-            ret.id = ret._id;
-            delete ret['_id'];
-            delete ret['__v'];
-            return ret;
-        }
-    }
-});
+}, baseSchemaOptions);
 
 // ENHANCED: All original performance indexes plus new ones
 

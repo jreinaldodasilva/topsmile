@@ -9,6 +9,8 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/types/**'
   ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html', 'json'],
   coverageThreshold: {
     global: {
       branches: 70,
@@ -17,6 +19,13 @@ module.exports = {
       statements: 70
     }
   },
+  reporters: [
+    'default',
+    ['jest-junit', {
+      outputDirectory: './reports',
+      outputName: 'junit-backend.xml',
+    }],
+  ],
   testTimeout: 60000,
   maxWorkers: 4
 };

@@ -26,39 +26,22 @@ import {
   AuthenticatedRequest,
 } from "./middleware/auth";
 import { v4 as uuidv4 } from "uuid";
+// Route groups
 import authRoutes from "./routes/auth";
-import calendarRoutes from "./routes/calendar";
-import appointmentsRoutes from "./routes/appointments";
-import patientsRoutes from "./routes/patients";
+import clinicalRoutes from "./routes/clinical";
+import schedulingRoutes from "./routes/scheduling";
+import patientRoutes from "./routes/patient";
+import securityRoutes from "./routes/security";
 import providersRoutes from "./routes/providers";
 import appointmentTypesRoutes from "./routes/appointmentTypes";
 import formsRoutes from "./routes/forms";
 import docsRoutes from "./routes/docs";
-
-import patientAuthRoutes from "./routes/patientAuth";
-import medicalHistoryRoutes from "./routes/medicalHistory";
-import insuranceRoutes from "./routes/insurance";
-import treatmentPlansRoutes from "./routes/treatmentPlans";
-import clinicalNotesRoutes from "./routes/clinicalNotes";
-import prescriptionsRoutes from "./routes/prescriptions";
-import dentalChartsRoutes from "./routes/dentalCharts";
-import consentFormsRoutes from "./routes/consentForms";
-import mfaRoutes from "./routes/mfa";
-import smsVerificationRoutes from "./routes/smsVerification";
-import passwordPolicyRoutes from "./routes/passwordPolicy";
-import auditLogsRoutes from "./routes/auditLogs";
-import sessionsRoutes from "./routes/sessions";
 import permissionsRoutes from "./routes/permissions";
 import roleManagementRoutes from "./routes/roleManagement";
-import operatoriesRoutes from "./routes/operatories";
-import waitlistRoutes from "./routes/waitlist";
-import bookingRoutes from "./routes/booking";
-import familyRoutes from "./routes/family";
-import documentsRoutes from "./routes/documents";
-
-// Contact routes
+import consentFormsRoutes from "./routes/consentForms";
 import contactRoutes from "./routes/contact";
 import adminRoutes from "./routes/admin";
+import analyticsRoutes from "./routes/analytics";
 
 // Error handling
 import { errorHandler } from "./middleware/errorHandler";
@@ -458,35 +441,20 @@ app.use('/api', auditLogger);
 
 // Mount routes
 app.use("/api/auth", authRoutes);
-app.use("/api/calendar", calendarRoutes);
-app.use("/api/appointments", appointmentsRoutes);
-app.use("/api/patients", patientsRoutes);
+app.use("/api/clinical", authenticate, clinicalRoutes);
+app.use("/api/scheduling", authenticate, schedulingRoutes);
+app.use("/api/patients", authenticate, patientRoutes);
+app.use("/api/security", authenticate, securityRoutes);
 app.use("/api/providers", providersRoutes);
 app.use("/api/appointment-types", appointmentTypesRoutes);
 app.use("/api/forms", formsRoutes);
 app.use("/api/docs", docsRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/patient-auth", patientAuthRoutes);
-app.use("/api/medical-history", medicalHistoryRoutes);
-app.use("/api/insurance", insuranceRoutes);
-app.use("/api/treatment-plans", treatmentPlansRoutes);
-app.use("/api/clinical-notes", clinicalNotesRoutes);
-app.use("/api/prescriptions", prescriptionsRoutes);
-app.use("/api/dental-charts", dentalChartsRoutes);
-app.use("/api/consent-forms", consentFormsRoutes);
-app.use("/api/mfa", mfaRoutes);
-app.use("/api/sms-verification", smsVerificationRoutes);
-app.use("/api/password-policy", passwordPolicyRoutes);
-app.use("/api/audit-logs", auditLogsRoutes);
-app.use("/api/sessions", sessionsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/role-management", roleManagementRoutes);
-app.use("/api/operatories", operatoriesRoutes);
-app.use("/api/waitlist", waitlistRoutes);
-app.use("/api/booking", bookingRoutes);
-app.use("/api/family", familyRoutes);
-app.use("/api/documents", documentsRoutes);
+app.use("/api/consent-forms", consentFormsRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {

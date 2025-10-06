@@ -112,6 +112,8 @@ The API follows RESTful conventions with JWT authentication:
 - **[Implementation Summary](docs/IMPLEMENTATION_SUMMARY.md)** - Complete overview of all implemented features
 - **[Quick Reference](docs/QUICK_REFERENCE.md)** - Developer quick reference guide
 - **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)** - Production deployment guide
+- **[Refactoring Plan](docs/REFACTORING_PLAN.md)** 🆕 - Comprehensive 6-week refactoring strategy
+- **[Refactoring Quick Start](docs/REFACTORING_QUICKSTART.md)** 🆕 - Week 1 immediate action items
 - **[Enhancement Plan](docs/topsmile-enhancement-plan.md)** - Original enhancement plan
 - **[Implementation Schedule](docs/implementation-schedule.md)** - Detailed task tracking
 

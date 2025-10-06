@@ -1,21 +1,51 @@
+// backend/src/middleware/rateLimiter.ts
 import rateLimit from 'express-rate-limit';
+import { Request, Response } from 'express';
 
-export const patientAuthLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 attempts per window
-    message: { 
-        success: false, 
-        message: 'Muitas tentativas de autenticação. Tente novamente em 15 minutos.' 
-    },
-    standardHeaders: true,
-    legacyHeaders: false
-});
+export const createRateLimiter = (
+    windowMs: number,
+    max: number,
+    message: string,
+    keyGenerator?: (req: Request) => string
+) => {
+    return rateLimit({
+        windowMs,
+        max,
+        message: { success: false, message },
+        standardHeaders: true,
+        legacyHeaders: false,
+        keyGenerator,
+        handler: (req: Request, res: Response) => {
+            console.warn(`Rate limit exceeded: ${req.method} ${req.path} from ${req.ip}`);
+            res.status(429).json({ success: false, message });
+        }
+    });
+};
 
-export const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // 3 password reset attempts per hour
-    message: { 
-        success: false, 
-        message: 'Muitas solicitações de redefinição. Tente novamente em 1 hora.' 
-    }
-});
+// Pre-configured rate limiters
+export const rateLimiters = {
+    auth: createRateLimiter(
+        15 * 60 * 1000,
+        10,
+        'Muitas tentativas de autenticação. Tente novamente em 15 minutos.',
+        (req: Request) => req.body?.email ? `auth_${req.body.email}` : `auth_ip_${req.ip}`
+    ),
+
+    contact: createRateLimiter(
+        15 * 60 * 1000,
+        5,
+        'Muitos formulários enviados. Tente novamente em 15 minutos.'
+    ),
+
+    passwordReset: createRateLimiter(
+        60 * 60 * 1000,
+        3,
+        'Muitas solicitações de redefinição de senha. Tente novamente em 1 hora.'
+    ),
+
+    api: createRateLimiter(
+        15 * 60 * 1000,
+        process.env.NODE_ENV === 'production' ? 100 : 1000,
+        'Muitas requisições. Tente novamente em 15 minutos.'
+    )
+};

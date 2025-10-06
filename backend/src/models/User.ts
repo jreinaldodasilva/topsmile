@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import { User as IUser, UserRole } from '@topsmile/types';
 import { authMixin } from './mixins/authMixin';
 import { emailField, passwordField, commonValidators } from '../utils/validators';
+import { baseSchemaFields, baseSchemaOptions } from './base/baseSchema';
+import { clinicScopedFields } from './mixins';
 
 const UserSchema = new Schema<IUser & Document>({
     name: {
@@ -25,10 +27,7 @@ const UserSchema = new Schema<IUser & Document>({
         enum: Object.values(UserRole),
         default: UserRole.ADMIN
     },
-    clinic: {
-        type: Schema.Types.ObjectId,
-        ref: 'Clinic'
-    },
+    ...clinicScopedFields,
     ...authMixin.fields,
     passwordResetToken: {
         type: String,
@@ -72,14 +71,17 @@ const UserSchema = new Schema<IUser & Document>({
         type: Boolean,
         default: false
     }
+    ...baseSchemaFields
 }, {
-    timestamps: true,
+    ...baseSchemaOptions,
     toJSON: {
+        ...baseSchemaOptions.toJSON,
         transform: function (doc, ret) {
             ret.id = ret._id;
             delete (ret as any)._id;
             delete (ret as any).__v;
-            delete (ret as any).password; // Remove password from JSON output
+            delete (ret as any).password;
+            if (ret.isDeleted) delete ret.isDeleted;
             return ret;
         }
     }

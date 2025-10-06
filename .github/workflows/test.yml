@@ -51,6 +51,13 @@ jobs:
           file: ./backend/coverage/lcov.info
           flags: backend
           name: backend-coverage
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-test-results
+          path: backend/reports/junit-backend.xml
 
   frontend-tests:
     runs-on: ubuntu-latest
@@ -67,16 +74,23 @@ jobs:
         run: npm ci
       
       - name: Run frontend tests
-        run: npm run test:coverage:frontend
+        run: npm run test:frontend:ci
         env:
           CI: true
       
       - name: Upload frontend coverage
         uses: codecov/codecov-action@v3
         with:
-          file: ./coverage/lcov.info
+          file: ./coverage/frontend/lcov.info
           flags: frontend
           name: frontend-coverage
+      
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: frontend-test-results
+          path: reports/junit-frontend.xml
 
   e2e-tests:
     runs-on: ubuntu-latest

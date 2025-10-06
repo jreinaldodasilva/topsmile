@@ -1,5 +1,6 @@
 // backend/src/services/familyService.ts
 import { Patient } from '../models/Patient';
+import { NotFoundError } from '../utils/errors';
 import mongoose from 'mongoose';
 
 class FamilyService {
@@ -9,7 +10,7 @@ class FamilyService {
 
         try {
             const primary = await Patient.findById(primaryPatientId).session(session);
-            if (!primary) throw new Error('Paciente principal não encontrado');
+            if (!primary) throw new NotFoundError('Paciente principal');
 
             const members = await Patient.find({
                 _id: { $in: memberIds },
@@ -17,7 +18,7 @@ class FamilyService {
             }).session(session);
 
             if (members.length !== memberIds.length) {
-                throw new Error('Alguns membros da família não foram encontrados');
+                throw new NotFoundError('Alguns membros da família');
             }
 
             primary.familyMembers = memberIds.map(id => new mongoose.Types.ObjectId(id));
@@ -49,7 +50,7 @@ class FamilyService {
             const primary = await Patient.findById(primaryPatientId).session(session);
             const member = await Patient.findById(memberId).session(session);
 
-            if (!primary || !member) throw new Error('Paciente não encontrado');
+            if (!primary || !member) throw new NotFoundError('Paciente');
 
             primary.familyMembers = primary.familyMembers?.filter(
                 id => id.toString() !== memberId

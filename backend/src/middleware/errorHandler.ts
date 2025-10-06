@@ -1,7 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { isAppError, AppError, ErrorResponse } from '../types/errors';
-import type { User } from '@topsmile/types';
+import { AppError } from '../utils/errors';
+import { ErrorLogger } from '../utils/errorLogger';
 
+interface ErrorResponse {
+  success: false;
+  message: string;
+  errors?: any[];
+  code?: string;
+  meta: {
+    timestamp: string;
+    requestId?: string;
+  };
+}
 
 export const errorHandler = (
   error: Error,
@@ -9,55 +19,49 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ): Response<ErrorResponse> => {
-  // Log error with context
-  console.error('Error occurred:', {
-    message: error.message,
-    stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-    path: req.path,
-    method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent'),
-    timestamp: new Date().toISOString()
-  });
+  ErrorLogger.log(error, `${req.method} ${req.path}`);
 
-  const rawErrors = (error as any).errors;
-  let normalizedErrors = Array.isArray(rawErrors)
-    ? rawErrors.map((e: any) => (typeof e === 'string' ? { msg: e } : e))
-    : undefined;
-
-  if (!normalizedErrors && error.message) {
-    normalizedErrors = [{ msg: error.message, param: 'general' }];
+  // Handle custom AppError
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json(error.toJSON());
   }
 
-  // Handle known AppErrors
-  if (isAppError(error)) {
-    const errorResponse: ErrorResponse = {
+  // Handle Mongoose validation errors
+  if (error.name === 'ValidationError') {
+    return res.status(400).json({
       success: false,
-      message: error.message,
-      errors: normalizedErrors,
+      message: 'Erro de validação',
+      errors: Object.values((error as any).errors).map((e: any) => e.message),
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (req as any).requestId // Assuming requestId is attached to req
+        requestId: (req as any).requestId
       }
-    };
+    });
+  }
 
-    return res.status(error.statusCode).json(errorResponse);
+  // Handle Mongoose CastError
+  if (error.name === 'CastError') {
+    return res.status(400).json({
+      success: false,
+      message: 'ID inválido',
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
+    });
   }
 
   // Handle unknown errors
   const errorResponse: ErrorResponse = {
     success: false,
-    message: 'Erro interno do servidor',
-    errors: normalizedErrors,
+    message: process.env.NODE_ENV === 'production' ? 'Erro interno do servidor' : error.message,
     meta: {
       timestamp: new Date().toISOString(),
-      requestId: (req as any).requestId // Assuming requestId is attached to req
+      requestId: (req as any).requestId
     }
   };
 
-  // In development, provide more details for debugging purposes, but not in production.
-  if (process.env.NODE_ENV !== 'production') {
-    (errorResponse as any).debug = error.message;
+  if (process.env.NODE_ENV === 'development') {
     (errorResponse as any).stack = error.stack;
   }
 

@@ -1,6 +1,8 @@
 // backend/src/services/appointmentService.ts
 import { Appointment as IAppointment } from '@topsmile/types';
 import { Appointment as AppointmentModel } from '../models/Appointment';
+import { BaseService } from './base/BaseService';
+import { ValidationError, ConflictError } from '../utils/errors';
 import mongoose from 'mongoose';
 
 export interface CreateAppointmentData {
@@ -47,238 +49,148 @@ export interface AppointmentFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-class AppointmentService {
+class AppointmentService extends BaseService<IAppointment> {
+  constructor() {
+    super(AppointmentModel);
+  }
+
   async createAppointment(data: CreateAppointmentData): Promise<IAppointment> {
-    try {
-      // Validate required fields
-      if (!data.patient || !data.provider || !data.appointmentType || !data.scheduledStart || !data.scheduledEnd || !data.clinic) {
-        throw new Error('Todos os campos obrigatórios devem ser preenchidos');
-      }
+    if (!data.patient || !data.provider || !data.appointmentType || !data.scheduledStart || !data.scheduledEnd || !data.clinic) {
+      throw new ValidationError('Todos os campos obrigatórios devem ser preenchidos');
+    }
 
-      if (new Date(data.scheduledStart) < new Date()) {
-        throw new Error('Não é possível agendar no passado');
-      }
+    if (new Date(data.scheduledStart) < new Date()) {
+      throw new ValidationError('Não é possível agendar no passado');
+    }
 
-      // Validate clinic ID
-      if (!mongoose.Types.ObjectId.isValid(data.clinic)) {
-        throw new Error('ID da clínica inválido');
-      }
+    if (!mongoose.Types.ObjectId.isValid(data.clinic)) {
+      throw new ValidationError('ID da clínica inválido');
+    }
 
-      // Check for overlapping appointments for the provider
+    const overlapping = await AppointmentModel.findOne({
+      provider: data.provider,
+      clinic: data.clinic,
+      status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
+      $or: [
+        { scheduledStart: { $lt: data.scheduledEnd, $gte: data.scheduledStart } },
+        { scheduledEnd: { $gt: data.scheduledStart, $lte: data.scheduledEnd } },
+        { scheduledStart: { $lte: data.scheduledStart }, scheduledEnd: { $gte: data.scheduledEnd } }
+      ]
+    });
+
+    if (overlapping) {
+      throw new ConflictError('Horário indisponível');
+    }
+
+    const appointment = new AppointmentModel({
+      ...data,
+      status: 'scheduled',
+      remindersSent: data.remindersSent || {}
+    });
+
+    return await appointment.save();
+  }
+
+  async getAppointmentById(appointmentId: string, clinicId: string): Promise<IAppointment | null> {
+    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+      throw new ValidationError('ID do agendamento inválido');
+    }
+
+    return await AppointmentModel.findOne({
+      _id: appointmentId,
+      clinic: clinicId
+    }).populate('patient provider appointmentType');
+  }
+
+  async getAppointments(clinicId: string, filters: AppointmentFilters = {}): Promise<IAppointment[]> {
+    if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+      throw new ValidationError('ID da clínica inválido');
+    }
+
+    const query: any = { clinic: clinicId };
+
+    if (filters.status) query.status = filters.status;
+    if (filters.startDate && filters.endDate) {
+      query.scheduledStart = { $gte: filters.startDate };
+      query.scheduledEnd = { $lte: filters.endDate };
+    }
+    if (filters.providerId) query.provider = filters.providerId;
+
+    return await AppointmentModel.find(query)
+      .populate('patient provider appointmentType')
+      .sort({ scheduledStart: 1 });
+  }
+
+  async updateAppointment(appointmentId: string, clinicId: string, data: UpdateAppointmentData): Promise<IAppointment | null> {
+    if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
+      throw new ValidationError('ID do agendamento inválido');
+    }
+
+    const appointment = await AppointmentModel.findOne({ _id: appointmentId, clinic: clinicId });
+    if (!appointment) return null;
+
+    if (appointment.status === 'cancelled') {
+      throw new ValidationError('Não é possível alterar um agendamento cancelado');
+    }
+
+    if (data.scheduledStart && data.scheduledEnd) {
       const overlapping = await AppointmentModel.findOne({
-        provider: data.provider,
-        clinic: data.clinic,
+        provider: appointment.provider,
+        clinic: clinicId,
         status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
+        _id: { $ne: appointmentId },
         $or: [
-          {
-            scheduledStart: { $lt: data.scheduledEnd, $gte: data.scheduledStart }
-          },
-          {
-            scheduledEnd: { $gt: data.scheduledStart, $lte: data.scheduledEnd }
-          },
-          {
-            scheduledStart: { $lte: data.scheduledStart },
-            scheduledEnd: { $gte: data.scheduledEnd }
-          }
+          { scheduledStart: { $lt: data.scheduledEnd, $gte: data.scheduledStart } },
+          { scheduledEnd: { $gt: data.scheduledStart, $lte: data.scheduledEnd } },
+          { scheduledStart: { $lte: data.scheduledStart }, scheduledEnd: { $gte: data.scheduledEnd } }
         ]
       });
 
       if (overlapping) {
-        throw new Error('Horário indisponível');
+        throw new ConflictError('Horário indisponível');
       }
 
-      const appointment = new AppointmentModel({
-        ...data,
-        status: 'scheduled',
-        remindersSent: data.remindersSent || {}
+      if (!appointment.rescheduleHistory) appointment.rescheduleHistory = [];
+      appointment.rescheduleHistory.push({
+        oldDate: appointment.scheduledStart as Date,
+        newDate: data.scheduledStart,
+        reason: data.rescheduleHistory?.[0]?.reason || 'Reagendamento',
+        rescheduleBy: 'clinic',
+        timestamp: new Date(),
+        rescheduleCount: appointment.rescheduleHistory.length + 1
       });
 
-      return await appointment.save();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao criar agendamento');
+      appointment.scheduledStart = data.scheduledStart;
+      appointment.scheduledEnd = data.scheduledEnd;
     }
-  }
 
-  async getAppointmentById(appointmentId: string, clinicId: string): Promise<IAppointment | null> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
-        throw new Error('ID do agendamento inválido');
-      }
+    if (data.notes !== undefined) appointment.notes = data.notes;
+    if (data.status !== undefined) appointment.status = data.status;
+    if (data.cancellationReason !== undefined) appointment.cancellationReason = data.cancellationReason;
 
-      const appointment = await AppointmentModel.findOne({
-        _id: appointmentId,
-        clinic: clinicId
-      }).populate('patient provider appointmentType');
-
-      return appointment;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao buscar agendamento');
-    }
-  }
-
-  async getAppointments(clinicId: string, filters: AppointmentFilters = {}): Promise<IAppointment[]> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(clinicId)) {
-        throw new Error('ID da clínica inválido');
-      }
-
-      const query: any = { clinic: clinicId };
-
-      if (filters.status) {
-        query.status = filters.status;
-      }
-
-      if (filters.startDate && filters.endDate) {
-        query.scheduledStart = { $gte: filters.startDate };
-        query.scheduledEnd = { $lte: filters.endDate };
-      }
-
-      if (filters.providerId) {
-        query.provider = filters.providerId;
-      }
-
-      return await AppointmentModel.find(query)
-        .populate('patient provider appointmentType')
-        .sort({ scheduledStart: 1 });
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao buscar agendamentos');
-    }
-  }
-
-  async updateAppointment(appointmentId: string, clinicId: string, data: UpdateAppointmentData): Promise<IAppointment | null> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
-        throw new Error('ID do agendamento inválido');
-      }
-
-      const appointment = await AppointmentModel.findOne({
-        _id: appointmentId,
-        clinic: clinicId
-      });
-
-      if (!appointment) {
-        return null;
-      }
-
-      if (appointment.status === 'cancelled') {
-        throw new Error('Não é possível alterar um agendamento cancelado');
-      }
-
-      // If rescheduling, check for conflicts
-      if (data.scheduledStart && data.scheduledEnd) {
-        const overlapping = await AppointmentModel.findOne({
-          provider: appointment.provider,
-          clinic: clinicId,
-          status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
-          _id: { $ne: appointmentId },
-          $or: [
-            {
-              scheduledStart: { $lt: data.scheduledEnd, $gte: data.scheduledStart }
-            },
-            {
-              scheduledEnd: { $gt: data.scheduledStart, $lte: data.scheduledEnd }
-            },
-            {
-              scheduledStart: { $lte: data.scheduledStart },
-              scheduledEnd: { $gte: data.scheduledEnd }
-            }
-          ]
-        });
-
-        if (overlapping) {
-          throw new Error('Horário indisponível');
-        }
-
-        // Add to reschedule history
-        if (!appointment.rescheduleHistory) {
-          appointment.rescheduleHistory = [];
-        }
-        appointment.rescheduleHistory.push({
-          oldDate: appointment.scheduledStart as Date,
-          newDate: data.scheduledStart,
-          reason: data.rescheduleHistory?.[0]?.reason || 'Reagendamento',
-          rescheduleBy: 'clinic',
-          timestamp: new Date(),
-          rescheduleCount: appointment.rescheduleHistory.length + 1
-        });
-
-        appointment.scheduledStart = data.scheduledStart;
-        appointment.scheduledEnd = data.scheduledEnd;
-      }
-
-      if (data.notes !== undefined) {
-        appointment.notes = data.notes;
-      }
-
-      if (data.status !== undefined) {
-        appointment.status = data.status;
-      }
-
-      if (data.cancellationReason !== undefined) {
-        appointment.cancellationReason = data.cancellationReason;
-      }
-
-      return await appointment.save();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao atualizar agendamento');
-    }
+    return await appointment.save();
   }
 
   async cancelAppointment(appointmentId: string, clinicId: string, reason: string): Promise<IAppointment | null> {
-    try {
-      const appointment = await this.updateAppointment(appointmentId, clinicId, {
-        status: 'cancelled',
-        cancellationReason: reason
-      });
-
-      return appointment;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao cancelar agendamento');
-    }
+    return await this.updateAppointment(appointmentId, clinicId, {
+      status: 'cancelled',
+      cancellationReason: reason
+    });
   }
 
   async checkAvailability(providerId: string, startDate: Date, endDate: Date, clinicId: string): Promise<boolean> {
-    try {
-      const overlapping = await AppointmentModel.findOne({
-        provider: providerId,
-        clinic: clinicId,
-        status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
-        $or: [
-          {
-            scheduledStart: { $lt: endDate, $gte: startDate }
-          },
-          {
-            scheduledEnd: { $gt: startDate, $lte: endDate }
-          },
-          {
-            scheduledStart: { $lte: startDate },
-            scheduledEnd: { $gte: endDate }
-          }
-        ]
-      });
+    const overlapping = await AppointmentModel.findOne({
+      provider: providerId,
+      clinic: clinicId,
+      status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
+      $or: [
+        { scheduledStart: { $lt: endDate, $gte: startDate } },
+        { scheduledEnd: { $gt: startDate, $lte: endDate } },
+        { scheduledStart: { $lte: startDate }, scheduledEnd: { $gte: endDate } }
+      ]
+    });
 
-      return !overlapping;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao verificar disponibilidade');
-    }
+    return !overlapping;
   }
 
   async getAppointmentStats(clinicId: string, startDate?: Date, endDate?: Date): Promise<{
@@ -289,38 +201,26 @@ class AppointmentService {
     completed: number;
     cancelled: number;
   }> {
-    try {
-      if (!mongoose.Types.ObjectId.isValid(clinicId)) {
-        throw new Error('ID da clínica inválido');
-      }
-
-      const query: any = { clinic: clinicId };
-      if (startDate && endDate) {
-        query.scheduledStart = { $gte: startDate };
-        query.scheduledEnd = { $lte: endDate };
-      }
-
-      const total = await AppointmentModel.countDocuments(query);
-      const scheduled = await AppointmentModel.countDocuments({ ...query, status: 'scheduled' });
-      const confirmed = await AppointmentModel.countDocuments({ ...query, status: 'confirmed' });
-      const inProgress = await AppointmentModel.countDocuments({ ...query, status: 'in-progress' });
-      const completed = await AppointmentModel.countDocuments({ ...query, status: 'completed' });
-      const cancelled = await AppointmentModel.countDocuments({ ...query, status: 'cancelled' });
-
-      return {
-        total,
-        scheduled,
-        confirmed,
-        inProgress,
-        completed,
-        cancelled
-      };
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao buscar estatísticas de agendamentos');
+    if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+      throw new ValidationError('ID da clínica inválido');
     }
+
+    const query: any = { clinic: clinicId };
+    if (startDate && endDate) {
+      query.scheduledStart = { $gte: startDate };
+      query.scheduledEnd = { $lte: endDate };
+    }
+
+    const [total, scheduled, confirmed, inProgress, completed, cancelled] = await Promise.all([
+      AppointmentModel.countDocuments(query),
+      AppointmentModel.countDocuments({ ...query, status: 'scheduled' }),
+      AppointmentModel.countDocuments({ ...query, status: 'confirmed' }),
+      AppointmentModel.countDocuments({ ...query, status: 'in-progress' }),
+      AppointmentModel.countDocuments({ ...query, status: 'completed' }),
+      AppointmentModel.countDocuments({ ...query, status: 'cancelled' })
+    ]);
+
+    return { total, scheduled, confirmed, inProgress, completed, cancelled };
   }
 
   async rescheduleAppointment(
@@ -330,63 +230,39 @@ class AppointmentService {
     newEnd: Date,
     reason: string
   ): Promise<IAppointment | null> {
-    try {
-      const appointment = await AppointmentModel.findOne({
-        _id: appointmentId,
-        clinic: clinicId
-      });
+    const appointment = await AppointmentModel.findOne({ _id: appointmentId, clinic: clinicId });
+    if (!appointment) return null;
 
-      if (!appointment) {
-        return null;
-      }
+    const overlapping = await AppointmentModel.findOne({
+      provider: appointment.provider,
+      clinic: clinicId,
+      status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
+      _id: { $ne: appointmentId },
+      $or: [
+        { scheduledStart: { $lt: newEnd, $gte: newStart } },
+        { scheduledEnd: { $gt: newStart, $lte: newEnd } },
+        { scheduledStart: { $lte: newStart }, scheduledEnd: { $gte: newEnd } }
+      ]
+    });
 
-      // Check for conflicts
-      const overlapping = await AppointmentModel.findOne({
-        provider: appointment.provider,
-        clinic: clinicId,
-        status: { $in: ['scheduled', 'confirmed', 'in_progress'] },
-        _id: { $ne: appointmentId },
-        $or: [
-          {
-            scheduledStart: { $lt: newEnd, $gte: newStart }
-          },
-          {
-            scheduledEnd: { $gt: newStart, $lte: newEnd }
-          },
-          {
-            scheduledStart: { $lte: newStart },
-            scheduledEnd: { $gte: newEnd }
-          }
-        ]
-      });
-
-      if (overlapping) {
-        throw new Error('Horário indisponível');
-      }
-
-      if (!appointment.rescheduleHistory) {
-        appointment.rescheduleHistory = [];
-      }
-
-      appointment.rescheduleHistory.push({
-        oldDate: appointment.scheduledStart as Date,
-        newDate: newStart,
-        reason,
-        rescheduleBy: 'clinic',
-        timestamp: new Date(),
-        rescheduleCount: appointment.rescheduleHistory.length + 1
-      });
-
-      appointment.scheduledStart = newStart;
-      appointment.scheduledEnd = newEnd;
-
-      return await appointment.save();
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('Erro ao reagendar agendamento');
+    if (overlapping) {
+      throw new ConflictError('Horário indisponível');
     }
+
+    if (!appointment.rescheduleHistory) appointment.rescheduleHistory = [];
+    appointment.rescheduleHistory.push({
+      oldDate: appointment.scheduledStart as Date,
+      newDate: newStart,
+      reason,
+      rescheduleBy: 'clinic',
+      timestamp: new Date(),
+      rescheduleCount: appointment.rescheduleHistory.length + 1
+    });
+
+    appointment.scheduledStart = newStart;
+    appointment.scheduledEnd = newEnd;
+
+    return await appointment.save();
   }
 }
 

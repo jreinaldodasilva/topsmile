@@ -40,13 +40,13 @@
     "web-vitals": "^3.5.0"
   },
   "scripts": {
-    "prepare": "cd backend && npm install",
+    "postinstall": "cd backend && npm install",
     "start": "react-scripts start",
     "dev": "concurrently \"npm run server\" \"npm run start\"",
     "dev:frontend": "react-scripts start",
     "dev:backend": "cd backend && npm run dev",
     "server": "cd backend && npm run dev",
-    "build": "react-scripts build",
+    "build": "cross-env GENERATE_SOURCEMAP=false react-scripts build",
     "build:all": "npm run build && cd backend && npm run build",
     "eject": "react-scripts eject",
     "test": "npm run test:all",
@@ -63,15 +63,23 @@
     "test:e2e:open": "cypress open",
     "test:coverage": "npm run test:frontend:coverage && npm run test:backend:coverage",
     "test:ci": "npm run test:frontend:ci && npm run test:backend:ci && npm run test:e2e",
+    "test:a11y": "jest --testPathPattern=accessibility",
+    "lighthouse": "lighthouse http://localhost:3000 --view",
+    "lighthouse:ci": "lhci autorun",
     "cy:open": "cypress open",
     "cy:run": "cypress run",
     "analyze": "npm run build && source-map-explorer 'build/static/js/*.js'",
+    "analyze:bundle": "webpack-bundle-analyzer build/bundle-stats.json",
+    "build:analyze": "cross-env GENERATE_SOURCEMAP=true npm run build && npm run analyze",
     "lint": "eslint src/**/*.{ts,tsx}",
     "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
     "type-check": "tsc --noEmit",
+    "audit:a11y": "npm run test:a11y && npm run lighthouse",
     "migrate-types": "node scripts/migrate-types.js",
     "fix-type-imports": "node scripts/fix-type-imports.js",
-    "generate-secrets": "node scripts/generate-secrets.js"
+    "generate-secrets": "node scripts/generate-secrets.js",
+    "analyze:bundle": "node scripts/analyze-bundle.js",
+    "perf:load": "k6 run backend/tests/performance/load-test.js"
   },
   "eslintConfig": {
     "extends": [

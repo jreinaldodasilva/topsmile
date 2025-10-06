@@ -2,7 +2,8 @@
 import { TreatmentPlan, ITreatmentPlan } from '../models/TreatmentPlan';
 import { Insurance } from '../models/Insurance';
 import { getCDTCodeByCode } from '../config/cdtCodes';
-import mongoose from 'mongoose';
+import { BaseService } from './base/BaseService';
+import { NotFoundError } from '../utils/errors';
 
 export interface InsuranceEstimate {
     procedureCode: string;
@@ -12,7 +13,10 @@ export interface InsuranceEstimate {
     coveragePercentage: number;
 }
 
-class TreatmentPlanService {
+class TreatmentPlanService extends BaseService<ITreatmentPlan> {
+    constructor() {
+        super(TreatmentPlan);
+    }
     async estimateInsuranceCoverage(
         patientId: string,
         procedures: Array<{ code: string; cost: number; tooth?: string }>
