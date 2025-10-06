@@ -4,6 +4,18 @@ import { ApiResult } from '@topsmile/types';
 export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 export const LOGOUT_EVENT = 'topsmile-logout';
 
+let isRefreshing = false;
+let refreshSubscribers: Array<(token: string) => void> = [];
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb);
+};
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach(cb => cb(token));
+  refreshSubscribers = [];
+};
+
 // Test credentials from environment
 const TEST_CREDENTIALS = {
   email: process.env.REACT_APP_TEST_EMAIL || 'test@example.com',
@@ -118,10 +130,43 @@ export async function request<T = any>(
     try {
       const res = await makeRequest();
       
-      if (res.status === 401 && attempt === 0) {
+      if (res.status === 401 && attempt === 0 && !endpoint.includes('/auth/refresh')) {
         // Try token refresh on first 401
-        const retryRes = await makeRequest();
-        return (await parseResponse(retryRes)) as HttpResponse<T>;
+        if (!isRefreshing) {
+          isRefreshing = true;
+          try {
+            const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' }
+            });
+            
+            if (refreshRes.ok) {
+              isRefreshing = false;
+              onRefreshed('refreshed');
+              // Retry original request
+              const retryRes = await makeRequest();
+              return (await parseResponse(retryRes)) as HttpResponse<T>;
+            } else {
+              isRefreshing = false;
+              // Refresh failed, trigger logout
+              window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
+              return (await parseResponse(res)) as HttpResponse<T>;
+            }
+          } catch (refreshError) {
+            isRefreshing = false;
+            window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
+            return (await parseResponse(res)) as HttpResponse<T>;
+          }
+        } else {
+          // Wait for refresh to complete
+          return new Promise((resolve) => {
+            subscribeTokenRefresh(async () => {
+              const retryRes = await makeRequest();
+              resolve((await parseResponse(retryRes)) as HttpResponse<T>);
+            });
+          });
+        }
       }
 
       return (await parseResponse(res)) as HttpResponse<T>;

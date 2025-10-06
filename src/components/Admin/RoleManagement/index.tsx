@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RoleAssignment } from './RoleAssignment';
 import { PermissionMatrix } from './PermissionMatrix';
+import { request } from '../../../services/http';
 import './index.css';
 
 interface User {
@@ -21,23 +22,16 @@ export const RoleManagement: React.FC = () => {
 
     const fetchData = async () => {
         try {
-            const token = localStorage.getItem('token');
-            
             const [usersRes, permissionsRes] = await Promise.all([
-                fetch(`${process.env.REACT_APP_API_URL}/api/admin/users`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }),
-                fetch(`${process.env.REACT_APP_API_URL}/api/permissions/roles`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                })
+                request('/api/admin/users'),
+                request('/api/permissions/roles')
             ]);
 
-            if (usersRes.ok && permissionsRes.ok) {
-                const usersData = await usersRes.json();
-                const permissionsData = await permissionsRes.json();
-                
-                setUsers(usersData.data || []);
-                setRolePermissions(permissionsData.data || {});
+            if (usersRes.ok && usersRes.data) {
+                setUsers(usersRes.data);
+            }
+            if (permissionsRes.ok && permissionsRes.data) {
+                setRolePermissions(permissionsRes.data);
             }
         } catch (error) {
             console.error('Error fetching data:', error);
@@ -47,20 +41,13 @@ export const RoleManagement: React.FC = () => {
     };
 
     const handleAssignRole = async (userId: string, role: string) => {
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/role-management/assign`, {
+        const response = await request('/api/role-management/assign', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
             body: JSON.stringify({ userId, role })
         });
 
         if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Erro ao atribuir role');
+            throw new Error(response.message || 'Erro ao atribuir role');
         }
 
         await fetchData();

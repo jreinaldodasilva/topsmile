@@ -1,5 +1,6 @@
 // src/components/Clinical/TreatmentPlan/ProcedureSelector.tsx
 import React, { useState, useEffect } from 'react';
+import { request } from '../../../services/http';
 import './ProcedureSelector.css';
 
 interface CDTCode {
@@ -26,13 +27,11 @@ export const ProcedureSelector: React.FC<ProcedureSelectorProps> = ({ onSelect, 
   const [estimating, setEstimating] = useState(false);
 
   useEffect(() => {
-    fetch('/api/treatment-plans/cdt-codes/categories')
-      .then(res => res.json())
-      .then(data => setCategories(data.data));
+    request('/api/treatment-plans/cdt-codes/categories')
+      .then(res => res.ok && res.data ? setCategories(res.data) : null);
 
-    fetch('/api/treatment-plans/cdt-codes/all')
-      .then(res => res.json())
-      .then(data => setCodes(data.data));
+    request('/api/treatment-plans/cdt-codes/all')
+      .then(res => res.ok && res.data ? setCodes(res.data) : null);
   }, []);
 
   useEffect(() => {
@@ -49,17 +48,15 @@ export const ProcedureSelector: React.FC<ProcedureSelectorProps> = ({ onSelect, 
 
     setEstimating(true);
     try {
-      const res = await fetch('/api/treatment-plans/estimate-insurance', {
+      const res = await request('/api/treatment-plans/estimate-insurance', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           patientId,
           procedures: [{ code: code.code, cost: code.defaultCost }]
         })
       });
-      const data = await res.json();
-      if (data.success && data.data[0]) {
-        setCost(data.data[0].cost);
+      if (res.ok && res.data?.[0]) {
+        setCost(res.data[0].cost);
       }
     } catch (error) {
       console.error('Error estimating insurance:', error);

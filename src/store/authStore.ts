@@ -34,16 +34,16 @@ export const useAuthStore = create<AuthState>()(
             
             // Actions
             login: (user, token) => {
-                localStorage.setItem('token', token);
+                // SECURITY: Tokens in httpOnly cookies only
                 set({
                     user,
-                    token,
+                    token: null, // Don't store token in state
                     isAuthenticated: true
                 });
             },
             
             logout: () => {
-                localStorage.removeItem('token');
+                // SECURITY: Tokens cleared by backend
                 set({
                     user: null,
                     token: null,

@@ -1,5 +1,6 @@
 // src/components/Clinical/MedicalHistory/AllergyAlert.tsx
 import React, { useEffect, useState } from 'react';
+import { request } from '../../../services/http';
 import './AllergyAlert.css';
 
 interface AllergyAlertProps {
@@ -11,11 +12,10 @@ export const AllergyAlert: React.FC<AllergyAlertProps> = ({ patientId }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/medical-history/patient/${patientId}/latest`)
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.data?.allergies) {
-          setAllergies(data.data.allergies);
+    request(`/api/medical-history/patient/${patientId}/latest`)
+      .then(res => {
+        if (res.ok && res.data?.allergies) {
+          setAllergies(res.data.allergies);
         }
         setLoading(false);
       })

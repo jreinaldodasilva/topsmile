@@ -3,6 +3,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+import { SessionTimeoutModal } from '../components/common/SessionTimeoutModal';
 import type { User, Provider, RegisterRequest } from '@topsmile/types';
 
 
@@ -35,6 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
 
   const isAuthenticated = !loading && !!user;
 
@@ -42,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       // Clear local state first
       setUser(null);
+      setShowTimeoutWarning(false);
 
       // SECURITY FIX: Tokens in httpOnly cookies only
       // No localStorage to clear
@@ -60,6 +64,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       navigate('/login');
     }
   }, [navigate]);
+
+  // Session timeout tracking
+  const { resetTimer } = useSessionTimeout({
+    enabled: isAuthenticated,
+    onWarning: () => setShowTimeoutWarning(true),
+    onTimeout: () => performLogout('Sua sessão expirou por inatividade.')
+  });
+
+  // Reset timer on successful login
+  useEffect(() => {
+    if (isAuthenticated) {
+      resetTimer();
+    }
+  }, [isAuthenticated, resetTimer]);
 
   // UPDATED: Enhanced initial authentication check with race condition prevention
   useEffect(() => {
@@ -243,10 +261,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     refreshUserData
   };
 
+  const handleContinueSession = useCallback(() => {
+    setShowTimeoutWarning(false);
+    resetTimer();
+  }, [resetTimer]);
+
+  const handleLogoutFromModal = useCallback(() => {
+    setShowTimeoutWarning(false);
+    performLogout('Você optou por sair.');
+  }, [performLogout]);
+
   return (
     <AuthStateContext.Provider value={stateValue}>
       <AuthActionsContext.Provider value={actionsValue}>
         {children}
+        <SessionTimeoutModal
+          show={showTimeoutWarning}
+          onContinue={handleContinueSession}
+          onLogout={handleLogoutFromModal}
+        />
       </AuthActionsContext.Provider>
     </AuthStateContext.Provider>
   );

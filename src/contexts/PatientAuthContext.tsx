@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { patientLogout, LOGOUT_EVENT } from '../services/http';
+import { useSessionTimeout } from '../hooks/useSessionTimeout';
+import { SessionTimeoutModal } from '../components/common/SessionTimeoutModal';
 import type { Provider } from '@topsmile/types';
 
 
@@ -58,12 +60,14 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
   const [patientUser, setPatientUser] = useState<PatientUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showTimeoutWarning, setShowTimeoutWarning] = useState(false);
 
   const isAuthenticated = !loading && !!patientUser;
 
   const performLogout = useCallback(async () => {
     try {
       setPatientUser(null);
+      setShowTimeoutWarning(false);
 
       await patientLogout();
       navigate('/patient/login');
@@ -72,6 +76,20 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
       navigate('/patient/login');
     }
   }, [navigate]);
+
+  // Session timeout tracking
+  const { resetTimer } = useSessionTimeout({
+    enabled: isAuthenticated,
+    onWarning: () => setShowTimeoutWarning(true),
+    onTimeout: () => performLogout()
+  });
+
+  // Reset timer on successful login
+  useEffect(() => {
+    if (isAuthenticated) {
+      resetTimer();
+    }
+  }, [isAuthenticated, resetTimer]);
 
   // Initial authentication check
   useEffect(() => {
@@ -209,9 +227,24 @@ export const PatientAuthProvider = ({ children }: { children: ReactNode }) => {
     refreshPatientData
   };
 
+  const handleContinueSession = useCallback(() => {
+    setShowTimeoutWarning(false);
+    resetTimer();
+  }, [resetTimer]);
+
+  const handleLogoutFromModal = useCallback(() => {
+    setShowTimeoutWarning(false);
+    performLogout();
+  }, [performLogout]);
+
   return (
     <PatientAuthContext.Provider value={value}>
       {children}
+      <SessionTimeoutModal
+        show={showTimeoutWarning}
+        onContinue={handleContinueSession}
+        onLogout={handleLogoutFromModal}
+      />
     </PatientAuthContext.Provider>
   );
 };

@@ -13,10 +13,9 @@ export class BaseApiService {
     }
 
     protected getAuthHeaders(): HeadersInit {
-        const token = localStorage.getItem('token');
+        // SECURITY: Tokens in httpOnly cookies, no manual auth header needed
         return {
-            'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` })
+            'Content-Type': 'application/json'
         };
     }
 
@@ -43,6 +42,7 @@ export class BaseApiService {
         try {
             const response = await fetch(url, {
                 ...fetchOptions,
+                credentials: 'include',
                 headers: {
                     ...this.getAuthHeaders(),
                     ...fetchOptions.headers

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { AllergyManager } from './AllergyManager';
 import { MedicationManager } from './MedicationManager';
+import { request } from '../../../services/http';
 import './MedicalHistoryForm.css';
 
 interface MedicalHistoryFormProps {
@@ -26,13 +27,11 @@ export const MedicalHistoryForm: React.FC<MedicalHistoryFormProps> = ({
   const [alcohol, setAlcohol] = useState(initialData?.socialHistory?.alcohol || 'never');
 
   useEffect(() => {
-    fetch('/api/medical-history/conditions/medical')
-      .then(res => res.json())
-      .then(data => setMedicalConditions(data.data));
+    request('/api/medical-history/conditions/medical')
+      .then(res => res.ok && res.data ? setMedicalConditions(res.data) : null);
 
-    fetch('/api/medical-history/conditions/dental')
-      .then(res => res.json())
-      .then(data => setDentalConditions(data.data));
+    request('/api/medical-history/conditions/dental')
+      .then(res => res.ok && res.data ? setDentalConditions(res.data) : null);
   }, []);
 
   const toggleCondition = (condition: string, list: string[], setter: (val: string[]) => void) => {

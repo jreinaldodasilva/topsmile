@@ -1,5 +1,6 @@
 // src/components/Clinical/MedicalHistory/AllergyManager.tsx
 import React, { useState, useEffect } from 'react';
+import { request } from '../../../services/http';
 import './AllergyManager.css';
 
 interface Allergy {
@@ -21,9 +22,9 @@ export const AllergyManager: React.FC<AllergyManagerProps> = ({ allergies, onCha
   const [severity, setSeverity] = useState<'mild' | 'moderate' | 'severe'>('moderate');
 
   useEffect(() => {
-    fetch('/api/medical-history/allergies/common')
-      .then(res => res.json())
-      .then(data => setCommonAllergies(data.data));
+    request('/api/medical-history/allergies/common')
+      .then(res => res.ok && res.data ? setCommonAllergies(res.data) : null)
+      .catch(err => console.error('Error loading allergies:', err));
   }, []);
 
   const addAllergy = () => {

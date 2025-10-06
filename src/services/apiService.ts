@@ -427,4 +427,148 @@ export const apiService = {
       return { success: res.ok, data: res.data, message: res.message };
     },
   },
+  dentalCharts: {
+    getLatest: async (patientId: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/dental-charts/patient/${encodeURIComponent(patientId)}/latest`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getHistory: async (patientId: string): Promise<ApiResult<any[]>> => {
+      const res = await request(`/api/clinical/dental-charts/patient/${encodeURIComponent(patientId)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/clinical/dental-charts', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/dental-charts/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  treatmentPlans: {
+    getAll: async (patientId: string): Promise<ApiResult<any[]>> => {
+      const res = await request(`/api/clinical/treatment-plans/patient/${encodeURIComponent(patientId)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/treatment-plans/${encodeURIComponent(id)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/clinical/treatment-plans', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/treatment-plans/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  clinicalNotes: {
+    getAll: async (patientId: string): Promise<ApiResult<any[]>> => {
+      const res = await request(`/api/clinical/clinical-notes/patient/${encodeURIComponent(patientId)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/clinical-notes/${encodeURIComponent(id)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/clinical/clinical-notes', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/clinical-notes/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  prescriptions: {
+    getAll: async (patientId: string): Promise<ApiResult<any[]>> => {
+      const res = await request(`/api/clinical/prescriptions/patient/${encodeURIComponent(patientId)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/prescriptions/${encodeURIComponent(id)}`);
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/clinical/prescriptions', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/prescriptions/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      if (res.ok && res.data) {
+        return { success: true, data: res.data, message: res.message };
+      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
 };

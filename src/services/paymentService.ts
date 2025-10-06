@@ -45,9 +45,9 @@ class PaymentService {
       const response = await fetch('/api/payments/create-intent', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('topsmile_access_token')}`
+          'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(data)
       });
 

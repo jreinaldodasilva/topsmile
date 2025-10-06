@@ -4,6 +4,7 @@ import { ConditionMarker } from './ConditionMarker';
 import { ChartHistory } from './ChartHistory';
 import { ChartAnnotations } from './ChartAnnotations';
 import { ChartExport } from './ChartExport';
+import { apiService } from '../../../services/apiService';
 import './index.css';
 
 interface DentalChartProps {
@@ -26,23 +27,16 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
 
     const fetchChart = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/api/dental-charts/patient/${patientId}/latest`,
-                {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                setChart(data.data);
-                setNumberingSystem(data.data?.numberingSystem || 'fdi');
-            } else if (response.status === 404) {
+            const response = await apiService.dentalCharts.getLatest(patientId);
+            if (response.success && response.data) {
+                setChart(response.data);
+                setNumberingSystem(response.data?.numberingSystem || 'fdi');
+            } else {
                 setChart({ teeth: [], numberingSystem: 'fdi' });
             }
         } catch (error) {
             console.error('Error fetching chart:', error);
+            setChart({ teeth: [], numberingSystem: 'fdi' });
         } finally {
             setLoading(false);
         }
@@ -50,17 +44,9 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
 
     const fetchChartHistory = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/api/dental-charts/patient/${patientId}`,
-                {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }
-            );
-
-            if (response.ok) {
-                const data = await response.json();
-                setChartHistory(data.data || []);
+            const response = await apiService.dentalCharts.getHistory(patientId);
+            if (response.success && response.data) {
+                setChartHistory(response.data);
             }
         } catch (error) {
             console.error('Error fetching chart history:', error);
@@ -71,20 +57,8 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
         if (!chart?.id) return;
 
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(
-                `${process.env.REACT_APP_API_URL}/api/dental-charts/${chart.id}`,
-                {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ ...chart, notes })
-                }
-            );
-
-            if (response.ok) {
+            const response = await apiService.dentalCharts.update(chart.id, { ...chart, notes });
+            if (response.success) {
                 await fetchChart();
             }
         } catch (error) {
@@ -107,8 +81,6 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
 
     const handleAddCondition = async (condition: any) => {
         try {
-            const token = localStorage.getItem('token');
-            
             const updatedTeeth = chart?.teeth || [];
             const toothIndex = updatedTeeth.findIndex((t: any) => t.toothNumber === selectedTooth);
             
@@ -123,25 +95,15 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
 
             const payload = {
                 patient: patientId,
-                provider: localStorage.getItem('userId'),
                 numberingSystem,
                 teeth: updatedTeeth
             };
 
-            const url = chart?.id
-                ? `${process.env.REACT_APP_API_URL}/api/dental-charts/${chart.id}`
-                : `${process.env.REACT_APP_API_URL}/api/dental-charts`;
+            const response = chart?.id
+                ? await apiService.dentalCharts.update(chart.id, payload)
+                : await apiService.dentalCharts.create(payload);
 
-            const response = await fetch(url, {
-                method: chart?.id ? 'PUT' : 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (response.ok) {
+            if (response.success) {
                 await fetchChart();
             }
         } catch (error) {

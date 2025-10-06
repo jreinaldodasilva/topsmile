@@ -26,6 +26,7 @@ export const PatientProfile = lazy(() => import('../pages/Patient/Profile/Patien
 export const AdminPage = lazy(() => import('../pages/Login/AdminPage'));
 export const ContactManagement = lazy(() => import('../pages/Admin/ContactManagement'));
 export const PatientManagement = lazy(() => import('../pages/Admin/PatientManagement'));
+export const PatientDetail = lazy(() => import('../pages/Admin/PatientDetail'));
 export const ProviderManagement = lazy(() => import('../pages/Admin/ProviderManagement'));
 export const AppointmentCalendar = lazy(() => import('../pages/Admin/AppointmentCalendar'));
 

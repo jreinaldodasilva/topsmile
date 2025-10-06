@@ -13,7 +13,7 @@ export class ErrorInterceptor {
 
         // Handle authentication errors
         if (handledError.name === 'AuthenticationError') {
-            localStorage.removeItem('token');
+            // SECURITY: Tokens in httpOnly cookies, cleared by backend
             window.location.href = '/login';
         }
 

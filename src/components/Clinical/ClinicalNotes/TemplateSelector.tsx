@@ -1,5 +1,6 @@
 // src/components/Clinical/ClinicalNotes/TemplateSelector.tsx
 import React, { useState, useEffect } from 'react';
+import { request } from '../../../services/http';
 import './TemplateSelector.css';
 
 interface Template {
@@ -18,16 +19,14 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ noteType, on
   const [showDropdown, setShowDropdown] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/clinical-notes/templates/type/${noteType}`)
-      .then(res => res.json())
-      .then(data => setTemplates(data.data));
+    request(`/api/clinical-notes/templates/type/${noteType}`)
+      .then(res => res.ok && res.data ? setTemplates(res.data) : null);
   }, [noteType]);
 
   const handleSelect = async (templateId: string) => {
-    const res = await fetch(`/api/clinical-notes/templates/${templateId}`);
-    const data = await res.json();
-    if (data.success) {
-      onSelect(data.data);
+    const res = await request(`/api/clinical-notes/templates/${templateId}`);
+    if (res.ok && res.data) {
+      onSelect(res.data);
     }
     setShowDropdown(false);
   };
