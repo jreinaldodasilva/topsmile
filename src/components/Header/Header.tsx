@@ -396,7 +396,7 @@ const EnhancedHeader: React.FC<HeaderProps> = ({
                   <Button variant="ghost">Entrar</Button>
                 </Link>
                 <Link to="/register">
-                  <Button variant="primary">Começar</Button>
+                  <Button variant="primary">Criar Conta</Button>
                 </Link>
               </div>
             )}
