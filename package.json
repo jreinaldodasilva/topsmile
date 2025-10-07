@@ -79,6 +79,7 @@
     "migrate-types": "node scripts/migrate-types.js",
     "fix-type-imports": "node scripts/fix-type-imports.js",
     "generate-secrets": "node scripts/generate-secrets.js",
+    "generate-env-secrets": "node scripts/generate-env-secrets.js",
     "perf:load": "k6 run backend/tests/performance/load-test.js"
   },
   "eslintConfig": {

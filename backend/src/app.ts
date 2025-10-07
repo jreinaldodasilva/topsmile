@@ -436,11 +436,11 @@ const applyCSRF = (req: any, res: any, next: any): void => {
 };
 
 app.use("/api/auth", (req, res, next) => {
-  if (req.path === "/refresh") return next();
+  if (req.path === "/refresh" || req.path === "/logout") return next();
   applyCSRF(req, res, next);
 });
 app.use("/api/patient-auth", (req, res, next) => {
-  if (req.path === "/refresh") return next();
+  if (req.path === "/refresh" || req.path === "/logout") return next();
   applyCSRF(req, res, next);
 });
 app.use("/api/contact", applyCSRF);

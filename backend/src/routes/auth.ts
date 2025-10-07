@@ -6,7 +6,7 @@ import { authService } from '../services/authService';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';
-import { NotFoundError, UnauthorizedError, AppError } from '../types/errors';
+import { NotFoundError, UnauthorizedError, AppError } from '../utils/errors';
 import type { User, Clinic, LoginRequest, RegisterRequest } from '@topsmile/types';
 
 

@@ -8,7 +8,7 @@ import { initPerformanceMonitoring } from './utils/performanceMonitor';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_DISABLE_MSW) {
   const { worker } = require('./mocks/browser');
   worker.start();
 }

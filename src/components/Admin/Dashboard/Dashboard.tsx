@@ -178,12 +178,12 @@ const EnhancedDashboard: React.FC = () => {
               <div className="loading-shimmer dashboard__loading-header"></div>
               <div className="dashboard__loading-grid">
                 {[...Array(4)].map((_, i) => (
-                  <div key={`card-${i}`} className="loading-shimmer dashboard__loading-card"></div>
+                  <div key={`loading-card-${i}`} className="loading-shimmer dashboard__loading-card"></div>
                 ))}
               </div>
               <div className="dashboard__loading-widgets">
                 {[...Array(3)].map((_, i) => (
-                  <div key={`widget-${i}`} className="loading-shimmer dashboard__loading-widget"></div>
+                  <div key={`loading-widget-${i}`} className="loading-shimmer dashboard__loading-widget"></div>
                 ))}
               </div>
             </div>

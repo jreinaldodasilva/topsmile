@@ -14,7 +14,7 @@ import {
     UnauthorizedError,
     ConflictError,
     NotFoundError
-} from '../types/errors';
+} from '../utils/errors';
 
 dotenv.config();
 

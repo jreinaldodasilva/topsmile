@@ -21,14 +21,12 @@ const ConsentFormSchema = new Schema<IConsentForm & Document>({
     patient: {
         type: Schema.Types.ObjectId,
         ref: 'Patient',
-        required: [true, 'Paciente é obrigatório'],
-        index: true
+        required: [true, 'Paciente é obrigatório']
     },
     clinic: {
         type: Schema.Types.ObjectId,
         ref: 'Clinic',
-        required: [true, 'Clínica é obrigatória'],
-        index: true
+        required: [true, 'Clínica é obrigatória']
     },
     formType: {
         type: String,

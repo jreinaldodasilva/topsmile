@@ -15,8 +15,10 @@ class SMSService {
         const accountSid = process.env.TWILIO_ACCOUNT_SID;
         const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-        if (accountSid && authToken) {
+        if (accountSid && authToken && accountSid.startsWith('AC')) {
             this.client = twilio(accountSid, authToken);
+        } else if (accountSid && !accountSid.startsWith('AC')) {
+            console.warn('Invalid Twilio Account SID format. SMS service disabled.');
         }
     }
 
