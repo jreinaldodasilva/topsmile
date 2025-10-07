@@ -77,6 +77,11 @@ const registerValidation = [
     .withMessage('Endereço deve ter entre 5 e 100 caracteres')
     .escape(), // Sanitize street
 
+  body('clinic.address.number')
+    .optional()
+    .trim()
+    .escape(), // Sanitize number
+
   body('clinic.address.city')
     .optional()
     .trim()

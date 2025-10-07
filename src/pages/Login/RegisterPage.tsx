@@ -57,7 +57,16 @@ const RegisterPage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name.startsWith('clinic.')) {
+    if (name.startsWith('clinic.address.')) {
+        const addressField = name.split('.')[2];
+        setFormData(prev => ({
+          ...prev,
+          clinic: {
+            ...prev.clinic,
+            address: { ...prev.clinic.address, [addressField]: value }
+          }
+        }));
+    } else if (name.startsWith('clinic.')) {
         const clinicField = name.split('.')[1];
         setFormData(prev => ({ ...prev, clinic: { ...prev.clinic, [clinicField]: value } }));
     } else {
@@ -130,6 +139,26 @@ const RegisterPage: React.FC = () => {
                 <div className="form-field">
                     <label htmlFor="clinic.phone" className="form-label">Telefone</label>
                     <input id="clinic.phone" name="clinic.phone" type="tel" required className="form-input" value={formData.clinic.phone} onChange={handleInputChange} disabled={loading} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="clinic.address.street" className="form-label">Rua</label>
+                    <input id="clinic.address.street" name="clinic.address.street" type="text" className="form-input" value={formData.clinic.address.street} onChange={handleInputChange} disabled={loading} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="clinic.address.number" className="form-label">Número</label>
+                    <input id="clinic.address.number" name="clinic.address.number" type="text" className="form-input" value={formData.clinic.address.number} onChange={handleInputChange} disabled={loading} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="clinic.address.city" className="form-label">Cidade</label>
+                    <input id="clinic.address.city" name="clinic.address.city" type="text" className="form-input" value={formData.clinic.address.city} onChange={handleInputChange} disabled={loading} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="clinic.address.state" className="form-label">Estado (UF)</label>
+                    <input id="clinic.address.state" name="clinic.address.state" type="text" maxLength={2} className="form-input" value={formData.clinic.address.state} onChange={handleInputChange} disabled={loading} />
+                </div>
+                <div className="form-field">
+                    <label htmlFor="clinic.address.zipCode" className="form-label">CEP</label>
+                    <input id="clinic.address.zipCode" name="clinic.address.zipCode" type="text" placeholder="00000-000" className="form-input" value={formData.clinic.address.zipCode} onChange={handleInputChange} disabled={loading} />
                 </div>
             </div>
           </fieldset>

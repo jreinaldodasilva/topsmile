@@ -142,29 +142,38 @@ UserSchema.pre('save', async function (this: IUser & Document, next) {
 
     const maxPasswordHistory = 5;
     const passwordExpiryDays = 90;
+    const plainTextPassword = this.password;
 
-    if (!this.isNew && this.passwordHistory) {
+    // Check password reuse against history (only for existing users)
+    if (!this.isNew && this.passwordHistory && this.passwordHistory.length > 0) {
         for (const oldPassword of this.passwordHistory.slice(0, maxPasswordHistory)) {
-            const isReused = await bcrypt.compare(this.password, oldPassword.password);
+            const isReused = await bcrypt.compare(plainTextPassword, oldPassword.password);
             if (isReused) {
                 return next(new Error('Senha não pode ser igual às últimas 5 senhas utilizadas'));
             }
         }
     }
 
+    // Hash the new password
     const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(this.password, salt);
+    const hashedPassword = await bcrypt.hash(plainTextPassword, salt);
 
+    // Store the OLD hashed password in history (only for existing users changing password)
     if (!this.isNew) {
-        if (!this.passwordHistory) {
-            this.passwordHistory = [];
-        }
-        this.passwordHistory.unshift({
-            password: this.password,
-            changedAt: new Date()
-        });
-        if (this.passwordHistory.length > maxPasswordHistory) {
-            this.passwordHistory = this.passwordHistory.slice(0, maxPasswordHistory);
+        // Get the current hashed password from database before we replace it
+        const UserModel = mongoose.model('User');
+        const currentDoc = await UserModel.findById(this._id).select('+password');
+        if (currentDoc && (currentDoc as any).password) {
+            if (!this.passwordHistory) {
+                this.passwordHistory = [];
+            }
+            this.passwordHistory.unshift({
+                password: (currentDoc as any).password,
+                changedAt: new Date()
+            });
+            if (this.passwordHistory.length > maxPasswordHistory) {
+                this.passwordHistory = this.passwordHistory.slice(0, maxPasswordHistory);
+            }
         }
     }
 
