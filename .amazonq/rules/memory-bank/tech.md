@@ -1,236 +1,264 @@
 # Technology Stack
 
 ## Programming Languages
-
-### TypeScript
-- **Frontend**: TypeScript 4.9.5
-- **Backend**: TypeScript 5.9.2
-- **Shared Types**: TypeScript 5.0.4
-- **Configuration**: Strict mode enabled for type safety
+- **TypeScript 5.9** (Backend) / **TypeScript 4.9** (Frontend) - Type-safe development across the stack
+- **JavaScript** - Runtime execution (Node.js 18+)
 
 ## Frontend Stack
 
 ### Core Framework
-- **React**: 18.2.0 - Modern UI library with hooks and concurrent features
-- **React DOM**: 18.2.0 - DOM rendering
-- **React Router DOM**: 6.30.1 - Client-side routing with protected routes
+- **React 18.2** - Modern UI library with hooks and concurrent features
+- **React Router DOM 6.30** - Client-side routing
+- **TypeScript 4.9** - Static type checking
 
 ### State Management
-- **Zustand**: 4.5.7 - Lightweight client state management
-- **TanStack Query**: 5.89.0 - Server state management, caching, and synchronization
-- **TanStack Query DevTools**: 5.89.0 - Development debugging tools
+- **TanStack Query 5.89** (React Query) - Server state management, caching, and synchronization
+- **Zustand 4.5** - Lightweight client state management
+- **React Context** - Authentication and error handling contexts
 
-### UI & Animation
-- **Framer Motion**: 10.16.5 - Smooth animations and transitions
-- **React Icons**: 4.12.0 - Icon library
-- **React Calendar**: 6.0.0 - Calendar components
-- **React Slick**: 0.29.0 - Carousel components
-- **Slick Carousel**: 1.8.1 - Carousel styling
+### UI & Styling
+- **Framer Motion 10.16** - Animation library for smooth transitions
+- **React Icons 4.12** - Icon library
+- **React Calendar 6.0** - Calendar component for scheduling
+- **React Slick 0.29** - Carousel component
+- **Custom CSS** - Design tokens and global styles
+
+### Forms & Validation
+- **Custom useForm hook** - Form state management
+- **Client-side validation** - Input validation before API calls
 
 ### Payment Processing
-- **@stripe/stripe-js**: 2.1.0 - Stripe JavaScript SDK
-- **@stripe/react-stripe-js**: 4.0.2 - React Stripe components
-
-### Utilities
-- **Luxon**: 3.7.1 - Date and time manipulation
-- **Web Vitals**: 3.5.0 - Performance monitoring
+- **Stripe React 4.0** - Payment UI components
+- **Stripe.js 2.1** - Stripe integration
 
 ### Build Tools
-- **React Scripts**: 5.0.1 - Create React App build system
-- **CRACO**: Custom React App configuration
-- **Cross-env**: 10.0.0 - Cross-platform environment variables
+- **React Scripts 5.0** - Create React App build system
+- **CRACO** - Create React App Configuration Override
+- **Webpack** - Module bundler (via CRA)
+- **Babel** - JavaScript transpiler
 
 ## Backend Stack
 
 ### Core Framework
-- **Node.js**: >=18.0.0 - JavaScript runtime
-- **Express**: 4.21.2 - Web application framework
-- **TypeScript**: 5.9.2 - Type-safe backend development
+- **Node.js 18+** - JavaScript runtime
+- **Express 4.21** - Web application framework
+- **TypeScript 5.9** - Type-safe backend development
 
 ### Database & Caching
-- **MongoDB**: 5.0+ - Document database
-- **Mongoose**: 8.18.0 - MongoDB ODM with schema validation
-- **Redis**: 5.8.2 - Caching and session storage
-- **IORedis**: 5.7.0 - Redis client for Node.js
+- **MongoDB 5.0+** - Document database
+- **Mongoose 8.18** - MongoDB ODM with schema validation
+- **Redis 5.8** - Caching and session storage
+- **IORedis 5.7** - Redis client for Node.js
 
 ### Authentication & Security
-- **jsonwebtoken**: 9.0.2 - JWT token generation and verification
-- **bcrypt**: 6.0.0 - Password hashing
-- **bcryptjs**: 3.0.2 - Alternative bcrypt implementation
-- **otplib**: 12.0.1 - TOTP/HOTP generation for MFA
-- **qrcode**: 1.5.4 - QR code generation for MFA setup
-- **helmet**: 7.2.0 - Security headers
-- **cors**: 2.8.5 - Cross-origin resource sharing
-- **csurf**: 1.11.0 - CSRF protection
-- **express-mongo-sanitize**: 2.2.0 - MongoDB injection prevention
-- **express-rate-limit**: 7.5.1 - Rate limiting
-- **cookie-parser**: 1.4.7 - Cookie parsing
+- **jsonwebtoken 9.0** - JWT token generation and verification
+- **bcrypt 6.0** - Password hashing
+- **otplib 12.0** - TOTP-based MFA
+- **helmet 7.2** - Security headers
+- **csurf 1.11** - CSRF protection
+- **express-rate-limit 7.5** - Rate limiting
+- **express-mongo-sanitize 2.2** - NoSQL injection prevention
 
-### Validation & Sanitization
-- **express-validator**: 7.2.1 - Request validation
-- **zod**: 3.22.4 - Schema validation
-- **isomorphic-dompurify**: 2.26.0 - HTML sanitization
+### Validation
+- **Zod 3.22** - Schema validation
+- **express-validator 7.2** - Request validation middleware
 
 ### External Services
-- **Twilio**: 5.10.2 - SMS notifications
-- **Nodemailer**: 6.10.1 - Email delivery
+- **Stripe** - Payment processing
+- **Twilio 5.10** - SMS notifications
+- **Nodemailer 6.10** - Email delivery
 
 ### Job Queue
-- **BullMQ**: 5.58.2 - Redis-based job queue for background tasks
+- **BullMQ 5.58** - Redis-based job queue for background tasks
 
 ### Logging & Monitoring
-- **pino**: 9.11.0 - High-performance logging
-- **pino-http**: 10.5.0 - HTTP request logging
-- **pino-pretty**: 13.1.1 - Pretty log formatting (development)
+- **Pino 9.11** - High-performance logging
+- **Pino-HTTP 10.5** - HTTP request logging
 
 ### API Documentation
-- **swagger-jsdoc**: 6.2.8 - Swagger documentation generation
-- **swagger-ui-express**: 5.0.1 - Swagger UI interface
+- **Swagger JSDoc 6.2** - API documentation generation
+- **Swagger UI Express 5.0** - Interactive API documentation
 
 ### Utilities
-- **dotenv**: 16.6.1 - Environment variable management
-- **luxon**: 3.7.1 - Date and time manipulation
-- **date-fns**: 4.1.0 - Date utilities
-- **date-fns-tz**: 3.2.0 - Timezone support
-- **uuid**: 13.0.0 - UUID generation
-- **ua-parser-js**: 2.0.5 - User agent parsing
+- **Luxon 3.7** - Date/time manipulation
+- **date-fns 4.1** - Date utilities
+- **uuid 13.0** - Unique identifier generation
+- **qrcode 1.5** - QR code generation for MFA
 
 ## Shared Types Package
 
-### Dependencies
-- **TypeScript**: 5.0.4 - Type definitions
-- **@types/react-router-dom**: 5.3.3 - Router type definitions
+### Package
+- **@topsmile/types** - Shared TypeScript definitions
+- **TypeScript 5.0** - Type definitions compiler
 
-## Testing Stack
+## Testing & Quality
 
 ### Frontend Testing
-- **Jest**: 27.5.1 - Test framework
-- **@testing-library/react**: 16.3.0 - React component testing
-- **@testing-library/jest-dom**: 6.8.0 - DOM matchers
-- **@testing-library/user-event**: 14.6.1 - User interaction simulation
-- **jest-axe**: 10.0.0 - Accessibility testing
-- **MSW**: 2.11.2 - API mocking
-- **ts-jest**: 27.1.4 - TypeScript Jest transformer
+- **Jest 27** - Test framework
+- **Testing Library 16.3** - React component testing
+- **Jest-axe 10.0** - Accessibility testing
+- **MSW 2.11** - API mocking for tests
+- **User Event 14.6** - User interaction simulation
 
 ### Backend Testing
-- **Jest**: 29.7.0 - Test framework
-- **Supertest**: 7.1.4 - HTTP assertion library
-- **@faker-js/faker**: 10.0.0 - Test data generation
-- **mongodb-memory-server**: 10.2.0 - In-memory MongoDB for testing
-- **@pact-foundation/pact**: 12.1.0 - Contract testing
-- **ts-jest**: 29.4.1 - TypeScript Jest transformer
+- **Jest 29** - Test framework
+- **Supertest 7.1** - HTTP assertion library
+- **MongoDB Memory Server 10.2** - In-memory MongoDB for tests
+- **Pact 12.1** - Contract testing
+- **Faker 10.0** - Test data generation
 
 ### E2E Testing
-- **Cypress**: 15.1.0 - End-to-end testing framework
+- **Cypress 15.1** - End-to-end testing framework
+
+### Code Quality
+- **ESLint 8.57** - Code linting
+- **TypeScript ESLint 6.21** - TypeScript-specific linting rules
+- **Prettier** (implicit) - Code formatting
 
 ### Performance Testing
-- **k6**: Load testing tool
-- **Lighthouse**: Web performance auditing
-
-### Test Reporting
-- **jest-junit**: 16.0.0 - JUnit XML reports for CI/CD
+- **k6** - Load testing
+- **Lighthouse** - Performance auditing
+- **Web Vitals 3.5** - Core Web Vitals monitoring
 
 ## Development Tools
 
-### Code Quality
-- **ESLint**: 8.57.1 - JavaScript/TypeScript linting
-- **@typescript-eslint/eslint-plugin**: 6.21.0 - TypeScript ESLint rules
-- **@typescript-eslint/parser**: 6.21.0 - TypeScript parser for ESLint
+### Package Management
+- **npm 9.0+** - Package manager
+- **Workspaces** - Monorepo management
 
-### Development Utilities
-- **nodemon**: 3.1.10 - Auto-restart on file changes
-- **ts-node**: 10.9.2 - TypeScript execution
-- **tsconfig-paths**: 4.2.0 - Path mapping support
-- **concurrently**: 9.2.0 - Run multiple commands concurrently
+### Development Servers
+- **nodemon 3.1** - Auto-restart for backend development
+- **ts-node 10.9** - TypeScript execution for Node.js
+- **tsconfig-paths 4.2** - Path mapping support
 
-### Bundle Analysis
-- **source-map-explorer**: 2.5.3 - Bundle size analysis
-- **webpack-bundle-analyzer**: 4.10.2 - Webpack bundle visualization
-
-### Polyfills
-- **text-encoding**: 0.7.0 - TextEncoder/TextDecoder polyfill
-- **web-streams-polyfill**: 4.2.0 - Streams API polyfill
-- **whatwg-fetch**: 3.6.20 - Fetch API polyfill
-- **broadcast-channel**: 7.1.0 - BroadcastChannel polyfill
+### Build Tools
+- **TypeScript Compiler** - Type checking and compilation
+- **Source Map Explorer 2.5** - Bundle analysis
+- **Webpack Bundle Analyzer 4.10** - Bundle visualization
 
 ## Development Commands
 
-### Frontend Development
+### Installation
 ```bash
-npm start                    # Start development server (port 3000)
-npm run dev                  # Start frontend + backend concurrently
-npm run build                # Production build
-npm run build:all            # Build frontend + backend
-npm run test:frontend        # Run frontend tests
-npm run test:frontend:watch  # Watch mode
-npm run test:a11y            # Accessibility tests
-npm run lint                 # Lint code
-npm run lint:fix             # Fix linting issues
-npm run type-check           # TypeScript type checking
-npm run analyze              # Bundle size analysis
+npm install                    # Install all dependencies (frontend + backend)
 ```
 
-### Backend Development
+### Development
 ```bash
-cd backend && npm run dev    # Start backend server (port 5000)
-cd backend && npm test       # Run backend tests
-cd backend && npm run test:watch  # Watch mode
-cd backend && npm run test:coverage  # Coverage report
-cd backend && npm run lint   # Lint code
-cd backend && npm run build  # Build for production
-cd backend && npm start      # Start production server
+npm run dev                    # Start both frontend and backend
+npm start                      # Start frontend only
+npm run dev:frontend           # Start frontend only
+npm run dev:backend            # Start backend only (cd backend && npm run dev)
+npm run server                 # Start backend only
 ```
 
-### E2E Testing
+### Building
 ```bash
-npm run test:e2e             # Run Cypress tests headless
-npm run cy:open              # Open Cypress UI
+npm run build                  # Build frontend
+npm run build:all              # Build frontend and backend
+cd backend && npm run build    # Build backend only
 ```
 
-### Full Test Suite
+### Testing
 ```bash
-npm run test:all             # Run all tests (frontend + backend)
-npm run test:ci              # CI test suite with coverage
-npm run test:coverage        # Generate coverage reports
+# All tests
+npm test                       # Run all tests
+npm run test:all               # Run frontend + backend tests
+
+# Frontend tests
+npm run test:frontend          # Run frontend tests
+npm run test:frontend:watch    # Watch mode
+npm run test:frontend:coverage # With coverage
+npm run test:frontend:ci       # CI mode
+
+# Backend tests
+npm run test:backend           # Run backend tests
+cd backend && npm test         # Backend tests (from backend dir)
+cd backend && npm run test:watch       # Watch mode
+cd backend && npm run test:coverage    # With coverage
+cd backend && npm run test:ci          # CI mode
+
+# E2E tests
+npm run test:e2e               # Run Cypress tests
+npm run cy:open                # Open Cypress UI
+npm run cy:run                 # Run Cypress headless
+
+# Specific test types
+npm run test:a11y              # Accessibility tests
+npm run test:coverage          # All tests with coverage
+npm run test:ci                # All tests in CI mode
 ```
 
-### Performance & Quality
+### Code Quality
 ```bash
-npm run lighthouse           # Run Lighthouse audit
-npm run perf:load            # Load testing with k6
+npm run lint                   # Lint frontend code
+npm run lint:fix               # Fix linting issues
+npm run type-check             # TypeScript type checking
+cd backend && npm run lint     # Lint backend code
+cd backend && npm run lint:fix # Fix backend linting
+```
+
+### Performance & Analysis
+```bash
+npm run lighthouse             # Run Lighthouse audit
+npm run lighthouse:ci          # Lighthouse CI
+npm run analyze                # Analyze bundle size
+npm run analyze:bundle         # Bundle analysis
+npm run build:analyze          # Build with source maps and analyze
+npm run perf:load              # Load testing with k6
 ```
 
 ### Utilities
 ```bash
-npm run generate-secrets     # Generate JWT secrets
-npm run migrate-types        # Migrate to shared types package
-npm run fix-type-imports     # Fix type import paths
+npm run generate-secrets       # Generate JWT secrets
+npm run generate-env-secrets   # Generate environment secrets
+npm run migrate-types          # Migrate to shared types
+npm run fix-type-imports       # Fix type imports
 ```
 
 ## Environment Requirements
 
-### Runtime
-- **Node.js**: >=18.0.0
-- **npm**: >=9.0.0
-- **MongoDB**: >=5.0
-- **Redis**: Latest stable version
+### System Requirements
+- **Node.js** >= 18.0.0
+- **npm** >= 9.0.0
+- **MongoDB** >= 5.0
+- **Redis** (latest stable)
 
-### Development
-- **TypeScript**: Strict mode enabled
-- **ESLint**: Configured for TypeScript
-- **Git**: Version control
+### Environment Variables
 
-## External Service Integrations
+#### Frontend (.env)
+```bash
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_...
+REACT_APP_ENVIRONMENT=development
+```
 
-### Required Services
-- **Stripe**: Payment processing (API keys required)
-- **Twilio**: SMS notifications (account SID, auth token, phone number)
-- **SMTP Server**: Email delivery (Gmail, SendGrid, etc.)
+#### Backend (backend/.env)
+```bash
+NODE_ENV=development
+PORT=5000
 
-### Optional Services
-- **Sentry**: Error tracking (production)
-- **LogRocket**: Session replay (production)
-- **AWS S3**: Document storage (future)
+# Database
+MONGODB_URI=mongodb://localhost:27017/topsmile
+REDIS_URL=redis://localhost:6379
+
+# Authentication
+JWT_SECRET=your-jwt-secret-min-32-chars
+JWT_REFRESH_SECRET=your-refresh-secret-min-32-chars
+
+# External Services
+STRIPE_SECRET_KEY=sk_test_...
+TWILIO_ACCOUNT_SID=your-twilio-sid
+TWILIO_AUTH_TOKEN=your-twilio-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+FROM_EMAIL=noreply@topsmile.com
+```
 
 ## Browser Support
 
@@ -243,16 +271,3 @@ npm run fix-type-imports     # Fix type import paths
 - Latest Chrome
 - Latest Firefox
 - Latest Safari
-
-## Database Indexes
-- **50+ Optimized Indexes**: Query performance optimization
-- **Compound Indexes**: Multi-field query support
-- **Text Indexes**: Full-text search capabilities
-- **Unique Indexes**: Data integrity constraints
-
-## Performance Targets
-- **Initial Load**: <1.2s
-- **Tab Switch**: <0.8s
-- **Save Operation**: <0.6s
-- **Memory Usage**: <100MB
-- **Test Coverage**: 85% frontend, 90% backend

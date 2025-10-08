@@ -2,739 +2,503 @@
 
 ## Code Quality Standards
 
-### TypeScript Configuration
-- **Strict Mode**: Enabled across all packages (frontend, backend, shared types)
-- **Explicit Types**: Always provide explicit return types for functions
-- **No Any**: Avoid `any` type; use proper type definitions or `unknown` with type guards
-- **Type Imports**: Use `import type` for type-only imports from `@topsmile/types`
-- **Interface Over Type**: Prefer interfaces for object shapes, types for unions/intersections
+### TypeScript Strict Mode
+- All code must pass strict type checking
+- Explicit return types required for functions
+- No `any` type usage - use proper types from `@topsmile/types` or define new ones
+- Use type imports with `import type` for type-only imports
+- Leverage shared types from `@topsmile/types` package for consistency
 
 ### File Organization
-- **File Headers**: Include relative path comment at top of files (e.g., `// backend/src/routes/providers.ts`)
-- **Import Order**: External packages → Internal packages → Types → Relative imports
-- **Export Pattern**: Use named exports; default exports only for React components and route modules
-- **File Naming**: 
-  - Components: PascalCase (e.g., `SignaturePad.tsx`)
-  - Services/Utils: camelCase (e.g., `schedulingService.ts`)
-  - Models: PascalCase (e.g., `Appointment.ts`)
-  - Routes: lowercase (e.g., `providers.ts`)
+- One primary export per file (class, service, or router)
+- Group related imports together (external, internal, types)
+- Import order: external packages → internal modules → types → models
+- Use absolute imports for shared packages (`@topsmile/types`)
+- Use relative imports for local modules
 
-### Code Formatting
-- **Indentation**: 4 spaces (backend), 2 spaces (frontend)
-- **Line Length**: Aim for 100-120 characters max
-- **Semicolons**: Required
-- **Quotes**: Single quotes for strings, double quotes for JSX attributes
-- **Trailing Commas**: Use in multi-line objects and arrays
+### Naming Conventions
+- **Files**: camelCase for services/utilities, PascalCase for components/models
+- **Variables/Functions**: camelCase (e.g., `patientAuthService`, `createAppointment`)
+- **Classes/Interfaces**: PascalCase (e.g., `PatientAuthService`, `CDTCode`)
+- **Constants**: UPPER_SNAKE_CASE (e.g., `ACCESS_TOKEN_EXPIRES`, `CDT_CODES`)
+- **Private methods**: prefix with underscore (e.g., `_generateToken`)
+- **Route handlers**: descriptive names matching HTTP method + resource
 
 ### Documentation Standards
-- **JSDoc Comments**: Required for public APIs and complex functions
-- **Swagger Documentation**: All API endpoints must have Swagger annotations
-- **Inline Comments**: Use sparingly; prefer self-documenting code
-- **Portuguese Messages**: All user-facing messages in Portuguese (Brazil)
-- **English Code**: Variable names, function names, and comments in English
+- **Swagger/JSDoc**: All API endpoints must have Swagger documentation
+- **Portuguese messages**: All user-facing messages in Portuguese (BR)
+- **English code**: Code, variables, and comments in English
+- **Inline comments**: Explain complex logic, not obvious code
+- **FIXED/IMPROVED comments**: Mark significant fixes or improvements
 
 ## Backend Patterns
 
-### Route Structure (5/5 files follow this pattern)
+### Express Route Structure
 ```typescript
-// Import order: express → middleware → services → validators → types
-import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
-import { serviceInstance } from '../services/serviceFile';
-import { body, query, validationResult } from 'express-validator';
-import type { TypeName } from '@topsmile/types';
+// Import dependencies
+import express, { Request, Response } from "express";
+import { authenticate, authorize, AuthenticatedRequest } from "../../middleware/auth";
+import { body, validationResult } from 'express-validator';
 
-const router: express.Router = express.Router();
+const router = express.Router();
 
-// Apply authentication middleware globally
+// Apply authentication middleware to all routes
 router.use(authenticate);
 
-// Define validation rules as constants
-const createValidation = [
-  body('field').trim().isLength({ min: 2, max: 100 })
-    .withMessage('Mensagem de erro em português'),
-  // ... more validators
+// Validation arrays defined before routes
+const validationRules = [
+  body('field').isString().withMessage('Mensagem em português'),
+  // ... more rules
 ];
 
-// Route handlers with Swagger documentation
+// Route with Swagger documentation
 /**
  * @swagger
- * /api/endpoint:
+ * /api/resource:
  *   post:
  *     summary: Descrição em português
- *     tags: [TagName]
+ *     tags: [ResourceTag]
  *     security:
  *       - bearerAuth: []
  */
-router.post('/', 
-  authorize('super_admin', 'admin', 'manager'),
-  createValidation,
-  async (req: Request, res: Response) => {
-    const authReq = req as AuthenticatedRequest;
-    try {
-      // Validate input
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Dados inválidos',
-          errors: errors.array()
-        });
-      }
-
-      // Check clinic context
-      if (!authReq.user?.clinicId) {
-        return res.status(400).json({
-          success: false,
-          message: 'Clínica não identificada'
-        });
-      }
-
-      // Business logic
-      const result = await serviceInstance.method(data);
-
-      // Success response
-      return res.status(201).json({
-        success: true,
-        message: 'Operação realizada com sucesso',
-        data: result,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: (authReq as any).requestId
-        }
-      });
-    } catch (error: any) {
-      console.error('Error description:', error);
+router.post("/", validationRules, async (req: Request, res: Response) => {
+  const authReq = req as AuthenticatedRequest;
+  try {
+    // Validate input
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: error.message || 'Erro genérico'
+        message: 'Dados inválidos',
+        errors: errors.array()
       });
     }
+
+    // Business logic via service layer
+    const result = await service.method(authReq.body);
+
+    // Consistent response format
+    return res.status(201).json({
+      success: true,
+      data: result,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (authReq as any).requestId
+      }
+    });
+  } catch (err: any) {
+    console.error('Error description:', err);
+    return res.status(400).json({
+      success: false,
+      error: err.message
+    });
   }
-);
+});
 
 export default router;
 ```
 
-### Service Layer Patterns (5/5 files follow this pattern)
-
-#### Transaction Handling
+### Service Layer Pattern
 ```typescript
-// CRITICAL: Always use transactions for data modifications
-async createWithTransaction(data: CreateData): Promise<SchedulingResult<T>> {
-  // Skip transactions in test environment
-  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
-  const session = isTestEnv ? null : await mongoose.startSession();
+import { ValidationError, UnauthorizedError, NotFoundError, AppError } from '../../utils/errors/errors';
 
-  try {
-    if (!isTestEnv) {
-      session!.startTransaction();
-    }
+class ServiceName {
+  private readonly CONSTANT_VALUE = process.env.ENV_VAR || 'default';
 
-    // Validate data first
-    if (!data.requiredField) {
-      throw new Error('Dados obrigatórios não fornecidos');
-    }
+  // Private helper methods
+  private helperMethod(): string {
+    // Implementation
+  }
 
-    // Perform operations with session
-    const result = await session
-      ? Model.findById(id).session(session)
-      : Model.findById(id);
+  // Public service methods
+  async publicMethod(data: InputType): Promise<OutputType> {
+    try {
+      // Input validation
+      if (!data.required) {
+        throw new ValidationError('Campo obrigatório');
+      }
 
-    // Commit transaction
-    if (!isTestEnv) {
-      await session!.commitTransaction();
-    }
+      // Business logic
+      const result = await this.helperMethod();
 
-    return { success: true, data: result };
-
-  } catch (error) {
-    // Rollback on error
-    if (!isTestEnv && session) {
-      await session.abortTransaction();
-    }
-    console.error('Error description:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro genérico'
-    };
-  } finally {
-    // Always end session
-    if (!isTestEnv && session) {
-      session.endSession();
+      return result;
+    } catch (error) {
+      // Re-throw known errors
+      if (error instanceof AppError) {
+        throw error;
+      }
+      
+      // Log and wrap unknown errors
+      console.error('Service error:', error);
+      throw new AppError('Erro ao processar', 500);
     }
   }
 }
+
+export const serviceName = new ServiceName();
 ```
 
-#### Result Type Pattern
+### Error Handling Pattern
+- Use custom error classes: `ValidationError`, `UnauthorizedError`, `NotFoundError`, `ConflictError`, `AppError`
+- Always catch errors in route handlers
+- Re-throw `AppError` instances, wrap unknown errors
+- Log errors with `console.error` before responding
+- Return consistent error response format:
 ```typescript
-// Always return structured results for better error handling
-export interface SchedulingResult<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  warnings?: string[];
+{
+  success: false,
+  message: 'Mensagem de erro em português',
+  error: err.message // Optional, for development
 }
 ```
 
-#### Performance Optimization
-```typescript
-// Use lean() queries for read-only operations
-const data = await Model.find(query).lean();
-
-// Use parallel processing for independent operations
-const results = await Promise.all([
-  operation1(),
-  operation2(),
-  operation3()
-]);
-
-// Implement safety limits for loops
-let count = 0;
-const maxIterations = 200;
-while (condition && count < maxIterations) {
-  // ... logic
-  count++;
-}
-```
-
-### Validation Patterns (5/5 files follow this pattern)
-
-#### Express Validator Usage
-```typescript
-// Define validation arrays as constants
-const createValidation = [
-  body('email')
-    .optional()
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('E-mail inválido'),
-  
-  body('phone')
-    .optional()
-    .trim()
-    .isLength({ min: 10, max: 15 })
-    .withMessage('Telefone deve ter entre 10 e 15 caracteres'),
-  
-  body('specialties')
-    .isArray({ min: 1 })
-    .withMessage('Pelo menos uma especialidade é obrigatória'),
-  
-  body('specialties.*')
-    .isIn(['option1', 'option2', 'option3'])
-    .withMessage('Especialidade inválida'),
-  
-  // Time format validation
-  body('workingHours.*.start')
-    .optional()
-    .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
-    .withMessage('Formato de horário inválido. Use HH:MM'),
-  
-  // MongoDB ID validation
-  body('userId')
-    .optional()
-    .isMongoId()
-    .withMessage('ID do usuário inválido')
-];
-```
-
-#### Query Parameter Validation
-```typescript
-const searchValidation = [
-  query('search')
-    .optional()
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Busca deve ter entre 1 e 100 caracteres'),
-  
-  query('page')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('Página deve ser um número inteiro maior que 0'),
-  
-  query('sortBy')
-    .optional()
-    .isIn(['name', 'email', 'createdAt', 'updatedAt'])
-    .withMessage('Campo de ordenação inválido')
-];
-```
-
-### Error Handling (5/5 files follow this pattern)
-```typescript
-// Always use try-catch in async route handlers
-try {
-  // Business logic
-} catch (error: any) {
-  console.error('Descriptive error message:', error);
-  return res.status(500).json({
-    success: false,
-    message: error.message || 'Fallback error message in Portuguese'
-  });
-}
-
-// Type-safe error checking
-if (error instanceof Error) {
-  return error.message;
-}
-return 'Unknown error';
-```
-
-### API Response Format (5/5 files follow this pattern)
+### Response Format Pattern
+All API responses follow this structure:
 ```typescript
 // Success response
 {
   success: true,
-  data: result,
-  message?: 'Mensagem de sucesso',
+  data: { /* response data */ },
   meta: {
-    timestamp: new Date().toISOString(),
-    requestId: (req as any).requestId
+    timestamp: '2024-01-01T00:00:00.000Z',
+    requestId: 'uuid-v4'
   }
 }
 
 // Error response
 {
   success: false,
-  message: 'Mensagem de erro em português',
-  errors?: validationErrors
+  message: 'Mensagem de erro',
+  errors: [ /* validation errors */ ] // Optional
 }
 
 // Paginated response
 {
   success: true,
   data: {
-    items: results,
-    total: totalCount,
-    page: currentPage,
-    totalPages: totalPages,
-    hasNext: hasNextPage,
-    hasPrev: hasPreviousPage
+    items: [ /* array of items */ ],
+    pagination: {
+      page: 1,
+      limit: 10,
+      total: 100,
+      pages: 10,
+      hasNext: true,
+      hasPrev: false
+    }
   }
 }
 ```
 
+### Authentication & Authorization
+- Use `authenticate` middleware for all protected routes
+- Use `authorize(...roles)` for role-based access control
+- Cast `req` to `AuthenticatedRequest` to access `req.user`
+- Separate patient authentication: `authenticatePatient`, `PatientAuthenticatedRequest`
+- Check clinic access: `appointment.clinic.toString() !== authReq.user!.clinicId`
+- JWT secrets: separate for staff (`JWT_SECRET`) and patients (`PATIENT_JWT_SECRET`)
+
+### Validation Pattern
+- Use `express-validator` for input validation
+- Define validation arrays before route handlers
+- Portuguese error messages in validation rules
+- Check validation results at start of handler
+- Return 400 with validation errors array
+
+### Database Patterns
+- Use Mongoose models with TypeScript interfaces
+- Populate related documents in queries: `.populate('field', 'selectedFields')`
+- Use lean queries for read-only operations: `.lean()`
+- Index frequently queried fields (50+ optimized indexes)
+- Use transactions for multi-document operations
+- Check document existence before operations
+- Verify clinic/user ownership before modifications
+
 ## Frontend Patterns
 
-### React Component Structure (5/5 files follow this pattern)
+### Component Structure
 ```typescript
-// Import order: React → External libs → Internal components → Hooks → Types → Styles
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { ComponentName } from '../components/ComponentName';
-import { useCustomHook } from '../hooks/useCustomHook';
 import type { TypeName } from '@topsmile/types';
 import './ComponentName.css';
 
 interface ComponentProps {
-  onAction: (data: string) => void;
-  onCancel: () => void;
-  requiredProp: string;
-  optionalProp?: number;
+  prop1: string;
+  prop2?: number;
 }
 
-export const ComponentName: React.FC<ComponentProps> = ({ 
-  onAction, 
-  onCancel,
-  requiredProp,
-  optionalProp 
-}) => {
-  // Hooks first
-  const ref = useRef<HTMLElement>(null);
-  const [state, setState] = useState<Type>(initialValue);
+export const ComponentName: React.FC<ComponentProps> = ({ prop1, prop2 }) => {
+  // State hooks
+  const [localState, setLocalState] = useState<string>('');
 
-  // Effects after state
+  // Query hooks
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['resource', prop1],
+    queryFn: () => apiService.getResource(prop1)
+  });
+
+  // Mutation hooks
+  const mutation = useMutation({
+    mutationFn: apiService.createResource,
+    onSuccess: () => {
+      // Handle success
+    },
+    onError: (error) => {
+      console.error('Mutation error:', error);
+    }
+  });
+
+  // Effect hooks
   useEffect(() => {
-    // Effect logic
-    return () => {
-      // Cleanup
-    };
-  }, [dependencies]);
+    // Side effects
+  }, [prop1]);
 
   // Event handlers
-  const handleAction = (e: React.MouseEvent<HTMLElement>) => {
-    // Handler logic
+  const handleAction = () => {
+    mutation.mutate({ data: localState });
   };
 
-  // Render
+  // Loading state
+  if (isLoading) return <div>Carregando...</div>;
+
+  // Error state
+  if (error) return <div>Erro: {error.message}</div>;
+
   return (
     <div className="component-name">
-      {/* JSX */}
+      {/* JSX content */}
     </div>
   );
 };
 ```
 
-### State Management Patterns
+### State Management
+- **TanStack Query**: Server state (API data, caching, synchronization)
+- **Zustand**: Client state (UI state, user preferences, global app state)
+- **React Context**: Authentication, error handling, theme
+- **Local State**: Component-specific UI state with `useState`
 
-#### TanStack Query for Server State
+### Custom Hooks Pattern
 ```typescript
-// Query hook
-const { data, isLoading, error } = useQuery({
-  queryKey: ['resource', id],
-  queryFn: () => apiService.getResource(id),
-  staleTime: 5 * 60 * 1000, // 5 minutes
-  retry: 3
-});
+import { useState, useEffect } from 'react';
 
-// Mutation hook
-const mutation = useMutation({
-  mutationFn: (data: CreateData) => apiService.create(data),
-  onSuccess: (data) => {
-    queryClient.invalidateQueries({ queryKey: ['resource'] });
-  },
-  onError: (error) => {
-    console.error('Error:', error);
-  }
-});
+export const useCustomHook = (param: string) => {
+  const [state, setState] = useState<Type>(initialValue);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    // Hook logic
+  }, [param]);
+
+  return { state, loading, error };
+};
 ```
 
-#### Zustand for Client State
+### Testing Patterns
+- **Custom matchers**: Use domain-specific matchers from `customMatchers.ts`
+- **Test structure**: Arrange-Act-Assert pattern
+- **Mock data**: Use `@faker-js/faker` for test data generation
+- **API mocking**: Use MSW (Mock Service Worker) for API mocking
+- **Accessibility**: Use `jest-axe` for a11y testing
+- **Coverage targets**: 85% frontend, 90% backend
+
+## Security Patterns
+
+### Environment Variables
+- Never commit `.env` files to git
+- Use `.env.example` for documentation
+- Validate required env vars on startup (see `validateEnv()` in app.ts)
+- Minimum 64 characters for JWT secrets (32-byte hex)
+- Different secrets for staff and patient tokens in production
+
+### Token Management
+- Access tokens: 15 minutes expiration
+- Refresh tokens: 7 days expiration, stored in database
+- Token rotation: revoke old refresh token when issuing new one
+- Token blacklist: track revoked tokens in Redis
+- Proactive refresh: refresh tokens every 13 minutes on frontend
+
+### CSRF Protection
+- Global CSRF protection on all state-changing operations (POST, PUT, PATCH, DELETE)
+- Skip CSRF for GET, HEAD, OPTIONS
+- Skip CSRF for specific endpoints (refresh, logout, csrf-token)
+- Include `X-CSRF-Token` header in requests
+
+### Input Sanitization
+- MongoDB sanitization: `express-mongo-sanitize` on all requests
+- Body parser limits: 10MB max, 100 parameters max
+- Validation: client-side and server-side validation
+- DOMPurify: sanitize HTML content
+
+### Rate Limiting
+- Auth endpoints: 10 requests per 15 minutes (production)
+- Password reset: 3 requests per hour
+- Contact form: 5 submissions per 15 minutes
+- General API: 100 requests per 15 minutes (production)
+- Key by email for auth, by IP for others
+
+## Configuration Patterns
+
+### Middleware Order (app.ts)
+1. Trust proxy configuration
+2. Security headers (helmet)
+3. CORS configuration
+4. Database connection
+5. Rate limiting
+6. Request ID tracking
+7. Body parsers (JSON, URL-encoded)
+8. Cookie parser
+9. MongoDB sanitization
+10. CSRF token endpoint
+11. CSRF protection (state-changing operations)
+12. Database connection check
+13. Response wrapper
+14. Audit logging
+15. Route mounting
+16. Error handler
+17. 404 handler
+
+### Logging Pattern
+- Use Pino for structured logging
+- HTTP request logging with `pino-http`
+- Log levels: error (500+), warn (400+), info (200+)
+- Console.error for errors before responding
+- Include request ID in logs
+- Avoid logging sensitive data (passwords, tokens)
+
+### Health Check Endpoints
+- `/api/health` - Basic health check with uptime and memory
+- `/api/health/database` - Database connection and query performance
+- `/api/health/metrics` - System metrics (admin only)
+
+## Common Code Idioms
+
+### Async/Await Pattern
 ```typescript
-// Store definition
-interface StoreState {
-  data: DataType[];
-  setData: (data: DataType[]) => void;
-  clearData: () => void;
+// Always use try-catch with async/await
+try {
+  const result = await asyncOperation();
+  return result;
+} catch (error) {
+  console.error('Operation failed:', error);
+  throw new AppError('Erro ao processar', 500);
 }
-
-export const useStore = create<StoreState>((set) => ({
-  data: [],
-  setData: (data) => set({ data }),
-  clearData: () => set({ data: [] })
-}));
 ```
 
-### Event Handler Patterns
+### Null/Undefined Checks
 ```typescript
-// Mouse events with proper typing
-const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  // Logic
-};
+// Use optional chaining and nullish coalescing
+const value = obj?.property ?? 'default';
 
-// Canvas events
-const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-  const canvas = canvasRef.current;
-  if (!canvas) return;
-
-  const rect = canvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
-  // Use coordinates
-};
-
-// Form events
-const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  // Form logic
-};
-```
-
-## Testing Patterns
-
-### Mock Data Generation (5/5 files follow this pattern)
-```typescript
-import { faker } from '@faker-js/faker';
-import type { TypeName } from '@topsmile/types';
-
-// Generator function with overrides
-export const generateMockEntity = (overrides = {}) => ({
-  _id: faker.database.mongodbObjectId(),
-  name: faker.name.fullName(),
-  email: faker.internet.email(),
-  phone: faker.phone.number(),
-  isActive: faker.datatype.boolean({ probability: 0.9 }),
-  createdAt: faker.date.past().toISOString(),
-  updatedAt: faker.date.recent().toISOString(),
-  ...overrides
-});
-
-// Brazilian-specific generators
-export const generateBrazilianPhone = () => 
-  faker.helpers.replaceSymbols('(##) #####-####');
-
-export const generateBrazilianCPF = () => 
-  faker.helpers.replaceSymbols('###.###.###-##');
-
-// Utility for multiple items
-export const generateMultiple = <T>(
-  generator: (overrides?: any) => T, 
-  count: number, 
-  overrides = {}
-) => {
-  return Array.from({ length: count }, () => generator(overrides));
-};
-```
-
-### Test Response Patterns
-```typescript
-// Success response
-export const generateMockApiResponse = <T>(
-  data: T, 
-  success = true, 
-  message?: string
-) => ({
-  success,
-  data,
-  message: message || (success ? 'Operação realizada com sucesso' : 'Erro na operação')
-});
-
-// Paginated response
-export const generateMockPaginatedResponse = <T>(
-  items: T[], 
-  page = 1, 
-  limit = 10
-) => {
-  const total = items.length;
-  const totalPages = Math.ceil(total / limit);
-  const startIndex = (page - 1) * limit;
-  const paginatedItems = items.slice(startIndex, startIndex + limit);
-
-  return {
-    success: true,
-    data: {
-      items: paginatedItems,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNext: page < totalPages,
-        hasPrev: page > 1
-      }
-    }
-  };
-};
-```
-
-## Common Idioms and Patterns
-
-### Null Safety Checks (5/5 files use this pattern)
-```typescript
-// Early return pattern
-if (!data) return;
-if (!canvas) return;
-if (!authReq.user?.clinicId) {
-  return res.status(400).json({ success: false, message: 'Error' });
+// Check existence before operations
+if (!document) {
+  throw new NotFoundError('Documento não encontrado');
 }
-
-// Optional chaining
-const value = object?.property?.nestedProperty;
-
-// Nullish coalescing
-const result = value ?? defaultValue;
 ```
 
-### Array Handling
+### Array Operations
 ```typescript
-// Handle string or array parameters
-let specialties: string[] | undefined;
-if (query.specialties) {
-  if (typeof query.specialties === 'string') {
-    specialties = [query.specialties];
-  } else if (Array.isArray(query.specialties)) {
-    specialties = query.specialties as string[];
-  }
-}
+// Use functional methods (map, filter, reduce)
+const filtered = items.filter(item => item.status === 'active');
+const mapped = items.map(item => ({ id: item._id, name: item.name }));
 
-// Array element validation
-body('specialties.*')
-  .isIn(['option1', 'option2'])
-  .withMessage('Invalid option');
+// Use Array.from for iterables
+const entries = Array.from(formData.entries());
 ```
 
 ### Date Handling
 ```typescript
-// Use date-fns for date operations
-import { startOfDay, endOfDay, addMinutes, format } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+// Use Luxon for date manipulation
+import { DateTime } from 'luxon';
 
-// Date range queries
-const query = {
-  scheduledStart: {
-    $gte: startOfDay(date),
-    $lte: endOfDay(date)
-  }
-};
+const date = DateTime.now();
+const formatted = date.toISO();
 
-// Time parsing with timezone
-const parseTimeToDate = (date: Date, timeString: string, timeZone: string): Date => {
-  const [hours, minutes] = timeString.split(':').map(Number);
-  const dateStr = format(date, 'yyyy-MM-dd');
-  const timeStr = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
-  const dateTimeStr = `${dateStr}T${timeStr}`;
-  return parseISO(formatInTimeZone(new Date(dateTimeStr), timeZone, "yyyy-MM-dd'T'HH:mm:ssXXX"));
-};
+// Use date-fns for simple operations
+import { addDays, format } from 'date-fns';
+
+const futureDate = addDays(new Date(), 7);
 ```
 
-### Async Queue Processing (Email Service Pattern)
+### Object Destructuring
 ```typescript
-class ServiceWithQueue {
-  private queue: Task[] = [];
-  private isProcessing: boolean = false;
-  private readonly MAX_RETRIES = 5;
-  private readonly RETRY_DELAY_MS = 5000;
+// Destructure props and parameters
+const { firstName, lastName, email } = patient;
 
-  async addToQueue(task: Task): Promise<void> {
-    this.queue.push({ ...task, retries: 0, lastAttempt: 0 });
-    this.processQueue();
-  }
-
-  private async processQueue(): Promise<void> {
-    if (this.isProcessing) return;
-
-    this.isProcessing = true;
-    while (this.queue.length > 0) {
-      const task = this.queue[0];
-
-      // Check retry timing
-      if (Date.now() - task.lastAttempt < this.RETRY_DELAY_MS * Math.pow(2, task.retries)) {
-        break;
-      }
-
-      const success = await this.processTask(task);
-
-      if (success) {
-        this.queue.shift();
-      } else {
-        task.retries++;
-        task.lastAttempt = Date.now();
-        if (task.retries >= this.MAX_RETRIES) {
-          console.error(`Task failed after ${this.MAX_RETRIES} retries`);
-          this.queue.shift();
-        } else {
-          this.queue.push(this.queue.shift()!);
-        }
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    this.isProcessing = false;
-
-    if (this.queue.length > 0) {
-      setTimeout(() => this.processQueue(), this.RETRY_DELAY_MS);
-    }
-  }
-}
+// Use rest operator for remaining properties
+const { _id, ...updateData } = req.body;
 ```
 
-## Security Best Practices
+## Performance Optimization
 
-### Authentication & Authorization (5/5 files follow this pattern)
-```typescript
-// Apply authentication globally
-router.use(authenticate);
+### Frontend
+- Lazy load components with `React.lazy()` and `Suspense`
+- Use `React.memo()` for expensive components
+- Debounce search inputs and API calls
+- Optimize images (WebP format, responsive sizes)
+- Code splitting by route
+- Bundle size monitoring with webpack-bundle-analyzer
 
-// Role-based authorization per route
-router.post('/', 
-  authorize('super_admin', 'admin', 'manager'),
-  validationMiddleware,
-  handler
-);
+### Backend
+- Use database indexes for frequently queried fields
+- Populate only required fields: `.populate('field', 'name email')`
+- Use `.lean()` for read-only queries (faster)
+- Cache frequently accessed data in Redis
+- Batch database operations when possible
+- Use connection pooling for MongoDB
 
-// Check clinic context
-if (!authReq.user?.clinicId) {
-  return res.status(400).json({
-    success: false,
-    message: 'Clínica não identificada'
-  });
-}
-```
-
-### Input Validation
-```typescript
-// Always validate and sanitize input
-body('email').isEmail().normalizeEmail()
-body('field').trim().escape()
-body('id').isMongoId()
-
-// Check validation results
-const errors = validationResult(req);
-if (!errors.isEmpty()) {
-  return res.status(400).json({
-    success: false,
-    message: 'Dados inválidos',
-    errors: errors.array()
-  });
-}
-```
-
-### Environment Variables
-```typescript
-// Always provide fallbacks
-const value = process.env.VAR_NAME || 'default-value';
-
-// Check required variables
-if (!process.env.REQUIRED_VAR) {
-  throw new Error('REQUIRED_VAR is required');
-}
-
-// Environment-specific logic
-if (process.env.NODE_ENV === 'production') {
-  // Production logic
-} else {
-  // Development logic
-}
-```
-
-## Performance Guidelines
-
-### Database Queries
-- Use `.lean()` for read-only operations (reduces memory by 50%)
-- Implement pagination for all list endpoints (default limit: 20)
-- Use indexes for frequently queried fields (50+ indexes in project)
-- Batch operations when possible using `Promise.all()`
-- Implement safety limits on loops (max 200 iterations)
-
-### Frontend Optimization
-- Lazy load components with React.lazy() and Suspense
-- Use TanStack Query for automatic caching (5-minute stale time)
-- Implement debouncing for search inputs
-- Optimize re-renders with React.memo() for expensive components
-- Target metrics: <1.2s initial load, <0.8s tab switch
-
-### Memory Management
-- Clean up event listeners in useEffect cleanup
-- Clear intervals and timeouts
-- Dispose of canvas contexts when unmounting
-- Target: <100MB memory usage
+### Query Optimization
+- Limit result sets with pagination
+- Project only needed fields: `.select('field1 field2')`
+- Use compound indexes for multi-field queries
+- Avoid N+1 queries with proper population
+- Monitor slow queries with query analysis tools
 
 ## Accessibility Standards
 
-### ARIA Attributes
-```typescript
-<button 
-  aria-label="Descrição em português"
-  aria-disabled={isDisabled}
-  role="button"
->
-  {children}
-</button>
-```
-
-### Keyboard Navigation
+### WCAG 2.1 AA Compliance
 - All interactive elements must be keyboard accessible
-- Implement focus management for modals
-- Use semantic HTML elements (button, nav, main, etc.)
-- Test with screen readers
+- Proper ARIA labels and roles
+- Color contrast ratio ≥ 4.5:1 for text
+- Focus indicators visible on all interactive elements
+- Screen reader friendly content
+- Form validation with accessible error messages
 
-## Documentation Requirements
+### Testing
+- Use `jest-axe` for automated a11y testing
+- Manual keyboard navigation testing
+- Screen reader testing (NVDA, JAWS, VoiceOver)
+- Custom matchers: `toBeAccessible()` for element validation
 
-### Code Comments
-- JSDoc for public APIs
-- Inline comments only for complex logic
-- Portuguese for user-facing strings
-- English for code and technical comments
+## Best Practices Summary
 
-### API Documentation
-- Swagger annotations for all endpoints
-- Include request/response examples
-- Document error codes
-- Specify authentication requirements
+### DO
+✅ Use TypeScript strict mode everywhere
+✅ Import types from `@topsmile/types` package
+✅ Write Portuguese user-facing messages
+✅ Validate input on both client and server
+✅ Use custom error classes for error handling
+✅ Follow consistent response format
+✅ Document all API endpoints with Swagger
+✅ Write tests for new features (85%+ coverage)
+✅ Use environment variables for configuration
+✅ Implement proper error boundaries
+✅ Log errors before responding
+✅ Use middleware for cross-cutting concerns
+✅ Separate business logic into service layer
 
-### README Updates
-- Update feature list when adding functionality
-- Document new environment variables
-- Update architecture diagrams if structure changes
-- Keep dependency versions current
+### DON'T
+❌ Use `any` type in TypeScript
+❌ Commit `.env` files or secrets to git
+❌ Skip input validation
+❌ Return different response formats
+❌ Use default JWT secrets in production
+❌ Log sensitive data (passwords, tokens)
+❌ Skip error handling in async functions
+❌ Mix business logic in route handlers
+❌ Use same JWT secret for staff and patients
+❌ Skip CSRF protection on state-changing operations
+❌ Ignore accessibility requirements
+❌ Write English user-facing messages
+❌ Skip database connection checks
