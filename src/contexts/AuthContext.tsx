@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
-import { logout as httpLogout, LOGOUT_EVENT } from '../services/http';
+import { logout as httpLogout, LOGOUT_EVENT, startTokenRefresh, stopTokenRefresh } from '../services/http';
 import { useSessionTimeout } from '../hooks/useSessionTimeout';
 import { SessionTimeoutModal } from '../components/common/SessionTimeoutModal';
 import type { User, Provider, RegisterRequest } from '@topsmile/types';
@@ -43,6 +43,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const performLogout = useCallback(async (reason?: string) => {
     try {
+      // Stop token refresh
+      stopTokenRefresh();
+      
       // Clear local state first
       setUser(null);
       setShowTimeoutWarning(false);
@@ -134,6 +137,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Update state
         setUser(user);
         setLogoutReason(null);
+
+        // Start proactive token refresh
+        startTokenRefresh();
 
         // Navigate to appropriate page based on user role
         const redirectPath = getRedirectPath(user.role);

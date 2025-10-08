@@ -1,284 +1,97 @@
-# TopSmile - Development Guidelines
+# TopSmile Development Guidelines
 
 ## Code Quality Standards
 
-### File Organization
-- **Header Comments**: Include file path in header comments (e.g., `// backend/src/routes/appointmentTypes.ts`)
-- **Import Order**: External packages first, then internal modules, then types
-- **Type Imports**: Use `import type` for type-only imports from shared packages
-- **Export Pattern**: Export singleton instances for services (e.g., `export const emailService = new EmailService()`)
+### TypeScript Configuration
+- **Strict Mode**: Enabled across frontend and backend
+- **Explicit Return Types**: All functions must declare return types
+- **No Implicit Any**: Avoid `any` type; use proper type definitions
+- **Type Imports**: Use `import type` for type-only imports from `@topsmile/types`
+- **Shared Types**: Always use types from `@topsmile/types` package for cross-stack consistency
+
+### File Headers
+- Include file path comment at the top: `// backend/src/routes/auth.ts`
+- Helps with navigation and debugging in large codebases
 
 ### Naming Conventions
-- **Files**: camelCase for TypeScript files (e.g., `appointmentTypes.ts`, `schedulingService.ts`)
-- **Classes**: PascalCase (e.g., `EmailService`, `SchedulingService`)
-- **Interfaces**: PascalCase with descriptive names (e.g., `TimeSlot`, `AvailabilityQuery`, `CreateAppointmentData`)
-- **Constants**: UPPER_SNAKE_CASE for configuration arrays (e.g., `NOTE_TEMPLATES`, `MAX_EMAIL_RETRIES`)
-- **Variables**: camelCase with descriptive names (e.g., `appointmentType`, `scheduledStart`, `isProcessingQueue`)
-- **Private Methods**: Prefix with `private` keyword, use camelCase (e.g., `private createTransporter()`)
-- **Boolean Variables**: Prefix with `is`, `has`, `should` (e.g., `isActive`, `hasConflict`, `allowOnlineBooking`)
+- **Files**: camelCase for utilities, PascalCase for components/models
+- **Variables/Functions**: camelCase (e.g., `getUserById`, `authService`)
+- **Types/Interfaces**: PascalCase (e.g., `User`, `ApiResult`, `AuthenticatedRequest`)
+- **Constants**: UPPER_SNAKE_CASE for true constants (e.g., `MAX_ATTEMPTS`)
+- **Enums**: PascalCase with UPPER_CASE values (e.g., `AppointmentStatus.SCHEDULED`)
 
-### TypeScript Standards
-- **Strict Mode**: Use TypeScript strict mode throughout
-- **Type Safety**: Explicit return types for all functions and methods
-- **Interface Over Type**: Prefer interfaces for object shapes
-- **Enums**: Use string literal unions instead of enums (e.g., `'scheduled' | 'confirmed' | 'cancelled'`)
-- **Optional Properties**: Use `?` for optional properties in interfaces
-- **Type Assertions**: Avoid `any`, use proper typing or `unknown` with type guards
-- **Generics**: Use generics for reusable patterns (e.g., `SchedulingResult<T>`, `generateMockApiResponse<T>`)
+### Code Formatting
+- **Indentation**: 2 spaces (no tabs)
+- **Line Length**: Aim for 100-120 characters max
+- **Semicolons**: Required at end of statements
+- **Quotes**: Single quotes for strings, double quotes for JSX attributes
+- **Trailing Commas**: Use in multi-line objects/arrays
 
-### Documentation Standards
-- **Swagger/JSDoc**: Comprehensive API documentation with Swagger annotations
-- **Portuguese Messages**: All user-facing messages in Portuguese (e.g., `'Dados inválidos'`, `'Agendamento não encontrado'`)
-- **Comment Style**: Use `//` for single-line comments, `/* */` for multi-line
-- **Method Documentation**: Document complex methods with purpose, parameters, and return values
-- **IMPROVED/FIXED/ADDED Tags**: Use tags in comments to indicate code improvements (e.g., `// IMPROVED: Better error handling`)
-
-## Backend Patterns
+## Backend Development Patterns
 
 ### Route Structure
 ```typescript
-// 1. Import dependencies
-import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
-import { body, query, validationResult } from 'express-validator';
-
-// 2. Create router
+// Express router with validation and rate limiting
 const router: express.Router = express.Router();
 
-// 3. Apply global middleware
-router.use(authenticate);
-
-// 4. Define validation rules
-const createValidation = [
-  body('field').trim().isLength({ min: 2, max: 100 })
-    .withMessage('Portuguese error message'),
-  // ... more validations
-];
-
-// 5. Define routes with Swagger documentation
-/**
- * @swagger
- * /api/resource:
- *   post:
- *     summary: Portuguese summary
- *     description: Portuguese description
- *     tags: [Resource]
- *     security:
- *       - bearerAuth: []
- */
-router.post('/',
-  authorize('super_admin', 'admin', 'manager'),
-  createValidation,
-  async (req: Request, res: Response) => {
-    const authReq = req as AuthenticatedRequest;
-    try {
-      // Validate input
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({
-          success: false,
-          message: 'Dados inválidos',
-          errors: errors.array()
-        });
-      }
-
-      // Business logic
-      const result = await service.method(authReq.body);
-
-      // Success response
-      return res.status(201).json({
-        success: true,
-        message: 'Operação realizada com sucesso',
-        data: result,
-        meta: {
-          timestamp: new Date().toISOString(),
-          requestId: (authReq as any).requestId
-        }
-      });
-    } catch (error: any) {
-      console.error('Error description:', error);
-      return res.status(400).json({
-        success: false,
-        message: error.message || 'Erro genérico'
-      });
-    }
-  }
-);
-
-// 6. Export router
-export default router;
-```
-
-### Service Layer Patterns
-```typescript
-class ServiceName {
-  // Private properties with readonly when applicable
-  private readonly MAX_RETRIES = 5;
-  private isProcessing: boolean = false;
-
-  // Public methods with explicit return types
-  async publicMethod(params: ParamsType): Promise<ResultType> {
-    try {
-      // Validation
-      if (!params.required) {
-        throw new Error('Portuguese error message');
-      }
-
-      // Use lean queries for performance
-      const data = await Model.findById(id).lean();
-      
-      // Business logic
-      const result = await this.processData(data);
-      
-      return result;
-    } catch (error) {
-      console.error('Error context:', error);
-      throw error;
-    }
-  }
-
-  // Private helper methods
-  private async helperMethod(data: DataType): Promise<ProcessedType> {
-    // Implementation
-  }
-}
-
-// Export singleton instance
-export const serviceName = new ServiceName();
-```
-
-### Transaction Handling Pattern
-```typescript
-async methodWithTransaction(): Promise<SchedulingResult<T>> {
-  // Skip transactions in test environment
-  const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
-  const session = isTestEnv ? null : await mongoose.startSession();
-
-  try {
-    if (!isTestEnv) {
-      session!.startTransaction();
-    }
-
-    // Database operations with session
-    const result = await Model.findById(id).session(session);
-    
-    // More operations...
-    
-    if (!isTestEnv) {
-      await session!.commitTransaction();
-    }
-
-    return { success: true, data: result };
-  } catch (error) {
-    if (!isTestEnv && session) {
-      await session.abortTransaction();
-    }
-    console.error('Error:', error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Erro genérico'
-    };
-  } finally {
-    if (!isTestEnv && session) {
-      session.endSession();
-    }
-  }
-}
-```
-
-### Error Handling Pattern
-```typescript
-// Consistent error response structure
-try {
-  // Operation
-} catch (error: any) {
-  console.error('Descriptive error context:', error);
-  return res.status(statusCode).json({
-    success: false,
-    message: error.message || 'Fallback Portuguese message'
-  });
-}
-
-// Service layer error handling
-throw new Error('Portuguese error message with context');
-```
-
-### Validation Patterns
-```typescript
-// express-validator for route validation
-const validation = [
-  body('field')
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Portuguese validation message'),
-  
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('E-mail inválido'),
-  
-  body('status')
-    .isIn(['value1', 'value2', 'value3'])
-    .withMessage('Status inválido'),
-  
-  query('page')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('Página deve ser um número inteiro maior que 0')
-];
-
-// Check validation results
-const errors = validationResult(req);
-if (!errors.isEmpty()) {
-  return res.status(400).json({
-    success: false,
-    message: 'Dados inválidos',
-    errors: errors.array()
-  });
-}
-```
-
-## Frontend Patterns
-
-### Mock Data Generation
-```typescript
-// Use faker for realistic test data
-export const generateMockEntity = (overrides = {}) => ({
-  _id: faker.database.mongodbObjectId(),
-  name: faker.name.fullName(),
-  email: faker.internet.email(),
-  // ... more fields
-  createdAt: faker.date.past().toISOString(),
-  updatedAt: faker.date.recent().toISOString(),
-  ...overrides // Allow overriding any field
+// Rate limiter configuration
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Portuguese error message' }
 });
 
-// Utility for generating multiple items
-export const generateMultiple = <T>(
-  generator: (overrides?: any) => T,
-  count: number,
-  overrides = {}
-) => {
-  return Array.from({ length: count }, () => generator(overrides));
-};
+// Validation rules using express-validator
+const loginValidation = [
+  body('email').isEmail().normalizeEmail(),
+  body('password').isLength({ min: 1 }).trim().escape()
+];
 
-// Brazilian-specific generators
-export const generateBrazilianPhone = () => 
-  faker.helpers.replaceSymbols('(##) #####-####');
-export const generateBrazilianCPF = () => 
-  faker.helpers.replaceSymbols('###.###.###-##');
+// Route handler with proper error handling
+router.post('/login', authLimiter, loginValidation, async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        errors: errors.array()
+      });
+    }
+    
+    const result = await authService.login(req.body);
+    
+    return res.json({
+      success: true,
+      data: result.data,
+      meta: {
+        timestamp: new Date().toISOString(),
+        requestId: (req as any).requestId
+      }
+    });
+  } catch (error) {
+    next(error);
+    return;
+  }
+});
 ```
 
-### API Response Patterns
+### Input Validation & Sanitization
+- **Always validate**: Use express-validator for all user inputs
+- **Sanitize inputs**: Use `.trim()`, `.escape()`, `.normalizeEmail()`
+- **Portuguese messages**: All validation messages in Portuguese
+- **Chain validators**: Combine multiple validation rules
+- **Custom validators**: Use `.matches()` for regex patterns
+
+### Response Format
 ```typescript
 // Success response
 {
   success: true,
-  data: result,
-  message?: 'Portuguese success message',
-  meta?: {
+  data: { /* payload */ },
+  meta: {
     timestamp: new Date().toISOString(),
-    requestId: string
+    requestId: req.requestId
   }
 }
 
@@ -286,284 +99,414 @@ export const generateBrazilianCPF = () =>
 {
   success: false,
   message: 'Portuguese error message',
-  errors?: ValidationError[]
-}
-
-// Paginated response
-{
-  success: true,
-  data: {
-    items: T[],
-    pagination: {
-      page: number,
-      limit: number,
-      total: number,
-      totalPages: number,
-      hasNext: boolean,
-      hasPrev: boolean
-    }
-  }
+  errors?: validationErrors
 }
 ```
 
-## Database Patterns
-
-### Query Optimization
+### Cookie Management
 ```typescript
-// Use lean() for read-only queries
-const data = await Model.find(query).lean();
+// Set secure cookies for tokens
+res.cookie('accessToken', token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  maxAge: 15 * 60 * 1000 // 15 minutes
+});
+```
 
-// Use select() to limit fields
-const data = await Model.find(query).select('name email').lean();
+### Mongoose Model Patterns
 
-// Use populate() efficiently
-const data = await Model.find(query)
-  .populate('relation', 'field1 field2')
-  .lean();
+#### Schema Definition
+```typescript
+// Use base schema fields and mixins
+const AppointmentSchema = new Schema<IAppointment & Document>({
+  ...baseSchemaFields,
+  ...clinicScopedFields,
+  ...auditableFields,
+  
+  // Field with validation
+  patient: {
+    type: Schema.Types.ObjectId,
+    ref: 'Patient',
+    required: [true, 'Portuguese error message'],
+    index: true
+  },
+  
+  // Enum field
+  status: {
+    type: String,
+    enum: Object.values(AppointmentStatus),
+    default: AppointmentStatus.SCHEDULED,
+    index: true
+  },
+  
+  // String with validation
+  notes: {
+    type: String,
+    maxlength: [1000, 'Portuguese error message']
+  }
+}, baseSchemaOptions);
+```
 
-// Batch operations with Promise.all
-const results = await Promise.all(
-  items.map(item => processItem(item))
+#### Performance Indexes
+```typescript
+// Compound indexes for common queries
+AppointmentSchema.index({ 
+  clinic: 1, 
+  scheduledStart: 1, 
+  status: 1 
+}, { 
+  name: 'clinic_schedule_status',
+  background: true
+});
+
+// Unique constraint with partial filter
+AppointmentSchema.index(
+  { provider: 1, scheduledStart: 1, scheduledEnd: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { 
+      status: { $nin: ['cancelled', 'no_show'] } 
+    }
+  }
 );
 ```
 
-### Model Patterns
+#### Pre-save Middleware
 ```typescript
-// Consistent field naming
-{
-  _id: ObjectId,
-  clinic: ObjectId, // Reference to clinic
-  isActive: boolean,
-  createdAt: Date,
-  updatedAt: Date,
-  // ... entity-specific fields
-}
-
-// Working hours pattern
-workingHours: {
-  monday: { start: '08:00', end: '17:00', isWorking: true },
-  tuesday: { start: '08:00', end: '17:00', isWorking: true },
-  // ... other days
-}
-
-// Address pattern
-address: {
-  street: string,
-  number: string,
-  neighborhood: string,
-  city: string,
-  state: string,
-  zipCode: string,
-  country?: string
-}
-```
-
-## Configuration Patterns
-
-### Template Configuration
-```typescript
-// Export typed configuration arrays
-export interface Template {
-  id: string;
-  name: string;
-  type: 'type1' | 'type2' | 'type3';
-  // ... template fields
-}
-
-export const TEMPLATES: Template[] = [
-  {
-    id: 'template_id',
-    name: 'Portuguese Name',
-    type: 'type1',
-    // ... fields
-  },
-  // ... more templates
-];
-
-// Export helper functions
-export const getTemplateById = (id: string): Template | undefined => {
-  return TEMPLATES.find(t => t.id === id);
-};
-
-export const getTemplatesByType = (type: string): Template[] => {
-  return TEMPLATES.filter(t => t.type === type);
-};
-```
-
-## Testing Patterns
-
-### Test Data Constants
-```typescript
-// Centralized test credentials
-export const TEST_CREDENTIALS = {
-  ADMIN_EMAIL: 'admin@test.com',
-  ADMIN_PASSWORD: 'testpassword123'
-};
-
-// Test scenario generators
-export const createTestScenarios = {
-  validLogin: () => ({
-    email: TEST_CREDENTIALS.ADMIN_EMAIL,
-    password: TEST_CREDENTIALS.ADMIN_PASSWORD
-  }),
+AppointmentSchema.pre('save', function(next) {
+  // Validation
+  if (this.scheduledStart >= this.scheduledEnd) {
+    return next(new Error('Portuguese error message'));
+  }
   
-  invalidLogin: () => ({
-    email: 'invalid@example.com',
-    password: 'wrongpassword'
-  })
+  // Auto-calculations
+  if (this.actualStart && this.actualEnd) {
+    this.duration = Math.round(
+      (this.actualEnd.getTime() - this.actualStart.getTime()) / (1000 * 60)
+    );
+  }
+  
+  // Status change handling
+  if (this.isModified('status')) {
+    switch (this.status) {
+      case 'completed':
+        if (!this.completedAt) this.completedAt = new Date();
+        break;
+    }
+  }
+  
+  next();
+});
+```
+
+#### Static Methods with Aggregation
+```typescript
+AppointmentSchema.statics.findByTimeRange = function(
+  clinicId: string,
+  startDate: Date,
+  endDate: Date,
+  options = {}
+) {
+  return this.aggregate([
+    { $match: { /* query */ } },
+    { $lookup: { /* join */ } },
+    { $unwind: { path: '$field', preserveNullAndEmptyArrays: true } },
+    { $project: { /* fields */ } },
+    { $sort: { scheduledStart: 1 } }
+  ]);
 };
 ```
 
-## Performance Patterns
+### Error Handling
+- **Try-catch blocks**: Wrap all async operations
+- **Pass to middleware**: Use `next(error)` for error handling
+- **Explicit returns**: Always return after sending response
+- **Custom errors**: Use custom error classes (NotFoundError, UnauthorizedError)
 
-### Async Queue Processing
+## Frontend Development Patterns
+
+### API Service Structure
 ```typescript
-class QueueProcessor {
-  private queue: Task[] = [];
-  private isProcessing: boolean = false;
-  private readonly MAX_RETRIES = 5;
-  private readonly RETRY_DELAY_MS = 5000;
+// Hierarchical API service organization
+export const apiService = {
+  appointments: {
+    getAll: async (query?: Record<string, any>) => { /* ... */ },
+    getOne: async (id: string) => { /* ... */ },
+    create: async (payload: CreateAppointmentDTO) => { /* ... */ },
+    update: async (id: string, payload: Partial<Appointment>) => { /* ... */ }
+  },
+  patients: { /* ... */ },
+  providers: { /* ... */ }
+};
+```
 
-  async addToQueue(task: Task): Promise<void> {
-    this.queue.push(task);
-    this.processQueue(); // Trigger processing
+### API Request Pattern
+```typescript
+async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
+  const res = await request<Appointment>(
+    `/api/appointments/${encodeURIComponent(id)}`
+  );
+  
+  if (res.ok && res.data) {
+    return { success: true, data: res.data, message: res.message };
   }
-
-  private async processQueue(): Promise<void> {
-    if (this.isProcessing) return;
-    
-    this.isProcessing = true;
-    while (this.queue.length > 0) {
-      const task = this.queue[0];
-      
-      // Check retry timing
-      if (Date.now() - task.lastAttempt < this.RETRY_DELAY_MS * Math.pow(2, task.retries)) {
-        break;
-      }
-
-      const success = await this.processTask(task);
-      
-      if (success) {
-        this.queue.shift();
-      } else {
-        task.retries++;
-        task.lastAttempt = Date.now();
-        if (task.retries >= this.MAX_RETRIES) {
-          console.error(`Task failed after ${this.MAX_RETRIES} retries`);
-          this.queue.shift();
-        } else {
-          this.queue.push(this.queue.shift()!);
-        }
-      }
-      
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    this.isProcessing = false;
-
-    if (this.queue.length > 0) {
-      setTimeout(() => this.processQueue(), this.RETRY_DELAY_MS);
-    }
-  }
+  
+  return { success: res.ok, data: res.data, message: res.message };
 }
 ```
+
+### URL Encoding
+- **Always encode**: Use `encodeURIComponent()` for URL parameters
+- **Query strings**: Build query strings with proper encoding
+```typescript
+const qs = query
+  ? '?' + Object.entries(query)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+      .join('&')
+  : '';
+```
+
+### React Hooks Patterns
+
+#### Custom Hook Structure
+```typescript
+export const useAccessibility = (options: AccessibilityOptions = {}) => {
+  // Destructure options with defaults
+  const {
+    announcePageChanges = true,
+    manageFocus = true,
+    trapFocus = false
+  } = options;
+  
+  // Refs for state management
+  const focusTrapRef = useRef<HTMLElement | null>(null);
+  
+  // Memoized callbacks
+  const announceToScreenReader = useCallback((message: string) => {
+    // Implementation
+  }, []);
+  
+  // Effects with cleanup
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => { /* ... */ };
+    
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [dependencies]);
+  
+  // Return public API
+  return {
+    announceToScreenReader,
+    focusElement,
+    skipToMain
+  };
+};
+```
+
+#### Hook Best Practices
+- **useCallback**: Memoize functions passed as props or used in effects
+- **useRef**: For DOM references and mutable values that don't trigger re-renders
+- **Cleanup functions**: Always return cleanup in useEffect when adding listeners
+- **Dependency arrays**: Include all external dependencies
 
 ## Security Patterns
 
 ### Authentication & Authorization
+- **JWT tokens**: Access token (15 min) + Refresh token (7 days)
+- **HTTP-only cookies**: Store tokens in secure cookies
+- **CSRF protection**: Global CSRF middleware on all routes
+- **Rate limiting**: Apply to authentication endpoints
+- **Role-based access**: Use permission system from `config/permissions.ts`
+
+### Permission Checking
 ```typescript
-// Apply authentication to all routes
-router.use(authenticate);
+// 8 roles with granular permissions
+export const rolePermissions: Record<string, Permission[]> = {
+  super_admin: [/* all permissions */],
+  admin: [/* most permissions */],
+  dentist: ['patients:read', 'clinical:write', /* ... */],
+  receptionist: ['appointments:write', 'billing:read']
+};
 
-// Apply role-based authorization to specific routes
-router.post('/',
-  authorize('super_admin', 'admin', 'manager'),
-  validationRules,
-  handler
-);
-
-// Access user from authenticated request
-const authReq = req as AuthenticatedRequest;
-const userId = authReq.user?.id;
-const clinicId = authReq.user?.clinicId;
+// Helper functions
+hasPermission(role, 'patients:write');
+hasAnyPermission(role, ['patients:read', 'patients:write']);
+hasAllPermissions(role, ['clinical:read', 'clinical:write']);
 ```
 
 ### Input Sanitization
+- **DOMPurify**: Use for HTML content sanitization
+- **express-mongo-sanitize**: Prevent MongoDB injection
+- **Validation first**: Always validate before sanitizing
+- **Escape output**: Use `.escape()` in validators
+
+## Accessibility Standards
+
+### WCAG 2.1 AA Compliance
+- **Keyboard navigation**: All interactive elements accessible via keyboard
+- **Screen reader support**: Proper ARIA labels and live regions
+- **Focus management**: Visible focus indicators and logical tab order
+- **Color contrast**: Minimum 4.5:1 ratio for text
+- **Skip links**: Alt+S to skip to main content
+
+### ARIA Patterns
 ```typescript
-// Trim and validate all string inputs
-body('field')
-  .trim()
-  .isLength({ min: 2, max: 100 })
-  .withMessage('Message')
+// Announce to screen readers
+announceToScreenReader('Portuguese message', 'polite');
 
-// Normalize emails
-body('email')
-  .isEmail()
-  .normalizeEmail()
-  .withMessage('E-mail inválido')
+// Focus management
+focusElement('#main-content');
 
-// Validate enums
-body('status')
-  .isIn(['value1', 'value2'])
-  .withMessage('Status inválido')
+// Focus trap for modals
+enableFocusTrap(modalElement);
+disableFocusTrap();
+
+// ARIA attributes
+setAriaLabel(element, 'Portuguese label');
+setAriaExpanded(element, true);
 ```
 
-## Common Idioms
+### Keyboard Shortcuts
+- **Alt + S**: Skip to main content
+- **Alt + M**: Open main menu
+- **Alt + H**: Go to home
+- **Tab/Shift+Tab**: Navigate focusable elements
+- **Escape**: Close modals/dialogs
 
-### Date Handling
-```typescript
-// Use date-fns for date manipulation
-import { startOfDay, endOfDay, addMinutes, format, parseISO } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+## Testing Standards
 
-// Parse time to date with timezone
-const dateInTimeZoneString = formatInTimeZone(
-  new Date(dateTimeStr),
-  timeZone,
-  "yyyy-MM-dd'T'HH:mm:ssXXX"
-);
-const date = parseISO(dateInTimeZoneString);
+### Test Coverage Targets
+- **Frontend**: 85%+ coverage
+- **Backend**: 90%+ coverage
+- **E2E**: Critical user flows
 
-// Format dates for display
-const formatted = format(date, 'HH:mm');
-const dayOfWeek = format(date, 'EEEE').toLowerCase();
+### Test Organization
+```
+tests/
+├── unit/          # Isolated unit tests
+├── integration/   # API integration tests
+├── e2e/           # End-to-end flows
+├── performance/   # Load and performance tests
+├── fixtures/      # Test data
+└── helpers/       # Test utilities
 ```
 
-### Environment Configuration
-```typescript
-// Check environment
-const isProduction = process.env.NODE_ENV === 'production';
-const isTestEnv = process.env.NODE_ENV === 'test' || process.env.JEST_WORKER_ID;
+## Performance Optimization
 
-// Use environment variables with fallbacks
-const fromEmail = process.env.FROM_EMAIL || 'noreply@topsmile.com';
-const adminEmail = process.env.ADMIN_EMAIL || 'contato@topsmile.com';
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+### Database Query Optimization
+- **Indexes**: Create compound indexes for common queries
+- **Aggregation**: Use aggregation pipeline for complex queries
+- **Projection**: Only select needed fields
+- **Pagination**: Implement for large result sets
+- **Background indexes**: Use `background: true` for production
+
+### Frontend Performance
+- **Code splitting**: Lazy load routes and components
+- **Memoization**: Use React.memo, useMemo, useCallback
+- **Bundle analysis**: Monitor bundle size with webpack-bundle-analyzer
+- **Performance targets**: <1.2s initial load, <0.8s tab switch
+
+## Internationalization
+
+### Portuguese Messages
+- **All user-facing text**: Must be in Portuguese (pt-BR)
+- **Error messages**: Portuguese validation and error messages
+- **API responses**: Portuguese success/error messages
+- **UI labels**: Portuguese labels and descriptions
+- **Date/time**: Use Luxon with pt-BR locale
+
+### Message Examples
+```typescript
+// Validation messages
+'Nome deve ter entre 2 e 100 caracteres'
+'Digite um e-mail válido'
+'Senha deve ter pelo menos 6 caracteres'
+
+// Error messages
+'Dados inválidos'
+'Usuário não autenticado'
+'Muitas tentativas de login'
+
+// Success messages
+'Senha alterada com sucesso'
+'Logout realizado com sucesso'
 ```
 
-### Logging
-```typescript
-// Descriptive console logging
-console.log(`Operation completed successfully for ${identifier}`);
-console.error('Error context with details:', error);
+## Documentation Standards
 
-// Include context in error messages
-throw new Error(`Operation failed for ${identifier}: ${reason}`);
+### Code Comments
+- **Swagger/JSDoc**: Document all API endpoints
+- **Complex logic**: Explain non-obvious implementations
+- **TODOs**: Use `// TODO:` for future improvements
+- **Type annotations**: Let TypeScript types serve as documentation
+
+### Swagger Documentation
+```typescript
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Fazer login
+ *     description: Autentica um usuário e retorna tokens de acesso
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login realizado com sucesso
+ */
+```
+
+## Git Workflow
+
+### Commit Messages
+- Use conventional commits format
+- Write in English for commits
+- Be descriptive and concise
+
+### Branch Strategy
+- `main`: Production-ready code
+- Feature branches: `feature/feature-name`
+- Bug fixes: `fix/bug-description`
+- Pull requests required for merging
+
+## Environment Configuration
+
+### Environment Variables
+- **Never commit**: .env files excluded from git
+- **Examples provided**: .env.example for reference
+- **Validation**: Validate required env vars on startup
+- **Secrets rotation**: Regular rotation of JWT secrets
+
+### Required Variables
+```bash
+# Backend
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://localhost:27017/topsmile
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=min-32-chars
+JWT_REFRESH_SECRET=min-32-chars
+
+# Frontend
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
 ## Code Review Checklist
 
-- [ ] All user-facing messages in Portuguese
-- [ ] Proper TypeScript typing (no `any` without justification)
-- [ ] Error handling with try-catch blocks
-- [ ] Input validation with express-validator
-- [ ] Authentication and authorization applied
-- [ ] Swagger documentation for API endpoints
-- [ ] Consistent response structure (success, data, message, meta)
-- [ ] Database queries optimized with lean() and select()
-- [ ] Transactions used for multi-step operations
-- [ ] Test environment checks for transaction handling
-- [ ] Proper logging with context
-- [ ] Environment variables with fallbacks
-- [ ] File header comments with path
-- [ ] Consistent naming conventions
-- [ ] Export singleton instances for services
+- [ ] TypeScript strict mode compliance
+- [ ] Proper error handling with try-catch
+- [ ] Input validation and sanitization
+- [ ] Portuguese user-facing messages
+- [ ] Proper indexes on database queries
+- [ ] Security best practices followed
+- [ ] Accessibility standards met
+- [ ] Tests written and passing
+- [ ] No console.logs in production code
+- [ ] Documentation updated

@@ -143,30 +143,41 @@ const validateEnv = () => {
       missingRecommended.forEach((name) => console.warn(`- ${name}`));
     }
   } else {
-    // Development environment warnings
+    // Development environment - require critical variables
+    const errors: string[] = [];
     const warnings: string[] = [];
 
-    if (
-      !process.env.JWT_SECRET ||
-      process.env.JWT_SECRET === "your-secret-key"
-    ) {
-      warnings.push("JWT_SECRET is not set or uses insecure default");
+    // Critical in all environments
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 64) {
+      errors.push("JWT_SECRET must be at least 64 characters");
     }
-
+    if (!process.env.JWT_REFRESH_SECRET || process.env.JWT_REFRESH_SECRET.length < 64) {
+      errors.push("JWT_REFRESH_SECRET must be at least 64 characters");
+    }
+    if (!process.env.PATIENT_JWT_SECRET || process.env.PATIENT_JWT_SECRET.length < 64) {
+      errors.push("PATIENT_JWT_SECRET must be at least 64 characters");
+    }
     if (!process.env.DATABASE_URL) {
-      warnings.push("DATABASE_URL is not set, using local MongoDB default");
+      errors.push("DATABASE_URL is required");
+    }
+    if (!process.env.FRONTEND_URL) {
+      errors.push("FRONTEND_URL is required for CORS");
     }
 
+    if (errors.length > 0) {
+      console.error("Development Environment Errors:");
+      errors.forEach((error) => console.error(`- ${error}`));
+      process.exit(1);
+    }
+
+    // Warnings for optional services
     if (!process.env.SENDGRID_API_KEY) {
-      warnings.push(
-        "SENDGRID_API_KEY not set, email functionality will use Ethereal"
-      );
+      warnings.push("SENDGRID_API_KEY not set, email functionality will use Ethereal");
     }
 
     if (warnings.length > 0) {
       console.warn("Development Environment Warnings:");
       warnings.forEach((warning) => console.warn(`- ${warning}`));
-      console.warn("These should be configured for production deployment.");
     }
   }
 };
@@ -426,29 +437,31 @@ app.get("/api/csrf-token", (req: any, res: any, next: any) => {
   });
 });
 
-// CSRF protection for state-changing operations
-const applyCSRF = (req: any, res: any, next: any): void => {
-  if (["POST", "PUT", "PATCH", "DELETE"].includes(req.method)) {
-    csrfProtection(req, res, next);
-    return;
+// CSRF protection for all state-changing operations
+app.use("/api", (req: any, res: any, next: any) => {
+  // Skip CSRF for GET, HEAD, OPTIONS
+  if (["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    return next();
   }
-  next();
-};
-
-app.use("/api/auth", (req, res, next) => {
-  if (req.path === "/refresh" || req.path === "/logout") return next();
-  applyCSRF(req, res, next);
+  
+  // Skip CSRF for specific endpoints
+  const skipPaths = [
+    "/api/auth/refresh",
+    "/api/auth/logout",
+    "/api/patient-auth/refresh",
+    "/api/patient-auth/logout",
+    "/api/csrf-token"
+  ];
+  
+  if (skipPaths.includes(req.path)) {
+    return next();
+  }
+  
+  // Apply CSRF protection
+  csrfProtection(req, res, next);
 });
-app.use("/api/patient-auth", (req, res, next) => {
-  if (req.path === "/refresh" || req.path === "/logout") return next();
-  applyCSRF(req, res, next);
-});
-app.use("/api/contact", applyCSRF);
-app.use("/api/appointments", applyCSRF);
-app.use("/api/patients", applyCSRF);
-app.use("/api/admin", applyCSRF);
 
-// Database connection check middleware for API routes
+// Database connection check middleware for API routes (after CSRF)
 app.use("/api", checkDatabaseConnection);
 
 // ... (other imports)

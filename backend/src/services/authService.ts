@@ -245,6 +245,9 @@ class AuthService {
         stored.isRevoked = true;
         await stored.save();
 
+        // Blacklist the old refresh token for additional security
+        await tokenBlacklistService.addToBlacklist(refreshTokenString, stored.expiresAt);
+
         // FIXED: Proper payload construction with type safety
         const payload: TokenPayload = {
             userId: user._id.toString(),

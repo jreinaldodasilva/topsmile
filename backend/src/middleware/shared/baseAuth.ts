@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponse } from '../../utils/responseHelpers';
+import { tokenBlacklistService } from '../../services/tokenBlacklistService';
 
 export abstract class BaseAuthMiddleware {
   protected extractToken(req: Request): string | null {
@@ -51,6 +52,13 @@ export abstract class BaseAuthMiddleware {
       
       if (!token) {
         ApiResponse.unauthorized(res, 'Token de acesso obrigatório', 'NO_TOKEN');
+        return;
+      }
+
+      // Check if token is blacklisted
+      const isBlacklisted = await tokenBlacklistService.isBlacklisted(token);
+      if (isBlacklisted) {
+        ApiResponse.unauthorized(res, 'Token foi revogado', 'TOKEN_REVOKED');
         return;
       }
 

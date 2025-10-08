@@ -4,6 +4,7 @@ import { PatientUser, IPatientUser } from '../models/PatientUser';
 import { Patient as IPatient } from '@topsmile/types';
 import { Patient as PatientModel } from '../models/Patient';
 import { PatientRefreshToken } from '../models/PatientRefreshToken';
+import { tokenBlacklistService } from './tokenBlacklistService';
 import { 
   ValidationError, 
   UnauthorizedError, 
@@ -338,7 +339,7 @@ class PatientAuthService {
     }
   }
 
-  async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; expiresIn: string }> {
+  async refreshAccessToken(refreshTokenString: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: string }> {
     if (!refreshTokenString) {
         throw new ValidationError('Token de atualização é obrigatório');
     }
@@ -370,14 +371,18 @@ class PatientAuthService {
     stored.isRevoked = true;
     await stored.save();
 
+    // Blacklist the old refresh token
+    await tokenBlacklistService.addToBlacklist(refreshTokenString, stored.expiresAt);
+
     const accessToken = this.generateAccessToken(patientUser, patient);
-    await this.createRefreshToken(
+    const newRefreshToken = await this.createRefreshToken(
         patientUser._id.toString(), 
         stored.deviceInfo
     );
 
     return { 
-        accessToken, 
+        accessToken,
+        refreshToken: newRefreshToken.token,
         expiresIn: this.ACCESS_TOKEN_EXPIRES 
     };
   }

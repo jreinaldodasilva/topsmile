@@ -1,12 +1,18 @@
 // src/services/http.ts - Updated for Backend Integration
 import { ApiResult } from '@topsmile/types';
 
-export const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+// Validate required environment variables
+if (!process.env.REACT_APP_API_URL) {
+  throw new Error('REACT_APP_API_URL must be defined in environment variables');
+}
+
+export const API_BASE_URL = process.env.REACT_APP_API_URL;
 export const LOGOUT_EVENT = 'topsmile-logout';
 
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
 let csrfToken: string | null = null;
+let tokenRefreshTimer: NodeJS.Timeout | null = null;
 
 const subscribeTokenRefresh = (cb: (token: string) => void) => {
   refreshSubscribers.push(cb);
@@ -202,8 +208,42 @@ export async function request<T = any>(
   throw new Error('Request failed after multiple attempts');
 }
 
+/** Start proactive token refresh */
+export function startTokenRefresh(): void {
+  if (tokenRefreshTimer) return;
+  
+  // Refresh token 2 minutes before expiry (access token expires in 15 min)
+  const refreshInterval = 13 * 60 * 1000; // 13 minutes
+  
+  tokenRefreshTimer = setInterval(async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (!res.ok) {
+        stopTokenRefresh();
+        window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
+      }
+    } catch (error) {
+      console.warn('Token refresh failed:', error);
+    }
+  }, refreshInterval);
+}
+
+/** Stop proactive token refresh */
+export function stopTokenRefresh(): void {
+  if (tokenRefreshTimer) {
+    clearInterval(tokenRefreshTimer);
+    tokenRefreshTimer = null;
+  }
+}
+
 /** Logout function */
 export async function logout(): Promise<void> {
+  stopTokenRefresh();
   const logoutUrl = '/api/auth/logout';
 
   try {
@@ -220,6 +260,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function patientLogout(): Promise<void> {
+  stopTokenRefresh();
   const logoutUrl = '/api/patient-auth/logout';
 
   try {

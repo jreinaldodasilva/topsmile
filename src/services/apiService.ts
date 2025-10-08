@@ -430,16 +430,14 @@ export const apiService = {
   dentalCharts: {
     getLatest: async (patientId: string): Promise<ApiResult<any>> => {
       const res = await request(`/api/clinical/dental-charts/patient/${encodeURIComponent(patientId)}/latest`);
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
     },
     getHistory: async (patientId: string): Promise<ApiResult<any[]>> => {
       const res = await request(`/api/clinical/dental-charts/patient/${encodeURIComponent(patientId)}`);
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/clinical/dental-charts/${encodeURIComponent(id)}`);
       return { success: res.ok, data: res.data, message: res.message };
     },
     create: async (data: any): Promise<ApiResult<any>> => {
@@ -447,9 +445,6 @@ export const apiService = {
         method: 'POST',
         body: JSON.stringify(data)
       });
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
     },
     update: async (id: string, data: any): Promise<ApiResult<any>> => {
@@ -457,10 +452,13 @@ export const apiService = {
         method: 'PUT',
         body: JSON.stringify(data)
       });
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
+    },
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/clinical/dental-charts/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
     },
   },
   treatmentPlans: {
@@ -538,16 +536,10 @@ export const apiService = {
   prescriptions: {
     getAll: async (patientId: string): Promise<ApiResult<any[]>> => {
       const res = await request(`/api/clinical/prescriptions/patient/${encodeURIComponent(patientId)}`);
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
     },
     getOne: async (id: string): Promise<ApiResult<any>> => {
       const res = await request(`/api/clinical/prescriptions/${encodeURIComponent(id)}`);
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
     },
     create: async (data: any): Promise<ApiResult<any>> => {
@@ -555,9 +547,6 @@ export const apiService = {
         method: 'POST',
         body: JSON.stringify(data)
       });
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
     },
     update: async (id: string, data: any): Promise<ApiResult<any>> => {
@@ -565,10 +554,111 @@ export const apiService = {
         method: 'PUT',
         body: JSON.stringify(data)
       });
-      if (res.ok && res.data) {
-        return { success: true, data: res.data, message: res.message };
-      }
       return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  medicalHistory: {
+    get: async (patientId: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/medical-history`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (patientId: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/medical-history`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
+  insurance: {
+    getAll: async (patientId: string): Promise<ApiResult<any[]>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/insurance`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (patientId: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/insurance`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (patientId: string, insuranceId: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/insurance/${encodeURIComponent(insuranceId)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    delete: async (patientId: string, insuranceId: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/patients/${encodeURIComponent(patientId)}/insurance/${encodeURIComponent(insuranceId)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+  },
+  operatories: {
+    getAll: async (): Promise<ApiResult<any[]>> => {
+      const res = await request('/api/scheduling/operatories');
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/scheduling/operatories/${encodeURIComponent(id)}`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/scheduling/operatories', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/scheduling/operatories/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/scheduling/operatories/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
+    },
+  },
+  waitlist: {
+    getAll: async (query?: Record<string, any>): Promise<ApiResult<any[]>> => {
+      const qs = query
+        ? '?' + Object.entries(query)
+            .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+            .join('&')
+        : '';
+      const res = await request(`/api/scheduling/waitlist${qs}`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    getOne: async (id: string): Promise<ApiResult<any>> => {
+      const res = await request(`/api/scheduling/waitlist/${encodeURIComponent(id)}`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    create: async (data: any): Promise<ApiResult<any>> => {
+      const res = await request('/api/scheduling/waitlist', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    update: async (id: string, data: any): Promise<ApiResult<any>> => {
+      const res = await request(`/api/scheduling/waitlist/${encodeURIComponent(id)}`, {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+    delete: async (id: string): Promise<ApiResult<void>> => {
+      const res = await request(`/api/scheduling/waitlist/${encodeURIComponent(id)}`, {
+        method: 'DELETE'
+      });
+      return { success: res.ok, data: undefined, message: res.message };
     },
   },
 };
