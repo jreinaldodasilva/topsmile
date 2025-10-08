@@ -2,9 +2,9 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { axe, toHaveNoViolations } from 'jest-axe';
-import Button from '../../components/common/Button/Button';
-import Input from '../../components/common/Input/Input';
-import Modal from '../../components/common/Modal/Modal';
+import Button from '../../components/UI/Button/Button';
+import Input from '../../components/UI/Input/Input';
+import Modal from '../../components/UI/Modal/Modal';
 import { Dropdown } from '../../components/common/Dropdown/Dropdown';
 
 expect.extend(toHaveNoViolations);

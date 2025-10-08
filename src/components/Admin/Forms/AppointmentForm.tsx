@@ -4,6 +4,7 @@ import { apiService } from '../../../services/apiService';
 import type { Appointment } from '../../../../packages/types/src/index';
 import './AppointmentForm.css';
 import type { Patient, Provider, AppointmentType } from '@topsmile/types';
+import { RecurringAppointmentForm } from './RecurringAppointmentForm';
 
 
 interface AppointmentFormProps {
@@ -26,6 +27,19 @@ interface AppointmentFormData {
   status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
   priority: 'routine' | 'urgent' | 'emergency';
   notes: string;
+  operatory: string;
+  room: string;
+  colorCode: string;
+  equipment: string[];
+  billingStatus: 'pending' | 'billed' | 'paid' | 'insurance_pending';
+  billingAmount: number;
+  isRecurring: boolean;
+  recurringPattern?: {
+    frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+    interval: number;
+    endDate?: Date;
+    occurrences?: number;
+  };
 }
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({
@@ -46,12 +60,20 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
     scheduledEnd: '',
     status: 'scheduled',
     priority: 'routine',
-    notes: ''
+    notes: '',
+    operatory: '',
+    room: '',
+    colorCode: '#3182ce',
+    equipment: [],
+    billingStatus: 'pending',
+    billingAmount: 0,
+    isRecurring: false
   });
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([]);
+  const [operatories, setOperatories] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -62,9 +84,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       try {
         setLoadingData(true);
         
-        const [patientsResult, providersResult] = await Promise.all([
+        const [patientsResult, providersResult, operatoriesResult] = await Promise.all([
           apiService.patients.getAll({ isActive: true, limit: 100 }),
-          apiService.providers.getAll({ isActive: true })
+          apiService.providers.getAll({ isActive: true }),
+          apiService.operatories.getAll().catch(() => ({ success: false, data: [] }))
         ]);
 
         if (patientsResult.success && patientsResult.data) {
@@ -74,6 +97,10 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         if (providersResult.success && providersResult.data) {
           const providersData = (providersResult as any).data;
           setProviders(Array.isArray(providersData) ? providersData : providersData?.providers || []);
+        }
+
+        if (operatoriesResult.success && operatoriesResult.data) {
+          setOperatories(Array.isArray(operatoriesResult.data) ? operatoriesResult.data : []);
         }
 
         // For now, we'll use a default set of appointment types
@@ -109,7 +136,20 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         scheduledEnd: end ? end.toISOString().slice(0, 16) : '',
         status: appointment.status || 'scheduled',
         priority: appointment.priority || 'routine',
-        notes: appointment.notes || ''
+        notes: appointment.notes || '',
+        operatory: appointment.operatory || '',
+        room: appointment.room || '',
+        colorCode: appointment.colorCode || '#3182ce',
+        equipment: appointment.equipment || [],
+        billingStatus: (appointment.billingStatus === 'insurance_approved' || appointment.billingStatus === 'insurance_denied' ? 'insurance_pending' : appointment.billingStatus) || 'pending',
+        billingAmount: appointment.billingAmount || 0,
+        isRecurring: appointment.isRecurring || false,
+        recurringPattern: appointment.recurringPattern && appointment.recurringPattern.frequency && typeof appointment.recurringPattern.interval === 'number' ? {
+          frequency: appointment.recurringPattern.frequency,
+          interval: appointment.recurringPattern.interval,
+          endDate: appointment.recurringPattern.endDate,
+          occurrences: appointment.recurringPattern.occurrences
+        } : undefined
       });
     } else {
       // Set preselected values
@@ -214,7 +254,7 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       const selectedProvider = providers.find(p => p._id === formData.providerId);
       const clinicId = (typeof selectedProvider?.clinic === 'object' ? selectedProvider.clinic?._id : selectedProvider?.clinic) || '';
 
-      const appointmentData = {
+      const appointmentData: any = {
         patient: formData.patientId as string,
         provider: formData.providerId as string,
         appointmentType: formData.appointmentTypeId as string,
@@ -225,7 +265,15 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
         notes: formData.notes,
         clinic: clinicId,
         preferredContactMethod: 'email' as const,
-        syncStatus: 'pending' as const
+        syncStatus: 'pending' as const,
+        operatory: formData.operatory || undefined,
+        room: formData.room || undefined,
+        colorCode: formData.colorCode || undefined,
+        equipment: formData.equipment.length > 0 ? formData.equipment : undefined,
+        billingStatus: formData.billingStatus,
+        billingAmount: formData.billingAmount || undefined,
+        isRecurring: formData.isRecurring,
+        recurringPattern: formData.isRecurring ? formData.recurringPattern : undefined
       };
 
       if (!clinicId) {
@@ -401,6 +449,107 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
             </select>
           </div>
         </div>
+      </div>
+
+      {/* Location & Resources */}
+      <div className="form-section">
+        <h3>Localização e Recursos</h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="operatory">Consultório</label>
+            <select
+              id="operatory"
+              name="operatory"
+              value={formData.operatory}
+              onChange={handleInputChange}
+            >
+              <option value="">Selecione (opcional)</option>
+              {operatories.map(op => (
+                <option key={op._id} value={op._id}>
+                  {op.name} - {op.room}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="room">Sala</label>
+            <input
+              type="text"
+              id="room"
+              name="room"
+              value={formData.room}
+              onChange={handleInputChange}
+              placeholder="Ex: Sala 1"
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="colorCode">Cor no Calendário</label>
+            <input
+              type="color"
+              id="colorCode"
+              name="colorCode"
+              value={formData.colorCode}
+              onChange={handleInputChange}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Billing */}
+      <div className="form-section">
+        <h3>Faturamento</h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="billingStatus">Status de Faturamento</label>
+            <select
+              id="billingStatus"
+              name="billingStatus"
+              value={formData.billingStatus}
+              onChange={handleInputChange}
+            >
+              <option value="pending">Pendente</option>
+              <option value="billed">Faturado</option>
+              <option value="paid">Pago</option>
+              <option value="insurance_pending">Aguardando Seguro</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="billingAmount">Valor (R$)</label>
+            <input
+              type="number"
+              id="billingAmount"
+              name="billingAmount"
+              value={formData.billingAmount}
+              onChange={handleInputChange}
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Recurring */}
+      <div className="form-section">
+        <div className="form-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={formData.isRecurring}
+              onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
+            />
+            {' '}Consulta Recorrente
+          </label>
+        </div>
+        {formData.isRecurring && (
+          <RecurringAppointmentForm
+            pattern={formData.recurringPattern}
+            onChange={(pattern) => setFormData({ ...formData, recurringPattern: pattern })}
+          />
+        )}
       </div>
 
       {/* Notes */}

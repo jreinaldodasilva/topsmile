@@ -21,18 +21,16 @@ const ModalExample = () => {
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
         title="Confirm Action"
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setIsOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="primary" onClick={handleConfirm}>
-              Confirm
-            </Button>
-          </>
-        }
       >
         <p>Are you sure?</p>
+        <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+          <Button variant="secondary" onClick={() => setIsOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="primary" onClick={handleConfirm}>
+            Confirm
+          </Button>
+        </div>
       </Modal>
     </div>
   );

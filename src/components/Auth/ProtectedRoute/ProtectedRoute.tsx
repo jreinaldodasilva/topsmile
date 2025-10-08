@@ -1,20 +1,35 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthState } from '../../../contexts/AuthContext';
+import Skeleton from '../../UI/Skeleton/Skeleton';
 
 interface ProtectedRouteProps {
   children: React.ReactElement;
   roles?: string[];
 }
 
-// Other imports remain the same
-
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, roles }) => {
   const { isAuthenticated, user, loading } = useAuthState();
   const location = useLocation();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        padding: '2rem',
+        gap: '1.5rem'
+      }}>
+        <Skeleton variant="rectangular" height={40} width="300px" />
+        <Skeleton variant="text" lines={3} />
+        <span style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
+          Carregando...
+        </span>
+      </div>
+    );
   }
 
   if (!isAuthenticated) {

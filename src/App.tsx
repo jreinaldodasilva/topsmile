@@ -19,7 +19,7 @@ import NotificationContainer from './components/Notifications/NotificationContai
 
 // Route Protection
 import ProtectedRoute from './components/Auth/ProtectedRoute/ProtectedRoute';
-import PatientProtectedRoute from './components/Auth/PatientProtectedRoute';
+import PatientProtectedRoute from './components/Auth/PatientProtectedRoute/PatientProtectedRoute';
 
 // Lazy-loaded routes
 import * as LazyRoutes from './routes';

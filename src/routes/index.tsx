@@ -28,7 +28,10 @@ export const ContactManagement = lazy(() => import('../pages/Admin/ContactManage
 export const PatientManagement = lazy(() => import('../pages/Admin/PatientManagement'));
 export const PatientDetail = lazy(() => import('../pages/Admin/PatientDetail'));
 export const ProviderManagement = lazy(() => import('../pages/Admin/ProviderManagement'));
+export const ProviderDetail = lazy(() => import('../pages/Admin/ProviderDetail'));
 export const AppointmentCalendar = lazy(() => import('../pages/Admin/AppointmentCalendar'));
+export const OperatoryManagement = lazy(() => import('../pages/Admin/OperatoryManagement'));
+export const WaitlistManagement = lazy(() => import('../pages/Admin/WaitlistManagement'));
 
 // Utility routes
 export const CalendarPage = lazy(() => import('../pages/Calendar/CalendarPage'));

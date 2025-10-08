@@ -5,6 +5,10 @@ import { DentalChart } from '../../components/Clinical/DentalChart';
 import { TreatmentPlanView } from '../../components/Clinical/TreatmentPlan';
 import { NotesTimeline } from '../../components/Clinical/ClinicalNotes';
 import { MedicalHistoryForm } from '../../components/Clinical/MedicalHistory';
+import { EnhancedPatientForm } from '../../components/Admin/Forms';
+import { Modal, Button } from '../../components/UI';
+import { EnhancedInsuranceForm } from '../../components/PatientPortal/EnhancedInsuranceForm';
+import { PrescriptionForm, PrescriptionList } from '../../components/Clinical/Prescriptions';
 import type { Patient } from '@topsmile/types';
 
 const TABS = [
@@ -13,6 +17,8 @@ const TABS = [
   { id: 'treatment', label: 'Plano de Tratamento' },
   { id: 'notes', label: 'Notas Clínicas' },
   { id: 'history', label: 'Histórico Médico' },
+  { id: 'insurance', label: 'Seguros' },
+  { id: 'prescriptions', label: 'Receitas' },
 ] as const;
 
 const PatientDetail: React.FC = () => {
@@ -35,6 +41,16 @@ const PatientDetail: React.FC = () => {
   const [notesError, setNotesError] = useState<string | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [insurances, setInsurances] = useState<any[]>([]);
+  const [loadingInsurances, setLoadingInsurances] = useState(false);
+  const [insuranceError, setInsuranceError] = useState<string | null>(null);
+  const [showInsuranceModal, setShowInsuranceModal] = useState(false);
+  const [editingInsurance, setEditingInsurance] = useState<any>(null);
+  const [insuranceType, setInsuranceType] = useState<'primary' | 'secondary'>('primary');
+  const [prescriptions, setPrescriptions] = useState<any[]>([]);
+  const [loadingPrescriptions, setLoadingPrescriptions] = useState(false);
+  const [prescriptionError, setPrescriptionError] = useState<string | null>(null);
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
 
   useEffect(() => {
     const fetchPatient = async () => {
@@ -66,6 +82,12 @@ const PatientDetail: React.FC = () => {
     }
     if (activeTab === 'history' && id) {
       fetchMedicalHistory();
+    }
+    if (activeTab === 'insurance' && id) {
+      fetchInsurances();
+    }
+    if (activeTab === 'prescriptions' && id) {
+      fetchPrescriptions();
     }
   }, [activeTab, id]);
 
@@ -142,6 +164,102 @@ const PatientDetail: React.FC = () => {
     } catch (err: any) {
       setHistoryError(err.message || 'Erro ao salvar histórico médico');
       alert(err.message || 'Erro ao salvar histórico médico');
+    }
+  };
+
+  const fetchInsurances = async () => {
+    if (!id) return;
+    try {
+      setLoadingInsurances(true);
+      setInsuranceError(null);
+      const result = await apiService.insurance.getAll(id);
+      if (result.success && result.data) {
+        setInsurances(result.data);
+      } else {
+        setInsuranceError(result.message || 'Erro ao carregar seguros');
+      }
+    } catch (err: any) {
+      setInsuranceError(err.message || 'Erro ao carregar seguros');
+    } finally {
+      setLoadingInsurances(false);
+    }
+  };
+
+  const handleSaveInsurance = async (data: any) => {
+    if (!id) return;
+    try {
+      setInsuranceError(null);
+      let result;
+      if (editingInsurance) {
+        result = await apiService.insurance.update(id, editingInsurance._id, data);
+      } else {
+        result = await apiService.insurance.create(id, data);
+      }
+      if (result.success) {
+        await fetchInsurances();
+        setShowInsuranceModal(false);
+        setEditingInsurance(null);
+      } else {
+        setInsuranceError(result.message || 'Erro ao salvar seguro');
+      }
+    } catch (err: any) {
+      setInsuranceError(err.message || 'Erro ao salvar seguro');
+    }
+  };
+
+  const handleDeleteInsurance = async (insuranceId: string) => {
+    if (!id || !confirm('Tem certeza que deseja excluir este seguro?')) return;
+    try {
+      const result = await apiService.insurance.delete(id, insuranceId);
+      if (result.success) {
+        await fetchInsurances();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erro ao excluir seguro');
+    }
+  };
+
+  const fetchPrescriptions = async () => {
+    if (!id) return;
+    try {
+      setLoadingPrescriptions(true);
+      setPrescriptionError(null);
+      const result = await apiService.prescriptions.getAll(id);
+      if (result.success && result.data) {
+        setPrescriptions(result.data);
+      } else {
+        setPrescriptionError(result.message || 'Erro ao carregar receitas');
+      }
+    } catch (err: any) {
+      setPrescriptionError(err.message || 'Erro ao carregar receitas');
+    } finally {
+      setLoadingPrescriptions(false);
+    }
+  };
+
+  const handleSavePrescription = async (data: any) => {
+    try {
+      const result = await apiService.prescriptions.create(data);
+      if (result.success) {
+        await fetchPrescriptions();
+        setShowPrescriptionModal(false);
+      } else {
+        alert(result.message || 'Erro ao salvar receita');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erro ao salvar receita');
+    }
+  };
+
+  const handleDeletePrescription = async (rxId: string) => {
+    if (!confirm('Tem certeza que deseja excluir esta receita?')) return;
+    try {
+      const result = await apiService.prescriptions.update(rxId, { status: 'cancelled' });
+      if (result.success) {
+        await fetchPrescriptions();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Erro ao excluir receita');
     }
   };
 
@@ -287,10 +405,10 @@ const PatientDetail: React.FC = () => {
                   <p><strong>Telefone:</strong> {patient.phone || 'Não informado'}</p>
                   <p><strong>Data de Nascimento:</strong> {patient.dateOfBirth ? new Date(patient.dateOfBirth).toLocaleDateString('pt-BR') : 'Não informado'}</p>
                   <p><strong>Gênero:</strong> {patient.gender || 'Não informado'}</p>
+                  <p><strong>CPF:</strong> {patient.cpf || 'Não informado'}</p>
                 </div>
                 <div>
                   <p><strong>Status:</strong> {patient.status}</p>
-                  <p><strong>CPF:</strong> {patient.cpf || 'Não informado'}</p>
                   {patient.address && (
                     <>
                       <p><strong>Endereço:</strong></p>
@@ -302,82 +420,48 @@ const PatientDetail: React.FC = () => {
                       </p>
                     </>
                   )}
+                  {patient.emergencyContact && patient.emergencyContact.name && (
+                    <>
+                      <p><strong>Contato de Emergência:</strong></p>
+                      <p style={{ marginLeft: '10px' }}>
+                        {patient.emergencyContact.name}<br />
+                        {patient.emergencyContact.phone}<br />
+                        {patient.emergencyContact.relationship}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Nome:</label>
-                    <input
-                      type="text"
-                      value={editData.firstName || ''}
-                      onChange={(e) => setEditData({ ...editData, firstName: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Sobrenome:</label>
-                    <input
-                      type="text"
-                      value={editData.lastName || ''}
-                      onChange={(e) => setEditData({ ...editData, lastName: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Email:</label>
-                    <input
-                      type="email"
-                      value={editData.email || ''}
-                      onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Telefone:</label>
-                    <input
-                      type="tel"
-                      value={editData.phone || ''}
-                      onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>CPF:</label>
-                    <input
-                      type="text"
-                      value={editData.cpf || ''}
-                      onChange={(e) => setEditData({ ...editData, cpf: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Data de Nascimento:</label>
-                    <input
-                      type="date"
-                      value={editData.dateOfBirth ? new Date(editData.dateOfBirth).toISOString().split('T')[0] : ''}
-                      onChange={(e) => setEditData({ ...editData, dateOfBirth: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Gênero:</label>
-                    <select
-                      value={editData.gender || ''}
-                      onChange={(e) => setEditData({ ...editData, gender: e.target.value })}
-                      style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }}
-                    >
-                      <option value="">Selecione</option>
-                      <option value="male">Masculino</option>
-                      <option value="female">Feminino</option>
-                      <option value="other">Outro</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+            ) : null}
+            {isEditing && (
+              <Modal
+                isOpen={isEditing}
+                onClose={handleCancel}
+                title="Editar Paciente"
+                size="lg"
+              >
+                <EnhancedPatientForm
+                  patient={patient}
+                  onSave={async (data) => {
+                    if (!id) return;
+                    setSaving(true);
+                    try {
+                      const result = await apiService.patients.update(id, data);
+                      if (result.success && result.data) {
+                        setPatient(result.data);
+                        setIsEditing(false);
+                      } else {
+                        alert(result.message || 'Erro ao atualizar paciente');
+                      }
+                    } catch (err: any) {
+                      alert(err.message || 'Erro ao atualizar paciente');
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}
+                  onCancel={handleCancel}
+                />
+              </Modal>
             )}
           </div>
         )}
@@ -445,6 +529,112 @@ const PatientDetail: React.FC = () => {
                 onSave={handleSaveMedicalHistory}
                 initialData={medicalHistory}
               />
+            )}
+          </div>
+        )}
+
+        {activeTab === 'insurance' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2>Seguros</h2>
+              <Button onClick={() => { setInsuranceType('primary'); setEditingInsurance(null); setShowInsuranceModal(true); }}>
+                Adicionar Seguro
+              </Button>
+            </div>
+            {insuranceError && (
+              <div style={{ padding: '10px', background: '#fee', border: '1px solid #fcc', borderRadius: '4px', marginBottom: '15px' }}>
+                <p style={{ color: 'red', margin: 0 }}>{insuranceError}</p>
+                <button onClick={fetchInsurances} style={{ marginTop: '10px', padding: '5px 10px' }}>Tentar Novamente</button>
+              </div>
+            )}
+            {loadingInsurances ? (
+              <p>Carregando seguros...</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {insurances.length === 0 ? (
+                  <p style={{ color: '#666' }}>Nenhum seguro cadastrado.</p>
+                ) : (
+                  insurances.map((ins) => (
+                    <div key={ins._id} style={{ border: '1px solid #e0e0e0', borderRadius: '8px', padding: '20px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '15px' }}>
+                        <div>
+                          <h3 style={{ margin: 0 }}>{ins.provider}</h3>
+                          <p style={{ color: '#666', margin: '5px 0' }}>Seguro {ins.type === 'primary' ? 'Principal' : 'Secundário'}</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px' }}>
+                          <button onClick={() => { setEditingInsurance(ins); setInsuranceType(ins.type); setShowInsuranceModal(true); }} style={{ padding: '5px 10px' }}>Editar</button>
+                          <button onClick={() => handleDeleteInsurance(ins._id)} style={{ padding: '5px 10px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px' }}>Excluir</button>
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <p><strong>Apólice:</strong> {ins.policyNumber}</p>
+                        <p><strong>Grupo:</strong> {ins.groupNumber || 'N/A'}</p>
+                        <p><strong>Titular:</strong> {ins.subscriberName}</p>
+                        <p><strong>Relacionamento:</strong> {ins.subscriberRelationship}</p>
+                        <p><strong>Vigência:</strong> {new Date(ins.effectiveDate).toLocaleDateString('pt-BR')} - {ins.expirationDate ? new Date(ins.expirationDate).toLocaleDateString('pt-BR') : 'Indeterminado'}</p>
+                        {ins.coverageDetails && (
+                          <p><strong>Máximo Anual:</strong> R$ {ins.coverageDetails.annualMaximum?.toFixed(2) || '0.00'}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+            {showInsuranceModal && (
+              <Modal
+                isOpen={showInsuranceModal}
+                onClose={() => { setShowInsuranceModal(false); setEditingInsurance(null); }}
+                title={editingInsurance ? 'Editar Seguro' : 'Adicionar Seguro'}
+                size="lg"
+              >
+                <EnhancedInsuranceForm
+                  insurance={editingInsurance}
+                  type={insuranceType}
+                  onSave={handleSaveInsurance}
+                  onCancel={() => { setShowInsuranceModal(false); setEditingInsurance(null); }}
+                />
+              </Modal>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'prescriptions' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2>Receitas</h2>
+              <Button onClick={() => setShowPrescriptionModal(true)}>Nova Receita</Button>
+            </div>
+            {prescriptionError && (
+              <div style={{ padding: '10px', background: '#fee', border: '1px solid #fcc', borderRadius: '4px', marginBottom: '15px' }}>
+                <p style={{ color: 'red', margin: 0 }}>{prescriptionError}</p>
+                <button onClick={fetchPrescriptions} style={{ marginTop: '10px', padding: '5px 10px' }}>Tentar Novamente</button>
+              </div>
+            )}
+            {loadingPrescriptions ? (
+              <p>Carregando receitas...</p>
+            ) : (
+              <PrescriptionList
+                prescriptions={prescriptions}
+                onView={(id) => console.log('View', id)}
+                onEdit={(rx) => console.log('Edit', rx)}
+                onDelete={handleDeletePrescription}
+              />
+            )}
+            {showPrescriptionModal && (
+              <Modal
+                isOpen={showPrescriptionModal}
+                onClose={() => setShowPrescriptionModal(false)}
+                title="Nova Receita"
+                size="lg"
+              >
+                <PrescriptionForm
+                  patientId={id!}
+                  providerId={patient?.clinic as string || ''}
+                  onSave={handleSavePrescription}
+                  onCancel={() => setShowPrescriptionModal(false)}
+                />
+              </Modal>
             )}
           </div>
         )}

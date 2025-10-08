@@ -1,8 +1,11 @@
 // src/components/common/index.ts
-export { default as Button } from './Button/Button';
-export { default as Input } from './Input/Input';
-export { default as Modal } from './Modal/Modal';
+// Re-export UI components for backward compatibility
+export { default as Button } from '../UI/Button/Button';
+export { default as Input } from '../UI/Input/Input';
+export { default as Modal } from '../UI/Modal/Modal';
 export { default as Loading } from '../UI/Loading/Loading';
+
+// Common-specific components
 export { default as FormField } from './FormField/FormField';
 export { default as FormBuilder } from './FormBuilder/FormBuilder';
 export { default as Textarea } from './Textarea/Textarea';
