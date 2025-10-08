@@ -1,9 +1,10 @@
 // backend/src/routes/passwordPolicy.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, validationResult } from 'express-validator';
+import { validatePasswordStrength } from '../../middleware/security/passwordPolicy';
+import type { User as IUser } from '@topsmile/types';
 import { User } from '../../models/User';
-import { validatePasswordStrength } from '../../middleware/passwordPolicy';
 
 const router: express.Router = express.Router();
 

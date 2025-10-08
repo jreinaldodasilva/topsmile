@@ -1,8 +1,9 @@
 // backend/src/routes/sessions.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { param, validationResult } from 'express-validator';
-import { sessionService } from '../../services/sessionService';
+import { sessionService } from '../../services/auth/sessionService';
+import type { Session as ISession } from '@topsmile/types';
 import { Session } from '../../models/Session';
 
 const router: express.Router = express.Router();

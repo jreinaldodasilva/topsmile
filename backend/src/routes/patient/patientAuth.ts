@@ -1,8 +1,8 @@
 import express, { Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../../services/patientAuthService';
-import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../../middleware/patientAuth';
-import { patientAuthLimiter, passwordResetLimiter } from '../../middleware/rateLimiter';
+import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../../services/auth/patientAuthService';
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from '../../middleware/auth/patientAuth';
+import { patientAuthLimiter, passwordResetLimiter } from '../../middleware/security/rateLimiter';
 import { isAppError } from '../../types/errors';
 import type { Patient } from '@topsmile/types';
 

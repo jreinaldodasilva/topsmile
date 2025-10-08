@@ -1,12 +1,16 @@
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
-import { contactService } from '../../services/contactService';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
+import { contactService } from '../../services/admin/contactService';
 import contactRoutes from './contacts';
+import analyticsRoutes from './analytics';
+import roleManagementRoutes from './roleManagement';
 
 const router: express.Router = express.Router();
 
 // Mount admin sub-routes
 router.use('/contacts', contactRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/role-management', roleManagementRoutes);
 
 // Dashboard stats endpoint
 router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manager'), async (req: Request, res: Response) => {

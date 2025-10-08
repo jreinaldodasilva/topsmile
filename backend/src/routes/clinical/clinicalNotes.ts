@@ -1,9 +1,10 @@
 // backend/src/routes/clinicalNotes.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, param, validationResult } from 'express-validator';
+import { NOTE_TEMPLATES, getTemplateById, getTemplatesByType } from '../../config/clinical/noteTemplates';
+import type { ClinicalNote as IClinicalNote } from '@topsmile/types';
 import { ClinicalNote } from '../../models/ClinicalNote';
-import { NOTE_TEMPLATES, getTemplateById, getTemplatesByType } from '../../config/noteTemplates';
 
 const router: express.Router = express.Router();
 

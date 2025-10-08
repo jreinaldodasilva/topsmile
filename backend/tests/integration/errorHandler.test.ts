@@ -2,7 +2,7 @@
 import request from 'supertest';
 import express from 'express';
 import { errorHandler } from '../../src/middleware/errorHandler';
-import { AppError, NotFoundError, ValidationError } from '../../src/utils/errors';
+import { AppError, NotFoundError, ValidationError } from '../../src/utils/errors/errors';
 
 const createTestApp = () => {
   const app = express();

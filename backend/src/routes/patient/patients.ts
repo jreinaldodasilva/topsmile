@@ -1,7 +1,7 @@
 // backend/src/routes/patients.ts
 import express, { Request, Response, NextFunction } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
-import { patientService } from '../../services/patientService';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
+import { patientService } from '../../services/patient/patientService';
 import { body, query, validationResult } from 'express-validator';
 import { isAppError } from '../../types/errors';
 import type { Patient } from '@topsmile/types';

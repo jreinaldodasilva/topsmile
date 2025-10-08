@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema, CallbackWithoutResultAndOptionalError } from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { authMixin } from './mixins/authMixin';
-import { emailField, passwordField } from '../utils/validators';
+import { emailField, passwordField } from '../utils/validation/validators';
 
 
 export interface IPatientUser extends Document {

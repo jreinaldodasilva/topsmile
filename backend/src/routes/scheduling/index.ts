@@ -1,6 +1,7 @@
 // backend/src/routes/scheduling/index.ts
 import { Router } from 'express';
 import appointmentsRoutes from './appointments';
+import appointmentTypesRoutes from './appointmentTypes';
 import calendarRoutes from './calendar';
 import operatoriesRoutes from './operatories';
 import waitlistRoutes from './waitlist';
@@ -9,6 +10,7 @@ import bookingRoutes from './booking';
 const router: Router = Router();
 
 router.use('/appointments', appointmentsRoutes);
+router.use('/appointment-types', appointmentTypesRoutes);
 router.use('/calendar', calendarRoutes);
 router.use('/operatories', operatoriesRoutes);
 router.use('/waitlist', waitlistRoutes);

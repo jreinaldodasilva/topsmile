@@ -1,7 +1,8 @@
 // backend/src/routes/booking.ts
 import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';
-import { bookingService } from '../../services/bookingService';
+import { bookingService } from '../../services/scheduling/bookingService';
+import type { AppointmentType as IAppointmentType } from '@topsmile/types';
 import { AppointmentType } from '../../models/AppointmentType';
 
 const router: express.Router = express.Router();

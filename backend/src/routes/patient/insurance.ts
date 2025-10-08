@@ -1,7 +1,8 @@
 // backend/src/routes/insurance.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, param, validationResult } from 'express-validator';
+import type { Insurance as IInsurance } from '@topsmile/types';
 import { Insurance } from '../../models/Insurance';
 
 const router: express.Router = express.Router();

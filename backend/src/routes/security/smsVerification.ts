@@ -1,9 +1,10 @@
 // backend/src/routes/smsVerification.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, validationResult } from 'express-validator';
+import { smsService } from '../../services/external/smsService';
+import type { User as IUser } from '@topsmile/types';
 import { User } from '../../models/User';
-import { smsService } from '../../services/smsService';
 
 const router: express.Router = express.Router();
 

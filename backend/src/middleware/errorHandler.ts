@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../utils/errors';
-import { ErrorLogger } from '../utils/errorLogger';
+import { ErrorLogger } from '../utils/errors/errorLogger';
 
 interface ErrorResponse {
   success: false;

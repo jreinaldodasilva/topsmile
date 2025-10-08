@@ -1,6 +1,6 @@
 // backend/tests/unit/errorLogger.test.ts
-import { ErrorLogger } from '../../src/utils/errorLogger';
-import { AppError } from '../../src/utils/errors';
+import { ErrorLogger } from '../../src/utils/errors/errorLogger';
+import { AppError } from '../../src/utils/errors/errors';
 
 describe('ErrorLogger', () => {
   beforeEach(() => {

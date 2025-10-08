@@ -1,11 +1,11 @@
 // backend/src/routes/appointments.ts
 import express, { Request, Response, NextFunction } from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../../middleware/auth";
-import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../../middleware/patientAuth";
-import { schedulingService } from "../../services/schedulingService";
-import type { Patient, Appointment as AppointmentType } from '@topsmile/types';
-import { Appointment } from "../../models/Appointment";
+import { authenticatePatient, requirePatientEmailVerification, PatientAuthenticatedRequest } from "../../middleware/auth";
+import { schedulingService } from "../../services/scheduling";
+import type { Patient, Appointment as AppointmentType, Appointment as IAppointment } from '@topsmile/types';
 import { body, validationResult } from 'express-validator';
+import { Appointment } from '../../models/Appointment';
 
 const router: express.Router = express.Router();
 
@@ -220,7 +220,7 @@ router.post("/", bookingValidation, async (req: Request, res: Response) => {
 
     const { patient, provider, appointmentType, scheduledStart, notes, priority } = authReq.body;
 
-    const appointment = await schedulingService.createAppointmentModel({
+    const appointment = await schedulingService.createAppointment({
       clinicId: authReq.user!.clinicId!,
       patientId: patient,
       providerId: provider,
@@ -263,7 +263,7 @@ router.post("/book", bookingValidation, async (req: Request, res: Response) => {
 
     const { patient, provider, appointmentType, scheduledStart, notes, priority } = authReq.body;
 
-    const appointment = await schedulingService.createAppointmentModel({
+    const appointment = await schedulingService.createAppointment({
       clinicId: authReq.user!.clinicId!,
       patientId: patient,
       providerId: provider,
@@ -705,7 +705,7 @@ router.patch("/:id/status",
       }
 
       if (status === 'cancelled') {
-        const updatedAppointment = await schedulingService.cancelAppointmentModel(
+        const updatedAppointment = await schedulingService.cancelAppointment(
           authReq.params.id!,
           cancellationReason || 'Cancelado pelo usuário'
         );
@@ -826,7 +826,7 @@ router.patch("/:id/reschedule",
 
       const { newStart, reason, rescheduleBy } = authReq.body;
 
-      const updatedAppointment = await schedulingService.rescheduleAppointmentModel(
+      const updatedAppointment = await schedulingService.rescheduleAppointment(
         authReq.params.id!,
         new Date(newStart),
         reason,
@@ -989,7 +989,7 @@ router.post("/patient/book",
       const { providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
 
       // Ensure the patient can only book for themselves
-      const appointment = await schedulingService.createAppointmentModel({
+      const appointment = await schedulingService.createAppointment({
         clinicId: (req.patient!.clinic as any).toString(),
         patientId: (req.patient!._id as any).toString(),
         providerId,
@@ -1052,7 +1052,7 @@ router.patch("/patient/:id/cancel",
 
       const { reason } = req.body;
 
-      const updatedAppointment = await schedulingService.cancelAppointmentModel(
+      const updatedAppointment = await schedulingService.cancelAppointment(
         req.params.id!,
         reason || 'Cancelado pelo paciente'
       );

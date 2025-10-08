@@ -2,9 +2,10 @@ import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { User as IUser, UserRole } from '@topsmile/types';
 import { authMixin } from './mixins/authMixin';
-import { emailField, passwordField, commonValidators } from '../utils/validators';
+import { emailField, passwordField, commonValidators } from '../utils/validation/validators';
 import { baseSchemaFields, baseSchemaOptions } from './base/baseSchema';
 import { clinicScopedFields } from './mixins';
+
 
 const UserSchema = new Schema<IUser & Document>({
     name: {
@@ -161,8 +162,8 @@ UserSchema.pre('save', async function (this: IUser & Document, next) {
     // Store the OLD hashed password in history (only for existing users changing password)
     if (!this.isNew) {
         // Get the current hashed password from database before we replace it
-        const UserModel = mongoose.model('User');
-        const currentDoc = await UserModel.findById(this._id).select('+password');
+        const User = mongoose.model('User');
+        const currentDoc = await User.findById(this._id).select('+password');
         if (currentDoc && (currentDoc as any).password) {
             if (!this.passwordHistory) {
                 this.passwordHistory = [];

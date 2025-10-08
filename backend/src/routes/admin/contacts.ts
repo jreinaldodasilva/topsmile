@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
-import { contactService } from '../../services/contactService';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
+import { contactService } from '../../services/admin/contactService';
 
 const router: express.Router = express.Router();
 

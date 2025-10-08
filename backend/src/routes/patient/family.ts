@@ -1,8 +1,8 @@
 // backend/src/routes/family.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, param, validationResult } from 'express-validator';
-import { familyService } from '../../services/familyService';
+import { familyService } from '../../services/patient/familyService';
 
 const router: express.Router = express.Router();
 

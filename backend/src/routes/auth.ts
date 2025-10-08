@@ -2,7 +2,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import rateLimit from 'express-rate-limit';
-import { authService } from '../services/authService';
+import { authService } from '../services/auth';
 import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import DOMPurify from 'isomorphic-dompurify';
 import { Request, Response, NextFunction } from 'express';

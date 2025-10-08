@@ -11,8 +11,8 @@ import type { Contact as ContactType, Patient } from "@topsmile/types";
 import cookieParser from "cookie-parser";
 
 // Database imports
-import { connectToDatabase } from "./config/database";
-import { contactService } from "./services/contactService";
+import { connectToDatabase } from "./config/database/database";
+import { contactService } from "./services/admin/contactService";
 import {
   checkDatabaseConnection,
   handleValidationError,
@@ -24,7 +24,7 @@ import {
   authenticate,
   authorize,
   AuthenticatedRequest,
-} from "./middleware/auth";
+} from "./middleware/auth/auth";
 import { v4 as uuidv4 } from "uuid";
 // Route groups
 import authRoutes from "./routes/auth";
@@ -33,22 +33,15 @@ import schedulingRoutes from "./routes/scheduling";
 import patientRoutes from "./routes/patient";
 import patientAuthRoutes from "./routes/patient/patientAuth";
 import securityRoutes from "./routes/security";
-import providersRoutes from "./routes/providers";
-import appointmentTypesRoutes from "./routes/appointmentTypes";
-import formsRoutes from "./routes/forms";
-import docsRoutes from "./routes/docs";
-import permissionsRoutes from "./routes/permissions";
-import roleManagementRoutes from "./routes/roleManagement";
-import consentFormsRoutes from "./routes/consentForms";
-import contactRoutes from "./routes/contact";
+import providerRoutes from "./routes/provider";
 import adminRoutes from "./routes/admin";
-import analyticsRoutes from "./routes/analytics";
+import publicRoutes from "./routes/public";
 
 // Error handling
 import { errorHandler } from "./middleware/errorHandler";
 
 // CSRF protection for state-changing operations
-import { csrfProtection, mongoSanitization } from "./middleware/security";
+import { csrfProtection, mongoSanitization } from "./middleware/security/security";
 // IMPROVED: Trust proxy configuration for production deployments
 import logger from "./config/logger";
 import pinoHttp from "pino-http";
@@ -481,16 +474,9 @@ app.use("/api/clinical", authenticate, clinicalRoutes);
 app.use("/api/scheduling", authenticate, schedulingRoutes);
 app.use("/api/patients", authenticate, patientRoutes);
 app.use("/api/security", authenticate, securityRoutes);
-app.use("/api/providers", providersRoutes);
-app.use("/api/appointment-types", appointmentTypesRoutes);
-app.use("/api/forms", formsRoutes);
-app.use("/api/docs", docsRoutes);
-app.use("/api/contact", contactRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/permissions", permissionsRoutes);
-app.use("/api/role-management", roleManagementRoutes);
-app.use("/api/consent-forms", consentFormsRoutes);
-app.use("/api/analytics", analyticsRoutes);
+app.use("/api/providers", providerRoutes);
+app.use("/api/admin", authenticate, adminRoutes);
+app.use("/api", publicRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: any, res: any) => {

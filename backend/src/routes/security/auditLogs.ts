@@ -1,7 +1,8 @@
 // backend/src/routes/auditLogs.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { query, param, validationResult } from 'express-validator';
+import type { AuditLog as IAuditLog } from '@topsmile/types';
 import { AuditLog } from '../../models/AuditLog';
 
 const router: express.Router = express.Router();

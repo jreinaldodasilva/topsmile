@@ -1,7 +1,7 @@
 import request from 'supertest';
 import express from 'express';
 import authRoutes from '../../src/routes/auth';
-import patientRoutes from '../../src/routes/patients';
+import patientRoutes from '../../src/routes/patient';
 import { createTestClinic } from '../helpers/factories';
 import { authenticate } from '../../src/middleware/auth';
 

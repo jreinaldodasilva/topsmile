@@ -1,6 +1,6 @@
 // backend/src/services/base/BaseService.ts
 import { Model, Document, FilterQuery, UpdateQuery } from 'mongoose';
-import { AppError } from '../../utils/errors';
+import { AppError } from '../../utils/errors/errors';
 
 /**
  * Pagination options for list queries

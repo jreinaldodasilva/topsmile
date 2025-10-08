@@ -1,21 +1,38 @@
-// backend/src/routes/documents.ts
+// backend/src/routes/patient/documents.ts
 import express, { Request, Response } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, validationResult } from 'express-validator';
 
 const router: express.Router = express.Router();
 
 router.use(authenticate);
 
+const uploadValidation = [
+    body('patientId').isMongoId().withMessage('ID do paciente inválido'),
+    body('documentType').isIn(['photo', 'insurance_card', 'id_document', 'consent_form', 'other'])
+        .withMessage('Tipo de documento inválido'),
+    body('fileData').notEmpty().withMessage('Dados do arquivo são obrigatórios')
+];
+
 router.post('/upload',
-    body('patientId').isMongoId(),
-    body('documentType').isIn(['photo', 'insurance_card', 'id_document', 'consent_form', 'other']),
-    body('fileData').notEmpty(),
+    uploadValidation,
     async (req: Request, res: Response) => {
+        const authReq = req as AuthenticatedRequest;
         try {
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
-                return res.status(400).json({ success: false, errors: errors.array() });
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Dados inválidos',
+                    errors: errors.array() 
+                });
+            }
+
+            if (!authReq.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
             }
 
             // Placeholder for actual file upload logic (S3, local storage, etc.)
@@ -28,12 +45,17 @@ router.post('/upload',
                     url: documentUrl,
                     type: req.body.documentType,
                     uploadedAt: new Date()
+                },
+                meta: {
+                    timestamp: new Date().toISOString(),
+                    requestId: (authReq as any).requestId
                 }
             });
         } catch (error: any) {
-            return res.status(400).json({
+            console.error('Error uploading document:', error);
+            return res.status(500).json({
                 success: false,
-                message: error.message
+                message: error.message || 'Erro ao enviar documento'
             });
         }
     }

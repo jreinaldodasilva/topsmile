@@ -1,7 +1,7 @@
 // backend/src/middleware/auditLogger.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
-import { auditService } from '../services/auditService';
+import { auditService } from '../services/admin/auditService';
 
 const getResourceFromPath = (path: string): string => {
     const parts = path.split('/').filter(Boolean);

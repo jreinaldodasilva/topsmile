@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponse } from '../../utils/responseHelpers';
-import { tokenBlacklistService } from '../../services/tokenBlacklistService';
+import { tokenBlacklistService } from '../../services/auth/tokenBlacklistService';
 
 export abstract class BaseAuthMiddleware {
   protected extractToken(req: Request): string | null {

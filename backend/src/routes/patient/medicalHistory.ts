@@ -1,9 +1,10 @@
 // backend/src/routes/medicalHistory.ts
 import express, { Request, Response } from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth';
+import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, param, validationResult } from 'express-validator';
+import { MEDICAL_CONDITIONS, DENTAL_CONDITIONS, COMMON_ALLERGIES } from '../../config/clinical/medicalConditions';
+import type { MedicalHistory as IMedicalHistory } from '@topsmile/types';
 import { MedicalHistory } from '../../models/MedicalHistory';
-import { MEDICAL_CONDITIONS, DENTAL_CONDITIONS, COMMON_ALLERGIES } from '../../config/medicalConditions';
 
 const router: express.Router = express.Router();
 
