@@ -208,7 +208,7 @@ const PatientDetail: React.FC = () => {
   };
 
   const handleDeleteInsurance = async (insuranceId: string) => {
-    if (!id || !confirm('Tem certeza que deseja excluir este seguro?')) return;
+    if (!id || !window.confirm('Tem certeza que deseja excluir este seguro?')) return;
     try {
       const result = await apiService.insurance.delete(id, insuranceId);
       if (result.success) {
@@ -252,7 +252,7 @@ const PatientDetail: React.FC = () => {
   };
 
   const handleDeletePrescription = async (rxId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta receita?')) return;
+    if (!window.confirm('Tem certeza que deseja excluir esta receita?')) return;
     try {
       const result = await apiService.prescriptions.update(rxId, { status: 'cancelled' });
       if (result.success) {

@@ -59,7 +59,7 @@ const WaitlistManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Remover da lista de espera?')) return;
+    if (!window.confirm('Remover da lista de espera?')) return;
     try {
       await apiService.waitlist.delete(id);
       await fetchWaitlist();

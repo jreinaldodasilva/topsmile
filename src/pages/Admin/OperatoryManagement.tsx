@@ -61,7 +61,7 @@ const OperatoryManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Excluir consultório?')) return;
+    if (!window.confirm('Excluir consultório?')) return;
     try {
       await apiService.operatories.delete(id);
       await fetchOperatories();
