@@ -1,58 +1,86 @@
-# TopSmile - Dental Clinic Management System
+# TopSmile - Product Overview
 
-## Project Purpose
-TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks in a modern, user-friendly interface.
+## Purpose
+TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks in a secure, multi-tenant environment.
 
 ## Value Proposition
-- **Unified Platform**: Single system for all clinic operations - from patient booking to clinical documentation
-- **Patient-Centric**: Dedicated patient portal for self-service booking, records access, and communication
-- **Healthcare Compliance**: Built with security and healthcare data privacy standards in mind
-- **Modern Technology**: React/TypeScript frontend with Node.js/Express backend, ensuring maintainability and scalability
+- **Operational Efficiency**: Centralized platform for all clinic operations, reducing administrative overhead
+- **Patient Experience**: Self-service portal for booking, records access, and communication
+- **Clinical Excellence**: Structured workflows for treatment planning and documentation
+- **Security & Compliance**: Enterprise-grade security with JWT authentication, CSRF protection, and data sanitization
+- **Scalability**: Multi-tenant architecture supporting multiple clinics from a single deployment
 
 ## Key Features
 
 ### Patient Management
-- Patient registration and profile management
-- Medical history and clinical records
-- Patient portal for self-service access
-- Appointment booking and management
+- Complete patient registration and profile management
+- Medical history tracking and clinical records
+- Patient demographics and contact information
+- Multi-clinic patient support
+
+### Patient Portal
+- Self-service appointment booking
+- Access to medical records and treatment history
+- Secure communication with providers
+- Payment processing integration
+- 30-day session management for convenience
 
 ### Appointment System
-- Real-time calendar and scheduling
-- Provider availability management
-- Appointment reminders and notifications
-- Booking workflow for patients and staff
+- Real-time scheduling with provider availability
+- Appointment type configuration (consultation, cleaning, treatment, etc.)
+- Automated reminders via email and SMS
+- Conflict detection and validation
+- Recurring appointment support
 
 ### Clinical Workflows
 - Treatment planning and documentation
-- Clinical notes and records
-- Provider-specific workflows
-- Form rendering for clinical data collection
+- Provider-specific workflows and preferences
+- Clinical notes and documentation
+- Treatment history tracking
+- Multi-provider coordination
 
-### Administrative Features
-- Multi-role access control (Admin, Provider, Staff, Patient)
-- User authentication and authorization
-- Contact form management
-- Payment processing integration (Stripe)
+### Multi-Role Access Control
+- **Super Admin**: System-wide configuration and management
+- **Admin**: Clinic-level administration and reporting
+- **Provider**: Clinical workflows and patient care
+- **Staff**: Appointment scheduling and patient coordination
+- **Patient**: Self-service portal access
+
+### Payment Integration
+- Stripe payment processing
+- Secure payment handling with webhook support
+- Payment history and receipts
+- Multiple payment methods support
 
 ### Security & Compliance
-- JWT-based authentication with refresh tokens
-- Role-based permissions system
-- CSRF protection and rate limiting
+- Dual authentication systems (staff and patient)
+- JWT with HttpOnly cookies
+- Refresh token rotation and blacklisting
+- Rate limiting on sensitive endpoints
+- CSRF protection
 - Data sanitization and validation
-- Session management and timeout
+- Secure password hashing with bcrypt
 
 ## Target Users
 
 ### Primary Users
-- **Dental Clinics**: Small to medium-sized dental practices seeking digital transformation
-- **Dentists/Providers**: Clinical staff needing efficient patient management and documentation
-- **Administrative Staff**: Front desk and office managers handling scheduling and operations
-- **Patients**: Individuals seeking convenient access to dental services and records
+- **Dental Clinics**: Small to medium-sized dental practices
+- **Dentists/Providers**: Individual practitioners and specialists
+- **Clinic Staff**: Receptionists, dental assistants, office managers
+- **Patients**: Dental clinic patients seeking convenient access
 
 ### Use Cases
-- **Patient Booking**: Patients can browse available slots and book appointments online
-- **Clinical Documentation**: Providers can document treatments and maintain patient records
-- **Schedule Management**: Staff can manage provider calendars and appointment workflows
-- **Patient Portal**: Patients access their records, upcoming appointments, and communicate with clinic
-- **Administrative Oversight**: Admins manage users, permissions, and system configuration
+1. **Appointment Management**: Staff schedules appointments, system sends reminders, patients can self-book
+2. **Patient Onboarding**: New patient registration, medical history collection, profile creation
+3. **Clinical Documentation**: Providers document treatments, create treatment plans, track progress
+4. **Patient Self-Service**: Patients book appointments, view records, make payments online
+5. **Multi-Clinic Operations**: Clinic chains manage multiple locations from single system
+6. **Provider Scheduling**: Manage provider availability, specialties, and appointment types
+
+## Technical Highlights
+- **Monorepo Architecture**: Unified codebase with frontend, backend, and shared types
+- **Real-time Updates**: Redis caching for performance and session management
+- **API Versioning**: Support for multiple API versions via URL path or headers
+- **Comprehensive Testing**: Unit, integration, E2E, accessibility, and performance tests
+- **CI/CD Ready**: Automated testing, coverage, quality checks, and deployment pipelines
+- **Developer Experience**: TypeScript throughout, hot reload, comprehensive documentation
