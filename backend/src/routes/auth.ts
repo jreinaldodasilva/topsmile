@@ -599,8 +599,16 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
       await authService.logout(refreshToken);
     }
 
-    res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('accessToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    });
 
     // Log for development
     console.log(`User ${authReq.user!.email} logged out at ${new Date().toISOString()}`);

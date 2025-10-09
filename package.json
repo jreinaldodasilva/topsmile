@@ -26,8 +26,10 @@
     "@topsmile/types": "file:packages/types",
     "@types/react": "^18.2.39",
     "@types/react-dom": "^18.2.17",
+    "bcrypt": "^6.0.0",
     "framer-motion": "^10.16.5",
     "luxon": "^3.7.1",
+    "mongoose": "^8.19.1",
     "react": "^18.2.0",
     "react-calendar": "^6.0.0",
     "react-dom": "^18.2.0",
@@ -79,6 +81,7 @@
     "fix-type-imports": "node scripts/fix-type-imports.js",
     "generate-secrets": "node scripts/generate-secrets.js",
     "generate-env-secrets": "node scripts/generate-env-secrets.js",
+    "seed:test": "node scripts/seed-test-users.js",
     "perf:load": "k6 run backend/tests/performance/load-test.js"
   },
   "eslintConfig": {

@@ -109,8 +109,11 @@ export async function request<T = any>(
   const maxRetries = 3;
 
   const makeRequest = async () => {
-    // Fetch CSRF token if needed for state-changing operations
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(restOfOptions.method || 'GET') && !csrfToken) {
+    // Fetch CSRF token if needed for state-changing operations (skip for auth endpoints)
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(restOfOptions.method || 'GET') && 
+        !csrfToken && 
+        !endpoint.includes('/auth/login') && 
+        !endpoint.includes('/auth/refresh')) {
       try {
         const csrfRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: 'include' });
         if (csrfRes.ok) {
@@ -151,7 +154,7 @@ export async function request<T = any>(
     try {
       const res = await makeRequest();
       
-      if (res.status === 401 && attempt === 0 && !endpoint.includes('/auth/refresh')) {
+      if (res.status === 401 && attempt === 0 && !endpoint.includes('/auth/refresh') && !endpoint.includes('/auth/login')) {
         // Try token refresh on first 401
         if (!isRefreshing) {
           isRefreshing = true;
@@ -170,12 +173,14 @@ export async function request<T = any>(
               return (await parseResponse(retryRes)) as HttpResponse<T>;
             } else {
               isRefreshing = false;
+              refreshSubscribers = [];
               // Refresh failed, trigger logout
               window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
               return (await parseResponse(res)) as HttpResponse<T>;
             }
           } catch (refreshError) {
             isRefreshing = false;
+            refreshSubscribers = [];
             window.dispatchEvent(new CustomEvent(LOGOUT_EVENT, { detail: { key: 'default' } }));
             return (await parseResponse(res)) as HttpResponse<T>;
           }

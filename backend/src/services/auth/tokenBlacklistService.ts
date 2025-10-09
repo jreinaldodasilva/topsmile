@@ -1,5 +1,8 @@
 // backend/src/services/tokenBlacklistService.ts
 import Redis from 'ioredis';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 class TokenBlacklistService {
   private redis: Redis | null = null;

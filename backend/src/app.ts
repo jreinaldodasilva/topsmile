@@ -51,6 +51,7 @@ import { auditLogger } from './middleware/auditLogger';
 import { apiVersionMiddleware } from './middleware/apiVersion';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
+import v1Routes from './routes/v1';
 
 const compression = require('compression');
 
@@ -461,16 +462,18 @@ app.use("/api", (req: any, res: any, next: any) => {
     return next();
   }
   
-  // Skip CSRF for specific endpoints
+  // Skip CSRF for specific endpoints (use originalUrl for full path)
   const skipPaths = [
     "/api/auth/refresh",
     "/api/auth/logout",
+    "/api/auth/login",
     "/api/patient-auth/refresh",
     "/api/patient-auth/logout",
+    "/api/patient-auth/login",
     "/api/csrf-token"
   ];
   
-  if (skipPaths.includes(req.path)) {
+  if (skipPaths.some(path => req.originalUrl.startsWith(path))) {
     return next();
   }
   
@@ -495,7 +498,6 @@ app.use('/api', apiVersionMiddleware);
 app.use('/api', auditLogger);
 
 // Version-specific routes
-import v1Routes from './routes/v1';
 app.use('/api/v1', v1Routes);
 
 // Swagger API Documentation

@@ -19,6 +19,7 @@ class StaffAuthMiddleware extends BaseAuthMiddleware {
     return cookies['topsmile_access_token'] ||
            cookies['topsmile_token'] ||
            cookies['access_token'] ||
+           cookies['accessToken'] ||
            null;
   }
 

@@ -30,7 +30,7 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
         .join('&')
     : '';
 
-  const res = await request<Appointment[]>(`/api/appointments${qs}`);
+  const res = await request<Appointment[]>(`/api/scheduling/appointments${qs}`);
   if (res.ok && res.data) {
     return { success: true, data: res.data, message: res.message };
   }
@@ -38,7 +38,7 @@ async function getAppointments(query?: Record<string, any>): Promise<ApiResult<A
 }
 
 async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
-  const res = await request<Appointment>(`/api/appointments/${encodeURIComponent(id)}`);
+  const res = await request<Appointment>(`/api/scheduling/appointments/${encodeURIComponent(id)}`);
   if (res.ok && res.data) {
     return { success: true, data: res.data, message: res.message };
   }
@@ -46,7 +46,7 @@ async function getAppointment(id: string): Promise<ApiResult<Appointment>> {
 }
 
 async function createAppointment(payload: CreateAppointmentDTO): Promise<ApiResult<Appointment>> {
-  const res = await request('/api/appointments', {
+  const res = await request('/api/scheduling/appointments', {
     method: 'POST',
     body: JSON.stringify(payload)
   });
@@ -57,7 +57,7 @@ async function createAppointment(payload: CreateAppointmentDTO): Promise<ApiResu
 }
 
 async function updateAppointment(id: string, payload: Partial<Appointment>): Promise<ApiResult<Appointment>> {
-  const res = await request(`/api/appointments/${encodeURIComponent(id)}`, {
+  const res = await request(`/api/scheduling/appointments/${encodeURIComponent(id)}`, {
     method: 'PATCH',
     body: JSON.stringify(payload)
   });
@@ -288,7 +288,7 @@ export const apiService = {
             .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
             .join('&')
         : '';
-      const res = await request<AppointmentType[]>(`/api/appointment-types${qs}`);
+      const res = await request<AppointmentType[]>(`/api/scheduling/appointment-types${qs}`);
       if (res.ok && res.data) {
         return { success: true, data: res.data, message: res.message };
       }
@@ -340,7 +340,7 @@ export const apiService = {
   },
   dashboard: {
     getStats: async (): Promise<ApiResult<DashboardStats>> => {
-      const res = await request('/api/dashboard/stats');
+      const res = await request('/api/admin/dashboard');
       if (res.ok && res.data) {
         return { success: true, data: res.data, message: res.message };
       }
