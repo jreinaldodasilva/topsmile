@@ -1,62 +1,58 @@
 # TopSmile - Dental Clinic Management System
 
 ## Project Purpose
-TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks through an integrated web-based platform.
+TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks in a modern, user-friendly interface.
 
 ## Value Proposition
 - **Unified Platform**: Single system for all clinic operations - from patient booking to clinical documentation
-- **Patient-Centric**: Dedicated patient portal for self-service appointment booking and account management
+- **Patient-Centric**: Dedicated patient portal for self-service booking, records access, and communication
 - **Healthcare Compliance**: Built with security and healthcare data privacy standards in mind
-- **Modern Architecture**: Full-stack TypeScript application with React frontend and Express backend
+- **Modern Technology**: React/TypeScript frontend with Node.js/Express backend, ensuring maintainability and scalability
 
 ## Key Features
 
 ### Patient Management
 - Patient registration and profile management
-- Patient portal for self-service booking
-- Contact management and communication tracking
-- Patient authentication and secure access
+- Medical history and clinical records
+- Patient portal for self-service access
+- Appointment booking and management
 
-### Appointment Scheduling
-- Real-time appointment booking system
-- Calendar view for scheduling management
-- Appointment status tracking and updates
-- Conflict detection and availability management
+### Appointment System
+- Real-time calendar and scheduling
+- Provider availability management
+- Appointment reminders and notifications
+- Booking workflow for patients and staff
 
 ### Clinical Workflows
-- Clinical documentation and record keeping
-- Treatment planning and tracking
-- Provider management and assignment
-- Clinical data storage and retrieval
+- Treatment planning and documentation
+- Clinical notes and records
+- Provider-specific workflows
+- Form rendering for clinical data collection
 
 ### Administrative Features
-- Admin dashboard for clinic oversight
-- User role management (admin, provider, patient)
-- Contact form handling and inquiry management
-- Reporting and analytics capabilities
+- Multi-role access control (Admin, Provider, Staff, Patient)
+- User authentication and authorization
+- Contact form management
+- Payment processing integration (Stripe)
 
-### Payment Processing
-- Stripe integration for payment handling
-- Payment tracking and transaction management
-- Billing and invoice generation
-
-### Security & Authentication
-- JWT-based authentication system
-- Role-based access control (RBAC)
-- Session management and timeout handling
-- CSRF protection and security middleware
+### Security & Compliance
+- JWT-based authentication with refresh tokens
+- Role-based permissions system
+- CSRF protection and rate limiting
+- Data sanitization and validation
+- Session management and timeout
 
 ## Target Users
 
 ### Primary Users
-- **Dental Clinic Administrators**: Manage overall clinic operations, staff, and system configuration
-- **Dental Providers**: Access patient records, manage appointments, document clinical work
-- **Patients**: Book appointments, manage personal information, view treatment history
+- **Dental Clinics**: Small to medium-sized dental practices seeking digital transformation
+- **Dentists/Providers**: Clinical staff needing efficient patient management and documentation
+- **Administrative Staff**: Front desk and office managers handling scheduling and operations
+- **Patients**: Individuals seeking convenient access to dental services and records
 
 ### Use Cases
-- **Patient Booking**: Patients can browse available time slots and book appointments online
-- **Appointment Management**: Staff can schedule, reschedule, and cancel appointments efficiently
-- **Clinical Documentation**: Providers can document patient visits and treatment plans
-- **Administrative Oversight**: Admins can monitor clinic operations and manage resources
-- **Contact Inquiries**: Potential patients can submit inquiries through contact forms
-- **Payment Processing**: Secure payment collection for services rendered
+- **Patient Booking**: Patients can browse available slots and book appointments online
+- **Clinical Documentation**: Providers can document treatments and maintain patient records
+- **Schedule Management**: Staff can manage provider calendars and appointment workflows
+- **Patient Portal**: Patients access their records, upcoming appointments, and communicate with clinic
+- **Administrative Oversight**: Admins manage users, permissions, and system configuration
