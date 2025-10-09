@@ -1,96 +1,62 @@
 # TopSmile - Dental Clinic Management System
 
 ## Project Purpose
-TopSmile is a comprehensive, production-ready dental clinic management platform designed to streamline clinical operations, patient care, and administrative workflows for dental practices.
+TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks through an integrated web-based platform.
 
 ## Value Proposition
-- **Clinical Excellence**: Interactive dental charting, treatment planning with CDT codes, SOAP notes, and comprehensive medical history tracking
-- **Smart Scheduling**: Real-time booking with provider availability, online patient self-service, waitlist management, and recurring appointments
-- **Patient Management**: Complete 5-tab patient interface with inline editing, dental charts, treatment plans, clinical notes, and medical history
-- **Enterprise Security**: Multi-factor authentication (SMS/TOTP), role-based access control (8 roles, 11 permissions), token security with automatic refresh, CSRF protection, and comprehensive audit logging
-- **Payment Processing**: Stripe integration for secure payments, automated invoice generation, and complete transaction tracking
+- **Unified Platform**: Single system for all clinic operations - from patient booking to clinical documentation
+- **Patient-Centric**: Dedicated patient portal for self-service appointment booking and account management
+- **Healthcare Compliance**: Built with security and healthcare data privacy standards in mind
+- **Modern Architecture**: Full-stack TypeScript application with React frontend and Express backend
 
 ## Key Features
 
-### Clinical Features
-- Interactive dental charting with FDI/Universal numbering and versioning history
-- Multi-phase treatment planning with CDT codes and cost estimates
-- SOAP clinical notes with customizable templates
-- Medical history tracking with allergy alerts and medication management
-- Procedure documentation and tracking
+### Patient Management
+- Patient registration and profile management
+- Patient portal for self-service booking
+- Contact management and communication tracking
+- Patient authentication and secure access
 
-### Scheduling & Appointments
-- Color-coded calendar with drag-and-drop functionality
-- Real-time provider availability and operatory management
-- Priority-based waitlist system with automated notifications
-- Recurring appointment support for ongoing treatments
-- Online booking portal for patient self-service
+### Appointment Scheduling
+- Real-time appointment booking system
+- Calendar view for scheduling management
+- Appointment status tracking and updates
+- Conflict detection and availability management
 
-### Patient Portal
-- Self-service access to medical records and appointments
-- Insurance management (primary/secondary)
-- Family account linking with consolidated billing
-- Digital consent form workflow with electronic signatures
-- Document upload and secure storage
+### Clinical Workflows
+- Clinical documentation and record keeping
+- Treatment planning and tracking
+- Provider management and assignment
+- Clinical data storage and retrieval
 
-### Administrative
-- 8 user roles with 11 granular permissions
-- Comprehensive audit logging for compliance
-- Session management with Redis
-- Automated email and SMS notifications via Twilio
-- Business intelligence and reporting capabilities
+### Administrative Features
+- Admin dashboard for clinic oversight
+- User role management (admin, provider, patient)
+- Contact form handling and inquiry management
+- Reporting and analytics capabilities
+
+### Payment Processing
+- Stripe integration for payment handling
+- Payment tracking and transaction management
+- Billing and invoice generation
+
+### Security & Authentication
+- JWT-based authentication system
+- Role-based access control (RBAC)
+- Session management and timeout handling
+- CSRF protection and security middleware
 
 ## Target Users
 
 ### Primary Users
-- **Dentists**: Clinical documentation, treatment planning, dental charting
-- **Dental Hygienists**: Patient care, clinical notes, procedure tracking
-- **Front Desk Staff**: Appointment scheduling, patient registration, check-in/check-out
-- **Office Managers**: Staff management, reporting, system configuration
-- **Billing Staff**: Payment processing, insurance claims, invoicing
+- **Dental Clinic Administrators**: Manage overall clinic operations, staff, and system configuration
+- **Dental Providers**: Access patient records, manage appointments, document clinical work
+- **Patients**: Book appointments, manage personal information, view treatment history
 
-### Secondary Users
-- **Patients**: Online booking, portal access, appointment management, document viewing
-- **System Administrators**: User management, security configuration, system maintenance
-
-## Use Cases
-
-### Clinical Workflows
-- Complete patient examination with dental charting
-- Create multi-phase treatment plans with cost estimates
-- Document clinical visits using SOAP note templates
-- Track patient medical history and allergies
-- Manage prescriptions and lab orders
-
-### Administrative Workflows
-- Schedule appointments with provider and operatory availability
-- Manage patient waitlist and send automated notifications
-- Process payments and generate invoices
-- Handle insurance verification and claims
-- Generate business reports and analytics
-
-### Patient Self-Service
-- Book appointments online based on provider availability
-- Access medical records and treatment history
-- View and pay invoices
-- Complete consent forms electronically
-- Manage family member accounts
-
-## Project Status
-**Patient Management Module: 100% Complete** | Production Ready | Security Grade: A
-
-### Recent Completion (3-Week Sprint)
-- ✅ Critical security fixes (token rotation, CSRF protection, environment validation)
-- ✅ Frontend-backend integration (5-tab patient interface with inline editing)
-- ✅ Comprehensive documentation (8 guides including API, user, and admin training)
-- ✅ Security audit passed (0 critical vulnerabilities)
-- ✅ Performance optimization (load <1.2s, tab switch <0.8s, save <0.6s)
-
-### Overall Progress
-- ✅ Foundation & Security
-- ✅ Clinical Features
-- ✅ Enhanced Scheduling
-- ✅ Patient Portal
-- ✅ Patient Management Module
-- 🚧 Advanced Features (Inventory, Lab Orders, Prescriptions, Imaging)
-- 📋 Analytics & Reporting (Planned)
+### Use Cases
+- **Patient Booking**: Patients can browse available time slots and book appointments online
+- **Appointment Management**: Staff can schedule, reschedule, and cancel appointments efficiently
+- **Clinical Documentation**: Providers can document patient visits and treatment plans
+- **Administrative Oversight**: Admins can monitor clinic operations and manage resources
+- **Contact Inquiries**: Potential patients can submit inquiries through contact forms
+- **Payment Processing**: Secure payment collection for services rendered

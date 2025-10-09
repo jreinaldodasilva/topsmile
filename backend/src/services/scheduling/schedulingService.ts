@@ -686,6 +686,42 @@ class SchedulingService {
     }
 
     /**
+     * Get appointment by ID
+     */
+    async getAppointmentById(appointmentId: string, clinicId: string): Promise<IAppointment | null> {
+        try {
+            return await Appointment.findOne({ _id: appointmentId, clinic: clinicId })
+                .populate('patient', 'name phone email')
+                .populate('provider', 'name specialties')
+                .populate('appointmentType', 'name duration color category')
+                .populate('createdBy', 'name email');
+        } catch (error) {
+            console.error('Error fetching appointment:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Update appointment
+     */
+    async updateAppointment(appointmentId: string, clinicId: string, data: any): Promise<IAppointment | null> {
+        try {
+            const appointment = await Appointment.findOne({ _id: appointmentId, clinic: clinicId });
+            if (!appointment) return null;
+
+            if (data.scheduledStart) appointment.scheduledStart = data.scheduledStart;
+            if (data.scheduledEnd) appointment.scheduledEnd = data.scheduledEnd;
+            if (data.status) appointment.status = data.status;
+            if (data.notes !== undefined) appointment.notes = data.notes;
+
+            return await appointment.save();
+        } catch (error) {
+            console.error('Error updating appointment:', error);
+            return null;
+        }
+    }
+
+    /**
      * IMPROVED: Get appointments with enhanced filtering and performance
      */
     async getAppointments(

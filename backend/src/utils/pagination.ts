@@ -1,48 +1,52 @@
-// backend/src/utils/pagination.ts
-import { Model, Document, FilterQuery } from 'mongoose';
-
-export interface PaginationOptions {
-    page?: number;
-    limit?: number;
-    sort?: string;
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
-export interface PaginatedResult<T> {
-    items: T[];
+export interface PaginationResult<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
+export const parsePaginationParams = (query: any): Required<PaginationParams> => {
+  const page = Math.max(1, parseInt(query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 20));
+  const sortBy = query.sortBy || 'createdAt';
+  const sortOrder = query.sortOrder === 'asc' ? 'asc' : 'desc';
+
+  return { page, limit, sortBy, sortOrder };
+};
+
+export const buildPaginationResult = <T>(
+  data: T[],
+  total: number,
+  page: number,
+  limit: number
+): PaginationResult<T> => {
+  const pages = Math.ceil(total / limit);
+
+  return {
+    data,
     pagination: {
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-        hasNext: boolean;
-        hasPrev: boolean;
-    };
-}
+      page,
+      limit,
+      total,
+      pages,
+      hasNext: page < pages,
+      hasPrev: page > 1
+    }
+  };
+};
 
-export async function paginate<T extends Document>(
-    model: Model<T>,
-    filter: FilterQuery<T>,
-    options: PaginationOptions = {}
-): Promise<PaginatedResult<T>> {
-    const { page = 1, limit = 20, sort = '-createdAt' } = options;
-    const skip = (page - 1) * limit;
-
-    const [items, total] = await Promise.all([
-        model.find(filter).sort(sort).skip(skip).limit(limit).lean() as any,
-        model.countDocuments(filter)
-    ]);
-
-    const totalPages = Math.ceil(total / limit);
-
-    return {
-        items,
-        pagination: {
-            total,
-            page,
-            limit,
-            totalPages,
-            hasNext: page < totalPages,
-            hasPrev: page > 1
-        }
-    };
-}
+export const getPaginationSkip = (page: number, limit: number): number => {
+  return (page - 1) * limit;
+};

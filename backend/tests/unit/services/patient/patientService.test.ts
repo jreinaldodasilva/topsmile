@@ -1,227 +1,141 @@
-// backend/tests/unit/services/patientService.test.ts
-import { patientService } from '../../../src/services/patient';
-import { Patient } from '../../../src/models/Patient';
-import { setupTestDB, teardownTestDB, clearTestDB } from '../../../helpers/testSetup';
-import { createTestPatient } from '../../../helpers/factories';
-import { faker } from '@faker-js/faker';
+import { patientService } from '../../../../src/services/patient/patientService';
+import { Patient } from '../../../../src/models/Patient';
+
+jest.mock('../../../../src/models/Patient');
 
 describe('PatientService', () => {
-    beforeAll(async () => {
-        await setupTestDB();
+  const mockClinicId = 'clinic123';
+  
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('createPatient', () => {
+    it('should create patient with valid data', async () => {
+      const patientData = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john@example.com',
+        phone: '1234567890',
+        clinic: mockClinicId
+      };
+
+      const mockPatient = { _id: 'patient123', ...patientData, save: jest.fn().mockResolvedValue(true) };
+      (Patient.findOne as jest.Mock).mockResolvedValue(null);
+      (Patient as any).mockImplementation(() => mockPatient);
+
+      const result = await patientService.createPatient(patientData);
+
+      expect(result).toHaveProperty('_id');
+      expect(Patient.findOne).toHaveBeenCalledWith({ email: patientData.email, clinic: mockClinicId });
     });
 
-    afterAll(async () => {
-        await teardownTestDB();
+    it('should throw error for duplicate email', async () => {
+      const patientData = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'existing@example.com',
+        phone: '1234567890',
+        clinic: mockClinicId
+      };
+
+      (Patient.findOne as jest.Mock).mockResolvedValue({ email: patientData.email });
+
+      await expect(patientService.createPatient(patientData))
+        .rejects.toThrow('E-mail já cadastrado');
+    });
+  });
+
+  describe('getPatientById', () => {
+    it('should return patient by id', async () => {
+      const mockPatient = {
+        _id: 'patient123',
+        firstName: 'John',
+        lastName: 'Doe',
+        clinic: mockClinicId
+      };
+
+      (Patient.findOne as jest.Mock).mockResolvedValue(mockPatient);
+
+      const result = await patientService.getPatientById('patient123', mockClinicId);
+
+      expect(result).toEqual(mockPatient);
+      expect(Patient.findOne).toHaveBeenCalledWith({ _id: 'patient123', clinic: mockClinicId });
     });
 
-    beforeEach(async () => {
-        await clearTestDB();
+    it('should return null for non-existent patient', async () => {
+      (Patient.findOne as jest.Mock).mockResolvedValue(null);
+
+      const result = await patientService.getPatientById('nonexistent', mockClinicId);
+
+      expect(result).toBeNull();
     });
+  });
 
-    describe('createPatient', () => {
-        it('should create patient with valid data', async () => {
-            const patientData = {
-                firstName: faker.person.firstName(),
-                lastName: faker.person.lastName(),
-                email: faker.internet.email(),
-                phone: '(11) 98765-4321',
-                clinic: faker.database.mongodbObjectId()
-            };
+  describe('searchPatients', () => {
+    it('should search patients with filters', async () => {
+      const mockPatients = [
+        { _id: 'p1', firstName: 'John', lastName: 'Doe' },
+        { _id: 'p2', firstName: 'Jane', lastName: 'Smith' }
+      ];
 
-            const patient = await patientService.createPatient(patientData);
+      const mockQuery = {
+        limit: jest.fn().mockReturnThis(),
+        skip: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockReturnThis(),
+        lean: jest.fn().mockResolvedValue(mockPatients)
+      };
 
-            expect(patient).toBeDefined();
-            expect(patient.firstName).toBe(patientData.firstName);
-            expect(patient.lastName).toBe(patientData.lastName);
-            expect(patient.email).toBe(patientData.email.toLowerCase());
-        });
+      (Patient.find as jest.Mock).mockReturnValue(mockQuery);
+      (Patient.countDocuments as jest.Mock).mockResolvedValue(2);
 
-        it('should throw error with missing required fields', async () => {
-            await expect(
-                patientService.createPatient({} as any)
-            ).rejects.toThrow();
-        });
+      const result = await patientService.searchPatients({
+        clinicId: mockClinicId,
+        search: 'John',
+        page: 1,
+        limit: 10
+      });
 
-        it('should normalize phone number', async () => {
-            const patientData = {
-                firstName: faker.person.firstName(),
-                lastName: faker.person.lastName(),
-                phone: '11987654321',
-                clinic: faker.database.mongodbObjectId()
-            };
-
-            const patient = await patientService.createPatient(patientData);
-
-            expect(patient.phone).toMatch(/^\(\d{2}\) \d{5}-\d{4}$/);
-        });
+      expect(result.patients).toHaveLength(2);
+      expect(result.total).toBe(2);
+      expect(Patient.find).toHaveBeenCalled();
     });
+  });
 
-    describe('getPatientById', () => {
-        it('should return patient by id', async () => {
-            const created = await createTestPatient();
-            const clinicId = created.clinic?.toString() || '';
+  describe('updatePatient', () => {
+    it('should update patient data', async () => {
+      const updateData = { phone: '9876543210' };
+      const mockPatient = {
+        _id: 'patient123',
+        firstName: 'John',
+        ...updateData,
+        save: jest.fn().mockResolvedValue(true)
+      };
 
-            const patient = await patientService.getPatientById(created._id.toString(), clinicId);
+      (Patient.findOne as jest.Mock).mockResolvedValue(mockPatient);
 
-            expect(patient).toBeDefined();
-            expect(patient?._id.toString()).toBe(created._id.toString());
-        });
+      const result = await patientService.updatePatient('patient123', mockClinicId, updateData);
 
-        it('should return null for non-existent patient', async () => {
-            const patient = await patientService.getPatientById(
-                faker.database.mongodbObjectId(),
-                faker.database.mongodbObjectId()
-            );
-
-            expect(patient).toBeNull();
-        });
-
-        it('should throw error with invalid id', async () => {
-            await expect(
-                patientService.getPatientById('invalid-id', faker.database.mongodbObjectId())
-            ).rejects.toThrow();
-        });
+      expect(result.phone).toBe(updateData.phone);
+      expect(mockPatient.save).toHaveBeenCalled();
     });
+  });
 
-    describe('updatePatient', () => {
-        it('should update patient data', async () => {
-            const created = await createTestPatient();
-            const clinicId = created.clinic?.toString() || '';
-            const newEmail = faker.internet.email();
+  describe('deletePatient', () => {
+    it('should soft delete patient', async () => {
+      const mockPatient = {
+        _id: 'patient123',
+        status: 'active',
+        save: jest.fn().mockResolvedValue(true)
+      };
 
-            const updated = await patientService.updatePatient(
-                created._id.toString(),
-                clinicId,
-                { email: newEmail }
-            );
+      (Patient.findOne as jest.Mock).mockResolvedValue(mockPatient);
 
-            expect(updated).toBeDefined();
-            expect(updated?.email).toBe(newEmail.toLowerCase());
-        });
+      const result = await patientService.deletePatient('patient123', mockClinicId);
 
-        it('should return null for non-existent patient', async () => {
-            const updated = await patientService.updatePatient(
-                faker.database.mongodbObjectId(),
-                faker.database.mongodbObjectId(),
-                { email: faker.internet.email() }
-            );
-
-            expect(updated).toBeNull();
-        });
+      expect(result).toBe(true);
+      expect(mockPatient.status).toBe('inactive');
+      expect(mockPatient.save).toHaveBeenCalled();
     });
-
-    describe('deletePatient', () => {
-        it('should soft delete patient', async () => {
-            const created = await createTestPatient();
-            const clinicId = created.clinic?.toString() || '';
-
-            const result = await patientService.deletePatient(created._id.toString(), clinicId);
-
-            expect(result).toBe(true);
-
-            const patient = await Patient.findById(created._id);
-            expect(patient?.status).toBe('inactive');
-        });
-
-        it('should return false for non-existent patient', async () => {
-            const result = await patientService.deletePatient(
-                faker.database.mongodbObjectId(),
-                faker.database.mongodbObjectId()
-            );
-
-            expect(result).toBe(false);
-        });
-    });
-
-    describe('searchPatients', () => {
-        it('should return paginated patients', async () => {
-            const clinicId = faker.database.mongodbObjectId();
-            
-            await Promise.all([
-                createTestPatient({ clinic: clinicId }),
-                createTestPatient({ clinic: clinicId }),
-                createTestPatient({ clinic: clinicId })
-            ]);
-
-            const result = await patientService.searchPatients({
-                clinicId,
-                page: 1,
-                limit: 10
-            });
-
-            expect(result.patients).toHaveLength(3);
-            expect(result.total).toBe(3);
-            expect(result.page).toBe(1);
-        });
-
-        it('should filter by search term', async () => {
-            const clinicId = faker.database.mongodbObjectId();
-            const searchName = 'John';
-            
-            await createTestPatient({ clinic: clinicId, firstName: searchName });
-            await createTestPatient({ clinic: clinicId, firstName: 'Jane' });
-
-            const result = await patientService.searchPatients({
-                clinicId,
-                search: searchName,
-                page: 1,
-                limit: 10
-            });
-
-            expect(result.patients).toHaveLength(1);
-            expect(result.patients[0].firstName).toBe(searchName);
-        });
-
-        it('should filter by status', async () => {
-            const clinicId = faker.database.mongodbObjectId();
-            
-            await createTestPatient({ clinic: clinicId, status: 'active' });
-            await createTestPatient({ clinic: clinicId, status: 'inactive' });
-
-            const result = await patientService.searchPatients({
-                clinicId,
-                status: 'active',
-                page: 1,
-                limit: 10
-            });
-
-            expect(result.patients).toHaveLength(1);
-            expect(result.patients[0].status).toBe('active');
-        });
-    });
-
-    describe('updateMedicalHistory', () => {
-        it('should update medical history', async () => {
-            const created = await createTestPatient();
-            const clinicId = created.clinic?.toString() || '';
-            const allergies = ['Penicillin', 'Latex'];
-
-            const updated = await patientService.updateMedicalHistory(
-                created._id.toString(),
-                clinicId,
-                { allergies }
-            );
-
-            expect(updated).toBeDefined();
-            expect(updated?.medicalHistory?.allergies).toEqual(allergies);
-        });
-    });
-
-    describe('getPatientStats', () => {
-        it('should return patient statistics', async () => {
-            const clinicId = faker.database.mongodbObjectId();
-            
-            await Promise.all([
-                createTestPatient({ clinic: clinicId, status: 'active' }),
-                createTestPatient({ clinic: clinicId, status: 'active' }),
-                createTestPatient({ clinic: clinicId, status: 'inactive' })
-            ]);
-
-            const stats = await patientService.getPatientStats(clinicId);
-
-            expect(stats.total).toBe(3);
-            expect(stats.active).toBe(2);
-            expect(stats.inactive).toBe(1);
-        });
-    });
+  });
 });

@@ -48,6 +48,8 @@ import pinoHttp from "pino-http";
 
 import { responseWrapper } from "./middleware/normalizeResponse";
 import { auditLogger } from './middleware/auditLogger';
+import { apiVersionMiddleware } from './middleware/apiVersion';
+const compression = require('compression');
 
 
 dotenv.config();
@@ -422,11 +424,22 @@ app.use(cookieParser());
 // Apply MongoDB sanitization to all requests
 app.use(mongoSanitization);
 
+// Response compression
+app.use(compression({
+  filter: (req: Request, res: Response) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6
+}));
+
 // CSRF token endpoint
 app.get("/api/csrf-token", (req: any, res: any, next: any) => {
   csrfProtection(req, res, (err: any) => {
     if (err) return next(err);
-    res.json({ csrfToken: (req as any).csrfToken() });
+    res.json({ csrfToken: req.csrfToken() });
   });
 });
 
@@ -464,6 +477,9 @@ app.use("/api", checkDatabaseConnection);
 // Apply the response wrapper middleware
 app.use(responseWrapper);
 
+// API versioning
+app.use('/api', apiVersionMiddleware);
+
 // Apply audit logging middleware (after auth, before routes)
 app.use('/api', auditLogger);
 
@@ -479,7 +495,7 @@ app.use("/api/admin", authenticate, adminRoutes);
 app.use("/api", publicRoutes);
 
 // IMPROVED: Enhanced health check endpoints
-app.get("/api/health", (req: any, res: any) => {
+app.get("/api/health", (req: Request, res: Response) => {
   const dbStatus =
     mongoose.connection.readyState === 1 ? "connected" : "disconnected";
   const uptime = process.uptime();
@@ -507,7 +523,7 @@ app.get("/api/health", (req: any, res: any) => {
 });
 
 // IMPROVED: Comprehensive database health check
-app.get("/api/health/database", async (req: any, res: any) => {
+app.get("/api/health/database", async (req: Request, res: Response) => {
   try {
     const dbState = mongoose.connection.readyState;
     const states = {
@@ -581,7 +597,7 @@ app.get(
   "/api/health/metrics",
   authenticate,
   authorize("super_admin", "admin"),
-  async (req: any, res: any) => {
+  async (req: Request, res: Response) => {
     try {
       const memoryUsage = process.memoryUsage();
       const cpuUsage = process.cpuUsage();

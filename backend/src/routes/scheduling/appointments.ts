@@ -368,6 +368,7 @@ router.get("/", async (req: Request, res: Response) => {
       });
     }
 
+    // FIXED: Service already handles populate and lean for performance
     const appointments = await schedulingService.getAppointments(
       authReq.user!.clinicId!,
       start,
@@ -381,7 +382,8 @@ router.get("/", async (req: Request, res: Response) => {
       data: appointments,
       meta: {
         timestamp: new Date().toISOString(),
-        requestId: (authReq as any).requestId
+        requestId: (authReq as any).requestId,
+        count: appointments.length
       }
     });
   } catch (err: any) {
@@ -433,24 +435,15 @@ router.get("/", async (req: Request, res: Response) => {
 router.get("/:id", async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
   try {
-    const appointment = await Appointment.findById(authReq.params.id!)
-      .populate('patient', 'name phone email')
-      .populate('provider', 'name specialties')
-      .populate('appointmentType', 'name duration color category')
-      .populate('createdBy', 'name email');
+    const appointment = await schedulingService.getAppointmentById(
+      authReq.params.id!,
+      authReq.user!.clinicId!
+    );
 
     if (!appointment) {
       return res.status(404).json({
         success: false,
         message: 'Agendamento não encontrado'
-      });
-    }
-
-    // Check if user has access to this appointment
-    if (appointment.clinic.toString() !== authReq.user!.clinicId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Acesso negado'
       });
     }
 
@@ -557,46 +550,24 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
       });
     }
 
-    const appointment = await Appointment.findById(authReq.params.id!);
-    if (!appointment) {
+    const updateData: any = {};
+    if (authReq.body.scheduledStart) updateData.scheduledStart = new Date(authReq.body.scheduledStart);
+    if (authReq.body.scheduledEnd) updateData.scheduledEnd = new Date(authReq.body.scheduledEnd);
+    if (authReq.body.status) updateData.status = authReq.body.status;
+    if (authReq.body.notes !== undefined) updateData.notes = authReq.body.notes;
+
+    const updatedAppointment = await schedulingService.updateAppointment(
+      authReq.params.id!,
+      authReq.user!.clinicId!,
+      updateData
+    );
+
+    if (!updatedAppointment) {
       return res.status(404).json({
         success: false,
         message: 'Agendamento não encontrado'
       });
     }
-
-    // Check clinic access
-    if (appointment.clinic.toString() !== authReq.user!.clinicId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Acesso negado'
-      });
-    }
-
-    // Update fields
-    const updateFields = ['patientId', 'providerId', 'appointmentTypeId', 'scheduledStart', 'scheduledEnd', 'status', 'priority', 'notes'];
-    updateFields.forEach(field => {
-      if (authReq.body[field] !== undefined) {
-        if (field === 'scheduledStart' || field === 'scheduledEnd') {
-          (appointment as any)[field] = new Date(authReq.body[field]);
-        } else if (field === 'patientId') {
-          appointment.patient = authReq.body[field];
-        } else if (field === 'providerId') {
-          appointment.provider = authReq.body[field];
-        } else if (field === 'appointmentTypeId') {
-          appointment.appointmentType = authReq.body[field];
-        } else {
-          (appointment as any)[field] = authReq.body[field];
-        }
-      }
-    });
-
-    const updatedAppointment = await appointment.save();
-    await updatedAppointment.populate([
-      { path: 'patient', select: 'name phone email' },
-      { path: 'provider', select: 'name specialties' },
-      { path: 'appointmentType', select: 'name duration color category' }
-    ]);
 
     return res.json({
       success: true,
@@ -688,27 +659,20 @@ router.patch("/:id/status",
 
       const { status, cancellationReason } = authReq.body;
 
-      const appointment = await Appointment.findById(authReq.params.id!);
-      if (!appointment) {
-        return res.status(404).json({
-          success: false,
-          message: 'Agendamento não encontrado'
-        });
-      }
-
-      // Check clinic access
-      if (appointment.clinic.toString() !== authReq.user!.clinicId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Acesso negado'
-        });
-      }
-
       if (status === 'cancelled') {
-        const updatedAppointment = await schedulingService.cancelAppointment(
+        const result = await schedulingService.cancelAppointment(
           authReq.params.id!,
           cancellationReason || 'Cancelado pelo usuário'
         );
+        const updatedAppointment = result.data;
+        
+        if (!updatedAppointment) {
+          return res.status(404).json({
+            success: false,
+            message: 'Agendamento não encontrado'
+          });
+        }
+        
         return res.json({
           success: true,
           data: updatedAppointment,
@@ -718,14 +682,20 @@ router.patch("/:id/status",
           }
         });
       } else {
-        appointment.status = status;
-        if (status === 'checked_in') {
-          appointment.actualStart = new Date();
-        } else if (status === 'completed') {
-          appointment.actualEnd = new Date();
+        const updateData: any = { status };
+        const updatedAppointment = await schedulingService.updateAppointment(
+          authReq.params.id!,
+          authReq.user!.clinicId!,
+          updateData
+        );
+        
+        if (!updatedAppointment) {
+          return res.status(404).json({
+            success: false,
+            message: 'Agendamento não encontrado'
+          });
         }
         
-        const updatedAppointment = await appointment.save();
         return res.json({
           success: true,
           data: updatedAppointment,
@@ -857,19 +827,15 @@ router.delete("/:id",
   async (req: Request, res: Response) => {
   const authReq = req as AuthenticatedRequest;
     try {
-      const appointment = await Appointment.findById(authReq.params.id!);
+      const appointment = await schedulingService.getAppointmentById(
+        authReq.params.id!,
+        authReq.user!.clinicId!
+      );
+      
       if (!appointment) {
         return res.status(404).json({
           success: false,
           message: 'Agendamento não encontrado'
-        });
-      }
-
-      // Check clinic access
-      if (appointment.clinic.toString() !== authReq.user!.clinicId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Acesso negado'
         });
       }
 
@@ -922,25 +888,28 @@ router.get("/patient",
         });
       }
 
-      // Get appointments for this patient
-      const appointments = await Appointment.find({
+      const query: any = {
         patient: (req.patient!._id as any).toString(),
         clinic: req.patient!.clinic,
         scheduledStart: { $gte: start, $lte: end }
-      })
+      };
+
+      if (status) {
+        query.status = status;
+      }
+
+      // FIXED: Use lean() for better performance on read-only queries
+      const appointments = await Appointment.find(query)
         .populate('patient', 'name phone email')
         .populate('provider', 'name specialties')
         .populate('appointmentType', 'name duration color category')
         .populate('clinic', 'name')
         .sort({ scheduledStart: -1 })
         .limit(limitNum)
-        .skip((pageNum - 1) * limitNum);
+        .skip((pageNum - 1) * limitNum)
+        .lean();
 
-      const total = await Appointment.countDocuments({
-        patient: (req.patient!._id as any).toString(),
-        clinic: req.patient!.clinic,
-        scheduledStart: { $gte: start, $lte: end }
-      });
+      const total = await Appointment.countDocuments(query);
 
       return res.json({
         success: true,

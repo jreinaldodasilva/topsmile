@@ -3,7 +3,7 @@ import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { body, param, validationResult } from 'express-validator';
 import type { DentalChart as IDentalChart } from '@topsmile/types';
-import { DentalChart } from '../../models/DentalChart';
+import { dentalChartService } from '../../services/clinical/dentalChartService';
 
 const router: express.Router = express.Router();
 
@@ -28,17 +28,19 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             });
         }
 
-        const chart = new DentalChart({
+        const chart = await dentalChartService.createDentalChart({
             ...authReq.body,
-            clinic: authReq.user!.clinic
+            clinic: authReq.user!.clinicId!
         });
-
-        await chart.save();
 
         return res.status(201).json({
             success: true,
             message: 'Odontograma criado com sucesso',
-            data: chart
+            data: chart,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error creating dental chart:', error);
@@ -53,17 +55,16 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
     const authReq = req as AuthenticatedRequest;
     
     try {
-        const charts = await DentalChart.find({
-            patient: authReq.params.patientId,
-            clinic: authReq.user!.clinic
-        })
-        .populate('provider', 'name')
-        .sort({ chartDate: -1 })
-        .lean();
+        const patientId = authReq.params.patientId as string;
+        const charts = await dentalChartService.getDentalChartsByPatient(patientId, authReq.user!.clinicId!);
 
         return res.json({
             success: true,
-            data: charts
+            data: charts,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error fetching dental charts:', error);
@@ -78,12 +79,8 @@ router.get('/patient/:patientId/latest', param('patientId').isMongoId(), async (
     const authReq = req as AuthenticatedRequest;
     
     try {
-        const chart = await DentalChart.findOne({
-            patient: authReq.params.patientId,
-            clinic: authReq.user!.clinic
-        })
-        .populate('provider', 'name')
-        .sort({ chartDate: -1 });
+        const patientId = authReq.params.patientId as string;
+        const chart = await dentalChartService.getLatestDentalChart(patientId, authReq.user!.clinicId!);
 
         if (!chart) {
             return res.status(404).json({
@@ -94,7 +91,11 @@ router.get('/patient/:patientId/latest', param('patientId').isMongoId(), async (
 
         return res.json({
             success: true,
-            data: chart
+            data: chart,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error fetching latest dental chart:', error);
@@ -109,12 +110,8 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
     const authReq = req as AuthenticatedRequest;
     
     try {
-        const chart = await DentalChart.findOne({
-            _id: authReq.params.id,
-            clinic: authReq.user!.clinic
-        })
-        .populate('patient', 'firstName lastName')
-        .populate('provider', 'name');
+        const chartId = authReq.params.id as string;
+        const chart = await dentalChartService.getDentalChartById(chartId, authReq.user!.clinicId!);
 
         if (!chart) {
             return res.status(404).json({
@@ -125,7 +122,11 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
 
         return res.json({
             success: true,
-            data: chart
+            data: chart,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error fetching dental chart:', error);
@@ -140,11 +141,8 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
     const authReq = req as AuthenticatedRequest;
     
     try {
-        const chart = await DentalChart.findOneAndUpdate(
-            { _id: authReq.params.id, clinic: authReq.user!.clinic },
-            authReq.body,
-            { new: true, runValidators: true }
-        );
+        const chartId = authReq.params.id as string;
+        const chart = await dentalChartService.updateDentalChart(chartId, authReq.user!.clinicId!, authReq.body);
 
         if (!chart) {
             return res.status(404).json({
@@ -156,7 +154,11 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
         return res.json({
             success: true,
             message: 'Odontograma atualizado com sucesso',
-            data: chart
+            data: chart,
+            meta: {
+                timestamp: new Date().toISOString(),
+                requestId: (authReq as any).requestId
+            }
         });
     } catch (error: any) {
         console.error('Error updating dental chart:', error);

@@ -99,7 +99,11 @@ class AppointmentService extends BaseService<any> {
     return await Appointment.findOne({
       _id: appointmentId,
       clinic: clinicId
-    }).populate('patient provider appointmentType');
+    })
+      .populate('patient', 'name phone email')
+      .populate('provider', 'name specialties')
+      .populate('appointmentType', 'name duration color category')
+      .populate('createdBy', 'name email');
   }
 
   async getAppointments(clinicId: string, filters: AppointmentFilters = {}): Promise<IAppointment[]> {

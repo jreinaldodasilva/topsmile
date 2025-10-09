@@ -332,10 +332,52 @@ PatientSchema.virtual('fullName').get(function(this: any) {
   return `${this.firstName} ${this.lastName}`.trim();
 });
 
-// Optimized compound indexes
+// ADDED: Virtual for age calculation
+PatientSchema.virtual('age').get(function(this: any) {
+  if (!this.dateOfBirth) return null;
+  const today = new Date();
+  const birthDate = new Date(this.dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+});
+
+// ADDED: Static method for patient search
+PatientSchema.statics.searchPatients = function(clinicId: string, searchTerm: string, options: { limit?: number; skip?: number } = {}) {
+  const limit = options.limit || 20;
+  const skip = options.skip || 0;
+  
+  return this.find({
+    clinic: clinicId,
+    status: 'active',
+    $text: { $search: searchTerm }
+  })
+  .limit(limit)
+  .skip(skip)
+  .lean();
+};
+
+// OPTIMIZED: Compound indexes for common queries
 PatientSchema.index({ clinic: 1, status: 1, lastName: 1, firstName: 1 }, { name: 'clinic_patient_list', background: true });
 PatientSchema.index({ clinic: 1, phone: 1 }, { name: 'clinic_phone_lookup', background: true });
 PatientSchema.index({ clinic: 1, email: 1 }, { name: 'clinic_email_lookup', background: true });
 PatientSchema.index({ clinic: 1, cpf: 1 }, { name: 'clinic_cpf_lookup', background: true, sparse: true });
 
-export const Patient = mongoose.model<IPatient & Document>('Patient', PatientSchema);
+// ADDED: Text search index for patient search functionality
+PatientSchema.index(
+  { firstName: 'text', lastName: 'text', email: 'text', phone: 'text' },
+  { name: 'patient_text_search', weights: { firstName: 10, lastName: 10, email: 5, phone: 3 }, background: true }
+);
+
+// ADDED: Date of birth index for age-based queries
+PatientSchema.index({ clinic: 1, dateOfBirth: 1 }, { name: 'clinic_dob', background: true, sparse: true });
+
+// ADDED: Static method interface
+interface PatientModel extends mongoose.Model<IPatient & Document> {
+  searchPatients(clinicId: string, searchTerm: string, options?: { limit?: number; skip?: number }): Promise<any[]>;
+}
+
+export const Patient = mongoose.model<IPatient & Document, PatientModel>('Patient', PatientSchema);
