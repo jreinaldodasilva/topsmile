@@ -48,6 +48,8 @@ const enhancedRegisterValidation = [
 
     body('clinicId')
         .if(body('patientId').not().exists())
+        .notEmpty()
+        .withMessage('Clínica é obrigatória')
         .isMongoId()
         .withMessage('ID da clínica inválido'),
 

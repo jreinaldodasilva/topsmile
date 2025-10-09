@@ -278,6 +278,7 @@ ProviderSchema.pre('save', function(this: IProvider & Document, next) {
 
 // Indexes
 ProviderSchema.index({ clinic: 1, isActive: 1 });
-ProviderSchema.index({ email: 1 });
+ProviderSchema.index({ clinic: 1, specialties: 1 });
+ProviderSchema.index({ email: 1 }, { sparse: true });
 
 export const Provider = mongoose.model<IProvider & Document>('Provider', ProviderSchema);

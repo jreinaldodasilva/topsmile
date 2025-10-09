@@ -49,6 +49,9 @@ import pinoHttp from "pino-http";
 import { responseWrapper } from "./middleware/normalizeResponse";
 import { auditLogger } from './middleware/auditLogger';
 import { apiVersionMiddleware } from './middleware/apiVersion';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+
 const compression = require('compression');
 
 
@@ -390,11 +393,19 @@ const apiLimiter = createRateLimit(
   "Muitas requisições. Tente novamente em 15 minutos."
 );
 
+const refreshLimiter = createRateLimit(
+  15 * 60 * 1000, // 15 minutes
+  20, // 20 refresh attempts per 15 minutes
+  "Muitas tentativas de renovação de token. Tente novamente em 15 minutos."
+);
+
 // Apply rate limiting
 app.use("/api/contact", contactLimiter);
 app.use("/api/auth", authLimiter);
+app.use("/api/auth/refresh", refreshLimiter);
 app.use("/api/auth/forgot-password", passwordResetLimiter);
 app.use("/api/auth/reset-password", passwordResetLimiter);
+app.use("/api/patient-auth/refresh", refreshLimiter);
 app.use("/api", apiLimiter);
 
 // ADDED: Request ID tracking middleware
@@ -482,6 +493,37 @@ app.use('/api', apiVersionMiddleware);
 
 // Apply audit logging middleware (after auth, before routes)
 app.use('/api', auditLogger);
+
+// Swagger API Documentation
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'TopSmile API',
+      version: '1.0.0',
+      description: 'API documentation for TopSmile dental clinic management system'
+    },
+    servers: [
+      {
+        url: process.env.NODE_ENV === 'production' ? 'https://api.topsmile.com' : 'http://localhost:5000',
+        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
+      }
+    ],
+    components: {
+      securitySchemes: {
+        cookieAuth: {
+          type: 'apiKey',
+          in: 'cookie',
+          name: 'topsmile_access_token'
+        }
+      }
+    }
+  },
+  apis: ['./src/routes/**/*.ts']
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Mount routes
 app.use("/api/auth", authRoutes);

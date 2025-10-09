@@ -4,10 +4,20 @@ import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import './PatientRegisterPage.css';
 import type { Patient } from '@topsmile/types';
 
+interface Clinic {
+  _id: string;
+  name: string;
+  address: {
+    city: string;
+    state: string;
+  };
+}
 
 const PatientRegisterPage: React.FC = () => {
   const { register, loading, error, clearError } = usePatientAuth();
   const navigate = useNavigate();
+  const [clinics, setClinics] = useState<Clinic[]>([]);
+  const [loadingClinics, setLoadingClinics] = useState(true);
 
   const [formData, setFormData] = useState({
     patientId: '',
@@ -16,8 +26,26 @@ const PatientRegisterPage: React.FC = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    clinicId: '', // Will be set from environment or selection
+    clinicId: '',
   });
+
+  // Fetch clinics on mount
+  useEffect(() => {
+    const fetchClinics = async () => {
+      try {
+        const response = await fetch('/api/public/clinics');
+        const data = await response.json();
+        if (data.success) {
+          setClinics(data.data);
+        }
+      } catch (err) {
+        console.error('Error fetching clinics:', err);
+      } finally {
+        setLoadingClinics(false);
+      }
+    };
+    fetchClinics();
+  }, []);
 
   // Clear errors when component mounts
   useEffect(() => {
@@ -45,13 +73,18 @@ const PatientRegisterPage: React.FC = () => {
     }
 
     try {
+      if (!formData.clinicId) {
+        alert('Por favor, selecione uma clínica.');
+        return;
+      }
+
       const result = await register({
         patientId: formData.patientId || undefined,
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         password: formData.password,
-        clinicId: formData.clinicId || '507f1f77bcf86cd799439011', // Default clinic ID for now
+        clinicId: formData.clinicId,
       });
 
       if (result.success) {
@@ -71,6 +104,23 @@ const PatientRegisterPage: React.FC = () => {
         <form className="patient-register-form" onSubmit={handleSubmit}>
           {error && <div className="error-message">{error}</div>}
 
+          <label htmlFor="clinicId">Clínica *</label>
+          <select
+            id="clinicId"
+            name="clinicId"
+            required
+            value={formData.clinicId}
+            onChange={(e) => handleInputChange(e as any)}
+            disabled={loading || loadingClinics}
+          >
+            <option value="">Selecione uma clínica</option>
+            {clinics.map((clinic) => (
+              <option key={clinic._id} value={clinic._id}>
+                {clinic.name} - {clinic.address.city}/{clinic.address.state}
+              </option>
+            ))}
+          </select>
+
           <label htmlFor="patientId">ID do Paciente (Opcional)</label>
           <input
             id="patientId"
@@ -82,7 +132,7 @@ const PatientRegisterPage: React.FC = () => {
             placeholder="Digite seu ID de paciente se já possui"
           />
 
-          <label htmlFor="name">Nome Completo</label>
+          <label htmlFor="name">Nome Completo *</label>
           <input
             id="name"
             name="name"
@@ -94,7 +144,7 @@ const PatientRegisterPage: React.FC = () => {
             placeholder="Seu nome completo"
           />
 
-          <label htmlFor="phone">Telefone</label>
+          <label htmlFor="phone">Telefone *</label>
           <input
             id="phone"
             name="phone"
@@ -106,7 +156,7 @@ const PatientRegisterPage: React.FC = () => {
             placeholder="(11) 99999-9999"
           />
 
-          <label htmlFor="email">E-mail</label>
+          <label htmlFor="email">E-mail *</label>
           <input
             id="email"
             name="email"
@@ -118,7 +168,7 @@ const PatientRegisterPage: React.FC = () => {
             placeholder="seu@email.com"
           />
 
-          <label htmlFor="password">Senha</label>
+          <label htmlFor="password">Senha *</label>
           <input
             id="password"
             name="password"
@@ -130,7 +180,7 @@ const PatientRegisterPage: React.FC = () => {
             placeholder="Sua senha (mínimo 8 caracteres)"
           />
 
-          <label htmlFor="confirmPassword">Confirmar Senha</label>
+          <label htmlFor="confirmPassword">Confirmar Senha *</label>
           <input
             id="confirmPassword"
             name="confirmPassword"

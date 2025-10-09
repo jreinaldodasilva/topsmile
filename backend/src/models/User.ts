@@ -195,7 +195,8 @@ Object.assign(UserSchema.methods, authMixin.methods);
 Object.assign(UserSchema.statics, authMixin.statics);
 
 // Indexes
-UserSchema.index({ role: 1 });
-UserSchema.index({ clinic: 1 });
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ clinic: 1, role: 1 });
+UserSchema.index({ clinic: 1, isActive: 1 });
 
 export const User = mongoose.model<IUser & Document>('User', UserSchema);

@@ -1,78 +1,79 @@
 // backend/src/services/tokenBlacklistService.ts
-import { createClient } from 'redis';
+import Redis from 'ioredis';
 
 class TokenBlacklistService {
-  private client: any;
+  private redis: Redis | null = null;
   private isConnected: boolean = false;
+  private inMemoryBlacklist: Set<string> = new Set();
 
   constructor() {
     if (process.env.REDIS_URL) {
       this.initializeRedis();
+    } else {
+      console.warn('⚠️  REDIS_URL not set, using in-memory token blacklist (not suitable for production)');
     }
   }
 
   private async initializeRedis() {
     try {
-      this.client = createClient({
-        url: process.env.REDIS_URL
+      this.redis = new Redis(process.env.REDIS_URL!, {
+        retryStrategy: (times) => {
+          if (times > 3) return null;
+          return Math.min(times * 100, 3000);
+        },
+        lazyConnect: true
       });
 
-      this.client.on('error', (err: Error) => {
-        console.error('Redis Client Error:', err);
+      this.redis.on('error', (err) => {
+        console.error('Redis error:', err.message);
         this.isConnected = false;
       });
 
-      this.client.on('connect', () => {
-        console.log('✅ Token blacklist service connected to Redis');
+      this.redis.on('connect', () => {
+        console.log('✅ Token blacklist connected to Redis');
         this.isConnected = true;
       });
 
-      await this.client.connect();
+      await this.redis.connect();
     } catch (error) {
-      console.warn('Redis not available, token blacklist disabled:', error);
+      console.warn('Redis connection failed, using in-memory blacklist');
       this.isConnected = false;
     }
   }
 
   async addToBlacklist(token: string, expiresAt: Date): Promise<void> {
-    if (!this.isConnected || !this.client) {
-      console.warn('Token blacklist not available (Redis not connected)');
-      return;
-    }
-
-    try {
-      const ttl = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
-      if (ttl > 0) {
-        await this.client.setEx(`blacklist:${token}`, ttl, '1');
+    if (this.isConnected && this.redis) {
+      try {
+        const ttl = Math.floor((expiresAt.getTime() - Date.now()) / 1000);
+        if (ttl > 0) {
+          await this.redis.setex(`blacklist:${token}`, ttl, '1');
+        }
+      } catch (error) {
+        console.error('Error adding to Redis blacklist:', error);
+        this.inMemoryBlacklist.add(token);
       }
-    } catch (error) {
-      console.error('Error adding token to blacklist:', error);
+    } else {
+      this.inMemoryBlacklist.add(token);
+      setTimeout(() => this.inMemoryBlacklist.delete(token), expiresAt.getTime() - Date.now());
     }
   }
 
   async isBlacklisted(token: string): Promise<boolean> {
-    if (!this.isConnected || !this.client) {
-      return false;
+    if (this.isConnected && this.redis) {
+      try {
+        const result = await this.redis.get(`blacklist:${token}`);
+        return result === '1';
+      } catch (error) {
+        console.error('Error checking Redis blacklist:', error);
+        return this.inMemoryBlacklist.has(token);
+      }
     }
-
-    try {
-      const result = await this.client.get(`blacklist:${token}`);
-      return result !== null;
-    } catch (error) {
-      console.error('Error checking token blacklist:', error);
-      return false;
-    }
+    return this.inMemoryBlacklist.has(token);
   }
 
-  async removeFromBlacklist(token: string): Promise<void> {
-    if (!this.isConnected || !this.client) {
-      return;
-    }
-
-    try {
-      await this.client.del(`blacklist:${token}`);
-    } catch (error) {
-      console.error('Error removing token from blacklist:', error);
+  async disconnect(): Promise<void> {
+    if (this.redis) {
+      await this.redis.quit();
     }
   }
 }
