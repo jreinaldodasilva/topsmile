@@ -494,6 +494,10 @@ app.use('/api', apiVersionMiddleware);
 // Apply audit logging middleware (after auth, before routes)
 app.use('/api', auditLogger);
 
+// Version-specific routes
+import v1Routes from './routes/v1';
+app.use('/api/v1', v1Routes);
+
 // Swagger API Documentation
 const swaggerOptions = {
   definition: {
@@ -525,7 +529,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Mount routes
+// Mount routes (default to v1)
 app.use("/api/auth", authRoutes);
 app.use("/api/patient-auth", patientAuthRoutes);
 app.use("/api/clinical", authenticate, clinicalRoutes);
@@ -534,7 +538,7 @@ app.use("/api/patients", authenticate, patientRoutes);
 app.use("/api/security", authenticate, securityRoutes);
 app.use("/api/providers", providerRoutes);
 app.use("/api/admin", authenticate, adminRoutes);
-app.use("/api", publicRoutes);
+app.use("/api/public", publicRoutes);
 
 // IMPROVED: Enhanced health check endpoints
 app.get("/api/health", (req: Request, res: Response) => {

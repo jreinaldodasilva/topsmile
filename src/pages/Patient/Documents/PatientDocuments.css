@@ -1,0 +1,23 @@
+.patient-documents {
+  padding: 2rem;
+}
+
+.upload-section {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.upload-section h2 {
+  margin-top: 0;
+}
+
+.upload-section input[type="file"] {
+  margin: 1rem 0;
+}
+
+.documents-list {
+  margin-top: 2rem;
+}

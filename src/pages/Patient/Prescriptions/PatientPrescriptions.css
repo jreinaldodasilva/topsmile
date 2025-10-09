@@ -1,0 +1,39 @@
+.patient-prescriptions {
+  padding: 2rem;
+}
+
+.prescriptions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.prescription-card {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.prescription-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.prescription-header h3 {
+  margin: 0;
+}
+
+.prescription-date {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.prescription-details p {
+  margin: 0.5rem 0;
+}
