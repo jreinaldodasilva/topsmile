@@ -16,10 +16,7 @@ interface TreatmentTypeSelectorExampleProps {
     onSelect: (type: TreatmentType) => void;
 }
 
-export const TreatmentTypeSelectorExample: React.FC<TreatmentTypeSelectorExampleProps> = ({
-    clinicId,
-    onSelect
-}) => {
+export const TreatmentTypeSelectorExample: React.FC<TreatmentTypeSelectorExampleProps> = ({ clinicId, onSelect }) => {
     const { appointmentTypes, loading, error, getAppointmentTypes } = useBooking();
     const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -31,9 +28,8 @@ export const TreatmentTypeSelectorExample: React.FC<TreatmentTypeSelectorExample
     if (error) return <div>Erro: {error}</div>;
 
     const categories = ['all', ...Array.from(new Set(appointmentTypes.map(t => t.category)))];
-    const filteredTypes = selectedCategory === 'all'
-        ? appointmentTypes
-        : appointmentTypes.filter(t => t.category === selectedCategory);
+    const filteredTypes =
+        selectedCategory === 'all' ? appointmentTypes : appointmentTypes.filter(t => t.category === selectedCategory);
 
     return (
         <div className="treatment-type-selector">
@@ -53,11 +49,7 @@ export const TreatmentTypeSelectorExample: React.FC<TreatmentTypeSelectorExample
 
             <div className="types-grid">
                 {filteredTypes.map(type => (
-                    <div
-                        key={type.id}
-                        className="type-card"
-                        onClick={() => onSelect(type)}
-                    >
+                    <div key={type.id} className="type-card" onClick={() => onSelect(type)}>
                         <h4>{type.name}</h4>
                         <p className="type-description">{type.description}</p>
                         <div className="type-details">

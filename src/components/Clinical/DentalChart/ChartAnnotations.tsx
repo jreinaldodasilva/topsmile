@@ -35,7 +35,7 @@ export const ChartAnnotations: React.FC<ChartAnnotationsProps> = ({ notes = '', 
                 <div className="annotations-edit">
                     <textarea
                         value={currentNotes}
-                        onChange={(e) => setCurrentNotes(e.target.value)}
+                        onChange={e => setCurrentNotes(e.target.value)}
                         placeholder="Adicione observações gerais sobre o odontograma..."
                         rows={6}
                     />
@@ -50,11 +50,7 @@ export const ChartAnnotations: React.FC<ChartAnnotationsProps> = ({ notes = '', 
                 </div>
             ) : (
                 <div className="annotations-view">
-                    {notes ? (
-                        <p>{notes}</p>
-                    ) : (
-                        <p className="no-notes">Nenhuma anotação adicionada</p>
-                    )}
+                    {notes ? <p>{notes}</p> : <p className="no-notes">Nenhuma anotação adicionada</p>}
                 </div>
             )}
         </div>

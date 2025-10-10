@@ -44,11 +44,7 @@ const DentalChartExample: React.FC<DentalChartExampleProps> = ({ patientId }) =>
                     </div>
                 ))}
             </div>
-            {selectedTooth && (
-                <div className="tooth-details">
-                    Dente selecionado: {selectedTooth}
-                </div>
-            )}
+            {selectedTooth && <div className="tooth-details">Dente selecionado: {selectedTooth}</div>}
         </div>
     );
 };

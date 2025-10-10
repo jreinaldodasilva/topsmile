@@ -3,12 +3,7 @@ import './ConditionMarker.css';
 
 interface ConditionMarkerProps {
     toothNumber: string;
-    onAddCondition: (condition: {
-        type: string;
-        status: string;
-        surface?: string;
-        notes?: string;
-    }) => void;
+    onAddCondition: (condition: { type: string; status: string; surface?: string; notes?: string }) => void;
     onClose: () => void;
 }
 
@@ -32,11 +27,7 @@ const surfaces = [
     { value: 'L', label: 'Lingual' }
 ];
 
-export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
-    toothNumber,
-    onAddCondition,
-    onClose
-}) => {
+export const ConditionMarker: React.FC<ConditionMarkerProps> = ({ toothNumber, onAddCondition, onClose }) => {
     const [type, setType] = useState('');
     const [status, setStatus] = useState<'existing' | 'planned'>('existing');
     const [surface, setSurface] = useState('');
@@ -44,7 +35,7 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!type) return;
 
         onAddCondition({
@@ -61,16 +52,20 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
         <div className="condition-marker">
             <div className="marker-header">
                 <h4>Marcar Condição - Dente {toothNumber}</h4>
-                <button className="close-btn" onClick={onClose}>×</button>
+                <button className="close-btn" onClick={onClose}>
+                    ×
+                </button>
             </div>
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Tipo de Condição</label>
-                    <select value={type} onChange={(e) => setType(e.target.value)} required>
+                    <select value={type} onChange={e => setType(e.target.value)} required>
                         <option value="">Selecione</option>
                         {conditionTypes.map(ct => (
-                            <option key={ct.value} value={ct.value}>{ct.label}</option>
+                            <option key={ct.value} value={ct.value}>
+                                {ct.label}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -83,7 +78,7 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
                                 type="radio"
                                 value="existing"
                                 checked={status === 'existing'}
-                                onChange={(e) => setStatus(e.target.value as 'existing')}
+                                onChange={e => setStatus(e.target.value as 'existing')}
                             />
                             Existente
                         </label>
@@ -92,7 +87,7 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
                                 type="radio"
                                 value="planned"
                                 checked={status === 'planned'}
-                                onChange={(e) => setStatus(e.target.value as 'planned')}
+                                onChange={e => setStatus(e.target.value as 'planned')}
                             />
                             Planejado
                         </label>
@@ -101,10 +96,12 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
 
                 <div className="form-group">
                     <label>Superfície (opcional)</label>
-                    <select value={surface} onChange={(e) => setSurface(e.target.value)}>
+                    <select value={surface} onChange={e => setSurface(e.target.value)}>
                         <option value="">Nenhuma</option>
                         {surfaces.map(s => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
+                            <option key={s.value} value={s.value}>
+                                {s.label}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -113,14 +110,16 @@ export const ConditionMarker: React.FC<ConditionMarkerProps> = ({
                     <label>Observações (opcional)</label>
                     <textarea
                         value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
+                        onChange={e => setNotes(e.target.value)}
                         rows={3}
                         placeholder="Adicione observações..."
                     />
                 </div>
 
                 <div className="form-actions">
-                    <button type="button" onClick={onClose}>Cancelar</button>
+                    <button type="button" onClick={onClose}>
+                        Cancelar
+                    </button>
                     <button type="submit">Adicionar</button>
                 </div>
             </form>

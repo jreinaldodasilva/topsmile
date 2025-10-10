@@ -21,23 +21,21 @@ export const useBooking = () => {
         }
     }, []);
 
-    const getAvailableSlots = useCallback(async (params: {
-        clinicId: string;
-        appointmentTypeId: string;
-        date: string;
-        providerId?: string;
-    }) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await bookingService.getAvailableSlots(params);
-            setAvailableSlots(response.data);
-        } catch (err: any) {
-            setError(err.message || 'Erro ao buscar horários disponíveis');
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const getAvailableSlots = useCallback(
+        async (params: { clinicId: string; appointmentTypeId: string; date: string; providerId?: string }) => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await bookingService.getAvailableSlots(params);
+                setAvailableSlots(response.data);
+            } catch (err: any) {
+                setError(err.message || 'Erro ao buscar horários disponíveis');
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
 
     const createBooking = useCallback(async (data: any) => {
         setLoading(true);

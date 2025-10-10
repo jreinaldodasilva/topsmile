@@ -7,52 +7,51 @@ import ErrorBoundary from '../../components/ErrorBoundary/ErrorBoundary';
 import './ContactManagement.css';
 import type { Contact } from '@topsmile/types';
 
-
 const ContactManagement: React.FC = () => {
-  return (
-    <div className="contact-management-page">
-      <EnhancedHeader />
+    return (
+        <div className="contact-management-page">
+            <EnhancedHeader />
 
-      <main className="contact-management-main">
-        <div className="container">
-          {/* Page Header */}
-          <section className="page-header">
-            <div className="header-content">
-              <div className="header-info">
-                <h1 className="page-title">Gerenciamento de Contatos</h1>
-                <p className="page-subtitle">
-                  Gerencie todos os contatos e leads da sua clínica odontológica
-                </p>
-              </div>
-              <div className="header-stats">
-                <div className="stat-item">
-                  <span className="stat-number">1,247</span>
-                  <span className="stat-label">Total de Contatos</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">89</span>
-                  <span className="stat-label">Novos Esta Semana</span>
-                </div>
-                <div className="stat-item">
-                  <span className="stat-number">23%</span>
-                  <span className="stat-label">Taxa de Conversão</span>
-                </div>
-              </div>
-            </div>
-          </section>
+            <main className="contact-management-main">
+                <div className="container">
+                    {/* Page Header */}
+                    <section className="page-header">
+                        <div className="header-content">
+                            <div className="header-info">
+                                <h1 className="page-title">Gerenciamento de Contatos</h1>
+                                <p className="page-subtitle">
+                                    Gerencie todos os contatos e leads da sua clínica odontológica
+                                </p>
+                            </div>
+                            <div className="header-stats">
+                                <div className="stat-item">
+                                    <span className="stat-number">1,247</span>
+                                    <span className="stat-label">Total de Contatos</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-number">89</span>
+                                    <span className="stat-label">Novos Esta Semana</span>
+                                </div>
+                                <div className="stat-item">
+                                    <span className="stat-number">23%</span>
+                                    <span className="stat-label">Taxa de Conversão</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
 
-          {/* Contact List Section */}
-          <section className="contact-list-section">
-            <ErrorBoundary level="component" context="contact-list">
-              <ContactList />
-            </ErrorBoundary>
-          </section>
+                    {/* Contact List Section */}
+                    <section className="contact-list-section">
+                        <ErrorBoundary level="component" context="contact-list">
+                            <ContactList />
+                        </ErrorBoundary>
+                    </section>
+                </div>
+            </main>
+
+            <Footer />
         </div>
-      </main>
-
-      <Footer />
-    </div>
-  );
+    );
 };
 
 export default ContactManagement;

@@ -7,7 +7,7 @@ export const usePerformanceMonitor = (componentName: string) => {
 
     useEffect(() => {
         renderCount.current += 1;
-        
+
         if (renderCount.current === 1) {
             const mountDuration = performance.now() - mountTime.current;
             if (mountDuration > 100) {

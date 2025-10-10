@@ -49,7 +49,13 @@ const LoginFormExample: React.FC = () => {
         console.log('Login:', values);
     };
 
-    const { values, errors, isSubmitting, handleChange, handleSubmit: onSubmit } = useForm({
+    const {
+        values,
+        errors,
+        isSubmitting,
+        handleChange,
+        handleSubmit: onSubmit
+    } = useForm({
         initialValues: { email: '', password: '' },
         validate,
         onSubmit: handleSubmit

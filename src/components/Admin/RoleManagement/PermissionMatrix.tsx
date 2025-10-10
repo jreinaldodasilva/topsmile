@@ -41,16 +41,14 @@ const roleLabels: Record<string, string> = {
 };
 
 export const PermissionMatrix: React.FC<PermissionMatrixProps> = ({ rolePermissions }) => {
-    const allPermissions = Array.from(
-        new Set(Object.values(rolePermissions).flat())
-    ).sort();
+    const allPermissions = Array.from(new Set(Object.values(rolePermissions).flat())).sort();
 
     const roles = Object.keys(rolePermissions);
 
     return (
         <div className="permission-matrix">
             <h3>Matriz de Permissões</h3>
-            
+
             <div className="matrix-container">
                 <table>
                     <thead>
@@ -64,9 +62,7 @@ export const PermissionMatrix: React.FC<PermissionMatrixProps> = ({ rolePermissi
                     <tbody>
                         {allPermissions.map(permission => (
                             <tr key={permission}>
-                                <td className="permission-label">
-                                    {permissionLabels[permission] || permission}
-                                </td>
+                                <td className="permission-label">{permissionLabels[permission] || permission}</td>
                                 {roles.map(role => (
                                     <td key={`${role}-${permission}`} className="permission-cell">
                                         {rolePermissions[role]?.includes(permission) ? (

@@ -1,48 +1,48 @@
 .time-slot-picker {
-  padding: 20px;
+    padding: 20px;
 }
 
 .time-slot-picker h3 {
-  margin: 0 0 20px 0;
-  font-size: 24px;
+    margin: 0 0 20px 0;
+    font-size: 24px;
 }
 
 .loading,
 .no-slots {
-  text-align: center;
-  padding: 40px 20px;
-  color: #666;
-  font-size: 16px;
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 16px;
 }
 
 .provider-slots {
-  margin-bottom: 24px;
+    margin-bottom: 24px;
 }
 
 .provider-slots h4 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  color: #333;
+    margin: 0 0 12px 0;
+    font-size: 18px;
+    color: #333;
 }
 
 .slots-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
 }
 
 .slot-btn {
-  padding: 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  background: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .slot-btn:hover {
-  border-color: #2196f3;
-  background: #e3f2fd;
+    border-color: #2196f3;
+    background: #e3f2fd;
 }

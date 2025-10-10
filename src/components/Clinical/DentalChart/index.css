@@ -31,7 +31,7 @@
     color: #555;
 }
 
-.numbering-toggle input[type="radio"] {
+.numbering-toggle input[type='radio'] {
     cursor: pointer;
 }
 

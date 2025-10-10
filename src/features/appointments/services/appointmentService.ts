@@ -48,11 +48,20 @@ class AppointmentService extends BaseApiService {
         return this.patch(`${this.endpoint}/${id}`, data);
     }
 
-    async updateStatus(id: string, status: string, cancellationReason?: string): Promise<{ success: boolean; data: Appointment }> {
+    async updateStatus(
+        id: string,
+        status: string,
+        cancellationReason?: string
+    ): Promise<{ success: boolean; data: Appointment }> {
         return this.patch(`${this.endpoint}/${id}/status`, { status, cancellationReason });
     }
 
-    async reschedule(id: string, newStart: string, reason: string, rescheduleBy: 'patient' | 'clinic'): Promise<{ success: boolean; data: Appointment }> {
+    async reschedule(
+        id: string,
+        newStart: string,
+        reason: string,
+        rescheduleBy: 'patient' | 'clinic'
+    ): Promise<{ success: boolean; data: Appointment }> {
         return this.patch(`${this.endpoint}/${id}/reschedule`, { newStart, reason, rescheduleBy });
     }
 
@@ -60,7 +69,11 @@ class AppointmentService extends BaseApiService {
         return super.delete(`${this.endpoint}/${id}`);
     }
 
-    async getProviderAvailability(providerId: string, date: string, appointmentTypeId: string): Promise<{ success: boolean; data: any[] }> {
+    async getProviderAvailability(
+        providerId: string,
+        date: string,
+        appointmentTypeId: string
+    ): Promise<{ success: boolean; data: any[] }> {
         return this.get(`${this.endpoint}/providers/${providerId}/availability`, { date, appointmentTypeId });
     }
 }

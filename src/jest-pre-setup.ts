@@ -7,13 +7,13 @@ global.TextEncoder = TextEncoder;
 global.TextDecoder = TextDecoder;
 
 (global as any).BroadcastChannel = function () {
-  return {
-    postMessage: () => {},
-    close: () => {},
-    onmessage: () => {},
-    onmessageerror: () => {},
-    addEventListener: () => {},
-    removeEventListener: () => {},
-    dispatchEvent: () => {},
-  };
+    return {
+        postMessage: () => {},
+        close: () => {},
+        onmessage: () => {},
+        onmessageerror: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => {}
+    };
 };

@@ -32,20 +32,23 @@ export function useBaseAuth<T extends BaseAuthUser>(config: AuthConfig<T>) {
 
     const isAuthenticated = !loading && !!user;
 
-    const handleLogout = useCallback(async (reason?: string) => {
-        try {
-            setUser(null);
-            setShowTimeoutWarning(false);
-            await config.performLogout();
-            if (reason) {
-                setError(reason);
+    const handleLogout = useCallback(
+        async (reason?: string) => {
+            try {
+                setUser(null);
+                setShowTimeoutWarning(false);
+                await config.performLogout();
+                if (reason) {
+                    setError(reason);
+                }
+                navigate(config.loginRoute);
+            } catch (err) {
+                console.error('Logout error:', err);
+                navigate(config.loginRoute);
             }
-            navigate(config.loginRoute);
-        } catch (err) {
-            console.error('Logout error:', err);
-            navigate(config.loginRoute);
-        }
-    }, [navigate, config]);
+        },
+        [navigate, config]
+    );
 
     // Session timeout
     const { resetTimer } = useSessionTimeout({
@@ -68,7 +71,7 @@ export function useBaseAuth<T extends BaseAuthUser>(config: AuthConfig<T>) {
         const verifyAuth = async () => {
             try {
                 const response = await config.checkAuth();
-                
+
                 if (!isMountedRef.current) return;
 
                 if (response.success && response.data) {
@@ -91,37 +94,43 @@ export function useBaseAuth<T extends BaseAuthUser>(config: AuthConfig<T>) {
         return () => {
             isMountedRef.current = false;
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const login = useCallback(async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
-        try {
-            setError(null);
-            setLoading(true);
+    const login = useCallback(
+        async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+            try {
+                setError(null);
+                setLoading(true);
 
-            const response = await config.performLogin(email, password);
+                const response = await config.performLogin(email, password);
 
-            if (response.success && response.data) {
-                setUser(response.data.user || response.data.patientUser);
-                navigate(config.dashboardRoute);
-                return { success: true };
-            } else {
-                const errorMsg = response.message || 'E-mail ou senha inválidos';
+                if (response.success && response.data) {
+                    setUser(response.data.user || response.data.patientUser);
+                    navigate(config.dashboardRoute);
+                    return { success: true };
+                } else {
+                    const errorMsg = response.message || 'E-mail ou senha inválidos';
+                    setError(errorMsg);
+                    return { success: false, message: errorMsg };
+                }
+            } catch (err: any) {
+                const errorMsg = err.message || 'Erro de rede. Tente novamente.';
                 setError(errorMsg);
                 return { success: false, message: errorMsg };
+            } finally {
+                setLoading(false);
             }
-        } catch (err: any) {
-            const errorMsg = err.message || 'Erro de rede. Tente novamente.';
-            setError(errorMsg);
-            return { success: false, message: errorMsg };
-        } finally {
-            setLoading(false);
-        }
-    }, [navigate, config]);
+        },
+        [navigate, config]
+    );
 
-    const logout = useCallback(async (reason?: string) => {
-        await handleLogout(reason);
-    }, [handleLogout]);
+    const logout = useCallback(
+        async (reason?: string) => {
+            await handleLogout(reason);
+        },
+        [handleLogout]
+    );
 
     const clearError = useCallback(() => {
         setError(null);
@@ -161,7 +170,7 @@ export function useBaseAuth<T extends BaseAuthUser>(config: AuthConfig<T>) {
                 toast.warning(error);
                 setError(null);
             }, 100);
-            
+
             return () => clearTimeout(timer);
         }
     }, [error, loading, isAuthenticated]);

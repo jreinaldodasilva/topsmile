@@ -5,6 +5,7 @@ This directory contains centralized lazy-loaded route imports organized by featu
 ## Chunk Strategy
 
 Routes are automatically split into separate chunks by webpack:
+
 - **Public routes**: Home, Features, Pricing, Contact
 - **Auth routes**: Login, Register, Password reset
 - **Patient routes**: Patient portal pages
@@ -15,7 +16,7 @@ Routes are automatically split into separate chunks by webpack:
 ```tsx
 import * as Routes from './routes';
 
-<Route path="/" element={<Routes.Home />} />
+<Route path="/" element={<Routes.Home />} />;
 ```
 
 ## Benefits
@@ -28,6 +29,7 @@ import * as Routes from './routes';
 ## Preloading
 
 Use preload functions from `utils/lazyImports.ts`:
+
 - `preloadCriticalComponents()`: Login pages
 - `preloadAdminComponents()`: Admin pages after admin login
 - `preloadPatientComponents()`: Patient pages after patient login

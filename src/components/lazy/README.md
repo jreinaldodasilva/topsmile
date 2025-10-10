@@ -9,8 +9,8 @@ import { LazyWrapper } from '../common';
 import { DentalChartView } from '../lazy';
 
 <LazyWrapper>
-  <DentalChartView />
-</LazyWrapper>
+    <DentalChartView />
+</LazyWrapper>;
 ```
 
 ## Components

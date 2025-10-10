@@ -9,11 +9,7 @@ interface CalendarExampleProps {
     onAppointmentClick: (appointment: any) => void;
 }
 
-export const CalendarExample: React.FC<CalendarExampleProps> = ({
-    clinicId,
-    date,
-    onAppointmentClick
-}) => {
+export const CalendarExample: React.FC<CalendarExampleProps> = ({ clinicId, date, onAppointmentClick }) => {
     const { appointments, loading, error, getAppointments } = useAppointments();
     const { providers, getProviders } = useProviders();
     const [selectedProvider, setSelectedProvider] = useState<string>('all');
@@ -50,11 +46,7 @@ export const CalendarExample: React.FC<CalendarExampleProps> = ({
 
     const getPriorityBadge = (priority?: string) => {
         if (!priority || priority === 'routine') return null;
-        return (
-            <span className={`priority-badge ${priority}`}>
-                {priority === 'urgent' ? '⚡' : '🚨'}
-            </span>
-        );
+        return <span className={`priority-badge ${priority}`}>{priority === 'urgent' ? '⚡' : '🚨'}</span>;
     };
 
     const hours = Array.from({ length: 13 }, (_, i) => i + 7);
@@ -79,12 +71,14 @@ export const CalendarExample: React.FC<CalendarExampleProps> = ({
             <div className="calendar-header">
                 <select
                     value={selectedProvider}
-                    onChange={(e) => setSelectedProvider(e.target.value)}
+                    onChange={e => setSelectedProvider(e.target.value)}
                     className="provider-filter"
                 >
                     <option value="all">Todos os Profissionais</option>
                     {providers.map(p => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
+                        <option key={p.id} value={p.id}>
+                            {p.name}
+                        </option>
                     ))}
                 </select>
             </div>

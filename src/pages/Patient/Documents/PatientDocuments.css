@@ -1,88 +1,88 @@
 .patient-documents {
-  min-height: 100vh;
-  background: #f9fafb;
+    min-height: 100vh;
+    background: #f9fafb;
 }
 
 .documents-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
 .documents-header h1 {
-  font-size: 2rem;
-  color: #1f2937;
-  margin-bottom: 2rem;
+    font-size: 2rem;
+    color: #1f2937;
+    margin-bottom: 2rem;
 }
 
 .documents-main {
-  display: grid;
-  gap: 2rem;
+    display: grid;
+    gap: 2rem;
 }
 
 .document-section h2 {
-  font-size: 1.5rem;
-  color: #1f2937;
-  margin-bottom: 1rem;
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
 }
 
 .documents-list {
-  display: grid;
-  gap: 1rem;
+    display: grid;
+    gap: 1rem;
 }
 
 .document-card {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .document-icon {
-  font-size: 2rem;
+    font-size: 2rem;
 }
 
 .document-info {
-  flex: 1;
+    flex: 1;
 }
 
 .document-info h3 {
-  margin: 0 0 0.5rem 0;
-  color: #1f2937;
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
 }
 
 .document-info p {
-  margin: 0.25rem 0;
-  color: #6b7280;
-  font-size: 0.875rem;
+    margin: 0.25rem 0;
+    color: #6b7280;
+    font-size: 0.875rem;
 }
 
 .version {
-  font-size: 0.75rem;
-  color: #9ca3af;
+    font-size: 0.75rem;
+    color: #9ca3af;
 }
 
 .view-btn {
-  padding: 0.5rem 1rem;
-  background: #3b82f6;
-  color: white;
-  text-decoration: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
 }
 
 .view-btn:hover {
-  background: #2563eb;
+    background: #2563eb;
 }
 
 .empty-state {
-  color: #6b7280;
-  font-style: italic;
-  padding: 2rem;
-  text-align: center;
-  background: white;
-  border-radius: 12px;
+    color: #6b7280;
+    font-style: italic;
+    padding: 2rem;
+    text-align: center;
+    background: white;
+    border-radius: 12px;
 }

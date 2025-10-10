@@ -2,19 +2,19 @@
 type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 interface ToastOptions {
-  message: string;
-  type?: ToastType;
-  duration?: number;
+    message: string;
+    type?: ToastType;
+    duration?: number;
 }
 
 class ToastManager {
-  private container: HTMLDivElement | null = null;
+    private container: HTMLDivElement | null = null;
 
-  private ensureContainer() {
-    if (!this.container) {
-      this.container = document.createElement('div');
-      this.container.id = 'toast-container';
-      this.container.style.cssText = `
+    private ensureContainer() {
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.id = 'toast-container';
+            this.container.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -23,23 +23,23 @@ class ToastManager {
         flex-direction: column;
         gap: 10px;
       `;
-      document.body.appendChild(this.container);
+            document.body.appendChild(this.container);
+        }
+        return this.container;
     }
-    return this.container;
-  }
 
-  show({ message, type = 'info', duration = 5000 }: ToastOptions) {
-    const container = this.ensureContainer();
-    const toast = document.createElement('div');
-    
-    const colors = {
-      success: '#10b981',
-      error: '#ef4444',
-      warning: '#f59e0b',
-      info: '#3b82f6'
-    };
+    show({ message, type = 'info', duration = 5000 }: ToastOptions) {
+        const container = this.ensureContainer();
+        const toast = document.createElement('div');
 
-    toast.style.cssText = `
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+
+        toast.style.cssText = `
       background: white;
       border-left: 4px solid ${colors[type]};
       padding: 16px 20px;
@@ -51,33 +51,33 @@ class ToastManager {
       font-size: 14px;
       color: #1f2937;
     `;
-    
-    toast.textContent = message;
-    container.appendChild(toast);
 
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s ease-in';
-      setTimeout(() => {
-        container.removeChild(toast);
-      }, 300);
-    }, duration);
-  }
+        toast.textContent = message;
+        container.appendChild(toast);
 
-  success(message: string, duration?: number) {
-    this.show({ message, type: 'success', duration });
-  }
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                container.removeChild(toast);
+            }, 300);
+        }, duration);
+    }
 
-  error(message: string, duration?: number) {
-    this.show({ message, type: 'error', duration });
-  }
+    success(message: string, duration?: number) {
+        this.show({ message, type: 'success', duration });
+    }
 
-  warning(message: string, duration?: number) {
-    this.show({ message, type: 'warning', duration });
-  }
+    error(message: string, duration?: number) {
+        this.show({ message, type: 'error', duration });
+    }
 
-  info(message: string, duration?: number) {
-    this.show({ message, type: 'info', duration });
-  }
+    warning(message: string, duration?: number) {
+        this.show({ message, type: 'warning', duration });
+    }
+
+    info(message: string, duration?: number) {
+        this.show({ message, type: 'info', duration });
+    }
 }
 
 // Add animations

@@ -8,16 +8,10 @@ interface DashboardLayoutProps {
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
     return (
         <div className="dashboard-layout">
-            <aside className="dashboard-sidebar">
-                {/* Sidebar navigation */}
-            </aside>
+            <aside className="dashboard-sidebar">{/* Sidebar navigation */}</aside>
             <div className="dashboard-main">
-                <header className="dashboard-header">
-                    {/* Header with user menu */}
-                </header>
-                <main className="dashboard-content">
-                    {children}
-                </main>
+                <header className="dashboard-header">{/* Header with user menu */}</header>
+                <main className="dashboard-content">{children}</main>
             </div>
         </div>
     );

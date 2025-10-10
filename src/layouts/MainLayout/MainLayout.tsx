@@ -8,15 +8,9 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     return (
         <div className="main-layout">
-            <header className="main-header">
-                {/* Header content */}
-            </header>
-            <main className="main-content">
-                {children}
-            </main>
-            <footer className="main-footer">
-                {/* Footer content */}
-            </footer>
+            <header className="main-header">{/* Header content */}</header>
+            <main className="main-content">{children}</main>
+            <footer className="main-footer">{/* Footer content */}</footer>
         </div>
     );
 };

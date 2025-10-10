@@ -41,7 +41,11 @@ class TreatmentPlanService extends BaseApiService {
         return this.patch(`${this.endpoint}/${id}/accept`, { acceptedBy });
     }
 
-    async updatePhaseStatus(id: string, phaseNumber: number, status: string): Promise<{ success: boolean; data: TreatmentPlan }> {
+    async updatePhaseStatus(
+        id: string,
+        phaseNumber: number,
+        status: string
+    ): Promise<{ success: boolean; data: TreatmentPlan }> {
         return this.patch(`${this.endpoint}/${id}/phase/${phaseNumber}`, { status });
     }
 }

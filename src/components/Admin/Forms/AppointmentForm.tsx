@@ -6,588 +6,637 @@ import './AppointmentForm.css';
 import type { Patient, Provider, AppointmentType } from '@topsmile/types';
 import { RecurringAppointmentForm } from './RecurringAppointmentForm';
 
-
 interface AppointmentFormProps {
-  appointment?: Appointment | null;
-  onSave: (appointment: Appointment) => void;
-  onCancel: () => void;
-  loading?: boolean;
-  preselectedPatient?: Patient;
-  preselectedProvider?: Provider;
-  preselectedDate?: string;
-  preselectedTime?: string;
+    appointment?: Appointment | null;
+    onSave: (appointment: Appointment) => void;
+    onCancel: () => void;
+    loading?: boolean;
+    preselectedPatient?: Patient;
+    preselectedProvider?: Provider;
+    preselectedDate?: string;
+    preselectedTime?: string;
 }
 
 interface AppointmentFormData {
-  patientId: string;
-  providerId: string;
-  appointmentTypeId: string;
-  scheduledStart: string;
-  scheduledEnd: string;
-  status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
-  priority: 'routine' | 'urgent' | 'emergency';
-  notes: string;
-  operatory: string;
-  room: string;
-  colorCode: string;
-  equipment: string[];
-  billingStatus: 'pending' | 'billed' | 'paid' | 'insurance_pending';
-  billingAmount: number;
-  isRecurring: boolean;
-  recurringPattern?: {
-    frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
-    interval: number;
-    endDate?: Date;
-    occurrences?: number;
-  };
+    patientId: string;
+    providerId: string;
+    appointmentTypeId: string;
+    scheduledStart: string;
+    scheduledEnd: string;
+    status: 'scheduled' | 'confirmed' | 'checked_in' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+    priority: 'routine' | 'urgent' | 'emergency';
+    notes: string;
+    operatory: string;
+    room: string;
+    colorCode: string;
+    equipment: string[];
+    billingStatus: 'pending' | 'billed' | 'paid' | 'insurance_pending';
+    billingAmount: number;
+    isRecurring: boolean;
+    recurringPattern?: {
+        frequency: 'daily' | 'weekly' | 'biweekly' | 'monthly';
+        interval: number;
+        endDate?: Date;
+        occurrences?: number;
+    };
 }
 
 const AppointmentForm: React.FC<AppointmentFormProps> = ({
-  appointment,
-  onSave,
-  onCancel,
-  loading = false,
-  preselectedPatient,
-  preselectedProvider,
-  preselectedDate,
-  preselectedTime
+    appointment,
+    onSave,
+    onCancel,
+    loading = false,
+    preselectedPatient,
+    preselectedProvider,
+    preselectedDate,
+    preselectedTime
 }) => {
-  const [formData, setFormData] = useState<AppointmentFormData>({
-    patientId: '',
-    providerId: '',
-    appointmentTypeId: '',
-    scheduledStart: '',
-    scheduledEnd: '',
-    status: 'scheduled',
-    priority: 'routine',
-    notes: '',
-    operatory: '',
-    room: '',
-    colorCode: '#3182ce',
-    equipment: [],
-    billingStatus: 'pending',
-    billingAmount: 0,
-    isRecurring: false
-  });
-
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [providers, setProviders] = useState<Provider[]>([]);
-  const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([]);
-  const [operatories, setOperatories] = useState<any[]>([]);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [loadingData, setLoadingData] = useState(true);
-
-  // Load initial data
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        setLoadingData(true);
-        
-        const [patientsResult, providersResult, operatoriesResult] = await Promise.all([
-          apiService.patients.getAll({ isActive: true, limit: 100 }),
-          apiService.providers.getAll({ isActive: true }),
-          apiService.operatories.getAll().catch(() => ({ success: false, data: [] }))
-        ]);
-
-        if (patientsResult.success && patientsResult.data) {
-          setPatients(Array.isArray(patientsResult.data) ? patientsResult.data : []);
-        }
-
-        if (providersResult.success && providersResult.data) {
-          const providersData = (providersResult as any).data;
-          setProviders(Array.isArray(providersData) ? providersData : providersData?.providers || []);
-        }
-
-        if (operatoriesResult.success && operatoriesResult.data) {
-          setOperatories(Array.isArray(operatoriesResult.data) ? operatoriesResult.data : []);
-        }
-
-        // For now, we'll use a default set of appointment types
-        setAppointmentTypes([
-          { _id: '1', name: 'Consulta', duration: 30, price: 100, color: '#3182ce', category: 'consultation', isActive: true, clinic: '', allowOnlineBooking: true },
-          { _id: '2', name: 'Limpeza', duration: 45, price: 80, color: '#10b981', category: 'cleaning', isActive: true, clinic: '', allowOnlineBooking: true },
-          { _id: '3', name: 'Tratamento de Canal', duration: 90, price: 300, color: '#f59e0b', category: 'treatment', isActive: true, clinic: '', allowOnlineBooking: true },
-          { _id: '4', name: 'Extração', duration: 60, price: 150, color: '#ef4444', category: 'surgery', isActive: true, clinic: '', allowOnlineBooking: true },
-          { _id: '5', name: 'Implante', duration: 120, price: 800, color: '#8b5cf6', category: 'surgery', isActive: true, clinic: '', allowOnlineBooking: true }
-        ]);
-
-      } catch (error) {
-        console.error('Error loading form data:', error);
-      } finally {
-        setLoadingData(false);
-      }
-    };
-
-    loadData();
-  }, []);
-
-  // Set initial form data
-  useEffect(() => {
-    if (appointment) {
-      const start = appointment.scheduledStart ? new Date(appointment.scheduledStart) : null;
-      const end = appointment.scheduledEnd ? new Date(appointment.scheduledEnd) : null;
-      
-      setFormData({
-        patientId: (typeof appointment.patient === 'object' && appointment.patient?._id) ? appointment.patient._id : (typeof appointment.patient === 'string' ? appointment.patient : ''),
-        providerId: (typeof appointment.provider === 'object' && appointment.provider?._id) ? appointment.provider._id : (typeof appointment.provider === 'string' ? appointment.provider : ''),
-        appointmentTypeId: (typeof appointment.appointmentType === 'object' && appointment.appointmentType?._id) ? appointment.appointmentType._id : (typeof appointment.appointmentType === 'string' ? appointment.appointmentType : ''),
-        scheduledStart: start ? start.toISOString().slice(0, 16) : '',
-        scheduledEnd: end ? end.toISOString().slice(0, 16) : '',
-        status: appointment.status || 'scheduled',
-        priority: appointment.priority || 'routine',
-        notes: appointment.notes || '',
-        operatory: appointment.operatory || '',
-        room: appointment.room || '',
-        colorCode: appointment.colorCode || '#3182ce',
-        equipment: appointment.equipment || [],
-        billingStatus: (appointment.billingStatus === 'insurance_approved' || appointment.billingStatus === 'insurance_denied' ? 'insurance_pending' : appointment.billingStatus) || 'pending',
-        billingAmount: appointment.billingAmount || 0,
-        isRecurring: appointment.isRecurring || false,
-        recurringPattern: appointment.recurringPattern && appointment.recurringPattern.frequency && typeof appointment.recurringPattern.interval === 'number' ? {
-          frequency: appointment.recurringPattern.frequency,
-          interval: appointment.recurringPattern.interval,
-          endDate: appointment.recurringPattern.endDate,
-          occurrences: appointment.recurringPattern.occurrences
-        } : undefined
-      });
-    } else {
-      // Set preselected values
-      const now = new Date();
-      const defaultStart = preselectedDate && preselectedTime 
-        ? `${preselectedDate}T${preselectedTime}`
-        : now.toISOString().slice(0, 16);
-      
-      const defaultEnd = new Date(defaultStart);
-      defaultEnd.setMinutes(defaultEnd.getMinutes() + 30);
-
-      setFormData(prev => ({
-        ...prev,
-        patientId: preselectedPatient?._id || '',
-        providerId: preselectedProvider?._id || '',
-        scheduledStart: defaultStart,
-        scheduledEnd: defaultEnd.toISOString().slice(0, 16)
-      }));
-    }
-  }, [appointment, preselectedPatient, preselectedProvider, preselectedDate, preselectedTime]);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-
-    setFormData(prev => {
-      const newFormData = { ...prev, [name]: value };
-
-      if (name === 'appointmentTypeId' || name === 'scheduledStart') {
-        const typeId = name === 'appointmentTypeId' ? value : newFormData.appointmentTypeId;
-        const startTime = name === 'scheduledStart' ? value : newFormData.scheduledStart;
-
-        const selectedType = appointmentTypes.find(type => type._id === typeId);
-
-        if (selectedType && startTime) {
-          const start = new Date(startTime);
-          if (!isNaN(start.getTime())) { // Check if date is valid
-            const end = new Date(start);
-            end.setMinutes(end.getMinutes() + (selectedType.duration || 30));
-            newFormData.scheduledEnd = end.toISOString().slice(0, 16);
-          }
-        }
-      }
-      return newFormData;
+    const [formData, setFormData] = useState<AppointmentFormData>({
+        patientId: '',
+        providerId: '',
+        appointmentTypeId: '',
+        scheduledStart: '',
+        scheduledEnd: '',
+        status: 'scheduled',
+        priority: 'routine',
+        notes: '',
+        operatory: '',
+        room: '',
+        colorCode: '#3182ce',
+        equipment: [],
+        billingStatus: 'pending',
+        billingAmount: 0,
+        isRecurring: false
     });
 
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    const [patients, setPatients] = useState<Patient[]>([]);
+    const [providers, setProviders] = useState<Provider[]>([]);
+    const [appointmentTypes, setAppointmentTypes] = useState<AppointmentType[]>([]);
+    const [operatories, setOperatories] = useState<any[]>([]);
+    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [submitting, setSubmitting] = useState(false);
+    const [loadingData, setLoadingData] = useState(true);
+
+    // Load initial data
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                setLoadingData(true);
+
+                const [patientsResult, providersResult, operatoriesResult] = await Promise.all([
+                    apiService.patients.getAll({ isActive: true, limit: 100 }),
+                    apiService.providers.getAll({ isActive: true }),
+                    apiService.operatories.getAll().catch(() => ({ success: false, data: [] }))
+                ]);
+
+                if (patientsResult.success && patientsResult.data) {
+                    setPatients(Array.isArray(patientsResult.data) ? patientsResult.data : []);
+                }
+
+                if (providersResult.success && providersResult.data) {
+                    const providersData = (providersResult as any).data;
+                    setProviders(Array.isArray(providersData) ? providersData : providersData?.providers || []);
+                }
+
+                if (operatoriesResult.success && operatoriesResult.data) {
+                    setOperatories(Array.isArray(operatoriesResult.data) ? operatoriesResult.data : []);
+                }
+
+                // For now, we'll use a default set of appointment types
+                setAppointmentTypes([
+                    {
+                        _id: '1',
+                        name: 'Consulta',
+                        duration: 30,
+                        price: 100,
+                        color: '#3182ce',
+                        category: 'consultation',
+                        isActive: true,
+                        clinic: '',
+                        allowOnlineBooking: true
+                    },
+                    {
+                        _id: '2',
+                        name: 'Limpeza',
+                        duration: 45,
+                        price: 80,
+                        color: '#10b981',
+                        category: 'cleaning',
+                        isActive: true,
+                        clinic: '',
+                        allowOnlineBooking: true
+                    },
+                    {
+                        _id: '3',
+                        name: 'Tratamento de Canal',
+                        duration: 90,
+                        price: 300,
+                        color: '#f59e0b',
+                        category: 'treatment',
+                        isActive: true,
+                        clinic: '',
+                        allowOnlineBooking: true
+                    },
+                    {
+                        _id: '4',
+                        name: 'Extração',
+                        duration: 60,
+                        price: 150,
+                        color: '#ef4444',
+                        category: 'surgery',
+                        isActive: true,
+                        clinic: '',
+                        allowOnlineBooking: true
+                    },
+                    {
+                        _id: '5',
+                        name: 'Implante',
+                        duration: 120,
+                        price: 800,
+                        color: '#8b5cf6',
+                        category: 'surgery',
+                        isActive: true,
+                        clinic: '',
+                        allowOnlineBooking: true
+                    }
+                ]);
+            } catch (error) {
+                console.error('Error loading form data:', error);
+            } finally {
+                setLoadingData(false);
+            }
+        };
+
+        loadData();
+    }, []);
+
+    // Set initial form data
+    useEffect(() => {
+        if (appointment) {
+            const start = appointment.scheduledStart ? new Date(appointment.scheduledStart) : null;
+            const end = appointment.scheduledEnd ? new Date(appointment.scheduledEnd) : null;
+
+            setFormData({
+                patientId:
+                    typeof appointment.patient === 'object' && appointment.patient?._id
+                        ? appointment.patient._id
+                        : typeof appointment.patient === 'string'
+                          ? appointment.patient
+                          : '',
+                providerId:
+                    typeof appointment.provider === 'object' && appointment.provider?._id
+                        ? appointment.provider._id
+                        : typeof appointment.provider === 'string'
+                          ? appointment.provider
+                          : '',
+                appointmentTypeId:
+                    typeof appointment.appointmentType === 'object' && appointment.appointmentType?._id
+                        ? appointment.appointmentType._id
+                        : typeof appointment.appointmentType === 'string'
+                          ? appointment.appointmentType
+                          : '',
+                scheduledStart: start ? start.toISOString().slice(0, 16) : '',
+                scheduledEnd: end ? end.toISOString().slice(0, 16) : '',
+                status: appointment.status || 'scheduled',
+                priority: appointment.priority || 'routine',
+                notes: appointment.notes || '',
+                operatory: appointment.operatory || '',
+                room: appointment.room || '',
+                colorCode: appointment.colorCode || '#3182ce',
+                equipment: appointment.equipment || [],
+                billingStatus:
+                    (appointment.billingStatus === 'insurance_approved' ||
+                    appointment.billingStatus === 'insurance_denied'
+                        ? 'insurance_pending'
+                        : appointment.billingStatus) || 'pending',
+                billingAmount: appointment.billingAmount || 0,
+                isRecurring: appointment.isRecurring || false,
+                recurringPattern:
+                    appointment.recurringPattern &&
+                    appointment.recurringPattern.frequency &&
+                    typeof appointment.recurringPattern.interval === 'number'
+                        ? {
+                              frequency: appointment.recurringPattern.frequency,
+                              interval: appointment.recurringPattern.interval,
+                              endDate: appointment.recurringPattern.endDate,
+                              occurrences: appointment.recurringPattern.occurrences
+                          }
+                        : undefined
+            });
+        } else {
+            // Set preselected values
+            const now = new Date();
+            const defaultStart =
+                preselectedDate && preselectedTime
+                    ? `${preselectedDate}T${preselectedTime}`
+                    : now.toISOString().slice(0, 16);
+
+            const defaultEnd = new Date(defaultStart);
+            defaultEnd.setMinutes(defaultEnd.getMinutes() + 30);
+
+            setFormData(prev => ({
+                ...prev,
+                patientId: preselectedPatient?._id || '',
+                providerId: preselectedProvider?._id || '',
+                scheduledStart: defaultStart,
+                scheduledEnd: defaultEnd.toISOString().slice(0, 16)
+            }));
+        }
+    }, [appointment, preselectedPatient, preselectedProvider, preselectedDate, preselectedTime]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+
+        setFormData(prev => {
+            const newFormData = { ...prev, [name]: value };
+
+            if (name === 'appointmentTypeId' || name === 'scheduledStart') {
+                const typeId = name === 'appointmentTypeId' ? value : newFormData.appointmentTypeId;
+                const startTime = name === 'scheduledStart' ? value : newFormData.scheduledStart;
+
+                const selectedType = appointmentTypes.find(type => type._id === typeId);
+
+                if (selectedType && startTime) {
+                    const start = new Date(startTime);
+                    if (!isNaN(start.getTime())) {
+                        // Check if date is valid
+                        const end = new Date(start);
+                        end.setMinutes(end.getMinutes() + (selectedType.duration || 30));
+                        newFormData.scheduledEnd = end.toISOString().slice(0, 16);
+                    }
+                }
+            }
+            return newFormData;
+        });
+
+        // Clear error when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const newErrors: Record<string, string> = {};
+
+        if (!formData.patientId) {
+            newErrors.patientId = 'Selecione um paciente';
+        }
+
+        if (!formData.providerId) {
+            newErrors.providerId = 'Selecione um profissional';
+        }
+
+        if (!formData.appointmentTypeId) {
+            newErrors.appointmentTypeId = 'Selecione o tipo de consulta';
+        }
+
+        if (!formData.scheduledStart) {
+            newErrors.scheduledStart = 'Data e hora de início são obrigatórias';
+        }
+
+        if (!formData.scheduledEnd) {
+            newErrors.scheduledEnd = 'Data e hora de fim são obrigatórias';
+        }
+
+        if (formData.scheduledStart && formData.scheduledEnd) {
+            const start = new Date(formData.scheduledStart);
+            const end = new Date(formData.scheduledEnd);
+
+            if (end <= start) {
+                newErrors.scheduledEnd = 'Hora de fim deve ser posterior à hora de início';
+            }
+
+            if (!appointment && start < new Date()) {
+                newErrors.scheduledStart = 'Não é possível agendar no passado';
+            }
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateForm()) {
+            return;
+        }
+
+        setSubmitting(true);
+
+        try {
+            const selectedProvider = providers.find(p => p._id === formData.providerId);
+            const clinicId =
+                (typeof selectedProvider?.clinic === 'object'
+                    ? selectedProvider.clinic?._id
+                    : selectedProvider?.clinic) || '';
+
+            const appointmentData: any = {
+                patient: formData.patientId as string,
+                provider: formData.providerId as string,
+                appointmentType: formData.appointmentTypeId as string,
+                scheduledStart: new Date(formData.scheduledStart).toISOString(),
+                scheduledEnd: new Date(formData.scheduledEnd).toISOString(),
+                status: formData.status,
+                priority: formData.priority,
+                notes: formData.notes,
+                clinic: clinicId,
+                preferredContactMethod: 'email' as const,
+                syncStatus: 'pending' as const,
+                operatory: formData.operatory || undefined,
+                room: formData.room || undefined,
+                colorCode: formData.colorCode || undefined,
+                equipment: formData.equipment.length > 0 ? formData.equipment : undefined,
+                billingStatus: formData.billingStatus,
+                billingAmount: formData.billingAmount || undefined,
+                isRecurring: formData.isRecurring,
+                recurringPattern: formData.isRecurring ? formData.recurringPattern : undefined
+            };
+
+            if (!clinicId) {
+                setErrors({ submit: 'O profissional selecionado não tem uma clínica associada.' });
+                setSubmitting(false);
+                return;
+            }
+
+            let result;
+            if (appointment?._id) {
+                result = await apiService.appointments.update(appointment._id, appointmentData);
+            } else {
+                result = await apiService.appointments.create(appointmentData);
+            }
+
+            if (result.success && result.data) {
+                onSave(result.data);
+            } else {
+                setErrors({ submit: result.message || 'Erro ao salvar agendamento' });
+            }
+        } catch (error: any) {
+            setErrors({ submit: error.message || 'Erro ao salvar agendamento' });
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    if (loadingData) {
+        return (
+            <div className="appointment-form">
+                <div className="loading-container">
+                    <div className="loading-spinner">Carregando dados...</div>
+                </div>
+            </div>
+        );
     }
-  };
 
-  const validateForm = (): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (!formData.patientId) {
-      newErrors.patientId = 'Selecione um paciente';
-    }
-
-    if (!formData.providerId) {
-      newErrors.providerId = 'Selecione um profissional';
-    }
-
-    if (!formData.appointmentTypeId) {
-      newErrors.appointmentTypeId = 'Selecione o tipo de consulta';
-    }
-
-    if (!formData.scheduledStart) {
-      newErrors.scheduledStart = 'Data e hora de início são obrigatórias';
-    }
-
-    if (!formData.scheduledEnd) {
-      newErrors.scheduledEnd = 'Data e hora de fim são obrigatórias';
-    }
-
-    if (formData.scheduledStart && formData.scheduledEnd) {
-      const start = new Date(formData.scheduledStart);
-      const end = new Date(formData.scheduledEnd);
-      
-      if (end <= start) {
-        newErrors.scheduledEnd = 'Hora de fim deve ser posterior à hora de início';
-      }
-
-      if (!appointment && start < new Date()) {
-        newErrors.scheduledStart = 'Não é possível agendar no passado';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const selectedProvider = providers.find(p => p._id === formData.providerId);
-      const clinicId = (typeof selectedProvider?.clinic === 'object' ? selectedProvider.clinic?._id : selectedProvider?.clinic) || '';
-
-      const appointmentData: any = {
-        patient: formData.patientId as string,
-        provider: formData.providerId as string,
-        appointmentType: formData.appointmentTypeId as string,
-        scheduledStart: new Date(formData.scheduledStart).toISOString(),
-        scheduledEnd: new Date(formData.scheduledEnd).toISOString(),
-        status: formData.status,
-        priority: formData.priority,
-        notes: formData.notes,
-        clinic: clinicId,
-        preferredContactMethod: 'email' as const,
-        syncStatus: 'pending' as const,
-        operatory: formData.operatory || undefined,
-        room: formData.room || undefined,
-        colorCode: formData.colorCode || undefined,
-        equipment: formData.equipment.length > 0 ? formData.equipment : undefined,
-        billingStatus: formData.billingStatus,
-        billingAmount: formData.billingAmount || undefined,
-        isRecurring: formData.isRecurring,
-        recurringPattern: formData.isRecurring ? formData.recurringPattern : undefined
-      };
-
-      if (!clinicId) {
-        setErrors({ submit: 'O profissional selecionado não tem uma clínica associada.' });
-        setSubmitting(false);
-        return;
-      }
-
-      let result;
-      if (appointment?._id) {
-        result = await apiService.appointments.update(appointment._id, appointmentData);
-      } else {
-        result = await apiService.appointments.create(appointmentData);
-      }
-
-      if (result.success && result.data) {
-        onSave(result.data);
-      } else {
-        setErrors({ submit: result.message || 'Erro ao salvar agendamento' });
-      }
-    } catch (error: any) {
-      setErrors({ submit: error.message || 'Erro ao salvar agendamento' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (loadingData) {
     return (
-      <div className="appointment-form">
-        <div className="loading-container">
-          <div className="loading-spinner">Carregando dados...</div>
-        </div>
-      </div>
+        <form onSubmit={handleSubmit} className="appointment-form">
+            {errors.submit && <div className="error-banner">{errors.submit}</div>}
+
+            {/* Basic Information */}
+            <div className="form-section">
+                <h3>Informações da Consulta</h3>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="patientId">Paciente *</label>
+                        <select
+                            id="patientId"
+                            name="patientId"
+                            value={formData.patientId}
+                            onChange={handleInputChange}
+                            className={errors.patientId ? 'error' : ''}
+                            required
+                        >
+                            <option value="">Selecione um paciente</option>
+                            {patients.map(patient => (
+                                <option key={patient._id} value={patient._id}>
+                                    {patient.fullName} - {patient.phone}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.patientId && <span className="error-text">{errors.patientId}</span>}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="providerId">Profissional *</label>
+                        <select
+                            id="providerId"
+                            name="providerId"
+                            value={formData.providerId}
+                            onChange={handleInputChange}
+                            className={errors.providerId ? 'error' : ''}
+                            required
+                        >
+                            <option value="">Selecione um profissional</option>
+                            {providers.map(provider => (
+                                <option key={provider._id} value={provider._id}>
+                                    {provider.name} - {provider.specialties?.join(', ')}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.providerId && <span className="error-text">{errors.providerId}</span>}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="appointmentTypeId">Tipo de Consulta *</label>
+                        <select
+                            id="appointmentTypeId"
+                            name="appointmentTypeId"
+                            value={formData.appointmentTypeId}
+                            onChange={handleInputChange}
+                            className={errors.appointmentTypeId ? 'error' : ''}
+                            required
+                        >
+                            <option value="">Selecione o tipo</option>
+                            {appointmentTypes.map(type => (
+                                <option key={type._id} value={type._id}>
+                                    {type.name} ({type.duration} min) - R$ {type.price}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.appointmentTypeId && <span className="error-text">{errors.appointmentTypeId}</span>}
+                    </div>
+                </div>
+            </div>
+
+            {/* Date and Time */}
+            <div className="form-section">
+                <h3>Data e Horário</h3>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="scheduledStart">Data e Hora de Início *</label>
+                        <input
+                            type="datetime-local"
+                            id="scheduledStart"
+                            name="scheduledStart"
+                            value={formData.scheduledStart}
+                            onChange={handleInputChange}
+                            className={errors.scheduledStart ? 'error' : ''}
+                            required
+                        />
+                        {errors.scheduledStart && <span className="error-text">{errors.scheduledStart}</span>}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="scheduledEnd">Data e Hora de Fim *</label>
+                        <input
+                            type="datetime-local"
+                            id="scheduledEnd"
+                            name="scheduledEnd"
+                            value={formData.scheduledEnd}
+                            onChange={handleInputChange}
+                            className={errors.scheduledEnd ? 'error' : ''}
+                            required
+                        />
+                        {errors.scheduledEnd && <span className="error-text">{errors.scheduledEnd}</span>}
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="status">Status</label>
+                        <select id="status" name="status" value={formData.status} onChange={handleInputChange}>
+                            <option value="scheduled">Agendado</option>
+                            <option value="confirmed">Confirmado</option>
+                            <option value="checked_in">Check-in</option>
+                            <option value="in_progress">Em andamento</option>
+                            <option value="completed">Concluído</option>
+                            <option value="cancelled">Cancelado</option>
+                            <option value="no_show">Faltou</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="priority">Prioridade</label>
+                        <select id="priority" name="priority" value={formData.priority} onChange={handleInputChange}>
+                            <option value="routine">Rotina</option>
+                            <option value="urgent">Urgente</option>
+                            <option value="emergency">Emergência</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {/* Location & Resources */}
+            <div className="form-section">
+                <h3>Localização e Recursos</h3>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="operatory">Consultório</label>
+                        <select id="operatory" name="operatory" value={formData.operatory} onChange={handleInputChange}>
+                            <option value="">Selecione (opcional)</option>
+                            {operatories.map(op => (
+                                <option key={op._id} value={op._id}>
+                                    {op.name} - {op.room}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="room">Sala</label>
+                        <input
+                            type="text"
+                            id="room"
+                            name="room"
+                            value={formData.room}
+                            onChange={handleInputChange}
+                            placeholder="Ex: Sala 1"
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="colorCode">Cor no Calendário</label>
+                        <input
+                            type="color"
+                            id="colorCode"
+                            name="colorCode"
+                            value={formData.colorCode}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Billing */}
+            <div className="form-section">
+                <h3>Faturamento</h3>
+                <div className="form-grid">
+                    <div className="form-group">
+                        <label htmlFor="billingStatus">Status de Faturamento</label>
+                        <select
+                            id="billingStatus"
+                            name="billingStatus"
+                            value={formData.billingStatus}
+                            onChange={handleInputChange}
+                        >
+                            <option value="pending">Pendente</option>
+                            <option value="billed">Faturado</option>
+                            <option value="paid">Pago</option>
+                            <option value="insurance_pending">Aguardando Seguro</option>
+                        </select>
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="billingAmount">Valor (R$)</label>
+                        <input
+                            type="number"
+                            id="billingAmount"
+                            name="billingAmount"
+                            value={formData.billingAmount}
+                            onChange={handleInputChange}
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Recurring */}
+            <div className="form-section">
+                <div className="form-group">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={formData.isRecurring}
+                            onChange={e => setFormData({ ...formData, isRecurring: e.target.checked })}
+                        />{' '}
+                        Consulta Recorrente
+                    </label>
+                </div>
+                {formData.isRecurring && (
+                    <RecurringAppointmentForm
+                        pattern={formData.recurringPattern}
+                        onChange={pattern => setFormData({ ...formData, recurringPattern: pattern })}
+                    />
+                )}
+            </div>
+
+            {/* Notes */}
+            <div className="form-section">
+                <h3>Observações</h3>
+                <div className="form-group">
+                    <label htmlFor="notes">Observações</label>
+                    <textarea
+                        id="notes"
+                        name="notes"
+                        value={formData.notes}
+                        onChange={handleInputChange}
+                        rows={4}
+                        placeholder="Observações sobre a consulta..."
+                    />
+                </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="form-actions">
+                <button type="button" onClick={onCancel} className="btn btn-outline" disabled={submitting}>
+                    Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submitting || loading}>
+                    {submitting ? 'Salvando...' : appointment ? 'Atualizar' : 'Agendar'} Consulta
+                </button>
+            </div>
+        </form>
     );
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="appointment-form">
-      {errors.submit && (
-        <div className="error-banner">
-          {errors.submit}
-        </div>
-      )}
-
-      {/* Basic Information */}
-      <div className="form-section">
-        <h3>Informações da Consulta</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="patientId">Paciente *</label>
-            <select
-              id="patientId"
-              name="patientId"
-              value={formData.patientId}
-              onChange={handleInputChange}
-              className={errors.patientId ? 'error' : ''}
-              required
-            >
-              <option value="">Selecione um paciente</option>
-              {patients.map(patient => (
-                <option key={patient._id} value={patient._id}>
-                  {patient.fullName} - {patient.phone}
-                </option>
-              ))}
-            </select>
-            {errors.patientId && <span className="error-text">{errors.patientId}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="providerId">Profissional *</label>
-            <select
-              id="providerId"
-              name="providerId"
-              value={formData.providerId}
-              onChange={handleInputChange}
-              className={errors.providerId ? 'error' : ''}
-              required
-            >
-              <option value="">Selecione um profissional</option>
-              {providers.map(provider => (
-                <option key={provider._id} value={provider._id}>
-                  {provider.name} - {provider.specialties?.join(', ')}
-                </option>
-              ))}
-            </select>
-            {errors.providerId && <span className="error-text">{errors.providerId}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="appointmentTypeId">Tipo de Consulta *</label>
-            <select
-              id="appointmentTypeId"
-              name="appointmentTypeId"
-              value={formData.appointmentTypeId}
-              onChange={handleInputChange}
-              className={errors.appointmentTypeId ? 'error' : ''}
-              required
-            >
-              <option value="">Selecione o tipo</option>
-              {appointmentTypes.map(type => (
-                <option key={type._id} value={type._id}>
-                  {type.name} ({type.duration} min) - R$ {type.price}
-                </option>
-              ))}
-            </select>
-            {errors.appointmentTypeId && <span className="error-text">{errors.appointmentTypeId}</span>}
-          </div>
-        </div>
-      </div>
-
-      {/* Date and Time */}
-      <div className="form-section">
-        <h3>Data e Horário</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="scheduledStart">Data e Hora de Início *</label>
-            <input
-              type="datetime-local"
-              id="scheduledStart"
-              name="scheduledStart"
-              value={formData.scheduledStart}
-              onChange={handleInputChange}
-              className={errors.scheduledStart ? 'error' : ''}
-              required
-            />
-            {errors.scheduledStart && <span className="error-text">{errors.scheduledStart}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="scheduledEnd">Data e Hora de Fim *</label>
-            <input
-              type="datetime-local"
-              id="scheduledEnd"
-              name="scheduledEnd"
-              value={formData.scheduledEnd}
-              onChange={handleInputChange}
-              className={errors.scheduledEnd ? 'error' : ''}
-              required
-            />
-            {errors.scheduledEnd && <span className="error-text">{errors.scheduledEnd}</span>}
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleInputChange}
-            >
-              <option value="scheduled">Agendado</option>
-              <option value="confirmed">Confirmado</option>
-              <option value="checked_in">Check-in</option>
-              <option value="in_progress">Em andamento</option>
-              <option value="completed">Concluído</option>
-              <option value="cancelled">Cancelado</option>
-              <option value="no_show">Faltou</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="priority">Prioridade</label>
-            <select
-              id="priority"
-              name="priority"
-              value={formData.priority}
-              onChange={handleInputChange}
-            >
-              <option value="routine">Rotina</option>
-              <option value="urgent">Urgente</option>
-              <option value="emergency">Emergência</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Location & Resources */}
-      <div className="form-section">
-        <h3>Localização e Recursos</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="operatory">Consultório</label>
-            <select
-              id="operatory"
-              name="operatory"
-              value={formData.operatory}
-              onChange={handleInputChange}
-            >
-              <option value="">Selecione (opcional)</option>
-              {operatories.map(op => (
-                <option key={op._id} value={op._id}>
-                  {op.name} - {op.room}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="room">Sala</label>
-            <input
-              type="text"
-              id="room"
-              name="room"
-              value={formData.room}
-              onChange={handleInputChange}
-              placeholder="Ex: Sala 1"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="colorCode">Cor no Calendário</label>
-            <input
-              type="color"
-              id="colorCode"
-              name="colorCode"
-              value={formData.colorCode}
-              onChange={handleInputChange}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Billing */}
-      <div className="form-section">
-        <h3>Faturamento</h3>
-        <div className="form-grid">
-          <div className="form-group">
-            <label htmlFor="billingStatus">Status de Faturamento</label>
-            <select
-              id="billingStatus"
-              name="billingStatus"
-              value={formData.billingStatus}
-              onChange={handleInputChange}
-            >
-              <option value="pending">Pendente</option>
-              <option value="billed">Faturado</option>
-              <option value="paid">Pago</option>
-              <option value="insurance_pending">Aguardando Seguro</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="billingAmount">Valor (R$)</label>
-            <input
-              type="number"
-              id="billingAmount"
-              name="billingAmount"
-              value={formData.billingAmount}
-              onChange={handleInputChange}
-              min="0"
-              step="0.01"
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Recurring */}
-      <div className="form-section">
-        <div className="form-group">
-          <label>
-            <input
-              type="checkbox"
-              checked={formData.isRecurring}
-              onChange={(e) => setFormData({ ...formData, isRecurring: e.target.checked })}
-            />
-            {' '}Consulta Recorrente
-          </label>
-        </div>
-        {formData.isRecurring && (
-          <RecurringAppointmentForm
-            pattern={formData.recurringPattern}
-            onChange={(pattern) => setFormData({ ...formData, recurringPattern: pattern })}
-          />
-        )}
-      </div>
-
-      {/* Notes */}
-      <div className="form-section">
-        <h3>Observações</h3>
-        <div className="form-group">
-          <label htmlFor="notes">Observações</label>
-          <textarea
-            id="notes"
-            name="notes"
-            value={formData.notes}
-            onChange={handleInputChange}
-            rows={4}
-            placeholder="Observações sobre a consulta..."
-          />
-        </div>
-      </div>
-
-      {/* Form Actions */}
-      <div className="form-actions">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="btn btn-outline"
-          disabled={submitting}
-        >
-          Cancelar
-        </button>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={submitting || loading}
-        >
-          {submitting ? 'Salvando...' : appointment ? 'Atualizar' : 'Agendar'} Consulta
-        </button>
-      </div>
-    </form>
-  );
 };
 
 export default AppointmentForm;

@@ -1,148 +1,148 @@
 .phase-manager {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
 }
 
 .phase-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
 }
 
 .phase-title {
-  flex: 1;
-  font-size: 18px;
-  font-weight: 600;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
+    flex: 1;
+    font-size: 18px;
+    font-weight: 600;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
 }
 
 .remove-phase-btn {
-  width: 32px;
-  height: 32px;
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 20px;
-  cursor: pointer;
-  transition: background 0.2s;
+    width: 32px;
+    height: 32px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .remove-phase-btn:hover {
-  background: #d32f2f;
+    background: #d32f2f;
 }
 
 .phase-description {
-  width: 100%;
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-bottom: 16px;
-  resize: vertical;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-bottom: 16px;
+    resize: vertical;
 }
 
 .phase-procedures {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 .no-procedures {
-  text-align: center;
-  color: #999;
-  padding: 20px;
-  font-style: italic;
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-style: italic;
 }
 
 .procedures-table {
-  width: 100%;
-  border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
 }
 
 .procedures-table th {
-  background: #f5f5f5;
-  padding: 10px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
+    background: #f5f5f5;
+    padding: 10px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
 }
 
 .procedures-table td {
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
 }
 
 .remove-proc-btn {
-  width: 24px;
-  height: 24px;
-  background: #ff5252;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background 0.2s;
+    width: 24px;
+    height: 24px;
+    background: #ff5252;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .remove-proc-btn:hover {
-  background: #d32f2f;
+    background: #d32f2f;
 }
 
 .selector-container {
-  background: #f9f9f9;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
+    background: #f9f9f9;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
 }
 
 .cancel-selector-btn {
-  width: 100%;
-  padding: 8px;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  color: #666;
-  font-size: 13px;
-  cursor: pointer;
-  margin-top: 8px;
+    width: 100%;
+    padding: 8px;
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    color: #666;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 8px;
 }
 
 .cancel-selector-btn:hover {
-  background: #e0e0e0;
+    background: #e0e0e0;
 }
 
 .add-procedure-btn {
-  width: 100%;
-  padding: 10px;
-  background: #e3f2fd;
-  border: 1px solid #2196f3;
-  border-radius: 6px;
-  color: #2196f3;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
+    width: 100%;
+    padding: 10px;
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 6px;
+    color: #2196f3;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .add-procedure-btn:hover {
-  background: #2196f3;
-  color: white;
+    background: #2196f3;
+    color: white;
 }
 
 .phase-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding-top: 12px;
-  border-top: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 2px solid #e0e0e0;
 }
 
 .phase-cost {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
 }

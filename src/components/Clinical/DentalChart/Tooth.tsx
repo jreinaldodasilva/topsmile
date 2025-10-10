@@ -15,10 +15,10 @@ interface ToothProps {
 export const Tooth: React.FC<ToothProps> = ({ number, x, y, conditions, selected, onClick }) => {
     const getToothColor = () => {
         if (conditions.length === 0) return '#ffffff';
-        
+
         const hasExisting = conditions.some(c => c.status === 'existing');
         const hasPlanned = conditions.some(c => c.status === 'planned');
-        
+
         if (hasExisting) return '#ffcccc';
         if (hasPlanned) return '#ffffcc';
         return '#ffffff';

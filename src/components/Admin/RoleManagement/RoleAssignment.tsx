@@ -31,7 +31,7 @@ export const RoleAssignment: React.FC<RoleAssignmentProps> = ({ users, onAssignR
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
+
         if (!selectedUser || !selectedRole) {
             setMessage({ type: 'error', text: 'Selecione um usuário e uma role' });
             return;
@@ -55,12 +55,8 @@ export const RoleAssignment: React.FC<RoleAssignmentProps> = ({ users, onAssignR
     return (
         <div className="role-assignment">
             <h3>Atribuir Role</h3>
-            
-            {message && (
-                <div className={`message ${message.type}`}>
-                    {message.text}
-                </div>
-            )}
+
+            {message && <div className={`message ${message.type}`}>{message.text}</div>}
 
             <form onSubmit={handleSubmit}>
                 <div className="form-group">
@@ -68,7 +64,7 @@ export const RoleAssignment: React.FC<RoleAssignmentProps> = ({ users, onAssignR
                     <select
                         id="user-select"
                         value={selectedUser}
-                        onChange={(e) => setSelectedUser(e.target.value)}
+                        onChange={e => setSelectedUser(e.target.value)}
                         disabled={loading}
                     >
                         <option value="">Selecione um usuário</option>
@@ -85,7 +81,7 @@ export const RoleAssignment: React.FC<RoleAssignmentProps> = ({ users, onAssignR
                     <select
                         id="role-select"
                         value={selectedRole}
-                        onChange={(e) => setSelectedRole(e.target.value)}
+                        onChange={e => setSelectedRole(e.target.value)}
                         disabled={loading}
                     >
                         <option value="">Selecione uma role</option>

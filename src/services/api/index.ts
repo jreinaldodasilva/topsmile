@@ -11,8 +11,8 @@ import { providerService } from './providerService';
 import { clinicalService } from './clinicalService';
 
 export const api = {
-  appointments: appointmentService,
-  patients: patientService,
-  providers: providerService,
-  clinical: clinicalService
+    appointments: appointmentService,
+    patients: patientService,
+    providers: providerService,
+    clinical: clinicalService
 };

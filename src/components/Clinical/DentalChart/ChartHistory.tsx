@@ -30,7 +30,7 @@ export const ChartHistory: React.FC<ChartHistoryProps> = ({ versions, onSelectVe
     return (
         <div className="chart-history">
             <h4>Histórico de Versões</h4>
-            
+
             {versions.length === 0 ? (
                 <p className="no-history">Nenhuma versão anterior</p>
             ) : (
@@ -43,10 +43,7 @@ export const ChartHistory: React.FC<ChartHistoryProps> = ({ versions, onSelectVe
                             <div className="timeline-content">
                                 <div className="timeline-header">
                                     <span className="timeline-date">{formatDate(version.chartDate)}</span>
-                                    <button 
-                                        className="view-btn"
-                                        onClick={() => onSelectVersion(version.id)}
-                                    >
+                                    <button className="view-btn" onClick={() => onSelectVersion(version.id)}>
                                         Visualizar
                                     </button>
                                 </div>
@@ -54,9 +51,7 @@ export const ChartHistory: React.FC<ChartHistoryProps> = ({ versions, onSelectVe
                                     <span className="provider-name">
                                         Por: {version.provider?.name || 'Desconhecido'}
                                     </span>
-                                    {version.notes && (
-                                        <p className="version-notes">{version.notes}</p>
-                                    )}
+                                    {version.notes && <p className="version-notes">{version.notes}</p>}
                                 </div>
                             </div>
                         </div>

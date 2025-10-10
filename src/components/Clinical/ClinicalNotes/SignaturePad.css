@@ -1,89 +1,89 @@
 .signature-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
 }
 
 .signature-content {
-  background: white;
-  padding: 24px;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .signature-content h3 {
-  margin: 0 0 8px 0;
-  font-size: 20px;
+    margin: 0 0 8px 0;
+    font-size: 20px;
 }
 
 .signature-content p {
-  margin: 0 0 16px 0;
-  color: #666;
-  font-size: 14px;
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
 }
 
 .signature-canvas {
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  cursor: crosshair;
-  background: white;
-  display: block;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: crosshair;
+    background: white;
+    display: block;
 }
 
 .signature-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 16px;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 16px;
 }
 
 .clear-btn,
 .cancel-btn,
 .save-sig-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .clear-btn {
-  background: #f5f5f5;
-  color: #666;
+    background: #f5f5f5;
+    color: #666;
 }
 
 .clear-btn:hover {
-  background: #e0e0e0;
+    background: #e0e0e0;
 }
 
 .cancel-btn {
-  background: #ff5252;
-  color: white;
+    background: #ff5252;
+    color: white;
 }
 
 .cancel-btn:hover {
-  background: #d32f2f;
+    background: #d32f2f;
 }
 
 .save-sig-btn {
-  background: #4caf50;
-  color: white;
+    background: #4caf50;
+    color: white;
 }
 
 .save-sig-btn:hover {
-  background: #45a049;
+    background: #45a049;
 }
 
 .save-sig-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+    background: #ccc;
+    cursor: not-allowed;
 }

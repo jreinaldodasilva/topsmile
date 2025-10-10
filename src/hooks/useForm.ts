@@ -27,46 +27,52 @@ export const useForm = <T extends Record<string, any>>({
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const handleChange = useCallback((name: string, value: any) => {
-        setValues(prev => ({ ...prev, [name]: value }));
-        // Clear error for this field when user types
-        if (errors[name]) {
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[name];
-                return newErrors;
-            });
-        }
-    }, [errors]);
-
-    const handleSubmit = useCallback(async (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        // Validate if validator provided
-        if (validate) {
-            const validationErrors = validate(values);
-            if (Object.keys(validationErrors).length > 0) {
-                setErrors(validationErrors);
-                return;
+    const handleChange = useCallback(
+        (name: string, value: any) => {
+            setValues(prev => ({ ...prev, [name]: value }));
+            // Clear error for this field when user types
+            if (errors[name]) {
+                setErrors(prev => {
+                    const newErrors = { ...prev };
+                    delete newErrors[name];
+                    return newErrors;
+                });
             }
-        }
+        },
+        [errors]
+    );
 
-        setIsSubmitting(true);
-        setErrors({});
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
 
-        try {
-            await onSubmit(values);
-        } catch (error: any) {
-            // Handle API errors
-            if (error.errors) {
-                setErrors(error.errors);
-            } else {
-                setErrors({ submit: error.message || 'Erro ao enviar formulário' });
+            // Validate if validator provided
+            if (validate) {
+                const validationErrors = validate(values);
+                if (Object.keys(validationErrors).length > 0) {
+                    setErrors(validationErrors);
+                    return;
+                }
             }
-        } finally {
-            setIsSubmitting(false);
-        }
-    }, [values, validate, onSubmit]);
+
+            setIsSubmitting(true);
+            setErrors({});
+
+            try {
+                await onSubmit(values);
+            } catch (error: any) {
+                // Handle API errors
+                if (error.errors) {
+                    setErrors(error.errors);
+                } else {
+                    setErrors({ submit: error.message || 'Erro ao enviar formulário' });
+                }
+            } finally {
+                setIsSubmitting(false);
+            }
+        },
+        [values, validate, onSubmit]
+    );
 
     const resetForm = useCallback(() => {
         setValues(initialValues);

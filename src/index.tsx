@@ -11,47 +11,48 @@ import 'slick-carousel/slick/slick-theme.css';
 
 // Validate environment variables
 try {
-  validateEnv();
+    validateEnv();
 } catch (error) {
-  console.error('Environment validation failed:', error);
-  if (process.env.NODE_ENV === 'production') {
-    throw error;
-  }
+    console.error('Environment validation failed:', error);
+    if (process.env.NODE_ENV === 'production') {
+        throw error;
+    }
 }
 
 if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_DISABLE_MSW) {
-  const { worker } = require('./mocks/browser');
-  worker.start();
+    const { worker } = require('./mocks/browser');
+    worker.start();
 }
 
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js').then(registration => {
-      console.log('SW registered: ', registration);
-    }).catch(registrationError => {
-      console.log('SW registration failed: ', registrationError);
+    window.addEventListener('load', () => {
+        navigator.serviceWorker
+            .register('/service-worker.js')
+            .then(registration => {
+                console.log('SW registered: ', registration);
+            })
+            .catch(registrationError => {
+                console.log('SW registration failed: ', registrationError);
+            });
     });
-  });
 }
 
 document.documentElement.style.scrollBehavior = 'smooth';
 
 const queryClient = new QueryClient();
 
-const root = ReactDOM.createRoot(
-  document.getElementById('root') as HTMLElement
-);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-  <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
-  </React.StrictMode>
+    <React.StrictMode>
+        <QueryClientProvider client={queryClient}>
+            <App />
+        </QueryClientProvider>
+    </React.StrictMode>
 );
 
 // Initialize performance monitoring
 if (process.env.NODE_ENV === 'production') {
-  initPerformanceMonitoring();
+    initPerformanceMonitoring();
 }
 
 reportWebVitals();

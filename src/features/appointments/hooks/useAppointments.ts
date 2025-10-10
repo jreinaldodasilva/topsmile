@@ -90,19 +90,22 @@ export const useAppointments = (): UseAppointmentsReturn => {
         }
     }, []);
 
-    const reschedule = useCallback(async (id: string, newStart: string, reason: string, rescheduleBy: 'patient' | 'clinic') => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await appointmentService.reschedule(id, newStart, reason, rescheduleBy);
-            setAppointment(response.data);
-        } catch (err: any) {
-            setError(err.message || 'Erro ao reagendar');
-            throw err;
-        } finally {
-            setLoading(false);
-        }
-    }, []);
+    const reschedule = useCallback(
+        async (id: string, newStart: string, reason: string, rescheduleBy: 'patient' | 'clinic') => {
+            setLoading(true);
+            setError(null);
+            try {
+                const response = await appointmentService.reschedule(id, newStart, reason, rescheduleBy);
+                setAppointment(response.data);
+            } catch (err: any) {
+                setError(err.message || 'Erro ao reagendar');
+                throw err;
+            } finally {
+                setLoading(false);
+            }
+        },
+        []
+    );
 
     const deleteAppointment = useCallback(async (id: string) => {
         setLoading(true);

@@ -5,22 +5,19 @@ import NotificationItem from './NotificationItem';
 import './NotificationContainer.css';
 
 const NotificationContainer: React.FC = () => {
-  const { notifications } = useError();
+    const { notifications } = useError();
 
-  if (notifications.length === 0) {
-    return null;
-  }
+    if (notifications.length === 0) {
+        return null;
+    }
 
-  return (
-    <div className="notification-container" role="region" aria-label="Notificações">
-      {notifications.map(notification => (
-        <NotificationItem
-          key={notification.id}
-          notification={notification}
-        />
-      ))}
-    </div>
-  );
+    return (
+        <div className="notification-container" role="region" aria-label="Notificações">
+            {notifications.map(notification => (
+                <NotificationItem key={notification.id} notification={notification} />
+            ))}
+        </div>
+    );
 };
 
 export default NotificationContainer;

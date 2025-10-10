@@ -1,75 +1,75 @@
 .document-upload {
-  padding: 20px;
-  max-width: 600px;
-  margin: 0 auto;
-  background: white;
-  border-radius: 12px;
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
 }
 
 .document-upload h3 {
-  margin: 0 0 20px 0;
-  font-size: 24px;
+    margin: 0 0 20px 0;
+    font-size: 24px;
 }
 
 .upload-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 
 .upload-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-weight: 600;
-  font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
 }
 
 .upload-form select {
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
 .file-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.file-input input[type="file"] {
-  padding: 10px;
-  border: 2px dashed #e0e0e0;
-  border-radius: 6px;
-  cursor: pointer;
+.file-input input[type='file'] {
+    padding: 10px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 .file-name {
-  font-size: 14px;
-  color: #666;
-  padding: 8px;
-  background: #f5f5f5;
-  border-radius: 4px;
+    font-size: 14px;
+    color: #666;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 4px;
 }
 
 .upload-btn {
-  padding: 14px;
-  background: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+    padding: 14px;
+    background: #2196f3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .upload-btn:hover:not(:disabled) {
-  background: #1976d2;
+    background: #1976d2;
 }
 
 .upload-btn:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+    background: #ccc;
+    cursor: not-allowed;
 }

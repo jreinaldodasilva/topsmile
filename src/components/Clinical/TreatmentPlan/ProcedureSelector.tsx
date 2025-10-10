@@ -4,144 +4,146 @@ import { request } from '../../../services/http';
 import './ProcedureSelector.css';
 
 interface CDTCode {
-  code: string;
-  description: string;
-  category: string;
-  defaultCost: number;
+    code: string;
+    description: string;
+    category: string;
+    defaultCost: number;
 }
 
 interface ProcedureSelectorProps {
-  onSelect: (procedure: any) => void;
-  patientId: string;
+    onSelect: (procedure: any) => void;
+    patientId: string;
 }
 
 export const ProcedureSelector: React.FC<ProcedureSelectorProps> = ({ onSelect, patientId }) => {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [codes, setCodes] = useState<CDTCode[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [filteredCodes, setFilteredCodes] = useState<CDTCode[]>([]);
-  const [selectedCode, setSelectedCode] = useState<CDTCode | null>(null);
-  const [tooth, setTooth] = useState('');
-  const [surface, setSurface] = useState('');
-  const [cost, setCost] = useState(0);
-  const [estimating, setEstimating] = useState(false);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [codes, setCodes] = useState<CDTCode[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [filteredCodes, setFilteredCodes] = useState<CDTCode[]>([]);
+    const [selectedCode, setSelectedCode] = useState<CDTCode | null>(null);
+    const [tooth, setTooth] = useState('');
+    const [surface, setSurface] = useState('');
+    const [cost, setCost] = useState(0);
+    const [estimating, setEstimating] = useState(false);
 
-  useEffect(() => {
-    request('/api/treatment-plans/cdt-codes/categories')
-      .then(res => res.ok && res.data ? setCategories(res.data) : null);
+    useEffect(() => {
+        request('/api/treatment-plans/cdt-codes/categories').then(res =>
+            res.ok && res.data ? setCategories(res.data) : null
+        );
 
-    request('/api/treatment-plans/cdt-codes/all')
-      .then(res => res.ok && res.data ? setCodes(res.data) : null);
-  }, []);
+        request('/api/treatment-plans/cdt-codes/all').then(res => (res.ok && res.data ? setCodes(res.data) : null));
+    }, []);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      setFilteredCodes(codes.filter(c => c.category === selectedCategory));
-    } else {
-      setFilteredCodes(codes);
-    }
-  }, [selectedCategory, codes]);
+    useEffect(() => {
+        if (selectedCategory) {
+            setFilteredCodes(codes.filter(c => c.category === selectedCategory));
+        } else {
+            setFilteredCodes(codes);
+        }
+    }, [selectedCategory, codes]);
 
-  const handleCodeSelect = async (code: CDTCode) => {
-    setSelectedCode(code);
-    setCost(code.defaultCost);
+    const handleCodeSelect = async (code: CDTCode) => {
+        setSelectedCode(code);
+        setCost(code.defaultCost);
 
-    setEstimating(true);
-    try {
-      const res = await request('/api/treatment-plans/estimate-insurance', {
-        method: 'POST',
-        body: JSON.stringify({
-          patientId,
-          procedures: [{ code: code.code, cost: code.defaultCost }]
-        })
-      });
-      if (res.ok && res.data?.[0]) {
-        setCost(res.data[0].cost);
-      }
-    } catch (error) {
-      console.error('Error estimating insurance:', error);
-    } finally {
-      setEstimating(false);
-    }
-  };
+        setEstimating(true);
+        try {
+            const res = await request('/api/treatment-plans/estimate-insurance', {
+                method: 'POST',
+                body: JSON.stringify({
+                    patientId,
+                    procedures: [{ code: code.code, cost: code.defaultCost }]
+                })
+            });
+            if (res.ok && res.data?.[0]) {
+                setCost(res.data[0].cost);
+            }
+        } catch (error) {
+            console.error('Error estimating insurance:', error);
+        } finally {
+            setEstimating(false);
+        }
+    };
 
-  const handleAdd = () => {
-    if (!selectedCode) return;
+    const handleAdd = () => {
+        if (!selectedCode) return;
 
-    onSelect({
-      code: selectedCode.code,
-      description: selectedCode.description,
-      tooth: tooth || undefined,
-      surface: surface || undefined,
-      cost
-    });
+        onSelect({
+            code: selectedCode.code,
+            description: selectedCode.description,
+            tooth: tooth || undefined,
+            surface: surface || undefined,
+            cost
+        });
 
-    setSelectedCode(null);
-    setTooth('');
-    setSurface('');
-    setCost(0);
-  };
+        setSelectedCode(null);
+        setTooth('');
+        setSurface('');
+        setCost(0);
+    };
 
-  return (
-    <div className="procedure-selector">
-      <div className="selector-row">
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="category-select"
-        >
-          <option value="">Todas as Categorias</option>
-          {categories.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+    return (
+        <div className="procedure-selector">
+            <div className="selector-row">
+                <select
+                    value={selectedCategory}
+                    onChange={e => setSelectedCategory(e.target.value)}
+                    className="category-select"
+                >
+                    <option value="">Todas as Categorias</option>
+                    {categories.map(cat => (
+                        <option key={cat} value={cat}>
+                            {cat}
+                        </option>
+                    ))}
+                </select>
 
-        <select
-          value={selectedCode?.code || ''}
-          onChange={(e) => {
-            const code = filteredCodes.find(c => c.code === e.target.value);
-            if (code) handleCodeSelect(code);
-          }}
-          className="code-select"
-        >
-          <option value="">Selecione um Procedimento</option>
-          {filteredCodes.map(code => (
-            <option key={code.code} value={code.code}>
-              {code.code} - {code.description}
-            </option>
-          ))}
-        </select>
-      </div>
+                <select
+                    value={selectedCode?.code || ''}
+                    onChange={e => {
+                        const code = filteredCodes.find(c => c.code === e.target.value);
+                        if (code) handleCodeSelect(code);
+                    }}
+                    className="code-select"
+                >
+                    <option value="">Selecione um Procedimento</option>
+                    {filteredCodes.map(code => (
+                        <option key={code.code} value={code.code}>
+                            {code.code} - {code.description}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-      {selectedCode && (
-        <div className="procedure-details">
-          <input
-            type="text"
-            placeholder="Dente (opcional)"
-            value={tooth}
-            onChange={(e) => setTooth(e.target.value)}
-            className="tooth-input"
-          />
-          <input
-            type="text"
-            placeholder="Superfície (opcional)"
-            value={surface}
-            onChange={(e) => setSurface(e.target.value)}
-            className="surface-input"
-          />
-          <input
-            type="number"
-            placeholder="Custo"
-            value={cost}
-            onChange={(e) => setCost(parseFloat(e.target.value))}
-            className="cost-input"
-            disabled={estimating}
-          />
-          <button onClick={handleAdd} className="add-procedure-btn">
-            Adicionar
-          </button>
+            {selectedCode && (
+                <div className="procedure-details">
+                    <input
+                        type="text"
+                        placeholder="Dente (opcional)"
+                        value={tooth}
+                        onChange={e => setTooth(e.target.value)}
+                        className="tooth-input"
+                    />
+                    <input
+                        type="text"
+                        placeholder="Superfície (opcional)"
+                        value={surface}
+                        onChange={e => setSurface(e.target.value)}
+                        className="surface-input"
+                    />
+                    <input
+                        type="number"
+                        placeholder="Custo"
+                        value={cost}
+                        onChange={e => setCost(parseFloat(e.target.value))}
+                        className="cost-input"
+                        disabled={estimating}
+                    />
+                    <button onClick={handleAdd} className="add-procedure-btn">
+                        Adicionar
+                    </button>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };

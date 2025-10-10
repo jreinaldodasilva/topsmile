@@ -9,11 +9,11 @@ interface LazyImageProps {
     className?: string;
 }
 
-export const LazyImage: React.FC<LazyImageProps> = ({ 
-    src, 
-    alt, 
+export const LazyImage: React.FC<LazyImageProps> = ({
+    src,
+    alt,
     placeholder = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg"%3E%3C/svg%3E',
-    className 
+    className
 }) => {
     const { ref, isVisible } = useIntersectionObserver({ threshold: 0.1 });
     const [loaded, setLoaded] = useState(false);

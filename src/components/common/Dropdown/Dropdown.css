@@ -1,52 +1,52 @@
 /* Dropdown Styles */
 .dropdown {
-  position: relative;
-  display: inline-block;
+    position: relative;
+    display: inline-block;
 }
 
 .dropdown-trigger {
-  background: none;
-  border: 1px solid #d1d5db;
-  padding: 8px 12px;
-  border-radius: 6px;
-  cursor: pointer;
+    background: none;
+    border: 1px solid #d1d5db;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 .dropdown-trigger:hover {
-  background-color: #f3f4f6;
+    background-color: #f3f4f6;
 }
 
 .dropdown-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 4px;
-  background: white;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  list-style: none;
-  padding: 4px;
-  min-width: 150px;
-  z-index: 1000;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    list-style: none;
+    padding: 4px;
+    min-width: 150px;
+    z-index: 1000;
 }
 
 .dropdown-item {
-  width: 100%;
-  text-align: left;
-  padding: 8px 12px;
-  border: none;
-  background: none;
-  cursor: pointer;
-  border-radius: 4px;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
 }
 
 .dropdown-item:hover,
 .dropdown-item.selected {
-  background-color: #f3f4f6;
+    background-color: #f3f4f6;
 }
 
 .dropdown-item:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }

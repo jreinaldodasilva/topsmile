@@ -1,71 +1,71 @@
 .patient-medical-records {
-  min-height: 100vh;
-  background: #f9fafb;
+    min-height: 100vh;
+    background: #f9fafb;
 }
 
 .records-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
 }
 
 .records-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
 .records-header h1 {
-  font-size: 2rem;
-  color: #1f2937;
+    font-size: 2rem;
+    color: #1f2937;
 }
 
 .edit-btn {
-  padding: 0.75rem 1.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
 }
 
 .edit-btn:hover {
-  background: #2563eb;
+    background: #2563eb;
 }
 
 .records-main {
-  display: grid;
-  gap: 1.5rem;
+    display: grid;
+    gap: 1.5rem;
 }
 
 .record-section {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .record-section h2 {
-  font-size: 1.25rem;
-  color: #1f2937;
-  margin-bottom: 1rem;
+    font-size: 1.25rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
 }
 
 .record-section ul {
-  list-style: none;
-  padding: 0;
+    list-style: none;
+    padding: 0;
 }
 
 .record-section li {
-  padding: 0.75rem;
-  background: #f3f4f6;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    background: #f3f4f6;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
 }
 
 .empty-state {
-  color: #6b7280;
-  font-style: italic;
+    color: #6b7280;
+    font-style: italic;
 }

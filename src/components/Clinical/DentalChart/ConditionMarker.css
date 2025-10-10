@@ -74,7 +74,7 @@
     cursor: pointer;
 }
 
-.radio-group input[type="radio"] {
+.radio-group input[type='radio'] {
     cursor: pointer;
 }
 
@@ -94,12 +94,12 @@
     font-weight: 500;
 }
 
-.form-actions button[type="button"] {
+.form-actions button[type='button'] {
     background: #6c757d;
     color: white;
 }
 
-.form-actions button[type="submit"] {
+.form-actions button[type='submit'] {
     background: #007bff;
     color: white;
 }

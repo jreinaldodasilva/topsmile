@@ -73,11 +73,13 @@ export const TimeSlotPickerExample: React.FC<TimeSlotPickerExampleProps> = ({
                             <button
                                 key={idx}
                                 className="slot-btn"
-                                onClick={() => onSelect({
-                                    ...slot,
-                                    start: new Date(slot.start),
-                                    end: new Date(slot.end)
-                                })}
+                                onClick={() =>
+                                    onSelect({
+                                        ...slot,
+                                        start: new Date(slot.start),
+                                        end: new Date(slot.end)
+                                    })
+                                }
                             >
                                 {formatTime(slot.start)}
                             </button>

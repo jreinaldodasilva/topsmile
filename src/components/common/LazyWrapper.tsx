@@ -7,9 +7,6 @@ interface LazyWrapperProps {
     fallback?: React.ReactNode;
 }
 
-export const LazyWrapper: React.FC<LazyWrapperProps> = ({ 
-    children, 
-    fallback = <Loading /> 
-}) => {
+export const LazyWrapper: React.FC<LazyWrapperProps> = ({ children, fallback = <Loading /> }) => {
     return <Suspense fallback={fallback}>{children}</Suspense>;
 };

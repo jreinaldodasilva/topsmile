@@ -1,105 +1,105 @@
 .features-main {
-  background: var(--color-bg-secondary);
-  min-height: 100vh;
-  padding-bottom: var(--space-12);
+    background: var(--color-bg-secondary);
+    min-height: 100vh;
+    padding-bottom: var(--space-12);
 }
 
 .features-hero {
-  text-align: center;
-  padding: var(--space-12) var(--space-4) var(--space-8) var(--space-4);
-  background: linear-gradient(90deg, var(--color-primary-50) 0%, var(--color-bg-primary) 100%);
+    text-align: center;
+    padding: var(--space-12) var(--space-4) var(--space-8) var(--space-4);
+    background: linear-gradient(90deg, var(--color-primary-50) 0%, var(--color-bg-primary) 100%);
 }
 
 .features-title {
-  font-size: var(--font-size-4xl);
-  color: var(--color-primary-700);
-  margin-bottom: var(--space-2);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
+    font-size: var(--font-size-4xl);
+    color: var(--color-primary-700);
+    margin-bottom: var(--space-2);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
 }
 
 .features-subtitle {
-  font-size: var(--font-size-xl);
-  color: var(--color-primary-600);
-  margin-bottom: 0;
+    font-size: var(--font-size-xl);
+    color: var(--color-primary-600);
+    margin-bottom: 0;
 }
 
 .features-grid-section {
-  display: flex;
-  justify-content: center;
-  padding: var(--space-8) var(--space-4) 0 var(--space-4);
+    display: flex;
+    justify-content: center;
+    padding: var(--space-8) var(--space-4) 0 var(--space-4);
 }
 
 .features-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: var(--space-8);
-  max-width: var(--max-width-6xl);
-  width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--space-8);
+    max-width: var(--max-width-6xl);
+    width: 100%;
 }
 
 .feature-card {
-  background: var(--color-bg-primary);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid var(--color-border-primary);
-  padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: var(--transition-all);
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border-primary);
+    padding: var(--space-8) var(--space-6) var(--space-6) var(--space-6);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: var(--transition-all);
 
-  /* Helps Framer Motion animations feel smooth */
-  will-change: transform, opacity;
+    /* Helps Framer Motion animations feel smooth */
+    will-change: transform, opacity;
 }
 
 .feature-card:hover,
 .feature-card:focus-within {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
 }
 
 .feature-icon {
-  font-size: var(--font-size-4xl);
-  margin-bottom: var(--space-4);
-  color: var(--color-primary-500);
+    font-size: var(--font-size-4xl);
+    margin-bottom: var(--space-4);
+    color: var(--color-primary-500);
 }
 
 .feature-card-title {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
 }
 
 .feature-card-desc {
-  font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: var(--line-height-relaxed);
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-relaxed);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  .features-hero {
-    padding: var(--space-8) var(--space-4) var(--space-6) var(--space-4);
-  }
+    .features-hero {
+        padding: var(--space-8) var(--space-4) var(--space-6) var(--space-4);
+    }
 
-  .features-title {
-    font-size: var(--font-size-3xl);
-  }
+    .features-title {
+        font-size: var(--font-size-3xl);
+    }
 
-  .features-subtitle {
-    font-size: var(--font-size-lg);
-  }
+    .features-subtitle {
+        font-size: var(--font-size-lg);
+    }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+    }
 
-  .feature-card {
-    padding: var(--space-6) var(--space-4);
-  }
+    .feature-card {
+        padding: var(--space-6) var(--space-4);
+    }
 }

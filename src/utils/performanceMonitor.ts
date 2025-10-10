@@ -7,7 +7,7 @@ const sendToAnalytics = (metric: Metric) => {
         value: metric.value,
         rating: metric.rating,
         delta: metric.delta,
-        id: metric.id,
+        id: metric.id
     });
 
     if (navigator.sendBeacon) {
@@ -17,7 +17,7 @@ const sendToAnalytics = (metric: Metric) => {
             body,
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            keepalive: true,
+            keepalive: true
         }).catch(console.error);
     }
 };
@@ -40,10 +40,7 @@ export const measureComponentRender = (componentName: string) => {
     };
 };
 
-export const measureApiCall = async <T>(
-    name: string,
-    apiCall: () => Promise<T>
-): Promise<T> => {
+export const measureApiCall = async <T>(name: string, apiCall: () => Promise<T>): Promise<T> => {
     const start = performance.now();
     try {
         const result = await apiCall();

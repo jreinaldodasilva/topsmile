@@ -60,9 +60,9 @@ export const RoleManagement: React.FC = () => {
     return (
         <div className="role-management-container">
             <h2>Gerenciamento de Roles</h2>
-            
+
             <RoleAssignment users={users} onAssignRole={handleAssignRole} />
-            
+
             <PermissionMatrix rolePermissions={rolePermissions} />
         </div>
     );

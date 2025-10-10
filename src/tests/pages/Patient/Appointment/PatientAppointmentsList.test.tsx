@@ -10,109 +10,118 @@ import type { Provider, Clinic, Appointment } from '@topsmile/types';
 jest.mock('../../../../services/apiService');
 const mockNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
-  ...jest.requireActual('react-router-dom'),
-  useNavigate: () => mockNavigate,
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate
 }));
 
 interface PatientUser {
-  _id: string;
-  patient: { _id: string; name: string; phone: string };
-  email: string;
-  isActive: boolean;
-  emailVerified: boolean;
+    _id: string;
+    patient: { _id: string; name: string; phone: string };
+    email: string;
+    isActive: boolean;
+    emailVerified: boolean;
 }
 
 const mockAppointments: Appointment[] = [
-  { 
-    _id: 'appt1', 
-    scheduledStart: '2023-10-27T10:00:00.000Z', 
-    scheduledEnd: '2023-10-27T10:30:00.000Z',
-    status: 'confirmed', 
-    priority: 'routine',
-    preferredContactMethod: 'phone',
-    syncStatus: 'synced',
-    patient: 'patient1',
-    provider: { name: 'Dr. Smith' }, 
-    appointmentType: { name: 'Check-up', allowOnlineBooking: true }, 
-    clinic: { name: 'Test Clinic' } 
-  },
-  { 
-    _id: 'appt2', 
-    scheduledStart: '2023-11-15T14:00:00.000Z', 
-    scheduledEnd: '2023-11-15T14:30:00.000Z',
-    status: 'completed', 
-    priority: 'routine',
-    preferredContactMethod: 'phone',
-    syncStatus: 'synced',
-    patient: 'patient1',
-    provider: { name: 'Dr. Jones' }, 
-    appointmentType: { name: 'Cleaning', allowOnlineBooking: true }, 
-    clinic: { name: 'Test Clinic' } 
-  },
+    {
+        _id: 'appt1',
+        scheduledStart: '2023-10-27T10:00:00.000Z',
+        scheduledEnd: '2023-10-27T10:30:00.000Z',
+        status: 'confirmed',
+        priority: 'routine',
+        preferredContactMethod: 'phone',
+        syncStatus: 'synced',
+        patient: 'patient1',
+        provider: { name: 'Dr. Smith' },
+        appointmentType: { name: 'Check-up', allowOnlineBooking: true },
+        clinic: { name: 'Test Clinic' }
+    },
+    {
+        _id: 'appt2',
+        scheduledStart: '2023-11-15T14:00:00.000Z',
+        scheduledEnd: '2023-11-15T14:30:00.000Z',
+        status: 'completed',
+        priority: 'routine',
+        preferredContactMethod: 'phone',
+        syncStatus: 'synced',
+        patient: 'patient1',
+        provider: { name: 'Dr. Jones' },
+        appointmentType: { name: 'Cleaning', allowOnlineBooking: true },
+        clinic: { name: 'Test Clinic' }
+    }
 ];
 
 const mockPatientUser: PatientUser = {
-  _id: 'user1',
-  patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
-  email: 'john@example.com',
-  isActive: true,
-  emailVerified: true,
+    _id: 'user1',
+    patient: { _id: 'patient1', name: 'John Doe', phone: '123456789' },
+    email: 'john@example.com',
+    isActive: true,
+    emailVerified: true
 };
 
 function renderWithAuth(
-  ui: React.ReactElement,
-  { isAuthenticated = true, patientUser = mockPatientUser }: { isAuthenticated?: boolean; patientUser?: PatientUser | null } = {}
+    ui: React.ReactElement,
+    {
+        isAuthenticated = true,
+        patientUser = mockPatientUser
+    }: { isAuthenticated?: boolean; patientUser?: PatientUser | null } = {}
 ) {
-  return render(
-    <PatientAuthContext.Provider value={{ isAuthenticated, patientUser } as any}>
-      {ui}
-    </PatientAuthContext.Provider>
-  );
+    return render(
+        <PatientAuthContext.Provider value={{ isAuthenticated, patientUser } as any}>{ui}</PatientAuthContext.Provider>
+    );
 }
 
 describe('PatientAppointmentsList', () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-    (apiService.appointments.getAll as jest.Mock).mockResolvedValue({ success: true, data: mockAppointments });
-  });
-
-  it('redirects to login if not authenticated', async () => {
-    renderWithAuth(<PatientAppointmentsList />, { isAuthenticated: false });
-    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/patient/login'));
-  });
-
-  it('loads and displays appointments', async () => {
-    renderWithAuth(<PatientAppointmentsList />);
-    await waitFor(() => {
-      expect(screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')).toBeInTheDocument();
-      expect(screen.getByText((content, element) => element?.textContent === 'CleaningDr. Dr. JonesTest Clinic')).toBeInTheDocument();
+    beforeEach(() => {
+        jest.clearAllMocks();
+        (apiService.appointments.getAll as jest.Mock).mockResolvedValue({ success: true, data: mockAppointments });
     });
-  });
 
-  it('shows loading state initially', () => {
-    renderWithAuth(<PatientAppointmentsList />);
-    expect(screen.getByText('Carregando agendamentos...')).toBeInTheDocument();
-  });
+    it('redirects to login if not authenticated', async () => {
+        renderWithAuth(<PatientAppointmentsList />, { isAuthenticated: false });
+        await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith('/patient/login'));
+    });
 
-  it('shows error message if loading fails', async () => {
-    (apiService.appointments.getAll as jest.Mock).mockResolvedValue({ success: false, message: 'Failed to load' });
-    renderWithAuth(<PatientAppointmentsList />);
-    await waitFor(() => {
-      expect(screen.getByText('Erro ao carregar agendamentos')).toBeInTheDocument();
+    it('loads and displays appointments', async () => {
+        renderWithAuth(<PatientAppointmentsList />);
+        await waitFor(() => {
+            expect(
+                screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText((content, element) => element?.textContent === 'CleaningDr. Dr. JonesTest Clinic')
+            ).toBeInTheDocument();
+        });
     });
-  });
 
-  it('navigates to appointment detail on click', async () => {
-    renderWithAuth(<PatientAppointmentsList />);
-    await waitFor(() => {
-      expect(screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')).toBeInTheDocument();
+    it('shows loading state initially', () => {
+        renderWithAuth(<PatientAppointmentsList />);
+        expect(screen.getByText('Carregando agendamentos...')).toBeInTheDocument();
     });
-    const appointmentLink = screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic');
-    const detailsButton = appointmentLink.parentElement?.parentElement?.querySelector('.view-btn');
-    if (!detailsButton) throw new Error('Details button not found');
-    fireEvent.click(detailsButton);
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/patient/appointments/appt1');
+
+    it('shows error message if loading fails', async () => {
+        (apiService.appointments.getAll as jest.Mock).mockResolvedValue({ success: false, message: 'Failed to load' });
+        renderWithAuth(<PatientAppointmentsList />);
+        await waitFor(() => {
+            expect(screen.getByText('Erro ao carregar agendamentos')).toBeInTheDocument();
+        });
     });
-  });
+
+    it('navigates to appointment detail on click', async () => {
+        renderWithAuth(<PatientAppointmentsList />);
+        await waitFor(() => {
+            expect(
+                screen.getByText((content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic')
+            ).toBeInTheDocument();
+        });
+        const appointmentLink = screen.getByText(
+            (content, element) => element?.textContent === 'Check-upDr. Dr. SmithTest Clinic'
+        );
+        const detailsButton = appointmentLink.parentElement?.parentElement?.querySelector('.view-btn');
+        if (!detailsButton) throw new Error('Details button not found');
+        fireEvent.click(detailsButton);
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith('/patient/appointments/appt1');
+        });
+    });
 });

@@ -23,7 +23,24 @@ const FDI_UPPER = ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '
 const FDI_LOWER = ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38'];
 
 const UNIVERSAL_UPPER = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'];
-const UNIVERSAL_LOWER = ['32', '31', '30', '29', '28', '27', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17'];
+const UNIVERSAL_LOWER = [
+    '32',
+    '31',
+    '30',
+    '29',
+    '28',
+    '27',
+    '26',
+    '25',
+    '24',
+    '23',
+    '22',
+    '21',
+    '20',
+    '19',
+    '18',
+    '17'
+];
 
 export const DentalChartView: React.FC<DentalChartViewProps> = ({
     teeth,
@@ -35,10 +52,12 @@ export const DentalChartView: React.FC<DentalChartViewProps> = ({
     const lowerTeeth = numberingSystem === 'fdi' ? FDI_LOWER : UNIVERSAL_LOWER;
 
     const getToothData = (toothNumber: string): ToothData => {
-        return teeth.find(t => t.toothNumber === toothNumber) || {
-            toothNumber,
-            conditions: []
-        };
+        return (
+            teeth.find(t => t.toothNumber === toothNumber) || {
+                toothNumber,
+                conditions: []
+            }
+        );
     };
 
     return (
@@ -50,7 +69,9 @@ export const DentalChartView: React.FC<DentalChartViewProps> = ({
             <svg width="600" height="200" viewBox="0 0 600 200">
                 {/* Upper teeth */}
                 <g>
-                    <text x="10" y="30" fontSize="14" fill="#666">Superior</text>
+                    <text x="10" y="30" fontSize="14" fill="#666">
+                        Superior
+                    </text>
                     {upperTeeth.map((number, index) => {
                         const toothData = getToothData(number);
                         return (
@@ -69,7 +90,9 @@ export const DentalChartView: React.FC<DentalChartViewProps> = ({
 
                 {/* Lower teeth */}
                 <g>
-                    <text x="10" y="130" fontSize="14" fill="#666">Inferior</text>
+                    <text x="10" y="130" fontSize="14" fill="#666">
+                        Inferior
+                    </text>
                     {lowerTeeth.map((number, index) => {
                         const toothData = getToothData(number);
                         return (

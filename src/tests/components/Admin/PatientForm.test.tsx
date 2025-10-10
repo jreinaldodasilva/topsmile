@@ -9,193 +9,193 @@ const mockCreate = jest.fn();
 const mockUpdate = jest.fn();
 
 jest.mock('../../../services/apiService', () => ({
-  apiService: {
-    patients: {
-      create: mockCreate,
-      update: mockUpdate
+    apiService: {
+        patients: {
+            create: mockCreate,
+            update: mockUpdate
+        }
     }
-  }
 }));
 
 describe('PatientForm Component', () => {
-  const mockOnSave = jest.fn();
-  const mockOnCancel = jest.fn();
+    const mockOnSave = jest.fn();
+    const mockOnCancel = jest.fn();
 
-  const defaultProps = {
-    onSave: mockOnSave,
-    onCancel: mockOnCancel,
-    loading: false
-  };
+    const defaultProps = {
+        onSave: mockOnSave,
+        onCancel: mockOnCancel,
+        loading: false
+    };
 
-  const mockPatient: Patient = {
-    _id: '507f1f77bcf86cd799439011',
-    firstName: 'João',
-    lastName: 'Silva',
-    email: 'joao@example.com',
-    phone: '(11) 99999-9999',
-    dateOfBirth: new Date('1990-01-01'),
-    gender: 'male',
-    cpf: '123.456.789-00',
-    address: {
-      street: 'Rua das Flores',
-      number: '123',
-      neighborhood: 'Centro',
-      city: 'São Paulo',
-      state: 'SP',
-      zipCode: '01234-567'
-    },
-    emergencyContact: {
-      name: 'Maria Silva',
-      phone: '(11) 88888-8888',
-      relationship: 'Mãe'
-    },
-    medicalHistory: {
-      allergies: ['Penicilina'],
-      medications: ['Aspirina'],
-      conditions: ['Hipertensão'],
-      notes: 'Paciente com histórico de alergias'
-    },
-    status: 'active',
-    clinic: '507f1f77bcf86cd799439012',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  };
+    const mockPatient: Patient = {
+        _id: '507f1f77bcf86cd799439011',
+        firstName: 'João',
+        lastName: 'Silva',
+        email: 'joao@example.com',
+        phone: '(11) 99999-9999',
+        dateOfBirth: new Date('1990-01-01'),
+        gender: 'male',
+        cpf: '123.456.789-00',
+        address: {
+            street: 'Rua das Flores',
+            number: '123',
+            neighborhood: 'Centro',
+            city: 'São Paulo',
+            state: 'SP',
+            zipCode: '01234-567'
+        },
+        emergencyContact: {
+            name: 'Maria Silva',
+            phone: '(11) 88888-8888',
+            relationship: 'Mãe'
+        },
+        medicalHistory: {
+            allergies: ['Penicilina'],
+            medications: ['Aspirina'],
+            conditions: ['Hipertensão'],
+            notes: 'Paciente com histórico de alergias'
+        },
+        status: 'active',
+        clinic: '507f1f77bcf86cd799439012',
+        createdAt: new Date(),
+        updatedAt: new Date()
+    };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  describe('Rendering', () => {
-    it('should render all form sections', () => {
-      render(<PatientForm {...defaultProps} />);
-
-      expect(screen.getByText('Informações Básicas')).toBeInTheDocument();
-      expect(screen.getByText('Endereço')).toBeInTheDocument();
-      expect(screen.getByText('Contato de Emergência')).toBeInTheDocument();
-      expect(screen.getByText('Histórico Médico')).toBeInTheDocument();
+    beforeEach(() => {
+        jest.clearAllMocks();
     });
 
-    it('should render form actions', () => {
-      render(<PatientForm {...defaultProps} />);
+    describe('Rendering', () => {
+        it('should render all form sections', () => {
+            render(<PatientForm {...defaultProps} />);
 
-      expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /criar paciente/i })).toBeInTheDocument();
+            expect(screen.getByText('Informações Básicas')).toBeInTheDocument();
+            expect(screen.getByText('Endereço')).toBeInTheDocument();
+            expect(screen.getByText('Contato de Emergência')).toBeInTheDocument();
+            expect(screen.getByText('Histórico Médico')).toBeInTheDocument();
+        });
+
+        it('should render form actions', () => {
+            render(<PatientForm {...defaultProps} />);
+
+            expect(screen.getByRole('button', { name: /cancelar/i })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: /criar paciente/i })).toBeInTheDocument();
+        });
+
+        it('should show update button when editing existing patient', () => {
+            render(<PatientForm {...defaultProps} patient={mockPatient} />);
+
+            expect(screen.getByRole('button', { name: /atualizar paciente/i })).toBeInTheDocument();
+        });
     });
 
-    it('should show update button when editing existing patient', () => {
-      render(<PatientForm {...defaultProps} patient={mockPatient} />);
+    describe('Form Validation', () => {
+        it('should show validation errors for required fields', async () => {
+            const user = userEvent.setup();
+            render(<PatientForm {...defaultProps} />);
 
-      expect(screen.getByRole('button', { name: /atualizar paciente/i })).toBeInTheDocument();
-    });
-  });
+            const submitButton = screen.getByRole('button', { name: /criar paciente/i });
+            await user.click(submitButton);
 
-  describe('Form Validation', () => {
-    it('should show validation errors for required fields', async () => {
-      const user = userEvent.setup();
-      render(<PatientForm {...defaultProps} />);
+            await waitFor(() => {
+                expect(screen.getByText('Nome é obrigatório')).toBeInTheDocument();
+                expect(screen.getByText('Telefone é obrigatório')).toBeInTheDocument();
+                expect(screen.getByText('CEP é obrigatório')).toBeInTheDocument();
+            });
+        });
 
-      const submitButton = screen.getByRole('button', { name: /criar paciente/i });
-      await user.click(submitButton);
+        it('should validate email format', async () => {
+            const user = userEvent.setup();
+            render(<PatientForm {...defaultProps} />);
 
-      await waitFor(() => {
-        expect(screen.getByText('Nome é obrigatório')).toBeInTheDocument();
-        expect(screen.getByText('Telefone é obrigatório')).toBeInTheDocument();
-        expect(screen.getByText('CEP é obrigatório')).toBeInTheDocument();
-      });
-    });
+            const emailInput = screen.getByLabelText(/e-mail/i);
+            const submitButton = screen.getByRole('button', { name: /criar paciente/i });
 
-    it('should validate email format', async () => {
-      const user = userEvent.setup();
-      render(<PatientForm {...defaultProps} />);
+            await user.type(emailInput, 'invalid-email');
+            await user.click(submitButton);
 
-      const emailInput = screen.getByLabelText(/e-mail/i);
-      const submitButton = screen.getByRole('button', { name: /criar paciente/i });
+            await waitFor(() => {
+                expect(screen.getByText('E-mail inválido')).toBeInTheDocument();
+            });
+        });
 
-      await user.type(emailInput, 'invalid-email');
-      await user.click(submitButton);
+        it('should validate phone format', async () => {
+            const user = userEvent.setup();
+            render(<PatientForm {...defaultProps} />);
 
-      await waitFor(() => {
-        expect(screen.getByText('E-mail inválido')).toBeInTheDocument();
-      });
-    });
+            const phoneInput = screen.getByLabelText(/telefone \*/i);
+            const submitButton = screen.getByRole('button', { name: /criar paciente/i });
 
-    it('should validate phone format', async () => {
-      const user = userEvent.setup();
-      render(<PatientForm {...defaultProps} />);
+            await user.type(phoneInput, '123');
+            await user.click(submitButton);
 
-      const phoneInput = screen.getByLabelText(/telefone \*/i);
-      const submitButton = screen.getByRole('button', { name: /criar paciente/i });
-
-      await user.type(phoneInput, '123');
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(screen.getByText('Telefone inválido')).toBeInTheDocument();
-      });
-    });
-  });
-
-  describe('Form Submission', () => {
-    it('should create new patient with valid data', async () => {
-      const user = userEvent.setup();
-      mockCreate.mockResolvedValue({
-        success: true,
-        data: mockPatient
-      });
-
-      render(<PatientForm {...defaultProps} />);
-
-      // Fill required fields
-      await user.type(screen.getByLabelText(/nome \*/i), 'João');
-      await user.type(screen.getByLabelText(/telefone \*/i), '(11) 99999-9999');
-      await user.type(screen.getByLabelText(/cep/i), '01234-567');
-
-      const submitButton = screen.getByRole('button', { name: /criar paciente/i });
-      await user.click(submitButton);
-
-      await waitFor(() => {
-        expect(mockCreate).toHaveBeenCalledWith(
-          expect.objectContaining({
-            firstName: 'João',
-            phone: '(11) 99999-9999'
-          })
-        );
-        expect(mockOnSave).toHaveBeenCalledWith(mockPatient);
-      });
+            await waitFor(() => {
+                expect(screen.getByText('Telefone inválido')).toBeInTheDocument();
+            });
+        });
     });
 
-    it('should handle API errors during submission', async () => {
-      const user = userEvent.setup();
-      mockCreate.mockResolvedValue({
-        success: false,
-        message: 'Email já existe'
-      });
+    describe('Form Submission', () => {
+        it('should create new patient with valid data', async () => {
+            const user = userEvent.setup();
+            mockCreate.mockResolvedValue({
+                success: true,
+                data: mockPatient
+            });
 
-      render(<PatientForm {...defaultProps} />);
+            render(<PatientForm {...defaultProps} />);
 
-      // Fill required fields
-      await user.type(screen.getByLabelText(/nome \*/i), 'João');
-      await user.type(screen.getByLabelText(/telefone \*/i), '(11) 99999-9999');
-      await user.type(screen.getByLabelText(/cep/i), '01234-567');
+            // Fill required fields
+            await user.type(screen.getByLabelText(/nome \*/i), 'João');
+            await user.type(screen.getByLabelText(/telefone \*/i), '(11) 99999-9999');
+            await user.type(screen.getByLabelText(/cep/i), '01234-567');
 
-      const submitButton = screen.getByRole('button', { name: /criar paciente/i });
-      await user.click(submitButton);
+            const submitButton = screen.getByRole('button', { name: /criar paciente/i });
+            await user.click(submitButton);
 
-      await waitFor(() => {
-        expect(screen.getByText('Email já existe')).toBeInTheDocument();
-      });
+            await waitFor(() => {
+                expect(mockCreate).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        firstName: 'João',
+                        phone: '(11) 99999-9999'
+                    })
+                );
+                expect(mockOnSave).toHaveBeenCalledWith(mockPatient);
+            });
+        });
+
+        it('should handle API errors during submission', async () => {
+            const user = userEvent.setup();
+            mockCreate.mockResolvedValue({
+                success: false,
+                message: 'Email já existe'
+            });
+
+            render(<PatientForm {...defaultProps} />);
+
+            // Fill required fields
+            await user.type(screen.getByLabelText(/nome \*/i), 'João');
+            await user.type(screen.getByLabelText(/telefone \*/i), '(11) 99999-9999');
+            await user.type(screen.getByLabelText(/cep/i), '01234-567');
+
+            const submitButton = screen.getByRole('button', { name: /criar paciente/i });
+            await user.click(submitButton);
+
+            await waitFor(() => {
+                expect(screen.getByText('Email já existe')).toBeInTheDocument();
+            });
+        });
     });
-  });
 
-  describe('Form Actions', () => {
-    it('should call onCancel when cancel button is clicked', async () => {
-      const user = userEvent.setup();
-      render(<PatientForm {...defaultProps} />);
+    describe('Form Actions', () => {
+        it('should call onCancel when cancel button is clicked', async () => {
+            const user = userEvent.setup();
+            render(<PatientForm {...defaultProps} />);
 
-      const cancelButton = screen.getByRole('button', { name: /cancelar/i });
-      await user.click(cancelButton);
+            const cancelButton = screen.getByRole('button', { name: /cancelar/i });
+            await user.click(cancelButton);
 
-      expect(mockOnCancel).toHaveBeenCalled();
+            expect(mockOnCancel).toHaveBeenCalled();
+        });
     });
-  });
 });

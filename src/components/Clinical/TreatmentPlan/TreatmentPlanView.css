@@ -1,335 +1,353 @@
 .treatment-plan-view {
-  padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .plan-header-view {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
 }
 
 .plan-header-view h2 {
-  margin: 0 0 8px 0;
-  font-size: 28px;
+    margin: 0 0 8px 0;
+    font-size: 28px;
 }
 
 .header-actions {
-  display: flex;
-  gap: 12px;
+    display: flex;
+    gap: 12px;
 }
 
 .present-btn,
 .print-btn {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .present-btn {
-  background: #9c27b0;
-  color: white;
+    background: #9c27b0;
+    color: white;
 }
 
 .present-btn:hover {
-  background: #7b1fa2;
+    background: #7b1fa2;
 }
 
 .print-btn {
-  background: #607d8b;
-  color: white;
+    background: #607d8b;
+    color: white;
 }
 
 .print-btn:hover {
-  background: #455a64;
+    background: #455a64;
 }
 
 .status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
 }
 
-.status-draft { background: #e0e0e0; color: #666; }
-.status-proposed { background: #fff3e0; color: #f57c00; }
-.status-accepted { background: #e8f5e9; color: #4caf50; }
-.status-progress { background: #e3f2fd; color: #2196f3; }
-.status-completed { background: #f3e5f5; color: #9c27b0; }
-.status-cancelled { background: #ffebee; color: #f44336; }
+.status-draft {
+    background: #e0e0e0;
+    color: #666;
+}
+.status-proposed {
+    background: #fff3e0;
+    color: #f57c00;
+}
+.status-accepted {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+.status-progress {
+    background: #e3f2fd;
+    color: #2196f3;
+}
+.status-completed {
+    background: #f3e5f5;
+    color: #9c27b0;
+}
+.status-cancelled {
+    background: #ffebee;
+    color: #f44336;
+}
 
 .plan-description-view {
-  color: #666;
-  margin-bottom: 24px;
-  line-height: 1.6;
+    color: #666;
+    margin-bottom: 24px;
+    line-height: 1.6;
 }
 
 .phases-view {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 24px;
 }
 
 .phase-view {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
 }
 
 .phase-header-view {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
 }
 
 .phase-header-view h3 {
-  margin: 0;
-  font-size: 20px;
+    margin: 0;
+    font-size: 20px;
 }
 
 .phase-desc {
-  color: #666;
-  margin-bottom: 16px;
-  font-size: 14px;
+    color: #666;
+    margin-bottom: 16px;
+    font-size: 14px;
 }
 
 .procedures-table-view {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 12px;
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 12px;
 }
 
 .procedures-table-view th {
-  background: #f5f5f5;
-  padding: 12px;
-  text-align: left;
-  font-size: 13px;
-  font-weight: 600;
-  border-bottom: 2px solid #e0e0e0;
+    background: #f5f5f5;
+    padding: 12px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 600;
+    border-bottom: 2px solid #e0e0e0;
 }
 
 .procedures-table-view td {
-  padding: 12px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 14px;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
 }
 
 .phase-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  padding-top: 12px;
-  border-top: 1px solid #e0e0e0;
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 12px;
+    border-top: 1px solid #e0e0e0;
 }
 
 .start-phase-btn,
 .complete-phase-btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .start-phase-btn {
-  background: #2196f3;
-  color: white;
+    background: #2196f3;
+    color: white;
 }
 
 .start-phase-btn:hover {
-  background: #1976d2;
+    background: #1976d2;
 }
 
 .complete-phase-btn {
-  background: #4caf50;
-  color: white;
+    background: #4caf50;
+    color: white;
 }
 
 .complete-phase-btn:hover {
-  background: #45a049;
+    background: #45a049;
 }
 
 .cost-summary-view {
-  background: #f9f9f9;
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
+    background: #f9f9f9;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
 }
 
 .cost-summary-view h3 {
-  margin: 0 0 16px 0;
-  font-size: 18px;
+    margin: 0 0 16px 0;
+    font-size: 18px;
 }
 
 .summary-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    font-size: 15px;
 }
 
 .summary-row.insurance {
-  color: #4caf50;
+    color: #4caf50;
 }
 
 .summary-row.patient {
-  border-top: 2px solid #e0e0e0;
-  margin-top: 8px;
-  padding-top: 16px;
-  font-weight: 600;
-  font-size: 18px;
-  color: #2196f3;
+    border-top: 2px solid #e0e0e0;
+    margin-top: 8px;
+    padding-top: 16px;
+    font-weight: 600;
+    font-size: 18px;
+    color: #2196f3;
 }
 
 .accept-section {
-  text-align: center;
-  padding: 24px;
-  background: #e8f5e9;
-  border-radius: 12px;
+    text-align: center;
+    padding: 24px;
+    background: #e8f5e9;
+    border-radius: 12px;
 }
 
 .accept-btn {
-  padding: 16px 48px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 16px 48px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .accept-btn:hover {
-  background: #45a049;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
 }
 
 /* Presentation Mode */
 .treatment-plan-presentation {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: white;
-  z-index: 1000;
-  overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: white;
+    z-index: 1000;
+    overflow-y: auto;
 }
 
 .exit-presentation {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 12px 24px;
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 1001;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 24px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    z-index: 1001;
 }
 
 .exit-presentation:hover {
-  background: #d32f2f;
+    background: #d32f2f;
 }
 
 .presentation-content {
-  max-width: 900px;
-  margin: 60px auto;
-  padding: 40px;
+    max-width: 900px;
+    margin: 60px auto;
+    padding: 40px;
 }
 
 .presentation-content h1 {
-  font-size: 36px;
-  margin-bottom: 16px;
-  text-align: center;
+    font-size: 36px;
+    margin-bottom: 16px;
+    text-align: center;
 }
 
 .plan-desc {
-  text-align: center;
-  color: #666;
-  margin-bottom: 40px;
-  font-size: 16px;
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 16px;
 }
 
 .presentation-phase {
-  margin-bottom: 40px;
-  page-break-inside: avoid;
+    margin-bottom: 40px;
+    page-break-inside: avoid;
 }
 
 .presentation-phase h2 {
-  font-size: 28px;
-  margin-bottom: 12px;
-  color: #2196f3;
+    font-size: 28px;
+    margin-bottom: 12px;
+    color: #2196f3;
 }
 
 .presentation-procedures {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
 }
 
 .presentation-procedure {
-  background: #f5f5f5;
-  padding: 16px;
-  border-radius: 8px;
+    background: #f5f5f5;
+    padding: 16px;
+    border-radius: 8px;
 }
 
 .presentation-procedure h3 {
-  font-size: 16px;
-  margin: 0 0 8px 0;
+    font-size: 16px;
+    margin: 0 0 8px 0;
 }
 
 .proc-cost {
-  font-size: 18px;
-  font-weight: 600;
-  color: #2196f3;
-  margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #2196f3;
+    margin: 0;
 }
 
 .presentation-summary {
-  background: #e3f2fd;
-  padding: 24px;
-  border-radius: 12px;
-  margin-top: 40px;
-  text-align: center;
+    background: #e3f2fd;
+    padding: 24px;
+    border-radius: 12px;
+    margin-top: 40px;
+    text-align: center;
 }
 
 .presentation-summary h2 {
-  font-size: 24px;
-  margin-bottom: 16px;
+    font-size: 24px;
+    margin-bottom: 16px;
 }
 
 .presentation-summary p {
-  font-size: 18px;
-  margin: 8px 0;
+    font-size: 18px;
+    margin: 8px 0;
 }
 
 @media print {
-  .header-actions,
-  .phase-actions,
-  .accept-section,
-  .exit-presentation {
-    display: none !important;
-  }
+    .header-actions,
+    .phase-actions,
+    .accept-section,
+    .exit-presentation {
+        display: none !important;
+    }
 }

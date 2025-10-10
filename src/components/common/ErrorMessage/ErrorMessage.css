@@ -1,39 +1,39 @@
 /* ErrorMessage Styles */
 .error-message {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background-color: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #991b1b;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    color: #991b1b;
 }
 
 .error-message__icon {
-  font-size: 20px;
-  flex-shrink: 0;
+    font-size: 20px;
+    flex-shrink: 0;
 }
 
 .error-message__content {
-  flex: 1;
+    flex: 1;
 }
 
 .error-message__text {
-  margin: 0 0 8px 0;
-  font-size: 14px;
+    margin: 0 0 8px 0;
+    font-size: 14px;
 }
 
 .error-message__retry {
-  background: none;
-  border: none;
-  color: #dc2626;
-  text-decoration: underline;
-  cursor: pointer;
-  font-size: 14px;
-  padding: 0;
+    background: none;
+    border: none;
+    color: #dc2626;
+    text-decoration: underline;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0;
 }
 
 .error-message__retry:hover {
-  color: #991b1b;
+    color: #991b1b;
 }

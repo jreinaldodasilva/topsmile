@@ -1,86 +1,86 @@
 .treatment-type-selector {
-  padding: 20px;
+    padding: 20px;
 }
 
 .treatment-type-selector h3 {
-  margin: 0 0 20px 0;
-  font-size: 24px;
+    margin: 0 0 20px 0;
+    font-size: 24px;
 }
 
 .category-filter {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 .category-btn {
-  padding: 8px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 20px;
-  background: white;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-transform: capitalize;
+    padding: 8px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    background: white;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: capitalize;
 }
 
 .category-btn:hover {
-  border-color: #2196f3;
+    border-color: #2196f3;
 }
 
 .category-btn.active {
-  background: #2196f3;
-  color: white;
-  border-color: #2196f3;
+    background: #2196f3;
+    color: white;
+    border-color: #2196f3;
 }
 
 .types-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
 }
 
 .type-card {
-  border: 2px solid #e0e0e0;
-  border-radius: 12px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.2s;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .type-card:hover {
-  border-color: #2196f3;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #2196f3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .type-card h4 {
-  margin: 0 0 8px 0;
-  font-size: 18px;
+    margin: 0 0 8px 0;
+    font-size: 18px;
 }
 
 .type-description {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 12px;
-  line-height: 1.5;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 12px;
+    line-height: 1.5;
 }
 
 .type-details {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
 }
 
 .duration,
 .price {
-  font-size: 14px;
-  font-weight: 600;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .price {
-  color: #2196f3;
+    color: #2196f3;
 }

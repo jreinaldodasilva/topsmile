@@ -1,0 +1,10 @@
+build
+dist
+coverage
+node_modules
+.env
+.env.local
+.env.test
+*.min.js
+*.min.css
+package-lock.json

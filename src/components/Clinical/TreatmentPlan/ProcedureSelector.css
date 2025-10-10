@@ -1,57 +1,57 @@
 .procedure-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .selector-row {
-  display: grid;
-  grid-template-columns: 200px 1fr;
-  gap: 12px;
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 12px;
 }
 
 .category-select,
 .code-select {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
 }
 
 .procedure-details {
-  display: grid;
-  grid-template-columns: 100px 100px 1fr auto;
-  gap: 12px;
-  align-items: center;
+    display: grid;
+    grid-template-columns: 100px 100px 1fr auto;
+    gap: 12px;
+    align-items: center;
 }
 
 .tooth-input,
 .surface-input,
 .cost-input {
-  padding: 8px 12px;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 14px;
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
 }
 
 .cost-input:disabled {
-  background: #f5f5f5;
-  cursor: not-allowed;
+    background: #f5f5f5;
+    cursor: not-allowed;
 }
 
 .add-procedure-btn {
-  padding: 8px 16px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
+    padding: 8px 16px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
 }
 
 .add-procedure-btn:hover {
-  background: #45a049;
+    background: #45a049;
 }

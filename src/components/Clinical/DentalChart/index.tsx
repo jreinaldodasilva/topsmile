@@ -83,7 +83,7 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
         try {
             const updatedTeeth = chart?.teeth || [];
             const toothIndex = updatedTeeth.findIndex((t: any) => t.toothNumber === selectedTooth);
-            
+
             if (toothIndex >= 0) {
                 updatedTeeth[toothIndex].conditions.push(condition);
             } else {
@@ -125,7 +125,7 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
                             type="radio"
                             value="fdi"
                             checked={numberingSystem === 'fdi'}
-                            onChange={(e) => setNumberingSystem(e.target.value as 'fdi')}
+                            onChange={e => setNumberingSystem(e.target.value as 'fdi')}
                         />
                         FDI
                     </label>
@@ -134,7 +134,7 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
                             type="radio"
                             value="universal"
                             checked={numberingSystem === 'universal'}
-                            onChange={(e) => setNumberingSystem(e.target.value as 'universal')}
+                            onChange={e => setNumberingSystem(e.target.value as 'universal')}
                         />
                         Universal
                     </label>
@@ -148,15 +148,9 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
                 selectedTooth={selectedTooth}
             />
 
-            <ChartAnnotations
-                notes={chart?.notes}
-                onSaveNotes={handleSaveNotes}
-            />
+            <ChartAnnotations notes={chart?.notes} onSaveNotes={handleSaveNotes} />
 
-            <ChartExport
-                onPrint={handlePrint}
-                onExportPDF={handleExportPDF}
-            />
+            <ChartExport onPrint={handlePrint} onExportPDF={handleExportPDF} />
 
             <div className="history-toggle">
                 <button onClick={() => setShowHistory(!showHistory)}>
@@ -167,7 +161,7 @@ export const DentalChart: React.FC<DentalChartProps> = ({ patientId }) => {
             {showHistory && (
                 <ChartHistory
                     versions={chartHistory}
-                    onSelectVersion={(id) => {
+                    onSelectVersion={id => {
                         const version = chartHistory.find(v => v.id === id);
                         if (version) setChart(version);
                     }}
