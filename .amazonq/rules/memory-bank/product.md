@@ -1,86 +1,81 @@
-# TopSmile - Product Overview
+# TopSmile - Dental Clinic Management System
 
 ## Purpose
-TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks in a secure, multi-tenant environment.
+TopSmile is a comprehensive dental clinic management system designed to streamline operations for dental practices. It provides a complete solution for managing appointments, patient records, clinical workflows, and administrative tasks in a secure, efficient, and user-friendly platform.
 
 ## Value Proposition
-- **Operational Efficiency**: Centralized platform for all clinic operations, reducing administrative overhead
+- **Operational Efficiency**: Automates scheduling, patient management, and clinical documentation
 - **Patient Experience**: Self-service portal for booking, records access, and communication
-- **Clinical Excellence**: Structured workflows for treatment planning and documentation
-- **Security & Compliance**: Enterprise-grade security with JWT authentication, CSRF protection, and data sanitization
-- **Scalability**: Multi-tenant architecture supporting multiple clinics from a single deployment
+- **Clinical Excellence**: Treatment planning, documentation, and provider-specific workflows
+- **Security & Compliance**: Enterprise-grade security with JWT authentication, CSRF protection, rate limiting
+- **Multi-Tenant**: Supports multiple clinics with role-based access control
 
 ## Key Features
 
 ### Patient Management
-- Complete patient registration and profile management
-- Medical history tracking and clinical records
-- Patient demographics and contact information
-- Multi-clinic patient support
+- Patient registration and profile management
+- Comprehensive medical history tracking
+- Clinical records and documentation
+- Patient search and filtering
 
 ### Patient Portal
 - Self-service appointment booking
 - Access to medical records and treatment history
 - Secure communication with providers
 - Payment processing integration
-- 30-day session management for convenience
 
 ### Appointment System
 - Real-time scheduling with provider availability
-- Appointment type configuration (consultation, cleaning, treatment, etc.)
-- Automated reminders via email and SMS
-- Conflict detection and validation
-- Recurring appointment support
+- Appointment reminders via email/SMS
+- Status tracking (scheduled, confirmed, completed, cancelled)
+- Calendar integration
 
 ### Clinical Workflows
 - Treatment planning and documentation
-- Provider-specific workflows and preferences
-- Clinical notes and documentation
-- Treatment history tracking
-- Multi-provider coordination
+- Clinical notes with digital signatures
+- Provider-specific workflows
+- Medical history management
 
 ### Multi-Role Access Control
-- **Super Admin**: System-wide configuration and management
-- **Admin**: Clinic-level administration and reporting
+- **Super Admin**: Full system access
+- **Admin**: Clinic-level administration
 - **Provider**: Clinical workflows and patient care
-- **Staff**: Appointment scheduling and patient coordination
+- **Staff**: Appointment scheduling and patient management
 - **Patient**: Self-service portal access
 
 ### Payment Integration
 - Stripe payment processing
-- Secure payment handling with webhook support
-- Payment history and receipts
-- Multiple payment methods support
+- Payment tracking and history
+- Invoice generation
 
 ### Security & Compliance
-- Dual authentication systems (staff and patient)
-- JWT with HttpOnly cookies
-- Refresh token rotation and blacklisting
-- Rate limiting on sensitive endpoints
+- JWT authentication with refresh token rotation
 - CSRF protection
+- Rate limiting (login, refresh, API endpoints)
 - Data sanitization and validation
-- Secure password hashing with bcrypt
+- Redis-based token blacklist
+- HttpOnly cookies for token storage
 
 ## Target Users
 
 ### Primary Users
 - **Dental Clinics**: Small to medium-sized dental practices
-- **Dentists/Providers**: Individual practitioners and specialists
-- **Clinic Staff**: Receptionists, dental assistants, office managers
-- **Patients**: Dental clinic patients seeking convenient access
+- **Dentists/Providers**: Clinical staff providing patient care
+- **Administrative Staff**: Front desk and office management
+- **Patients**: Individuals seeking dental care
 
 ### Use Cases
-1. **Appointment Management**: Staff schedules appointments, system sends reminders, patients can self-book
-2. **Patient Onboarding**: New patient registration, medical history collection, profile creation
-3. **Clinical Documentation**: Providers document treatments, create treatment plans, track progress
-4. **Patient Self-Service**: Patients book appointments, view records, make payments online
-5. **Multi-Clinic Operations**: Clinic chains manage multiple locations from single system
-6. **Provider Scheduling**: Manage provider availability, specialties, and appointment types
+1. **Appointment Scheduling**: Staff schedules appointments based on provider availability
+2. **Patient Self-Booking**: Patients book appointments through the portal
+3. **Clinical Documentation**: Providers document treatment plans and clinical notes
+4. **Patient Records Management**: Staff maintains comprehensive patient records
+5. **Payment Processing**: Patients make payments for services rendered
+6. **Multi-Clinic Management**: Administrators manage multiple clinic locations
 
 ## Technical Highlights
-- **Monorepo Architecture**: Unified codebase with frontend, backend, and shared types
-- **Real-time Updates**: Redis caching for performance and session management
-- **API Versioning**: Support for multiple API versions via URL path or headers
-- **Comprehensive Testing**: Unit, integration, E2E, accessibility, and performance tests
-- **CI/CD Ready**: Automated testing, coverage, quality checks, and deployment pipelines
-- **Developer Experience**: TypeScript throughout, hot reload, comprehensive documentation
+- **Monorepo Architecture**: Frontend, backend, and shared types in one repository
+- **Real-Time Updates**: WebSocket support for live appointment updates
+- **API Versioning**: Supports multiple API versions for backward compatibility
+- **Comprehensive Testing**: Unit, integration, E2E, and accessibility tests
+- **Performance Optimized**: Redis caching, database indexing, lazy loading
+- **Accessibility Compliant**: WCAG 2.1 AA standards

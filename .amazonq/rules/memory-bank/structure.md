@@ -1,4 +1,4 @@
-# TopSmile - Project Structure
+# Project Structure
 
 ## Monorepo Organization
 
@@ -7,12 +7,8 @@ TopSmile uses a monorepo structure with three main packages:
 ```
 topsmile/
 ├── src/                    # Frontend React application
-├── backend/                # Backend Express API server
-├── packages/types/         # Shared TypeScript types
-├── cypress/                # E2E tests
-├── docs/                   # Documentation
-├── scripts/                # Build and utility scripts
-└── .github/workflows/      # CI/CD pipelines
+├── backend/                # Backend Express API
+└── packages/types/         # Shared TypeScript types
 ```
 
 ## Frontend Structure (`/src`)
@@ -23,11 +19,11 @@ topsmile/
   - `Auth/` - Authentication forms and flows
   - `Booking/` - Appointment booking interface
   - `Calendar/` - Calendar and scheduling views
-  - `Clinical/` - Clinical workflow components
+  - `Clinical/` - Clinical workflows (notes, treatment plans, signatures)
   - `PatientPortal/` - Patient self-service components
   - `Payment/` - Payment processing UI
-  - `common/` - Shared UI components
-  - `UI/` - Base UI elements (buttons, inputs, modals)
+  - `common/` - Shared UI components (buttons, forms, modals)
+  - `UI/` - Base UI primitives
 
 - **features/** - Feature modules with business logic
   - `appointments/` - Appointment management
@@ -43,7 +39,7 @@ topsmile/
   - `base/` - Base HTTP client
   - `interceptors/` - Request/response interceptors
   - `apiService.ts` - Main API service
-  - `paymentService.ts` - Stripe integration
+  - `paymentService.ts` - Payment integration
 
 - **contexts/** - React Context providers
   - `AuthContext.tsx` - Staff authentication state
@@ -51,13 +47,13 @@ topsmile/
   - `ErrorContext.tsx` - Global error handling
 
 - **store/** - Zustand state management
-  - `authStore.ts` - Authentication state
   - `appStore.ts` - Application state
+  - `authStore.ts` - Authentication state
   - `clinicalStore.ts` - Clinical data state
 
 - **hooks/** - Custom React hooks
   - `useApiQuery.ts` - API data fetching
-  - `useForm.ts` - Form handling
+  - `useForm.ts` - Form management
   - `useErrorHandler.ts` - Error handling
   - `useAccessibility.ts` - Accessibility features
   - `usePerformanceMonitor.ts` - Performance tracking
@@ -72,150 +68,119 @@ topsmile/
 - **pages/** - Page components mapped to routes
 - **styles/** - Global styles and CSS variables
 - **utils/** - Utility functions and helpers
-- **mocks/** - MSW mock handlers for testing
+- **mocks/** - MSW mock service worker for testing
 
 ## Backend Structure (`/backend/src`)
 
 ### Core Directories
-- **routes/** - Express route handlers organized by domain
-  - `auth/` - Staff authentication endpoints
-  - `patientAuth/` - Patient authentication endpoints
-  - `scheduling/` - Appointment and scheduling routes
-  - `patients/` - Patient management routes
-  - `providers/` - Provider management routes
-  - `clinics/` - Clinic configuration routes
-  - `payments/` - Payment processing routes
+- **routes/** - Express route handlers
+  - API endpoint definitions
+  - Route-level middleware
+  - Request validation
 
 - **services/** - Business logic layer
+  - `scheduling/` - Appointment scheduling logic
+  - `clinical/` - Clinical workflows (treatment plans, notes)
   - `auth/` - Authentication services
-  - `scheduling/` - Scheduling and appointment logic
-  - `patients/` - Patient management logic
-  - `providers/` - Provider management logic
-  - `notifications/` - Email and SMS notifications
-  - `payments/` - Payment processing logic
+  - `notification/` - Email/SMS notifications
+  - `payment/` - Payment processing
 
-- **models/** - Mongoose database models
-  - `User.ts` - Staff user model
-  - `Patient.ts` - Patient model
-  - `Provider.ts` - Provider model
-  - `Appointment.ts` - Appointment model
-  - `Clinic.ts` - Clinic configuration model
-  - `RefreshToken.ts` - Token management model
+- **models/** - Mongoose data models
+  - `User.ts` - Staff users
+  - `Patient.ts` - Patient records
+  - `Provider.ts` - Provider profiles
+  - `Appointment.ts` - Appointments
+  - `Clinic.ts` - Clinic configuration
+  - `RefreshToken.ts` - Token management
 
 - **middleware/** - Express middleware
-  - `auth.ts` - Authentication middleware
-  - `validation.ts` - Request validation
-  - `errorHandler.ts` - Error handling
-  - `rateLimiter.ts` - Rate limiting
-  - `csrf.ts` - CSRF protection
-  - `sanitization.ts` - Input sanitization
-
-- **validation/** - express-validator schemas
-  - `auth.ts` - Authentication validation
-  - `appointment.ts` - Appointment validation
-  - `patient.ts` - Patient validation
-  - `common.ts` - Shared validation rules
+  - Authentication and authorization
+  - Request validation
+  - Error handling
+  - Rate limiting
+  - CSRF protection
+  - Security headers
 
 - **config/** - Configuration files
-  - `database.ts` - MongoDB connection
-  - `redis.ts` - Redis configuration
-  - `constants.ts` - Application constants
-  - `swagger.ts` - API documentation
+  - Database connection
+  - Redis configuration
+  - JWT settings
+  - Email/SMS providers
+  - Stripe integration
 
 - **utils/** - Utility functions
-  - `jwt.ts` - JWT token utilities
-  - `logger.ts` - Logging configuration
-  - `errors.ts` - Custom error classes
-  - `validators.ts` - Custom validators
+  - Token management
+  - Data validation
+  - Error classes
+  - Logging
 
-- **container/** - Dependency injection container
-- **events/** - Event emitters and handlers
+- **validation/** - Input validation schemas
+  - express-validator rules
+  - Custom validators
+
 - **types/** - Backend-specific TypeScript types
+- **events/** - Event emitters and handlers
+- **container/** - Dependency injection container
+
+### Testing Structure
+- **tests/** - Test suites
+  - `unit/` - Unit tests for services and utilities
+  - `integration/` - API integration tests
+  - `e2e/` - End-to-end workflow tests
+  - `performance/` - Load and performance tests
+  - `fixtures/` - Test data and mocks
+  - `helpers/` - Test utilities
 
 ## Shared Types (`/packages/types`)
 
 Centralized TypeScript interfaces and types shared between frontend and backend:
 - API request/response types
-- Domain models (User, Patient, Provider, Appointment, etc.)
+- Domain models
 - Enums and constants
-- Utility types
+- Validation schemas
 
-## Testing Structure
+## Configuration Files
 
-### Frontend Tests (`/src/tests`)
-- `components/` - Component unit tests
-- `hooks/` - Custom hook tests
-- `services/` - API service tests
-- `contexts/` - Context provider tests
-- `integration/` - Integration tests
-- `accessibility/` - A11y compliance tests
-- `performance/` - Performance tests
+### Root Level
+- `package.json` - Frontend dependencies and scripts
+- `tsconfig.json` - TypeScript configuration
+- `jest.config.js` - Jest test configuration
+- `cypress.config.ts` - Cypress E2E configuration
+- `.env` - Frontend environment variables
 
-### Backend Tests (`/backend/tests`)
-- `unit/` - Unit tests for services and utilities
-- `integration/` - API endpoint integration tests
-- `e2e/` - End-to-end workflow tests
-- `performance/` - Load and performance tests
-- `fixtures/` - Test data and fixtures
-- `helpers/` - Test utilities
-
-### E2E Tests (`/cypress`)
-- `e2e/` - Cypress test specifications
-- `support/` - Custom commands and utilities
-
-## Documentation (`/docs`)
-
-- **architecture/** - System architecture documentation
-  - Database schema and indexes
-  - Authentication flows
-  - Security best practices
-  - System architecture diagrams
-
-- **api/** - API documentation
-  - Swagger setup and configuration
-
-- **review/** - Code review reports
-  - Architecture reviews
-  - Security audits
-  - Action plans
-
-- **phase2/** and **phase3/** - Feature development documentation
-
-## CI/CD Pipelines (`.github/workflows`)
-
-- `test.yml` - Automated testing on PR and push
-- `coverage.yml` - Code coverage reporting
-- `quality.yml` - Code quality checks (linting, type-checking)
-- `security-scan.yml` - Security vulnerability scanning
-- `deploy.yml` - Deployment automation
+### Backend
+- `backend/package.json` - Backend dependencies
+- `backend/tsconfig.json` - Backend TypeScript config
+- `backend/jest.config.js` - Backend test config
+- `backend/.env` - Backend environment variables
 
 ## Architectural Patterns
 
 ### Frontend Architecture
-- **Component-Based**: Modular React components with clear responsibilities
-- **Feature Modules**: Business logic organized by domain features
+- **Component-Based**: React functional components with hooks
 - **State Management**: Zustand for global state, React Query for server state
-- **Service Layer**: Centralized API communication with interceptors
-- **Layout System**: Reusable layouts for different user roles
-- **Route Protection**: Role-based route guards
+- **Routing**: React Router 6 with lazy loading
+- **API Layer**: Centralized API service with interceptors
+- **Error Handling**: Error boundaries and context-based error management
 
 ### Backend Architecture
 - **Layered Architecture**: Routes → Services → Models
-- **Dependency Injection**: Container-based DI for testability
-- **Middleware Pipeline**: Composable middleware for cross-cutting concerns
-- **Event-Driven**: Event emitters for decoupled operations
-- **Repository Pattern**: Data access abstraction through Mongoose models
-- **Validation Layer**: Centralized input validation with express-validator
+- **Dependency Injection**: Container-based DI for services
+- **Event-Driven**: Event emitters for cross-service communication
+- **Repository Pattern**: Mongoose models as data repositories
+- **Middleware Pipeline**: Express middleware for cross-cutting concerns
 
 ### Data Flow
-1. **Frontend Request** → API Service → HTTP Client → Backend Route
+1. **Frontend Request** → API Service → HTTP Client
 2. **Backend Route** → Middleware (auth, validation) → Service Layer
-3. **Service Layer** → Business Logic → Model/Database
-4. **Response** → Service → Route → Frontend → State Update → UI Render
+3. **Service Layer** → Model/Database → Response
+4. **Backend Response** → Frontend → State Update → UI Render
 
-### Security Layers
-1. **Network**: CORS, Helmet, Rate Limiting
-2. **Authentication**: JWT with HttpOnly cookies, dual auth systems
-3. **Authorization**: Role-based access control (RBAC)
-4. **Input**: Validation, sanitization, CSRF protection
-5. **Data**: Encryption at rest, secure password hashing
+## Key Relationships
+
+- **Frontend ↔ Backend**: REST API communication via HTTP
+- **Frontend ↔ Shared Types**: Import types for type safety
+- **Backend ↔ Shared Types**: Import types for validation
+- **Backend ↔ MongoDB**: Mongoose ODM for data persistence
+- **Backend ↔ Redis**: Caching and session management
+- **Frontend ↔ Stripe**: Payment processing integration
