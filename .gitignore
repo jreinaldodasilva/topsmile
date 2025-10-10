@@ -4,22 +4,51 @@ backend/node_modules/
 packages/types/node_modules/
 /.pnp
 .pnp.js
+package-lock.json
+backend/package-lock.json
+packages/types/package-lock.json
 
 # Testing
-/coverage
-/reports
-/backend/.jest-cache
+coverage/
+reports/
+backend/.jest-cache/
+backend/coverage/
+backend/reports/
+.nyc_output/
 *.log
 
+# Logs
+logs/
+backend/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
 # Production
-/build
-/dist
-/backend/build
-/backend/dist
-packages/types/dist
+build/
+dist/
+backend/build/
+backend/dist/
+packages/types/dist/
+.next/
+out/
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
 
 # Misc
 .DS_Store
+*.pem
+*.swp
+*.swo
+*~
+Thumb.db
 
 # Environment Variables (Never commit actual values)
 .env
@@ -36,14 +65,19 @@ backend/.env.development
 backend/.env.test
 backend/.env.production
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
 # IDE
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 
 # Bundle analysis
 bundle-report.html
 bundle-stats.json
+bundle-analysis.json
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/

@@ -1,9 +1,18 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 
+// Mock uuid to handle ESM issues in Jest
+jest.mock('uuid', () => ({
+  v4: () => 'test-uuid-' + Math.random().toString(36).substr(2, 9),
+}));
+
+
 let mongoServer: MongoMemoryServer | null = null;
 
 beforeAll(async () => {
+  if (mongoose.connection.readyState !== 0) {
+    await mongoose.disconnect();
+  }
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri);
