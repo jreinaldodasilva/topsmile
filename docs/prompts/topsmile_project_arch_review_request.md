@@ -89,12 +89,6 @@ Assess modularity for future feature expansion.
 
 Identify design bottlenecks that could hinder maintainability or evolution.
 
-## Technology Choices
-
-Review the technologies listed in .amazonq/rules/memory-bank (frameworks, databases, libraries, tools).
-
-Assess whether these technologies are appropriate for the system’s goals.
-
 ## Review Deliverable Format
 
 Please structure the comprehensive review as follows:
