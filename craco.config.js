@@ -33,6 +33,11 @@ module.exports = {
                 name: 'stripe-vendor',
                 priority: 15,
               },
+              framerMotion: {
+                test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+                name: 'framer-motion-vendor',
+                priority: 15,
+              },
             },
           },
         };

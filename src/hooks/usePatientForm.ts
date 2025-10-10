@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../services/apiService';
 import type { Patient } from '../../packages/types/src/index';
 
@@ -98,7 +98,7 @@ export const usePatientForm = (patient?: Patient | null, onSave?: (patient: Pati
         }
     }, [patient]);
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
 
         if (name.includes('.')) {
@@ -126,9 +126,9 @@ export const usePatientForm = (patient?: Patient | null, onSave?: (patient: Pati
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
-    };
+    }, [errors]);
 
-    const handleArrayInputChange = (section: 'allergies' | 'medications' | 'conditions', value: string) => {
+    const handleArrayInputChange = useCallback((section: 'allergies' | 'medications' | 'conditions', value: string) => {
         const items = value
             .split(',')
             .map(item => item.trim())
@@ -140,7 +140,7 @@ export const usePatientForm = (patient?: Patient | null, onSave?: (patient: Pati
                 [section]: items
             }
         }));
-    };
+    }, []);
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};

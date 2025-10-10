@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { apiService } from '../services/apiService';
 import type { Appointment, Provider } from '@topsmile/types';
 
@@ -79,11 +79,11 @@ export const useAppointmentCalendar = () => {
         fetchData();
     }, [fetchData]);
 
-    const handleFilterChange = (key: keyof CalendarFilters, value: any) => {
+    const handleFilterChange = useCallback((key: keyof CalendarFilters, value: any) => {
         setFilters(prev => ({ ...prev, [key]: value }));
-    };
+    }, []);
 
-    const navigateDate = (direction: 'prev' | 'next') => {
+    const navigateDate = useCallback((direction: 'prev' | 'next') => {
         const newDate = new Date(currentDate);
 
         switch (filters.view) {
@@ -100,13 +100,13 @@ export const useAppointmentCalendar = () => {
 
         setCurrentDate(newDate);
         setFilters(prev => ({ ...prev, date: newDate.toISOString().split('T')[0] }));
-    };
+    }, [currentDate, filters.view]);
 
-    const goToToday = () => {
+    const goToToday = useCallback(() => {
         const today = new Date();
         setCurrentDate(today);
         setFilters(prev => ({ ...prev, date: today.toISOString().split('T')[0] }));
-    };
+    }, []);
 
     const getDateRangeLabel = () => {
         const options: Intl.DateTimeFormatOptions = {
@@ -131,13 +131,13 @@ export const useAppointmentCalendar = () => {
         }
     };
 
-    const addAppointment = (appointment: Appointment) => {
+    const addAppointment = useCallback((appointment: Appointment) => {
         setAppointments(prev => [appointment, ...prev]);
-    };
+    }, []);
 
-    const updateAppointment = (appointment: Appointment) => {
+    const updateAppointment = useCallback((appointment: Appointment) => {
         setAppointments(prev => prev.map(a => (a._id === appointment._id ? appointment : a)));
-    };
+    }, []);
 
     return {
         appointments,

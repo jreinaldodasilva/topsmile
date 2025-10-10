@@ -6,6 +6,7 @@ import Footer from '../../components/Footer/Footer';
 import PatientForm from '../../components/Admin/Forms/PatientForm';
 import ScheduleAppointmentModal from './ScheduleAppointmentModal';
 import { usePatientManagement } from '../../hooks/usePatientManagement';
+import PatientRow from '../../components/Admin/PatientRow';
 import { formatDate, calculateAge, getGenderLabel } from '../../utils/patientFormatters';
 import './PatientManagement.css';
 

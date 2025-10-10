@@ -1,0 +1,9 @@
+{
+  "formats": ["webp", "jpg"],
+  "quality": {
+    "jpg": 85,
+    "webp": 85
+  },
+  "sizes": [400, 800, 1200, 1600],
+  "outputDir": "public/images/optimized"
+}

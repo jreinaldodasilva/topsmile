@@ -87,19 +87,19 @@ export const usePatientManagement = () => {
         fetchPatients();
     }, [fetchPatients]);
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
-    };
+    }, []);
 
-    const handleFilterChange = (key: keyof PatientFilters, value: any) => {
+    const handleFilterChange = useCallback((key: keyof PatientFilters, value: any) => {
         setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
-    };
+    }, []);
 
-    const handlePageChange = (newPage: number) => {
+    const handlePageChange = useCallback((newPage: number) => {
         setFilters(prev => ({ ...prev, page: newPage }));
-    };
+    }, []);
 
-    const handleSort = (field: string) => {
+    const handleSort = useCallback((field: string) => {
         setSort(prev => {
             const newSort: Record<string, any> = {};
             if (prev[field]) {
@@ -109,9 +109,9 @@ export const usePatientManagement = () => {
             }
             return newSort;
         });
-    };
+    }, []);
 
-    const handleDeletePatient = async (patientId: string) => {
+    const handleDeletePatient = useCallback(async (patientId: string) => {
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
                 await apiService.patients.delete(patientId);
@@ -120,16 +120,16 @@ export const usePatientManagement = () => {
                 console.error('Failed to delete patient:', error);
             }
         }
-    };
+    }, [fetchPatients]);
 
-    const addPatient = (patient: Patient) => {
+    const addPatient = useCallback((patient: Patient) => {
         setPatients(prev => [patient, ...prev]);
         setTotal(prev => prev + 1);
-    };
+    }, []);
 
-    const updatePatient = (patient: Patient) => {
+    const updatePatient = useCallback((patient: Patient) => {
         setPatients(prev => prev.map(p => (p._id === patient._id ? patient : p)));
-    };
+    }, []);
 
     return {
         patients,
