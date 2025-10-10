@@ -340,7 +340,7 @@ Examples:
 
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
-| 2.0 | 2024-01-20 | Updated for system v2.0.0 | QA Team |
+| 2.0 | 2025-10-10 | Updated for system v2.0.0 | QA Team |
 | | | - Added CURRENT-TEST-STATUS.md | |
 | | | - Added TESTING-CHECKLIST.md | |
 | | | - Updated overview with system status | |
@@ -382,7 +382,7 @@ This testing documentation is part of the TopSmile project and follows the same 
 ---
 
 **Document Version**: 2.0  
-**Last Updated**: 2024-01-20  
+**Last Updated**: 2025-10-10  
 **Maintained By**: QA Team  
 **Next Review**: 2024-04-20  
 **System Version**: 2.0.0  

@@ -1,7 +1,7 @@
 # TopSmile Quick Reference Guide
 
 **Version:** 1.0.0  
-**Last Updated:** 2024-01-20
+**Last Updated:** 2025-10-10
 
 ---
 
@@ -503,5 +503,5 @@ node -e "require('dotenv').config({path:'backend/.env'}); console.log(process.en
 
 ---
 
-**Last Updated:** 2024-01-20  
+**Last Updated:** 2025-10-10  
 **Maintained by:** TopSmile Development Team

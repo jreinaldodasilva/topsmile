@@ -5,7 +5,7 @@
 This manual testing guide enables testers and developers to verify TopSmile functionality directly through a web browser without relying on automated tests.
 
 **System Status**: 🟩 Production Ready (v2.0.0)  
-**Last System Review**: 2024-01-20  
+**Last System Review**: 2025-10-10  
 **Test Coverage**: Manual tests complement 80% automated coverage target The guide provides step-by-step procedures to:
 
 - Validate major application features from the user's perspective
@@ -242,6 +242,6 @@ For questions about manual testing:
 ---
 
 **Document Version**: 2.0  
-**Last Updated**: 2024-01-20  
+**Last Updated**: 2025-10-10  
 **Next Review**: 2024-04-20  
 **Status**: ✅ Updated - Aligned with System v2.0.0

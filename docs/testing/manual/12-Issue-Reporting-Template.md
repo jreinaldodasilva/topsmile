@@ -152,7 +152,7 @@ Document: 05-Appointment-Management-Tests.md
 2. Click "Novo Agendamento"
 3. Select patient: João Silva
 4. Select provider: Dr. Maria Santos
-5. Select date: 2024-01-20
+5. Select date: 2025-10-10
 6. Select time: 10:00 AM
 7. Click "Agendar"
 8. Observe error
