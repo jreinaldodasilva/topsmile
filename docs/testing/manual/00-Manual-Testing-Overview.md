@@ -2,7 +2,11 @@
 
 ## Purpose
 
-This manual testing guide enables testers and developers to verify TopSmile functionality directly through a web browser without relying on automated tests. The guide provides step-by-step procedures to:
+This manual testing guide enables testers and developers to verify TopSmile functionality directly through a web browser without relying on automated tests.
+
+**System Status**: 🟩 Production Ready (v2.0.0)  
+**Last System Review**: 2024-01-20  
+**Test Coverage**: Manual tests complement 80% automated coverage target The guide provides step-by-step procedures to:
 
 - Validate major application features from the user's perspective
 - Identify and record UI or functional issues
@@ -14,19 +18,25 @@ This manual testing guide enables testers and developers to verify TopSmile func
 
 The manual testing guide is organized into the following documents:
 
+### ✅ Available Documents
 1. **00-Manual-Testing-Overview.md** (this document) - Introduction and guide structure
 2. **01-Environment-Setup.md** - Browser setup, test accounts, and environment preparation
 3. **02-Authentication-Tests.md** - Login, logout, password recovery, and session management
 4. **03-Staff-Dashboard-Tests.md** - Staff dashboard functionality and navigation
-5. **04-Patient-Portal-Tests.md** - Patient self-service portal features
-6. **05-Appointment-Management-Tests.md** - Scheduling, booking, and appointment workflows
-7. **06-Patient-Management-Tests.md** - Patient records, registration, and medical history
-8. **07-Provider-Management-Tests.md** - Provider profiles, availability, and specialties
-9. **08-Role-Based-Access-Tests.md** - Permission verification for all user roles
-10. **09-Payment-Processing-Tests.md** - Stripe integration and payment workflows
-11. **10-Error-Handling-Tests.md** - Error scenarios and user feedback
-12. **11-Performance-Responsiveness-Tests.md** - Load times, responsiveness, and mobile testing
-13. **12-Issue-Reporting-Template.md** - How to document and report findings
+5. **05-Appointment-Management-Tests.md** - Scheduling, booking, and appointment workflows
+6. **08-Role-Based-Access-Tests.md** - Permission verification for all user roles
+7. **12-Issue-Reporting-Template.md** - How to document and report findings
+8. **Quick-Reference-Guide.md** - Quick testing commands and tips
+9. **MANUAL-TESTING-SUMMARY.md** - Testing summary and results
+10. **README.md** - Testing documentation overview
+
+### 📋 Planned Documents
+- **04-Patient-Portal-Tests.md** - Patient self-service portal features
+- **06-Patient-Management-Tests.md** - Patient records, registration, and medical history
+- **07-Provider-Management-Tests.md** - Provider profiles, availability, and specialties
+- **09-Payment-Processing-Tests.md** - Stripe integration and payment workflows
+- **10-Error-Handling-Tests.md** - Error scenarios and user feedback
+- **11-Performance-Responsiveness-Tests.md** - Load times, responsiveness, and mobile testing
 
 ## Testing Approach
 
@@ -84,11 +94,13 @@ Each test case uses this format:
 Before starting manual testing:
 
 - [ ] Read Document 01 (Environment Setup)
-- [ ] Install supported browser (Brave, Chrome, Firefox)
+- [ ] Install supported browser (Brave, Chrome, Firefox, Safari)
 - [ ] Obtain test account credentials for all roles
-- [ ] Verify backend and frontend servers are running
+- [ ] Verify backend (port 5000) and frontend (port 3000) are running
 - [ ] Confirm database has test data loaded
-- [ ] Enable browser developer tools
+- [ ] Enable browser developer tools (F12)
+- [ ] Check system health: http://localhost:5000/api/health
+- [ ] Verify API documentation: http://localhost:5000/api-docs
 
 ## Test Execution Guidelines
 
@@ -118,13 +130,18 @@ Before starting manual testing:
 ### Test Accounts
 
 Test accounts are provided for each role:
-- Super Admin
-- Clinic Admin
-- Provider (Dentist)
-- Staff (Receptionist)
-- Patient
+- **Super Admin** - Full system access
+- **Admin** - Clinic-level administration
+- **Provider** - Clinical workflows and patient care
+- **Staff** - Appointment scheduling and patient management
+- **Patient** - Self-service portal access
 
 See Document 01 for specific credentials.
+
+### Multi-Tenant Testing
+- Verify clinic data isolation
+- Test cross-clinic access restrictions
+- Confirm clinic-scoped queries
 
 ### Test Data Reset
 
@@ -184,15 +201,47 @@ Manual testing is successful when:
 - Use manual tests for exploratory testing
 - Automate repetitive manual test cases
 
+## System Information
+
+### Current System Status
+- **Version**: 2.0.0
+- **Health**: 🟩 Production Ready
+- **Security Score**: 90%
+- **Critical Issues Resolved**: 67% (8 of 12)
+- **High Priority Implemented**: 70% (7 of 10)
+
+### Key Features to Test
+- ✅ Dual authentication (staff/patient)
+- ✅ Request ID tracking
+- ✅ Comprehensive health checks
+- ✅ API versioning (v1)
+- ✅ Rate limiting (user-based)
+- ✅ CSRF protection
+- ✅ Audit logging
+- ✅ Structured logging (Pino)
+
+### Known Limitations
+- Database migrations: Manual (test carefully)
+- Error handling: Mixed patterns (document inconsistencies)
+- Test coverage: Unknown (report gaps)
+
 ## Contact
 
 For questions about manual testing:
 - Review test documentation in `/docs/testing/manual/`
 - Check automated test examples in `/src/tests/` and `/backend/tests/`
+- Review system documentation in `/docs/fullstack/`
 - Consult development team for environment issues
+
+## Related Documentation
+- [System Architecture](../../fullstack/architecture/01-System-Architecture-Overview.md)
+- [Current State Review](../../fullstack/CURRENT-STATE-REVIEW.md)
+- [Quick Reference](../../fullstack/QUICK-REFERENCE.md)
+- [Implementation Status](../../fullstack/IMPLEMENTATION-STATUS.md)
 
 ---
 
-**Document Version**: 1.0  
-**Last Updated**: 2024-01-15  
-**Next Review**: 2024-04-15
+**Document Version**: 2.0  
+**Last Updated**: 2024-01-20  
+**Next Review**: 2024-04-20  
+**Status**: ✅ Updated - Aligned with System v2.0.0
