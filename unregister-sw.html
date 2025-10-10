@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Unregister Service Worker</title>
+</head>
+<body>
+    <h1>Unregistering Service Workers...</h1>
+    <div id="status">Checking...</div>
+    <script>
+        const statusDiv = document.getElementById('status');
+        
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(registrations => {
+                if (registrations.length === 0) {
+                    statusDiv.innerHTML = '<p style="color: green;">No service workers found.</p>';
+                    return;
+                }
+                
+                let unregistered = 0;
+                registrations.forEach(registration => {
+                    registration.unregister().then(() => {
+                        unregistered++;
+                        statusDiv.innerHTML = `<p style="color: green;">Unregistered ${unregistered} service worker(s).</p>
+                            <p>Now close this tab and hard refresh (Ctrl+Shift+R) your app.</p>`;
+                    });
+                });
+            });
+        } else {
+            statusDiv.innerHTML = '<p style="color: red;">Service workers not supported.</p>';
+        }
+    </script>
+</body>
+</html>

@@ -13,10 +13,11 @@ This directory contains comprehensive manual testing documentation for the TopSm
 
 1. **Read**: [00-Manual-Testing-Overview.md](./00-Manual-Testing-Overview.md)
 2. **Setup**: [01-Environment-Setup.md](./01-Environment-Setup.md)
-3. **Check Status**: [CURRENT-TEST-STATUS.md](./CURRENT-TEST-STATUS.md)
-4. **Use Checklist**: [TESTING-CHECKLIST.md](./TESTING-CHECKLIST.md)
-5. **Test**: Follow documents 02-11 sequentially
-6. **Report**: Use [12-Issue-Reporting-Template.md](./12-Issue-Reporting-Template.md)
+3. **Enable Logging**: ⭐ **NEW** [LOGGING-GUIDE.md](./LOGGING-GUIDE.md)
+4. **Check Status**: [CURRENT-TEST-STATUS.md](./CURRENT-TEST-STATUS.md)
+5. **Use Checklist**: [TESTING-CHECKLIST.md](./TESTING-CHECKLIST.md)
+6. **Test**: Follow documents 02-11 sequentially
+7. **Report**: Use [12-Issue-Reporting-Template.md](./12-Issue-Reporting-Template.md)
 
 ## Document Index
 
@@ -25,6 +26,7 @@ This directory contains comprehensive manual testing documentation for the TopSm
 |----------|-------------|--------|
 | [00-Manual-Testing-Overview.md](./00-Manual-Testing-Overview.md) | Introduction, structure, and testing principles | ✅ Updated |
 | [01-Environment-Setup.md](./01-Environment-Setup.md) | Browser setup, test accounts, environment preparation | ✅ Complete |
+| [LOGGING-GUIDE.md](./LOGGING-GUIDE.md) | ⭐ **NEW** Automatic log capture for Amazon Q review | ✅ Complete |
 | [CURRENT-TEST-STATUS.md](./CURRENT-TEST-STATUS.md) | ⭐ **NEW** Test execution tracking and status | ✅ Complete |
 | [TESTING-CHECKLIST.md](./TESTING-CHECKLIST.md) | ⭐ **NEW** Quick testing checklist and scenarios | ✅ Complete |
 

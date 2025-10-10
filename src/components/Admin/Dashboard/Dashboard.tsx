@@ -65,8 +65,8 @@ const EnhancedDashboard: React.FC = () => {
       try {
         const [statsRes, appointmentsRes, patientsRes] = await Promise.all([
           apiService.dashboard.getStats(),
-          apiService.appointments.getAll({ limit: 5, sort: 'scheduledStart' }),
-          apiService.patients.getAll({ limit: 5, sort: '-createdAt' })
+          apiService.appointments.getAll({ limit: 5, sort: { scheduledStart: 1 } }),
+          apiService.patients.getAll({ limit: 5, sort: { createdAt: -1 } })
         ]);
 
         if (statsRes.success && statsRes.data) {
