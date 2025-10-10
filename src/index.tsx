@@ -5,8 +5,19 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { initPerformanceMonitoring } from './utils/performanceMonitor';
+import { validateEnv } from './utils/validateEnv';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
+
+// Validate environment variables
+try {
+  validateEnv();
+} catch (error) {
+  console.error('Environment validation failed:', error);
+  if (process.env.NODE_ENV === 'production') {
+    throw error;
+  }
+}
 
 if (process.env.NODE_ENV === 'development' && !process.env.REACT_APP_DISABLE_MSW) {
   const { worker } = require('./mocks/browser');

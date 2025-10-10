@@ -21,6 +21,9 @@ export const PatientAppointmentsList = lazy(() => import('../pages/Patient/Appoi
 export const PatientAppointmentBooking = lazy(() => import('../pages/Patient/Appointment/PatientAppointmentBooking'));
 export const PatientAppointmentDetail = lazy(() => import('../pages/Patient/Appointment/PatientAppointmentDetail'));
 export const PatientProfile = lazy(() => import('../pages/Patient/Profile/PatientProfile'));
+export const PatientMedicalRecords = lazy(() => import('../pages/Patient/MedicalRecords/PatientMedicalRecords'));
+export const PatientPrescriptions = lazy(() => import('../pages/Patient/Prescriptions/PatientPrescriptions'));
+export const PatientDocuments = lazy(() => import('../pages/Patient/Documents/PatientDocuments'));
 
 // Admin routes
 export const AdminPage = lazy(() => import('../pages/Login/AdminPage'));

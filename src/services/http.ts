@@ -12,7 +12,9 @@ export const LOGOUT_EVENT = 'topsmile-logout';
 let isRefreshing = false;
 let refreshSubscribers: Array<(token: string) => void> = [];
 let csrfToken: string | null = null;
+let csrfTokenExpiry: number | null = null;
 let tokenRefreshTimer: NodeJS.Timeout | null = null;
+const CSRF_TOKEN_LIFETIME = 60 * 60 * 1000; // 1 hour
 
 const subscribeTokenRefresh = (cb: (token: string) => void) => {
   refreshSubscribers.push(cb);
@@ -110,15 +112,17 @@ export async function request<T = any>(
 
   const makeRequest = async () => {
     // Fetch CSRF token if needed for state-changing operations (skip for auth endpoints)
-    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(restOfOptions.method || 'GET') && 
-        !csrfToken && 
+    const needsCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(restOfOptions.method || 'GET') && 
         !endpoint.includes('/auth/login') && 
-        !endpoint.includes('/auth/refresh')) {
+        !endpoint.includes('/auth/refresh');
+    
+    if (needsCsrf && (!csrfToken || !csrfTokenExpiry || Date.now() > csrfTokenExpiry)) {
       try {
         const csrfRes = await fetch(`${API_BASE_URL}/api/csrf-token`, { credentials: 'include' });
         if (csrfRes.ok) {
           const data = await csrfRes.json();
           csrfToken = data.csrfToken;
+          csrfTokenExpiry = Date.now() + CSRF_TOKEN_LIFETIME;
         }
       } catch (e) {
         console.warn('Failed to fetch CSRF token:', e);

@@ -661,4 +661,13 @@ export const apiService = {
       return { success: res.ok, data: undefined, message: res.message };
     },
   },
+  availability: {
+    getSlots: async (query: { providerId: string; appointmentTypeId: string; date: string }): Promise<ApiResult<any[]>> => {
+      const qs = '?' + Object.entries(query)
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&');
+      const res = await request(`/api/scheduling/availability${qs}`);
+      return { success: res.ok, data: res.data, message: res.message };
+    },
+  },
 };

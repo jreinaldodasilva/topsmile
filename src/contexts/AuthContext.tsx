@@ -243,8 +243,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // Show logout reason after redirect
   useEffect(() => {
     if (logoutReason && !loading && !isAuthenticated) {
-      const timer = setTimeout(() => {
-        alert(logoutReason);
+      const timer = setTimeout(async () => {
+        const { toast } = await import('../utils/toast');
+        toast.warning(logoutReason);
         setLogoutReason(null);
       }, 100);
       

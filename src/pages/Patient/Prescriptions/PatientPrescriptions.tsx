@@ -1,67 +1,88 @@
-// src/pages/Patient/Prescriptions/PatientPrescriptions.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
-import { clinicalService } from '../../../services/api';
+import { apiService } from '../../../services/apiService';
+import PatientNavigation from '../../../components/PatientNavigation';
 import './PatientPrescriptions.css';
 
 const PatientPrescriptions: React.FC = () => {
-  const { patientUser } = usePatientAuth();
-  const patient = patientUser?.patient;
+  const { patientUser, isAuthenticated } = usePatientAuth();
+  const navigate = useNavigate();
   const [prescriptions, setPrescriptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (patient?._id) {
-      loadPrescriptions();
+    if (!isAuthenticated) {
+      navigate('/patient/login');
+      return;
     }
-  }, [patient]);
 
-  const loadPrescriptions = async () => {
-    if (!patient?._id) return;
-    
-    setLoading(true);
-    try {
-      const result = await clinicalService.prescriptions.getAll(patient._id);
-      if (result.success) {
-        setPrescriptions(result.data || []);
+    const fetchPrescriptions = async () => {
+      try {
+        const response = await apiService.prescriptions.getAll(patientUser!.patient._id);
+        if (response.success && response.data) {
+          setPrescriptions(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching prescriptions:', error);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading prescriptions:', error);
-    } finally {
-      setLoading(false);
+    };
+
+    if (patientUser) {
+      fetchPrescriptions();
     }
-  };
+  }, [isAuthenticated, navigate, patientUser]);
+
+  if (loading) {
+    return (
+      <div className="patient-prescriptions">
+        <PatientNavigation activePage="prescriptions" />
+        <div className="loading-state">Carregando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="patient-prescriptions">
-      <h1>Minhas Prescrições</h1>
+      <PatientNavigation activePage="prescriptions" />
       
-      {loading ? (
-        <p>Carregando...</p>
-      ) : prescriptions.length === 0 ? (
-        <p>Nenhuma prescrição encontrada.</p>
-      ) : (
-        <div className="prescriptions-list">
-          {prescriptions.map((prescription) => (
-            <div key={prescription._id} className="prescription-card">
-              <div className="prescription-header">
-                <h3>{prescription.medication}</h3>
-                <span className="prescription-date">
-                  {new Date(prescription.createdAt).toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-              <div className="prescription-details">
-                <p><strong>Dosagem:</strong> {prescription.dosage}</p>
-                <p><strong>Frequência:</strong> {prescription.frequency}</p>
-                <p><strong>Duração:</strong> {prescription.duration}</p>
-                {prescription.instructions && (
-                  <p><strong>Instruções:</strong> {prescription.instructions}</p>
-                )}
-              </div>
+      <div className="prescriptions-content">
+        <header className="prescriptions-header">
+          <h1>Minhas Receitas</h1>
+        </header>
+
+        <main className="prescriptions-main">
+          {prescriptions.length === 0 ? (
+            <div className="empty-state">
+              <p>Você não possui receitas registradas</p>
             </div>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="prescriptions-list">
+              {prescriptions.map((prescription) => (
+                <div key={prescription._id} className="prescription-card">
+                  <div className="prescription-header">
+                    <h3>Receita - {new Date(prescription.prescribedDate).toLocaleDateString('pt-BR')}</h3>
+                    <span className={`status ${prescription.status}`}>{prescription.status}</span>
+                  </div>
+                  <div className="prescription-body">
+                    {prescription.medications.map((med: any, idx: number) => (
+                      <div key={idx} className="medication">
+                        <strong>{med.name}</strong>
+                        <p>Dosagem: {med.dosage}</p>
+                        <p>Frequência: {med.frequency}</p>
+                        <p>Duração: {med.duration}</p>
+                        {med.instructions && <p className="instructions">{med.instructions}</p>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
 import { useAppointmentTypes, useProviders, useCreateAppointment } from '../../../hooks/useApiState';
+import { apiService } from '../../../services/apiService';
 import PatientNavigation from '../../../components/PatientNavigation';
 import type { Provider, AppointmentType } from '@topsmile/types';
 import './PatientAppointmentBooking.css';
@@ -40,22 +41,37 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
   const appointmentTypes = appointmentTypesData?.data || [];
 
   const fetchAvailableSlots = async (providerId: string, date: string) => {
+    if (!selectedType) return;
+    
     try {
       setLoadingSlots(true);
-      // Mock available time slots - in real implementation, this would call an API
-      const slots: TimeSlot[] = [];
-      const startHour = 8;
-      const endHour = 18;
+      setError(null);
+      
+      const response = await apiService.availability.getSlots({
+        providerId,
+        appointmentTypeId: selectedType,
+        date
+      });
 
-      for (let hour = startHour; hour < endHour; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-          const available = Math.random() > 0.3;
-          slots.push({ time: timeString, available });
+      if (response.success && response.data) {
+        const slots: TimeSlot[] = response.data.map((slot: any) => ({
+          time: new Date(slot.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+          available: slot.available
+        }));
+        setAvailableSlots(slots);
+      } else {
+        // Fallback to mock data if API not available
+        const slots: TimeSlot[] = [];
+        for (let hour = 8; hour < 18; hour++) {
+          for (let minute = 0; minute < 60; minute += 30) {
+            slots.push({ 
+              time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
+              available: Math.random() > 0.3
+            });
+          }
         }
+        setAvailableSlots(slots);
       }
-
-      setAvailableSlots(slots);
     } catch (error) {
       console.error('Error fetching available slots:', error);
       setError('Erro ao carregar horários disponíveis');
