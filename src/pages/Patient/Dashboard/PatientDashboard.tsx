@@ -1,7 +1,7 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
-import { useAppointments } from '../../../hooks/useApiState';
+import { usePatientAppointments } from '../../../hooks/queries/useAppointments';
 import PatientNavigation from '../../../components/PatientNavigation';
 import './PatientDashboard.css';
 import type { Appointment } from '@topsmile/types';
@@ -10,25 +10,19 @@ const PatientDashboard: React.FC = function PatientDashboard() {
     const { patientUser, isAuthenticated } = usePatientAuth();
     const navigate = useNavigate();
 
-    const {
-        data: allAppointments,
-        isLoading,
-        error,
-        refetch
-    } = useAppointments(
-        { patient: patientUser?.patient._id, sort: 'scheduledStart' },
-        { refetchInterval: 30000, enabled: !!patientUser } // Poll every 30 seconds, only enable when patientUser is available
-    );
+    const { data: appointments, isLoading, error, refetch } = usePatientAppointments(patientUser?.patient._id || '', {
+        enabled: !!patientUser,
+        refetchInterval: 30000
+    });
 
-    // For now, keep using the admin appointments API. In a full implementation,
-    // we'd create a custom hook for patient appointments that uses the patient-specific endpoints
-
-    const upcomingAppointments = useMemo(() => {
-        if (!allAppointments?.data) return [];
-        return allAppointments.data
-            .filter((a: Appointment) => a.scheduledStart && new Date(a.scheduledStart) > new Date())
-            .slice(0, 5);
-    }, [allAppointments]);
+    const appointmentsArray = (appointments as any) || [];
+    const upcomingAppointments = appointmentsArray.filter(
+        (a: Appointment) => a.scheduledStart && new Date(a.scheduledStart) > new Date()
+    ).slice(0, 5);
+    
+    const totalAppointments = appointmentsArray.length || 0;
+    const completedAppointments = appointmentsArray.filter((a: Appointment) => a.status === 'completed').length || 0;
+    const pendingAppointments = totalAppointments - completedAppointments;
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -66,10 +60,7 @@ const PatientDashboard: React.FC = function PatientDashboard() {
         }
     };
 
-    const totalAppointments = allAppointments?.data?.length || 0;
-    const completedAppointments =
-        allAppointments?.data?.filter((a: Appointment) => a.status === 'completed').length || 0;
-    const pendingAppointments = totalAppointments - completedAppointments;
+
 
     if (!patientUser) {
         return (

@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { apiService } from '../services/apiService';
+import { useState, useCallback } from 'react';
+import { useAppointments, useCancelAppointment } from './queries';
+import { useProviders } from './queries';
+import { useAuth } from '../contexts/AuthContext';
 import type { Appointment, Provider } from '@topsmile/types';
 
 interface CalendarFilters {
@@ -10,74 +12,52 @@ interface CalendarFilters {
 }
 
 export const useAppointmentCalendar = () => {
-    const [appointments, setAppointments] = useState<Appointment[]>([]);
-    const [providers, setProviders] = useState<Provider[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
     const [filters, setFilters] = useState<CalendarFilters>({
         view: 'week',
         date: new Date().toISOString().split('T')[0]
     });
     const [currentDate, setCurrentDate] = useState(new Date());
 
-    const fetchData = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const getDateRange = () => {
+        const startDate = new Date(currentDate);
+        const endDate = new Date(currentDate);
 
-            const appointmentParams: Record<string, any> = {};
-            if (filters.providerId) appointmentParams.providerId = filters.providerId;
-            if (filters.status) appointmentParams.status = filters.status;
-
-            const startDate = new Date(currentDate);
-            const endDate = new Date(currentDate);
-
-            switch (filters.view) {
-                case 'day':
-                    endDate.setDate(startDate.getDate() + 1);
-                    break;
-                case 'week':
-                    startDate.setDate(currentDate.getDate() - currentDate.getDay());
-                    endDate.setDate(startDate.getDate() + 7);
-                    break;
-                case 'month':
-                    startDate.setDate(1);
-                    endDate.setMonth(startDate.getMonth() + 1);
-                    endDate.setDate(0);
-                    break;
-            }
-
-            appointmentParams.start = startDate.toISOString();
-            appointmentParams.end = endDate.toISOString();
-
-            const [appointmentsResult, providersResult] = await Promise.all([
-                apiService.appointments.getAll(appointmentParams),
-                apiService.providers.getAll({ isActive: true })
-            ]);
-
-            if (appointmentsResult.success && appointmentsResult.data) {
-                setAppointments(appointmentsResult.data);
-            } else {
-                setError(appointmentsResult.message || 'Erro ao carregar agendamentos');
-                setAppointments([]);
-            }
-
-            if (providersResult.success && providersResult.data) {
-                const providersData = providersResult.data;
-                setProviders(Array.isArray(providersData) ? providersData : (providersData as any)?.providers || []);
-            } else {
-                setProviders([]);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Erro ao carregar agendamentos');
-        } finally {
-            setLoading(false);
+        switch (filters.view) {
+            case 'day':
+                endDate.setDate(startDate.getDate() + 1);
+                break;
+            case 'week':
+                startDate.setDate(currentDate.getDate() - currentDate.getDay());
+                endDate.setDate(startDate.getDate() + 7);
+                break;
+            case 'month':
+                startDate.setDate(1);
+                endDate.setMonth(startDate.getMonth() + 1);
+                endDate.setDate(0);
+                break;
         }
-    }, [filters, currentDate]);
 
-    useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        return { startDate, endDate };
+    };
+
+    const { startDate, endDate } = getDateRange();
+    const appointmentFilters = {
+        ...filters,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString()
+    };
+
+    const { data: appointmentsData, isLoading: appointmentsLoading, error: appointmentsError, refetch } = useAppointments(
+        user?.clinicId || '',
+        appointmentFilters
+    );
+    const { data: providersData, isLoading: providersLoading } = useProviders(user?.clinicId || '', { isActive: true });
+
+    const appointments = appointmentsData || [];
+    const providers = providersData || [];
+    const loading = appointmentsLoading || providersLoading;
+    const error = appointmentsError?.message || null;
 
     const handleFilterChange = useCallback((key: keyof CalendarFilters, value: any) => {
         setFilters(prev => ({ ...prev, [key]: value }));
@@ -132,12 +112,12 @@ export const useAppointmentCalendar = () => {
     };
 
     const addAppointment = useCallback((appointment: Appointment) => {
-        setAppointments(prev => [appointment, ...prev]);
-    }, []);
+        refetch();
+    }, [refetch]);
 
     const updateAppointment = useCallback((appointment: Appointment) => {
-        setAppointments(prev => prev.map(a => (a._id === appointment._id ? appointment : a)));
-    }, []);
+        refetch();
+    }, [refetch]);
 
     return {
         appointments,
@@ -152,6 +132,6 @@ export const useAppointmentCalendar = () => {
         getDateRangeLabel,
         addAppointment,
         updateAppointment,
-        fetchData
+        fetchData: refetch
     };
 };

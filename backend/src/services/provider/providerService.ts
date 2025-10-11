@@ -1,6 +1,7 @@
 // backend/src/services/providerService.ts
-import { Provider as IProvider } from '@topsmile/types';
+import type { Provider as IProvider } from '@topsmile/types';
 import { BaseService } from '../base/BaseService';
+import { IBaseService } from '../base/IBaseService';
 import { ValidationError, ConflictError, NotFoundError } from '../../utils/errors/errors';
 import { cacheService, CacheKeys } from '../../utils/cache/cache';
 import { CacheInvalidator } from '../../utils/cache/cacheInvalidation';
@@ -47,9 +48,32 @@ export interface ProviderSearchResult {
     hasPrev: boolean;
 }
 
-class ProviderService extends BaseService<any> {
+class ProviderService extends BaseService<any> implements IBaseService<IProvider, CreateProviderData, UpdateProviderData> {
     constructor() {
         super(Provider as any);
+    }
+
+    async create(data: CreateProviderData, clinicId: string): Promise<IProvider> {
+        if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+            throw new ValidationError('ID da clínica inválido');
+        }
+        return this.createProvider({ ...data, clinicId });
+    }
+
+    async findById(id: string, clinicId: string): Promise<IProvider | null> {
+        return this.getProviderById(id, clinicId);
+    }
+
+    async update(id: string, clinicId: string, data: UpdateProviderData): Promise<IProvider | null> {
+        return this.updateProvider(id, clinicId, data);
+    }
+
+    async delete(id: string, clinicId: string): Promise<boolean> {
+        return this.deleteProvider(id, clinicId);
+    }
+
+    async findAll(clinicId: string, filter?: Partial<ProviderSearchFilters>): Promise<IProvider[]> {
+        return this.getProvidersByClinic(clinicId, filter?.isActive ?? true);
     }
 
     private getDefaultWorkingHours() {

@@ -1,5 +1,5 @@
 // src/components/Clinical/TreatmentPlan/TreatmentPlanBuilder.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ProcedureSelector } from './ProcedureSelector';
 import { PhaseManager } from './PhaseManager';
 import { CostBreakdown } from './CostBreakdown';

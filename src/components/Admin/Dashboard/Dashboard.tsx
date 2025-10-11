@@ -1,8 +1,8 @@
 // src/components/Admin/Dashboard/Dashboard.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Button from '../../UI/Button/Button';
-import { apiService } from '../../../services/apiService';
-import type { Patient, DashboardStats, Appointment as ApiAppointment } from '@topsmile/types';
+import { useDashboard } from '../../../hooks/useDashboard';
+import type { Appointment as ApiAppointment } from '@topsmile/types';
 import './Dashboard.css';
 
 interface DashboardAppointment {
@@ -31,107 +31,8 @@ interface Task {
 }
 
 const EnhancedDashboard: React.FC = () => {
-    const [stats, setStats] = useState<DashboardStats>({
-        contacts: {
-            total: 0,
-            byStatus: [],
-            bySource: [],
-            recentCount: 0,
-            monthlyTrend: []
-        },
-        summary: {
-            totalContacts: 0,
-            newThisWeek: 0,
-            conversionRate: 0,
-            revenue: '0'
-        },
-        user: {
-            name: '',
-            role: '',
-            clinicId: '',
-            lastActivity: ''
-        }
-    });
-
-    const [upcomingAppointments, setUpcomingAppointments] = useState<DashboardAppointment[]>([]);
-    const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([]);
+    const { stats, upcomingAppointments, recentPatients, isLoading } = useDashboard();
     const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-
-    // Simulate data loading
-    useEffect(() => {
-        const loadDashboardData = async () => {
-            setIsLoading(true);
-            try {
-                const [statsRes, appointmentsRes, patientsRes] = await Promise.all([
-                    apiService.dashboard.getStats(),
-                    apiService.appointments.getAll({ limit: 5, sort: { scheduledStart: 1 } }),
-                    apiService.patients.getAll({ limit: 5, sort: { createdAt: -1 } })
-                ]);
-
-                if (statsRes.success && statsRes.data) {
-                    setStats(statsRes.data);
-                } else {
-                    console.error(statsRes.message);
-                }
-
-                if (appointmentsRes.success && appointmentsRes.data) {
-                    const mappedAppointments: DashboardAppointment[] = (appointmentsRes.data as ApiAppointment[])
-                        .slice(0, 5)
-                        .map(apiApt => ({
-                            id: apiApt._id || apiApt.id || '',
-                            patientName:
-                                typeof apiApt.patient === 'string'
-                                    ? apiApt.patient
-                                    : apiApt.patient?.fullName ||
-                                      `${apiApt.patient?.firstName} ${apiApt.patient?.lastName || ''}`.trim() ||
-                                      'Unknown',
-                            time: apiApt.scheduledStart
-                                ? new Date(apiApt.scheduledStart).toLocaleTimeString('pt-BR', {
-                                      hour: '2-digit',
-                                      minute: '2-digit'
-                                  })
-                                : 'N/A',
-                            type:
-                                typeof apiApt.appointmentType === 'string'
-                                    ? apiApt.appointmentType
-                                    : apiApt.appointmentType?.name || 'Consulta',
-                            status:
-                                apiApt.status === 'scheduled'
-                                    ? 'scheduled'
-                                    : apiApt.status === 'in_progress'
-                                      ? 'in-progress'
-                                      : apiApt.status === 'completed'
-                                        ? 'completed'
-                                        : 'cancelled'
-                        }));
-                    setUpcomingAppointments(mappedAppointments);
-                } else {
-                    console.error(appointmentsRes.message);
-                }
-
-                if (patientsRes.success && patientsRes.data) {
-                    const patientsData = (patientsRes as any).data;
-                    const patientsArray = Array.isArray(patientsData) ? patientsData : patientsData.patients || [];
-                    const mappedPatients: RecentPatient[] = patientsArray.slice(0, 5).map((apiPatient: any) => ({
-                        id: apiPatient._id || '',
-                        name: apiPatient.fullName || `${apiPatient.firstName} ${apiPatient.lastName || ''}`.trim(),
-                        lastVisit: new Date(apiPatient.createdAt || Date.now()),
-                        status: apiPatient.isActive ? 'active' : 'inactive'
-                    }));
-                    setRecentPatients(mappedPatients);
-                } else {
-                    console.error(patientsRes.message);
-                }
-            } catch (error) {
-                console.error('Failed to load dashboard data', error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        loadDashboardData();
-    }, []);
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('pt-BR', {
@@ -291,7 +192,7 @@ const EnhancedDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div className="dashboard__stat-value">
-                                {stats.contacts?.total?.toLocaleString() || '0'}
+                                {stats?.contacts?.total?.toLocaleString() || '0'}
                             </div>
                             <p className="dashboard__stat-description">total registrado</p>
                         </div>
@@ -314,7 +215,7 @@ const EnhancedDashboard: React.FC = () => {
                                     <span className="dashboard__trend-value--neutral">0%</span>
                                 </div>
                             </div>
-                            <div className="dashboard__stat-value">{stats.summary?.newThisWeek || 0}</div>
+                            <div className="dashboard__stat-value">{stats?.summary?.newThisWeek || 0}</div>
                             <p className="dashboard__stat-description">novos contatos</p>
                         </div>
                     </div>
@@ -338,7 +239,7 @@ const EnhancedDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div className="dashboard__stat-value">
-                                {((stats.summary?.conversionRate || 0) * 100).toFixed(1)}%
+                                {((stats?.summary?.conversionRate || 0) * 100).toFixed(1)}%
                             </div>
                             <p className="dashboard__stat-description">taxa de conversão</p>
                         </div>
@@ -362,7 +263,7 @@ const EnhancedDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div className="dashboard__stat-value">
-                                {formatCurrency(parseFloat(stats.summary?.revenue || '0'))}
+                                {formatCurrency(parseFloat(stats?.summary?.revenue || '0'))}
                             </div>
                             <p className="dashboard__stat-description">receita total</p>
                         </div>

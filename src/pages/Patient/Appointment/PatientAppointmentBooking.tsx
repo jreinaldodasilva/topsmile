@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePatientAuth } from '../../../contexts/PatientAuthContext';
-import { useAppointmentTypes, useProviders, useCreateAppointment } from '../../../hooks/useApiState';
-import { apiService } from '../../../services/apiService';
+import { useBookingFlow } from '../../../hooks/useBookingFlow';
 import PatientNavigation from '../../../components/PatientNavigation';
-import type { Provider, AppointmentType } from '@topsmile/types';
+import type { Provider } from '@topsmile/types';
 import './PatientAppointmentBooking.css';
-
-interface TimeSlot {
-    time: string;
-    available: boolean;
-}
 
 const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking() {
     const { patientUser, isAuthenticated } = usePatientAuth();
     const navigate = useNavigate();
 
-    const { data: providersData, isLoading: isLoadingProviders, error: errorProviders } = useProviders();
-    const { data: appointmentTypesData, isLoading: isLoadingTypes, error: errorTypes } = useAppointmentTypes();
-    const createAppointmentMutation = useCreateAppointment();
-
-    const [selectedProvider, setSelectedProvider] = useState<string>('');
-    const [selectedType, setSelectedType] = useState<string>('');
-    const [selectedDate, setSelectedDate] = useState<string>('');
-    const [selectedTime, setSelectedTime] = useState<string>('');
-    const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
-    const [notes, setNotes] = useState<string>('');
-
-    const [loadingSlots, setLoadingSlots] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const {
+        providers,
+        appointmentTypes,
+        availableSlots,
+        selectedProvider,
+        selectedType,
+        selectedDate,
+        selectedTime,
+        notes,
+        isLoading,
+        isLoadingSlots,
+        error,
+        setSelectedProvider,
+        setSelectedType,
+        setSelectedDate,
+        setSelectedTime,
+        setNotes,
+        handleBooking: bookAppointment
+    } = useBookingFlow(patientUser?.patient._id || '');
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -36,107 +36,12 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         }
     }, [isAuthenticated, navigate]);
 
-    const providersDataInner = providersData?.data;
-    const providers = Array.isArray(providersDataInner)
-        ? providersDataInner
-        : (providersDataInner as any)?.providers || [];
-    const appointmentTypes = appointmentTypesData?.data || [];
-
-    const fetchAvailableSlots = async (providerId: string, date: string) => {
-        if (!selectedType) return;
-
-        try {
-            setLoadingSlots(true);
-            setError(null);
-
-            const response = await apiService.availability.getSlots({
-                providerId,
-                appointmentTypeId: selectedType,
-                date
-            });
-
-            if (response.success && response.data) {
-                const slots: TimeSlot[] = response.data.map((slot: any) => ({
-                    time: new Date(slot.start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-                    available: slot.available
-                }));
-                setAvailableSlots(slots);
-            } else {
-                // Fallback to mock data if API not available
-                const slots: TimeSlot[] = [];
-                for (let hour = 8; hour < 18; hour++) {
-                    for (let minute = 0; minute < 60; minute += 30) {
-                        slots.push({
-                            time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,
-                            available: Math.random() > 0.3
-                        });
-                    }
-                }
-                setAvailableSlots(slots);
-            }
-        } catch (error) {
-            console.error('Error fetching available slots:', error);
-            setError('Erro ao carregar horários disponíveis');
-        } finally {
-            setLoadingSlots(false);
-        }
-    };
-
-    const handleProviderChange = (providerId: string) => {
-        setSelectedProvider(providerId);
-        setSelectedTime('');
-        if (selectedDate) {
-            fetchAvailableSlots(providerId, selectedDate);
-        }
-    };
-
-    const handleDateChange = (date: string) => {
-        setSelectedDate(date);
-        setSelectedTime('');
-        if (selectedProvider) {
-            fetchAvailableSlots(selectedProvider, date);
-        }
-    };
-
     const handleBooking = async () => {
-        if (!selectedProvider || !selectedType || !selectedDate || !selectedTime) {
-            setError('Por favor, preencha todos os campos obrigatórios');
-            return;
-        }
-
-        try {
-            setError(null);
-
-            const selectedTypeData = appointmentTypes.find(type => type._id === selectedType);
-            if (!selectedTypeData || !selectedTypeData.duration) {
-                throw new Error('Tipo de consulta não encontrado ou inválido');
-            }
-
-            const [hours, minutes] = selectedTime.split(':').map(Number);
-            const startDateTime = new Date(selectedDate);
-            startDateTime.setHours(hours, minutes, 0, 0);
-
-            const endDateTime = new Date(startDateTime);
-            endDateTime.setMinutes(endDateTime.getMinutes() + selectedTypeData.duration);
-
-            const appointmentData = {
-                patient: patientUser?.patient._id,
-                provider: selectedProvider,
-                appointmentType: selectedType,
-                scheduledStart: startDateTime.toISOString(),
-                scheduledEnd: endDateTime.toISOString(),
-                status: 'scheduled' as const,
-                notes: notes.trim() || undefined
-            };
-
-            await createAppointmentMutation.mutateAsync(appointmentData);
-
+        const success = await bookAppointment();
+        if (success) {
             navigate('/patient/appointments', {
                 state: { message: 'Consulta agendada com sucesso!' }
             });
-        } catch (err: any) {
-            console.error('Error booking appointment:', err);
-            setError(err.message || 'Erro ao agendar consulta');
         }
     };
 
@@ -151,7 +56,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         return maxDate.toISOString().split('T')[0];
     };
 
-    if (isLoadingProviders || isLoadingTypes) {
+    if (isLoading) {
         return (
             <div className="appointment-booking">
                 <div className="booking-loading">
@@ -162,15 +67,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
         );
     }
 
-    if (errorProviders || errorTypes) {
-        return (
-            <div className="appointment-booking">
-                <div className="booking-loading">
-                    <p>Erro ao carregar dados. Tente novamente mais tarde.</p>
-                </div>
-            </div>
-        );
-    }
+
 
     return (
         <div className="appointment-booking">
@@ -204,7 +101,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                                 <select
                                     id="provider"
                                     value={selectedProvider}
-                                    onChange={e => handleProviderChange(e.target.value)}
+                                    onChange={e => setSelectedProvider(e.target.value)}
                                     className="form-select"
                                 >
                                     <option value="">Selecione um dentista</option>
@@ -253,7 +150,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                                     type="date"
                                     id="date"
                                     value={selectedDate}
-                                    onChange={e => handleDateChange(e.target.value)}
+                                    onChange={e => setSelectedDate(e.target.value)}
                                     min={getMinDate()}
                                     max={getMaxDate()}
                                     className="form-input"
@@ -265,7 +162,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                         {selectedDate && selectedProvider && (
                             <div className="form-section">
                                 <h2>4. Escolha o Horário</h2>
-                                {loadingSlots ? (
+                                {isLoadingSlots ? (
                                     <div className="loading-state">
                                         <div className="loading-spinner"></div>
                                         <p>Carregando horários...</p>
@@ -340,7 +237,7 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                                 type="button"
                                 onClick={() => navigate('/patient/appointments')}
                                 className="cancel-btn"
-                                disabled={createAppointmentMutation.isPending}
+                                disabled={isLoading}
                             >
                                 Cancelar
                             </button>
@@ -349,14 +246,14 @@ const PatientAppointmentBooking: React.FC = function PatientAppointmentBooking()
                                 onClick={handleBooking}
                                 className="book-btn"
                                 disabled={
-                                    createAppointmentMutation.isPending ||
+                                    isLoading ||
                                     !selectedProvider ||
                                     !selectedType ||
                                     !selectedDate ||
                                     !selectedTime
                                 }
                             >
-                                {createAppointmentMutation.isPending ? (
+                                {isLoading ? (
                                     <>
                                         <div className="loading-spinner small"></div>
                                         Agendando...

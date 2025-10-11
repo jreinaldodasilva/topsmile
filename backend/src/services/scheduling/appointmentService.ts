@@ -1,6 +1,7 @@
 // backend/src/services/appointmentService.ts
-import { Appointment as IAppointment } from '@topsmile/types';
+import type { Appointment as IAppointment } from '@topsmile/types';
 import { BaseService } from '../base/BaseService';
+import { IBaseService } from '../base/IBaseService';
 import { ValidationError, ConflictError } from '../../utils/errors/errors';
 import mongoose from 'mongoose';
 import { Appointment } from '../../models/Appointment';
@@ -49,9 +50,23 @@ export interface AppointmentFilters {
   sortOrder?: 'asc' | 'desc';
 }
 
-class AppointmentService extends BaseService<any> {
+class AppointmentService extends BaseService<any> implements IBaseService<IAppointment, CreateAppointmentData, UpdateAppointmentData> {
   constructor() {
     super(Appointment as any);
+  }
+
+  /**
+   * Create new appointment
+   * @param data - Appointment data
+   * @param clinicId - Clinic ID
+   * @returns Created appointment
+   */
+  async create(data: CreateAppointmentData, clinicId: string): Promise<IAppointment> {
+    if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+      throw new ValidationError('ID da clínica inválido');
+    }
+
+    return this.createAppointment({ ...data, clinic: clinicId });
   }
 
   async createAppointment(data: CreateAppointmentData): Promise<IAppointment> {
@@ -91,6 +106,16 @@ class AppointmentService extends BaseService<any> {
     return await appointment.save();
   }
 
+  /**
+   * Find appointment by ID
+   * @param id - Appointment ID
+   * @param clinicId - Clinic ID
+   * @returns Appointment or null
+   */
+  async findById(id: string, clinicId: string): Promise<IAppointment | null> {
+    return this.getAppointmentById(id, clinicId);
+  }
+
   async getAppointmentById(appointmentId: string, clinicId: string): Promise<IAppointment | null> {
     if (!mongoose.Types.ObjectId.isValid(appointmentId)) {
       throw new ValidationError('ID do agendamento inválido');
@@ -123,6 +148,17 @@ class AppointmentService extends BaseService<any> {
     return await Appointment.find(query)
       .populate('patient provider appointmentType')
       .sort({ scheduledStart: 1 });
+  }
+
+  /**
+   * Update appointment
+   * @param id - Appointment ID
+   * @param clinicId - Clinic ID
+   * @param data - Update data
+   * @returns Updated appointment or null
+   */
+  async update(id: string, clinicId: string, data: UpdateAppointmentData): Promise<IAppointment | null> {
+    return this.updateAppointment(id, clinicId, data);
   }
 
   async updateAppointment(appointmentId: string, clinicId: string, data: UpdateAppointmentData): Promise<IAppointment | null> {
@@ -173,6 +209,27 @@ class AppointmentService extends BaseService<any> {
     if (data.cancellationReason !== undefined) appointment.cancellationReason = data.cancellationReason;
 
     return await appointment.save();
+  }
+
+  /**
+   * Delete (cancel) appointment
+   * @param id - Appointment ID
+   * @param clinicId - Clinic ID
+   * @returns True if cancelled
+   */
+  async delete(id: string, clinicId: string): Promise<boolean> {
+    const result = await this.cancelAppointment(id, clinicId, 'Cancelado');
+    return !!result;
+  }
+
+  /**
+   * Find all appointments for clinic
+   * @param clinicId - Clinic ID
+   * @param filter - Additional filters
+   * @returns Array of appointments
+   */
+  async findAll(clinicId: string, filter?: AppointmentFilters): Promise<IAppointment[]> {
+    return this.getAppointments(clinicId, filter || {});
   }
 
   async cancelAppointment(appointmentId: string, clinicId: string, reason: string): Promise<IAppointment | null> {

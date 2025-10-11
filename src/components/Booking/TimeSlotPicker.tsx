@@ -1,5 +1,6 @@
 // src/components/Booking/TimeSlotPicker.tsx
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { useAvailableSlots } from '../../hooks/queries/useBooking';
 import './TimeSlotPicker.css';
 
 interface TimeSlot {
@@ -25,54 +26,24 @@ export const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     providerId,
     onSelect
 }) => {
-    const [slots, setSlots] = useState<TimeSlot[]>([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (appointmentTypeId && date) {
-            fetchSlots();
-        }
-    }, [appointmentTypeId, date, providerId]);
-
-    const fetchSlots = async () => {
-        setLoading(true);
-        const params = new URLSearchParams({
-            clinicId,
-            appointmentTypeId,
-            date: date.toISOString(),
-            ...(providerId && { providerId })
-        });
-
-        const res = await fetch(`/api/booking/available-slots?${params}`);
-        const data = await res.json();
-        if (data.success) {
-            setSlots(
-                data.data.map((s: any) => ({
-                    ...s,
-                    start: new Date(s.start),
-                    end: new Date(s.end)
-                }))
-            );
-        }
-        setLoading(false);
-    };
+    const { data: slots = [], isLoading: loading } = useAvailableSlots(
+        clinicId,
+        appointmentTypeId,
+        date.toISOString(),
+        providerId || undefined
+    );
 
     const formatTime = (date: Date) => {
         return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     };
 
-    const groupByProvider = () => {
-        const grouped: Record<string, TimeSlot[]> = {};
-        slots.forEach(slot => {
-            if (!grouped[slot.providerId]) {
-                grouped[slot.providerId] = [];
-            }
-            grouped[slot.providerId].push(slot);
-        });
-        return grouped;
-    };
-
-    const groupedSlots = groupByProvider();
+    const groupedSlots = slots.reduce((acc: Record<string, TimeSlot[]>, slot) => {
+        if (!acc[slot.providerId]) {
+            acc[slot.providerId] = [];
+        }
+        acc[slot.providerId].push(slot);
+        return acc;
+    }, {});
 
     if (loading) {
         return <div className="loading">Carregando horários...</div>;

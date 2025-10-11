@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import { apiService } from '../services/apiService';
+import { useState, useCallback } from 'react';
+import { usePatients, useDeletePatient } from './queries';
+import { useAuth } from '../contexts/AuthContext';
 import type { Patient } from '../../packages/types/src/index';
+
 
 interface PatientFilters {
     search?: string;
@@ -19,9 +21,7 @@ interface PaginatedPatientsResponse {
 }
 
 export const usePatientManagement = () => {
-    const [patients, setPatients] = useState<Patient[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { user } = useAuth();
     const [filters, setFilters] = useState<PatientFilters>({
         search: '',
         isActive: true,
@@ -29,63 +29,15 @@ export const usePatientManagement = () => {
         limit: 20
     });
     const [sort, setSort] = useState<Record<string, any>>({ createdAt: -1 });
-    const [total, setTotal] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
-    const [hasNext, setHasNext] = useState(false);
-    const [hasPrev, setHasPrev] = useState(false);
 
-    const fetchPatients = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
+    const { data, isLoading, error, refetch } = usePatients(user?.clinicId || '', { ...filters, sort });
+    const deleteMutation = useDeletePatient();
 
-            const queryParams: Record<string, any> = {};
-            if (filters.search) queryParams.search = filters.search;
-            if (filters.isActive !== undefined) queryParams.isActive = filters.isActive;
-            if (filters.page) queryParams.page = filters.page;
-            if (filters.limit) queryParams.limit = filters.limit;
-            if (sort) queryParams.sort = JSON.stringify(sort);
-
-            const result = await apiService.patients.getAll(queryParams);
-
-            if (result.success && result.data) {
-                if (Array.isArray(result.data)) {
-                    setPatients(result.data);
-                    setTotal(result.data.length);
-                    setTotalPages(1);
-                    setHasNext(false);
-                    setHasPrev(false);
-                } else {
-                    const paginatedData = result.data as PaginatedPatientsResponse;
-                    setPatients(paginatedData.patients);
-                    setTotal(paginatedData.total);
-                    setTotalPages(paginatedData.totalPages);
-                    setHasNext(paginatedData.hasNext);
-                    setHasPrev(paginatedData.hasPrev);
-                }
-            } else {
-                setError(result.message || 'Erro ao carregar pacientes');
-                setPatients([]);
-                setTotal(0);
-                setTotalPages(0);
-                setHasNext(false);
-                setHasPrev(false);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Erro ao carregar pacientes');
-            setPatients([]);
-            setTotal(0);
-            setTotalPages(0);
-            setHasNext(false);
-            setHasPrev(false);
-        } finally {
-            setLoading(false);
-        }
-    }, [filters, sort]);
-
-    useEffect(() => {
-        fetchPatients();
-    }, [fetchPatients]);
+    const patients = data?.patients || [];
+    const total = data?.total || 0;
+    const totalPages = data?.totalPages || 0;
+    const hasNext = data?.hasNext || false;
+    const hasPrev = data?.hasPrev || false;
 
     const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
@@ -114,27 +66,26 @@ export const usePatientManagement = () => {
     const handleDeletePatient = useCallback(async (patientId: string) => {
         if (window.confirm('Tem certeza que deseja excluir este paciente?')) {
             try {
-                await apiService.patients.delete(patientId);
-                fetchPatients();
+                await deleteMutation.mutateAsync(patientId);
+                console.log('Paciente excluído com sucesso');
             } catch (error) {
-                console.error('Failed to delete patient:', error);
+                console.error('Erro ao excluir paciente');
             }
         }
-    }, [fetchPatients]);
+    }, [deleteMutation]);
 
     const addPatient = useCallback((patient: Patient) => {
-        setPatients(prev => [patient, ...prev]);
-        setTotal(prev => prev + 1);
-    }, []);
+        refetch();
+    }, [refetch]);
 
     const updatePatient = useCallback((patient: Patient) => {
-        setPatients(prev => prev.map(p => (p._id === patient._id ? patient : p)));
-    }, []);
+        refetch();
+    }, [refetch]);
 
     return {
         patients,
-        loading,
-        error,
+        loading: isLoading,
+        error: error?.message || null,
         filters,
         sort,
         total,
@@ -148,6 +99,6 @@ export const usePatientManagement = () => {
         handleDeletePatient,
         addPatient,
         updatePatient,
-        fetchPatients
+        fetchPatients: refetch
     };
 };

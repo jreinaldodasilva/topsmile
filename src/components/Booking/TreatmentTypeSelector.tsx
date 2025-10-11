@@ -1,9 +1,10 @@
 // src/components/Booking/TreatmentTypeSelector.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useAppointmentTypes } from '../../hooks/queries/useAppointmentTypes';
 import './TreatmentTypeSelector.css';
 
 interface TreatmentType {
-    id: string;
+    _id: string;
     name: string;
     description: string;
     duration: number;
@@ -17,16 +18,8 @@ interface TreatmentTypeSelectorProps {
 }
 
 export const TreatmentTypeSelector: React.FC<TreatmentTypeSelectorProps> = ({ clinicId, onSelect }) => {
-    const [types, setTypes] = useState<TreatmentType[]>([]);
+    const { data: types = [] } = useAppointmentTypes(clinicId);
     const [selectedCategory, setSelectedCategory] = useState('all');
-
-    useEffect(() => {
-        fetch(`/api/booking/appointment-types?clinicId=${clinicId}`)
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) setTypes(data.data);
-            });
-    }, [clinicId]);
 
     const categories = ['all', ...Array.from(new Set(types.map(t => t.category)))];
     const filteredTypes = selectedCategory === 'all' ? types : types.filter(t => t.category === selectedCategory);
@@ -49,7 +42,7 @@ export const TreatmentTypeSelector: React.FC<TreatmentTypeSelectorProps> = ({ cl
 
             <div className="types-grid">
                 {filteredTypes.map(type => (
-                    <div key={type.id} className="type-card" onClick={() => onSelect(type)}>
+                    <div key={type._id} className="type-card" onClick={() => onSelect(type)}>
                         <h4>{type.name}</h4>
                         <p className="type-description">{type.description}</p>
                         <div className="type-details">

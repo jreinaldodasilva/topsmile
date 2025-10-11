@@ -119,6 +119,12 @@ export const useAuthActions = (): AuthActionsContextType => {
     return context;
 };
 
+export const useAuth = () => {
+    const state = useAuthState();
+    const actions = useAuthActions();
+    return { ...state, ...actions };
+};;
+
 function getRedirectPath(role?: string): string {
     switch (role) {
         case 'super_admin':

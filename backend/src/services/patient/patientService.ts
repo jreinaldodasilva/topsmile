@@ -1,6 +1,7 @@
 // backend/src/services/patientService.ts
-import { Patient as IPatient, CreatePatientDTO } from '@topsmile/types';
+import type { Patient as IPatient, CreatePatientDTO } from '@topsmile/types';
 import { BaseService } from '../base/BaseService';
+import { IBaseService } from '../base/IBaseService';
 import { ValidationError, ConflictError, NotFoundError } from '../../utils/errors/errors';
 import mongoose from 'mongoose';
 import { Patient } from '../../models/Patient';
@@ -28,9 +29,33 @@ export interface PatientSearchResult {
     hasPrev: boolean;
 }
 
-class PatientService extends BaseService<any> {
+class PatientService extends BaseService<any> implements IBaseService<IPatient, CreatePatientDTO, UpdatePatientData> {
     constructor() {
         super(Patient as any);
+    }
+
+    async create(data: CreatePatientDTO, clinicId: string): Promise<IPatient> {
+        if (!mongoose.Types.ObjectId.isValid(clinicId)) {
+            throw new ValidationError('ID da clínica inválido');
+        }
+        return this.createPatient({ ...data, clinic: clinicId });
+    }
+
+    async findById(id: string, clinicId: string): Promise<IPatient | null> {
+        return this.getPatientById(id, clinicId);
+    }
+
+    async update(id: string, clinicId: string, data: UpdatePatientData): Promise<IPatient | null> {
+        return this.updatePatient(id, clinicId, data);
+    }
+
+    async delete(id: string, clinicId: string): Promise<boolean> {
+        return this.deletePatient(id, clinicId);
+    }
+
+    async findAll(clinicId: string, filter?: Partial<PatientSearchFilters>): Promise<IPatient[]> {
+        const result = await this.searchPatients({ clinicId, ...filter });
+        return result.patients;
     }
 
     private normalizePhone(phone: string): string {

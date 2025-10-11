@@ -1,113 +1,33 @@
 // src/pages/Admin/ProviderManagement.tsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiService } from '../../services/apiService';
 import type { Provider } from '../../../packages/types/src/index';
 import EnhancedHeader from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
 import ProviderForm from '../../components/Admin/Forms/ProviderForm';
+import { useProviderManagement } from '../../hooks/useProviderManagement';
 import './ProviderManagement.css';
-
-interface ProviderFilters {
-    search?: string;
-    specialty?: string;
-    isActive?: boolean;
-    page?: number;
-    limit?: number;
-}
 
 const ProviderManagement: React.FC = () => {
     const navigate = useNavigate();
-    const [providers, setProviders] = useState<Provider[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [filters, setFilters] = useState<ProviderFilters>({
-        search: '',
-        specialty: '',
-        isActive: true,
-        page: 1,
-        limit: 20
-    });
-    const [sort, setSort] = useState<Record<string, any>>({ createdAt: -1 });
-    const [total, setTotal] = useState(0);
+    const {
+        providers,
+        loading,
+        error,
+        filters,
+        sort,
+        total,
+        handleSearchChange,
+        handleFilterChange,
+        setSort,
+        handleDeleteProvider,
+        fetchProviders
+    } = useProviderManagement();
     const [selectedProvider, setSelectedProvider] = useState<Provider | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingProvider, setEditingProvider] = useState<Provider | null>(null);
 
-    // Fetch providers from backend
-    const fetchProviders = useCallback(async () => {
-        try {
-            setLoading(true);
-            setError(null);
 
-            // Build query parameters
-            const queryParams: Record<string, any> = {};
-
-            if (filters.search) {
-                queryParams.search = filters.search;
-            }
-
-            if (filters.specialty) {
-                queryParams.specialty = filters.specialty;
-            }
-
-            if (filters.isActive !== undefined) {
-                queryParams.isActive = filters.isActive;
-            }
-
-            if (filters.page) {
-                queryParams.page = filters.page;
-            }
-
-            if (filters.limit) {
-                queryParams.limit = filters.limit;
-            }
-
-            if (sort) {
-                queryParams.sort = JSON.stringify(sort);
-            }
-
-            // Call API service
-            const result = await apiService.providers.getAll(queryParams);
-
-            if (result.success && result.data) {
-                const data = result.data;
-                setProviders(Array.isArray(data) ? data : (data as any)?.providers || []);
-                setTotal(Array.isArray(data) ? data.length : (data as any)?.total || 0);
-            } else {
-                setError(result.message || 'Erro ao carregar profissionais');
-                setProviders([]);
-                setTotal(0);
-            }
-        } catch (err: any) {
-            setError(err.message || 'Erro ao carregar profissionais');
-        } finally {
-            setLoading(false);
-        }
-    }, [filters]);
-
-    useEffect(() => {
-        fetchProviders();
-    }, [fetchProviders]);
-
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFilters(prev => ({ ...prev, search: e.target.value, page: 1 }));
-    };
-
-    const handleFilterChange = (key: keyof ProviderFilters, value: any) => {
-        setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
-    };
-
-    const handleDeleteProvider = async (providerId: string) => {
-        if (window.confirm('Tem certeza que deseja excluir este profissional?')) {
-            try {
-                await apiService.providers.delete(providerId);
-                fetchProviders();
-            } catch (error) {
-                console.error('Failed to delete provider:', error);
-            }
-        }
-    };
 
     const formatWorkingHours = (workingHours: Provider['workingHours']) => {
         if (!workingHours) return 'Não definido';
@@ -673,17 +593,7 @@ const ProviderManagement: React.FC = () => {
                                     <ProviderForm
                                         provider={editingProvider}
                                         onSave={provider => {
-                                            // Update the providers list
-                                            if (editingProvider) {
-                                                setProviders(prev =>
-                                                    prev.map(p => (p._id === provider._id ? provider : p))
-                                                );
-                                            } else {
-                                                setProviders(prev => [provider, ...prev]);
-                                                setTotal(prev => prev + 1);
-                                            }
-
-                                            // Close modal
+                                            fetchProviders();
                                             setShowAddModal(false);
                                             setEditingProvider(null);
                                         }}
