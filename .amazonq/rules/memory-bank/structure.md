@@ -1,186 +1,181 @@
-# Project Structure
+# TopSmile - Project Structure
 
-## Monorepo Organization
+## Architecture Overview
+TopSmile follows a monorepo structure with separate frontend and backend applications sharing common TypeScript types. The architecture emphasizes separation of concerns, modularity, and maintainability.
 
-TopSmile uses a monorepo structure with three main packages:
+## Directory Structure
 
 ```
 topsmile/
-├── src/                    # Frontend React application
-├── backend/                # Backend Express API
-└── packages/types/         # Shared TypeScript types
+├── src/                          # Frontend React application
+├── backend/                      # Backend Express API
+├── packages/types/               # Shared TypeScript types
+├── docs/                         # Comprehensive documentation
+├── cypress/                      # E2E tests
+├── scripts/                      # Build and utility scripts
+└── .github/workflows/            # CI/CD pipelines
 ```
 
 ## Frontend Structure (`/src`)
 
 ### Core Directories
-- **components/** - Reusable UI components organized by feature
-  - `Admin/` - Admin dashboard components
-  - `Auth/` - Authentication forms and flows
-  - `Booking/` - Appointment booking interface
-  - `Calendar/` - Calendar and scheduling views
-  - `Clinical/` - Clinical workflows (notes, treatment plans, signatures)
-  - `PatientPortal/` - Patient self-service components
-  - `Payment/` - Payment processing UI
-  - `common/` - Shared UI components (buttons, forms, modals)
-  - `UI/` - Base UI primitives
+- **components/**: Reusable UI components organized by feature
+  - `Admin/`: Admin-specific components
+  - `Auth/`: Authentication forms and flows
+  - `Booking/`: Appointment booking interface
+  - `Calendar/`: Calendar and scheduling views
+  - `Clinical/`: Clinical workflow components
+  - `PatientPortal/`: Patient-facing portal components
+  - `Payment/`: Payment processing UI
+  - `common/`: Shared UI elements (buttons, inputs, modals)
+  - `UI/`: Base design system components
 
-- **features/** - Feature modules with business logic
-  - `appointments/` - Appointment management
-  - `auth/` - Authentication logic
-  - `booking/` - Booking workflows
-  - `clinical/` - Clinical features
-  - `dashboard/` - Dashboard views
-  - `patients/` - Patient management
-  - `providers/` - Provider management
+- **features/**: Feature modules with co-located logic
+  - `appointments/`: Appointment management
+  - `auth/`: Authentication logic
+  - `booking/`: Booking workflows
+  - `clinical/`: Clinical features
+  - `dashboard/`: Dashboard views
+  - `patients/`: Patient management
+  - `providers/`: Provider management
 
-- **services/** - API communication layer
-  - `api/` - API service modules
-  - `base/` - Base HTTP client
-  - `interceptors/` - Request/response interceptors
-  - `apiService.ts` - Main API service
-  - `paymentService.ts` - Payment integration
+- **services/**: API communication layer
+  - `api/`: Feature-specific API services
+  - `base/`: Base HTTP client configuration
+  - `interceptors/`: Request/response interceptors
 
-- **contexts/** - React Context providers
-  - `AuthContext.tsx` - Staff authentication state
-  - `PatientAuthContext.tsx` - Patient authentication state
-  - `ErrorContext.tsx` - Global error handling
+- **contexts/**: React Context providers
+  - `AuthContext.tsx`: Staff authentication
+  - `PatientAuthContext.tsx`: Patient authentication
+  - `ErrorContext.tsx`: Global error handling
 
-- **store/** - Zustand state management
-  - `appStore.ts` - Application state
-  - `authStore.ts` - Authentication state
-  - `clinicalStore.ts` - Clinical data state
+- **store/**: Zustand state management
+  - `appStore.ts`: Global application state
+  - `clinicalStore.ts`: Clinical workflow state
 
-- **hooks/** - Custom React hooks
-  - `useApiQuery.ts` - API data fetching
-  - `useForm.ts` - Form management
-  - `useErrorHandler.ts` - Error handling
-  - `useAccessibility.ts` - Accessibility features
-  - `usePerformanceMonitor.ts` - Performance tracking
+- **hooks/**: Custom React hooks
+  - Form management, API queries, accessibility, performance monitoring
 
-- **layouts/** - Page layout components
-  - `MainLayout/` - Public pages layout
-  - `DashboardLayout/` - Staff dashboard layout
-  - `PatientPortalLayout/` - Patient portal layout
-  - `AuthLayout/` - Authentication pages layout
+- **layouts/**: Page layout components
+  - `MainLayout/`: Public pages
+  - `DashboardLayout/`: Staff dashboard
+  - `PatientPortalLayout/`: Patient portal
+  - `AuthLayout/`: Authentication pages
 
-- **routes/** - Route configuration and definitions
-- **pages/** - Page components mapped to routes
-- **styles/** - Global styles and CSS variables
-- **utils/** - Utility functions and helpers
-- **mocks/** - MSW mock service worker for testing
+- **routes/**: Route definitions and configuration
+
+- **utils/**: Utility functions
+  - Formatters, error handlers, validators, loggers
+
+- **styles/**: Global styles and design tokens
+
+- **tests/**: Frontend test suites
+  - `accessibility/`: A11y tests
+  - `components/`: Component tests
+  - `integration/`: Integration tests
+  - `performance/`: Performance tests
 
 ## Backend Structure (`/backend/src`)
 
 ### Core Directories
-- **routes/** - Express route handlers
-  - API endpoint definitions
-  - Route-level middleware
-  - Request validation
+- **routes/**: API route handlers organized by domain
+  - `auth/`: Authentication endpoints
+  - `patient-auth/`: Patient authentication
+  - `appointments/`: Appointment management
+  - `patients/`: Patient CRUD operations
+  - `providers/`: Provider management
+  - `scheduling/`: Scheduling logic
+  - `clinical/`: Clinical workflows
+  - `admin/`: Administrative endpoints
 
-- **services/** - Business logic layer
-  - `scheduling/` - Appointment scheduling logic
-  - `clinical/` - Clinical workflows (treatment plans, notes)
-  - `auth/` - Authentication services
-  - `notification/` - Email/SMS notifications
-  - `payment/` - Payment processing
+- **services/**: Business logic layer
+  - Domain-specific services implementing core functionality
+  - Separated from route handlers for testability
 
-- **models/** - Mongoose data models
-  - `User.ts` - Staff users
-  - `Patient.ts` - Patient records
-  - `Provider.ts` - Provider profiles
-  - `Appointment.ts` - Appointments
-  - `Clinic.ts` - Clinic configuration
-  - `RefreshToken.ts` - Token management
+- **models/**: Mongoose data models
+  - `User.ts`: Staff users
+  - `Patient.ts`: Patient records
+  - `Provider.ts`: Provider profiles
+  - `Appointment.ts`: Appointments
+  - `Clinic.ts`: Clinic configuration
+  - `RefreshToken.ts`: Token management
 
-- **middleware/** - Express middleware
-  - Authentication and authorization
-  - Request validation
-  - Error handling
-  - Rate limiting
-  - CSRF protection
-  - Security headers
+- **middleware/**: Express middleware
+  - `auth.ts`: Authentication verification
+  - `validation.ts`: Input validation
+  - `errorHandler.ts`: Centralized error handling
+  - `rateLimiter.ts`: Rate limiting
+  - `csrf.ts`: CSRF protection
 
-- **config/** - Configuration files
-  - Database connection
-  - Redis configuration
-  - JWT settings
-  - Email/SMS providers
-  - Stripe integration
+- **config/**: Configuration files
+  - Database, Redis, JWT, email, SMS, Stripe setup
+  - `swagger.ts`: API documentation configuration
 
-- **utils/** - Utility functions
-  - Token management
-  - Data validation
-  - Error classes
-  - Logging
+- **utils/**: Utility functions
+  - Token management, encryption, validation helpers
 
-- **validation/** - Input validation schemas
-  - express-validator rules
-  - Custom validators
+- **validation/**: Input validation schemas
+  - express-validator schemas for request validation
 
-- **types/** - Backend-specific TypeScript types
-- **events/** - Event emitters and handlers
-- **container/** - Dependency injection container
+- **types/**: Backend-specific TypeScript types
 
-### Testing Structure
-- **tests/** - Test suites
-  - `unit/` - Unit tests for services and utilities
-  - `integration/` - API integration tests
-  - `e2e/` - End-to-end workflow tests
-  - `performance/` - Load and performance tests
-  - `fixtures/` - Test data and mocks
-  - `helpers/` - Test utilities
+- **tests/**: Backend test suites
+  - `unit/`: Unit tests
+  - `integration/`: API integration tests
+  - `e2e/`: End-to-end tests
+  - `performance/`: Load and performance tests
+  - `fixtures/`: Test data
+  - `helpers/`: Test utilities
 
 ## Shared Types (`/packages/types`)
+- Common TypeScript interfaces and types
+- Shared between frontend and backend
+- Ensures type consistency across the stack
 
-Centralized TypeScript interfaces and types shared between frontend and backend:
-- API request/response types
-- Domain models
-- Enums and constants
-- Validation schemas
+## Documentation (`/docs`)
+- **architecture/**: System design and architecture diagrams
+- **components/**: Component interaction details
+- **developer-guides/**: Onboarding and coding standards
+- **flows/**: User journey and data flow diagrams
+- **security/**: Authentication and security specifications
+- **operations/**: Deployment and monitoring guides
+- **revisions/**: Code review reports and changelogs
 
-## Configuration Files
+## Key Architectural Patterns
 
-### Root Level
-- `package.json` - Frontend dependencies and scripts
-- `tsconfig.json` - TypeScript configuration
-- `jest.config.js` - Jest test configuration
-- `cypress.config.ts` - Cypress E2E configuration
-- `.env` - Frontend environment variables
+### Frontend Patterns
+- **Component-Based Architecture**: Modular, reusable components
+- **Feature Modules**: Co-located components, hooks, and logic
+- **Context + Zustand**: Global state management with React Context for auth, Zustand for app state
+- **Custom Hooks**: Encapsulated logic for reusability
+- **Service Layer**: Centralized API communication
+- **Layout Components**: Consistent page structure
 
-### Backend
-- `backend/package.json` - Backend dependencies
-- `backend/tsconfig.json` - Backend TypeScript config
-- `backend/jest.config.js` - Backend test config
-- `backend/.env` - Backend environment variables
-
-## Architectural Patterns
-
-### Frontend Architecture
-- **Component-Based**: React functional components with hooks
-- **State Management**: Zustand for global state, React Query for server state
-- **Routing**: React Router 6 with lazy loading
-- **API Layer**: Centralized API service with interceptors
-- **Error Handling**: Error boundaries and context-based error management
-
-### Backend Architecture
+### Backend Patterns
 - **Layered Architecture**: Routes → Services → Models
-- **Dependency Injection**: Container-based DI for services
-- **Event-Driven**: Event emitters for cross-service communication
-- **Repository Pattern**: Mongoose models as data repositories
-- **Middleware Pipeline**: Express middleware for cross-cutting concerns
+- **Middleware Pipeline**: Authentication, validation, error handling
+- **Repository Pattern**: Data access through Mongoose models
+- **Dependency Injection**: Service container for testability
+- **Event-Driven**: Event emitters for cross-cutting concerns
+- **API Versioning**: Support for multiple API versions
 
 ### Data Flow
-1. **Frontend Request** → API Service → HTTP Client
-2. **Backend Route** → Middleware (auth, validation) → Service Layer
-3. **Service Layer** → Model/Database → Response
-4. **Backend Response** → Frontend → State Update → UI Render
+1. **Frontend Request**: Component → Hook → Service → API
+2. **Backend Processing**: Route → Middleware → Service → Model
+3. **Response**: Model → Service → Route → Frontend Service → Hook → Component
 
-## Key Relationships
+### Security Layers
+- JWT authentication at route level
+- Input validation middleware
+- Data sanitization
+- CSRF protection
+- Rate limiting
+- Redis-based token blacklist
 
-- **Frontend ↔ Backend**: REST API communication via HTTP
-- **Frontend ↔ Shared Types**: Import types for type safety
-- **Backend ↔ Shared Types**: Import types for validation
-- **Backend ↔ MongoDB**: Mongoose ODM for data persistence
-- **Backend ↔ Redis**: Caching and session management
-- **Frontend ↔ Stripe**: Payment processing integration
+## Integration Points
+- **MongoDB**: Primary data store
+- **Redis**: Session management, caching, token blacklist
+- **Stripe**: Payment processing
+- **Twilio**: SMS notifications
+- **Nodemailer**: Email notifications
+- **Swagger**: API documentation
