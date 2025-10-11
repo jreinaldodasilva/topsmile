@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import logger from '../../utils/logger';
 
 interface DatabaseConfig {
   uri: string;
@@ -25,23 +26,23 @@ export const connectToDatabase = async (retries = 0): Promise<void> => {
   try {
     const { uri, options } = getDatabaseConfig();
     
-    console.log(`🔄 Connecting to MongoDB (attempt ${retries + 1}/${MAX_RETRIES})...`);
+    logger.info(`🔄 Connecting to MongoDB (attempt ${retries + 1}/${MAX_RETRIES})...`);
     
     await mongoose.connect(uri, options);
     
-    console.log('✅ MongoDB connected successfully');
-    console.log(`📊 Database: ${mongoose.connection.name}`);
-    console.log(`🔗 Host: ${mongoose.connection.host}:${mongoose.connection.port}`);
+    logger.info('✅ MongoDB connected successfully');
+    logger.info(`📊 Database: ${mongoose.connection.name}`);
+    logger.info(`🔗 Host: ${mongoose.connection.host}:${mongoose.connection.port}`);
     
     // Graceful shutdown handlers
     const gracefulShutdown = async (signal: string) => {
-      console.log(`🔄 ${signal} received. Shutting down gracefully...`);
+      logger.info(`🔄 ${signal} received. Shutting down gracefully...`);
       try {
         await mongoose.connection.close();
-        console.log('✅ MongoDB connection closed');
+        logger.info('✅ MongoDB connection closed');
         process.exit(0);
       } catch (error) {
-        console.error('❌ Error during shutdown:', error);
+        logger.error({ error }, '❌ Error during shutdown');
         process.exit(1);
       }
     };
@@ -51,25 +52,24 @@ export const connectToDatabase = async (retries = 0): Promise<void> => {
 
     // Handle process exit
     process.on('exit', (code) => {
-      console.log(`👋 Process exiting with code: ${code}`);
+      logger.info(`👋 Process exiting with code: ${code}`);
     });
 
   } catch (error) {
-    console.error('❌ MongoDB connection error:', error);
+    logger.error({ error }, '❌ MongoDB connection error');
     
     // Log additional details for debugging
     if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
+      logger.error({ message: error.message, stack: error.stack }, 'Error details');
     }
     
     if (retries < MAX_RETRIES - 1) {
       const delay = INITIAL_RETRY_DELAY * Math.pow(2, retries);
-      console.log(`Retrying connection in ${delay / 1000} seconds...`);
+      logger.info(`Retrying connection in ${delay / 1000} seconds...`);
       await new Promise(resolve => setTimeout(resolve, delay));
       await connectToDatabase(retries + 1);
     } else {
-      console.error('❌ Max MongoDB connection retries reached. Exiting process.');
+      logger.error('❌ Max MongoDB connection retries reached. Exiting process.');
       process.exit(1);
     }
   }
@@ -77,23 +77,23 @@ export const connectToDatabase = async (retries = 0): Promise<void> => {
 
 // Connection event listeners with better logging
 mongoose.connection.on('error', (error) => {
-  console.error('❌ MongoDB connection error:', error);
+  logger.error({ error }, '❌ MongoDB connection error');
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('⚠️  MongoDB disconnected');
+  logger.info('⚠️  MongoDB disconnected');
 });
 
 mongoose.connection.on('reconnected', () => {
-  console.log('✅ MongoDB reconnected');
+  logger.info('✅ MongoDB reconnected');
 });
 
 mongoose.connection.on('connecting', () => {
-  console.log('🔄 MongoDB connecting...');
+  logger.info('🔄 MongoDB connecting...');
 });
 
 mongoose.connection.on('connected', () => {
-  console.log('🔌 MongoDB connected');
+  logger.info('🔌 MongoDB connected');
 });
 
 // Export connection state helper

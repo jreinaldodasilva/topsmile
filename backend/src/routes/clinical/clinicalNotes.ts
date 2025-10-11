@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/clinicalNotes.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -43,7 +44,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: note
         });
     } catch (error: any) {
-        console.error('Error creating clinical note:', error);
+        logger.error({ error }, 'Error creating clinical note:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar nota clínica'
@@ -69,7 +70,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: notes
         });
     } catch (error: any) {
-        console.error('Error fetching clinical notes:', error);
+        logger.error({ error }, 'Error fetching clinical notes:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar notas'
@@ -101,7 +102,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: note
         });
     } catch (error: any) {
-        console.error('Error fetching clinical note:', error);
+        logger.error({ error }, 'Error fetching clinical note:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar nota'
@@ -141,7 +142,7 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: note
         });
     } catch (error: any) {
-        console.error('Error updating clinical note:', error);
+        logger.error({ error }, 'Error updating clinical note:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar nota'
@@ -179,7 +180,7 @@ router.patch('/:id/sign', param('id').isMongoId(), async (req: Request, res: Res
             data: note
         });
     } catch (error: any) {
-        console.error('Error signing clinical note:', error);
+        logger.error({ error }, 'Error signing clinical note:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao assinar nota'

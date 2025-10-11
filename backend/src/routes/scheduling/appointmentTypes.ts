@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/appointmentTypes.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -308,7 +309,7 @@ router.post('/',
                 }
             });
         } catch (error: any) {
-            console.error('Error creating appointment type:', error);
+            logger.error({ error }, 'Error creating appointment type:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao criar tipo de agendamento'
@@ -450,7 +451,7 @@ router.get('/', searchValidation, async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error searching appointment types:', error);
+        logger.error({ error }, 'Error searching appointment types:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar tipos de agendamento'
@@ -521,7 +522,7 @@ router.get('/stats',
                 }
             });
         } catch (error: any) {
-            console.error('Error getting appointment type stats:', error);
+            logger.error({ error }, 'Error getting appointment type stats:');
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Erro ao buscar estatísticas de tipos de agendamento'
@@ -599,7 +600,7 @@ router.get('/category/:category', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting appointment types by category:', error);
+        logger.error({ error }, 'Error getting appointment types by category:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar tipos de agendamento por categoria'
@@ -657,7 +658,7 @@ router.get('/online-booking', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting online booking types:', error);
+        logger.error({ error }, 'Error getting online booking types:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar tipos de agendamento para reserva online'
@@ -732,7 +733,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting appointment type:', error);
+        logger.error({ error }, 'Error getting appointment type:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar tipo de agendamento'
@@ -831,7 +832,7 @@ router.put('/:id',
                 }
             });
         } catch (error: any) {
-            console.error('Error updating appointment type:', error);
+            logger.error({ error }, 'Error updating appointment type:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar tipo de agendamento'
@@ -930,7 +931,7 @@ router.post('/:id/duplicate',
                 }
             });
         } catch (error: any) {
-            console.error('Error duplicating appointment type:', error);
+            logger.error({ error }, 'Error duplicating appointment type:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao duplicar tipo de agendamento'
@@ -1011,7 +1012,7 @@ router.patch('/:id/reactivate',
                 }
             });
         } catch (error: any) {
-            console.error('Error reactivating appointment type:', error);
+            logger.error({ error }, 'Error reactivating appointment type:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao reativar tipo de agendamento'
@@ -1089,7 +1090,7 @@ router.delete('/:id',
                 }
             });
         } catch (error: any) {
-            console.error('Error deleting appointment type:', error);
+            logger.error({ error }, 'Error deleting appointment type:');
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Erro ao excluir tipo de agendamento'

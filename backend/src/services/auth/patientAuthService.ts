@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { PatientUser, IPatientUser } from '../../models/PatientUser';
@@ -68,7 +69,7 @@ class PatientAuthService {
 
     if (!secret || secret === 'your-secret-key') {
       if (process.env.NODE_ENV === 'production') {
-        console.error('FATAL: PATIENT_JWT_SECRET must be set in production and be a strong, unique secret.');
+        logger.error('FATAL: PATIENT_JWT_SECRET must be set in production and be a strong, unique secret.');
         process.exit(1);
       }
       // For development, generate a temporary secret if not provided.
@@ -77,7 +78,7 @@ class PatientAuthService {
 
     // Ensure patient and staff secrets are different in production
     if (process.env.NODE_ENV === 'production' && secret === process.env.JWT_SECRET) {
-      console.error('FATAL: PATIENT_JWT_SECRET must be different from JWT_SECRET in production.');
+      logger.error('FATAL: PATIENT_JWT_SECRET must be different from JWT_SECRET in production.');
       process.exit(1);
     }
 
@@ -139,7 +140,7 @@ class PatientAuthService {
             });
         }
     } catch (error) {
-        console.error('Error cleaning up old refresh tokens:', error);
+        logger.error({ error }, 'Error cleaning up old refresh tokens:');
         // Don't throw - this is a maintenance operation
     }
   }
@@ -245,7 +246,7 @@ class PatientAuthService {
       const refreshToken = await this.createRefreshToken(savedPatientUser._id as any, deviceInfo);
 
       // TODO: Send verification email
-      console.log(`Email verification token for ${email}: ${verificationToken}`);
+      logger.info(`Email verification token for ${email}: ${verificationToken}`);
 
       return {
         success: true,
@@ -263,7 +264,7 @@ class PatientAuthService {
         throw error;
       }
       
-      console.error('Patient registration error:', error);
+      logger.error({ error }, 'Patient registration error:');
       throw new AppError('Erro ao criar conta de paciente', 500);
     }
   }
@@ -334,7 +335,7 @@ class PatientAuthService {
         throw error;
       }
       
-      console.error('Patient login error:', error);
+      logger.error({ error }, 'Patient login error:');
       throw new AppError('Erro ao fazer login', 500);
     }
   }
@@ -396,7 +397,7 @@ class PatientAuthService {
             { isRevoked: true }
         );
     } catch (error) {
-        console.error('Error during logout:', error);
+        logger.error({ error }, 'Error during logout:');
         // Don't throw - logout should be graceful
     }
   }
@@ -412,7 +413,7 @@ class PatientAuthService {
             { isRevoked: true }
         );
     } catch (error) {
-        console.error('Error during logout all devices:', error as Error);
+        logger.error({ error }, 'Error during logout all devices:');
         throw new AppError('Erro ao fazer logout de todos os dispositivos', 500);
     }
   }
@@ -476,7 +477,7 @@ class PatientAuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      console.error('Error updating patient profile:', error);
+      logger.error({ error }, 'Error updating patient profile:');
       throw new AppError('Erro ao atualizar perfil do paciente', 500);
     }
   }
@@ -500,7 +501,7 @@ class PatientAuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      console.error('Error changing patient password:', error);
+      logger.error({ error }, 'Error changing patient password:');
       throw new AppError('Erro ao alterar senha do paciente', 500);
     }
   }
@@ -512,7 +513,7 @@ class PatientAuthService {
       if (!patientUser) {
         // To prevent email enumeration, we don't throw an error here.
         // We just log it and return.
-        console.log(`Verification email resend attempt for non-existent user: ${email}`);
+        logger.info(`Verification email resend attempt for non-existent user: ${email}`);
         return;
       }
 
@@ -526,12 +527,12 @@ class PatientAuthService {
       await patientUser.save();
 
       // TODO: Send verification email
-      console.log(`New email verification token for ${email}: ${verificationToken}`);
+      logger.info(`New email verification token for ${email}: ${verificationToken}`);
     } catch (error) {
       if (error instanceof AppError) {
         throw error;
       }
-      console.error('Error resending verification email:', error);
+      logger.error({ error }, 'Error resending verification email:');
       throw new AppError('Erro ao reenviar e-mail de verificação', 500);
     }
   }
@@ -554,7 +555,7 @@ class PatientAuthService {
       if (error instanceof AppError) {
         throw error;
       }
-      console.error('Error deleting patient account:', error);
+      logger.error({ error }, 'Error deleting patient account:');
       throw new AppError('Erro ao deletar conta do paciente', 500);
     }
   }

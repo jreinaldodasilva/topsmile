@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import { Request, Response, NextFunction } from 'express';
 import { ApiResponse } from '../../utils/responseHelpers';
 import { tokenBlacklistService } from '../../services/auth/tokenBlacklistService';
@@ -25,7 +26,7 @@ export abstract class BaseAuthMiddleware {
   protected abstract attachUserToRequest(req: Request, payload: any): Promise<void>;
 
   protected handleAuthError(res: Response, error: any): void {
-    console.error('Authentication error:', error);
+    logger.error({ error }, 'Authentication error:');
     
     let message = 'Token inválido ou expirado';
     let code = 'INVALID_TOKEN';
@@ -87,7 +88,7 @@ export abstract class BaseAuthMiddleware {
             await this.attachUserToRequest(req, payload);
           }
         } catch (error) {
-          console.warn('Optional auth failed:', error instanceof Error ? error.message : 'Unknown error');
+          logger.warn({ error: error instanceof Error ? error.message : 'Unknown error' }, 'Optional auth failed');
         }
       }
       

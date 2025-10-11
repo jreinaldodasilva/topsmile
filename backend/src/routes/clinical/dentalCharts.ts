@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/dentalCharts.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -43,7 +44,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             }
         });
     } catch (error: any) {
-        console.error('Error creating dental chart:', error);
+        logger.error({ error }, 'Error creating dental chart:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar odontograma'
@@ -67,7 +68,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             }
         });
     } catch (error: any) {
-        console.error('Error fetching dental charts:', error);
+        logger.error({ error }, 'Error fetching dental charts:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar odontogramas'
@@ -98,7 +99,7 @@ router.get('/patient/:patientId/latest', param('patientId').isMongoId(), async (
             }
         });
     } catch (error: any) {
-        console.error('Error fetching latest dental chart:', error);
+        logger.error({ error }, 'Error fetching latest dental chart:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar odontograma'
@@ -129,7 +130,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             }
         });
     } catch (error: any) {
-        console.error('Error fetching dental chart:', error);
+        logger.error({ error }, 'Error fetching dental chart:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar odontograma'
@@ -161,7 +162,7 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             }
         });
     } catch (error: any) {
-        console.error('Error updating dental chart:', error);
+        logger.error({ error }, 'Error updating dental chart:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar odontograma'

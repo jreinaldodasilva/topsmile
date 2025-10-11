@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/treatmentPlans.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -45,7 +46,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: plan
         });
     } catch (error: any) {
-        console.error('Error creating treatment plan:', error);
+        logger.error({ error }, 'Error creating treatment plan:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar plano de tratamento'
@@ -71,7 +72,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: plans
         });
     } catch (error: any) {
-        console.error('Error fetching treatment plans:', error);
+        logger.error({ error }, 'Error fetching treatment plans:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar planos'
@@ -103,7 +104,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: plan
         });
     } catch (error: any) {
-        console.error('Error fetching treatment plan:', error);
+        logger.error({ error }, 'Error fetching treatment plan:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar plano'
@@ -134,7 +135,7 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: plan
         });
     } catch (error: any) {
-        console.error('Error updating treatment plan:', error);
+        logger.error({ error }, 'Error updating treatment plan:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar plano'
@@ -164,7 +165,7 @@ router.patch('/:id/accept', param('id').isMongoId(), body('acceptedBy').trim().n
             data: plan
         });
     } catch (error: any) {
-        console.error('Error accepting treatment plan:', error);
+        logger.error({ error }, 'Error accepting treatment plan:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao aceitar plano'
@@ -199,7 +200,7 @@ router.patch('/:id/phase/:phaseNumber',
                 data: plan
             });
         } catch (error: any) {
-            console.error('Error updating phase status:', error);
+            logger.error({ error }, 'Error updating phase status:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar fase'
@@ -223,7 +224,7 @@ router.post('/estimate-insurance',
                 data: estimates
             });
         } catch (error: any) {
-            console.error('Error estimating insurance:', error);
+            logger.error({ error }, 'Error estimating insurance:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao estimar cobertura'

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/patient/index.ts
 import { Router } from 'express';
 import patientsRoutes from './patients';

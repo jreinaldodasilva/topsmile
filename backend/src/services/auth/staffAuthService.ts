@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/auth/staffAuthService.ts
 import crypto from 'crypto';
 import { User } from '../../models/User';
@@ -218,7 +219,7 @@ class StaffAuthService extends BaseAuthService<any, any> {
 
         const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
         if (!user) {
-            console.log(`Password reset attempt for non-existent user: ${email}`);
+            logger.info(`Password reset attempt for non-existent user: ${email}`);
             return '';
         }
 

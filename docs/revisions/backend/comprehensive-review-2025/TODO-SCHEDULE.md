@@ -12,10 +12,10 @@
 | Phase | Tasks | Completed | Time Spent | Status |
 |-------|-------|-----------|------------|--------|
 | Phase 1 | 4 | 4/4 | 2.5/40h | ✅ Complete |
-| Phase 2 | 4 | 0/4 | 0/60h | ⏳ Not Started |
+| Phase 2 | 4 | 4/4 | 1/60h | ✅ Complete |
 | Phase 3 | 4 | 0/4 | 0/40h | ⏳ Not Started |
 | Phase 4 | 4 | 0/4 | 0/30h | ⏳ Not Started |
-| **Total** | **17** | **4/17** | **2.5/170h** | **24%** |
+| **Total** | **17** | **8/17** | **3.5/170h** | **47%** |
 
 ---
 

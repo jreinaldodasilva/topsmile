@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/sessions.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -27,7 +28,7 @@ router.get('/', async (req: Request, res: Response) => {
             data: sessions
         });
     } catch (error: any) {
-        console.error('Error fetching sessions:', error);
+        logger.error({ error }, 'Error fetching sessions:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar sessões'
@@ -73,7 +74,7 @@ router.delete('/:sessionId', param('sessionId').isMongoId(), async (req: Request
             message: 'Sessão revogada com sucesso'
         });
     } catch (error: any) {
-        console.error('Error revoking session:', error);
+        logger.error({ error }, 'Error revoking session:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao revogar sessão'
@@ -100,7 +101,7 @@ router.post('/revoke-all', async (req: Request, res: Response) => {
             message: `${count} sessão(ões) revogada(s) com sucesso`
         });
     } catch (error: any) {
-        console.error('Error revoking all sessions:', error);
+        logger.error({ error }, 'Error revoking all sessions:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao revogar sessões'

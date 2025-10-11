@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { contactService } from '../../services/admin/contactService';
@@ -49,7 +50,7 @@ router.get('/dashboard', authenticate, authorize('super_admin', 'admin', 'manage
       data: dashboardData
     });
   } catch (error) {
-    console.error('Error fetching dashboard stats:', error);
+    logger.error({ error }, 'Error fetching dashboard stats:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar estatísticas do dashboard'

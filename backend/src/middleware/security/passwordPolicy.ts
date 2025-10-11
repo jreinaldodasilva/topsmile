@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/middleware/passwordPolicy.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../auth/auth';
@@ -36,7 +37,7 @@ export const checkPasswordExpiry = async (req: Request, res: Response, next: Nex
 
         next();
     } catch (error) {
-        console.error('Error checking password expiry:', error);
+        logger.error({ error }, 'Error checking password expiry:');
         next();
     }
 };

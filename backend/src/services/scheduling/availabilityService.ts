@@ -6,6 +6,7 @@ import mongoose from 'mongoose'; // FIXED: Replaced require with import
 import { Provider } from '../../models/Provider';
 import { Appointment } from '../../models/Appointment';
 import { AppointmentType } from '../../models/AppointmentType';
+import logger from '../../utils/logger';
 
 export interface AvailabilitySlot {
   start: Date;
@@ -116,12 +117,12 @@ export async function generateAvailability(options: GenerateAvailabilityOptions)
       
       // ADDED: Memory management - process in chunks if too many slots
       if (slots.length > 10000) {
-        console.warn(`Large number of slots generated (${slots.length}), consider reducing date range`);
+        logger.warn(`Large number of slots generated (${slots.length}), consider reducing date range`);
         break;
       }
       
     } catch (error) {
-      console.error(`Error processing day ${format(currentDay, 'yyyy-MM-dd')}:`, error);
+      logger.error({ error }, `Error processing day ${format(currentDay, 'yyyy-MM-dd')}`);
       // Continue with next day instead of failing completely
       currentDay = addDays(currentDay, 1);
       dayCount++;
@@ -162,7 +163,7 @@ async function generateDayAvailability(options: GenerateDayAvailabilityOptions):
     workStart = parseTimeToDate(date, workingHours.start, provider.timeZone!);
     workEnd = parseTimeToDate(date, workingHours.end, provider.timeZone!);
   } catch (error) {
-    console.error(`Error parsing working hours for provider ${provider._id}:`, error);
+    logger.error({ error }, `Error parsing working hours for provider ${provider._id}`);
     return [];
   }
 
@@ -236,7 +237,7 @@ async function generateDayAvailability(options: GenerateDayAvailabilityOptions):
   }
 
   if (slotCount >= maxSlotsPerDay) {
-    console.warn(`Maximum slots per day reached (${maxSlotsPerDay}) for provider ${provider._id}`);
+    logger.warn({ providerId: provider._id, maxSlotsPerDay }, `Maximum slots per day reached`);
   }
 
   return slots;

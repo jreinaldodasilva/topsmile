@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 // backend/src/middleware/auditLogger.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
@@ -36,7 +37,7 @@ export const auditLogger = (req: Request, res: Response, next: NextFunction) => 
         if (authReq.user && !authReq.path.includes('/health')) {
             auditService.logFromRequest(authReq, action, resource, {
                 statusCode: res.statusCode
-            }).catch(err => console.error('Audit logging error:', err));
+            }).catch(err => logger.error('Audit logging error:', err));
         }
         
         return res.send(data);

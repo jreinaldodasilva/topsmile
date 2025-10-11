@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
 import { contactService } from '../../services/admin/contactService';
@@ -31,7 +32,7 @@ router.get('/', authenticate, authorize('super_admin', 'admin', 'manager'), asyn
       data: result
     });
   } catch (error) {
-    console.error('Error fetching contacts:', error);
+    logger.error({ error }, 'Error fetching contacts:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar contatos'
@@ -49,7 +50,7 @@ router.get('/stats', authenticate, authorize('super_admin', 'admin', 'manager'),
       data: stats
     });
   } catch (error) {
-    console.error('Error fetching contact stats:', error);
+    logger.error({ error }, 'Error fetching contact stats:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar estatísticas'
@@ -73,7 +74,7 @@ router.get('/:id', authenticate, authorize('super_admin', 'admin', 'manager'), a
       data: contact
     });
   } catch (error) {
-    console.error('Error fetching contact:', error);
+    logger.error({ error }, 'Error fetching contact:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar contato'
@@ -107,7 +108,7 @@ router.patch('/:id', authenticate, authorize('super_admin', 'admin', 'manager'),
       data: contact
     });
   } catch (error) {
-    console.error('Error updating contact:', error);
+    logger.error({ error }, 'Error updating contact:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao atualizar contato'
@@ -133,7 +134,7 @@ router.delete('/:id', authenticate, authorize('super_admin', 'admin'), async (re
       message: 'Contato excluído com sucesso'
     });
   } catch (error) {
-    console.error('Error deleting contact:', error);
+    logger.error({ error }, 'Error deleting contact:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao excluir contato'
@@ -169,7 +170,7 @@ router.post('/batch/status', authenticate, authorize('super_admin', 'admin', 'ma
       data: result
     });
   } catch (error) {
-    console.error('Error batch updating contacts:', error);
+    logger.error({ error }, 'Error batch updating contacts:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao atualizar contatos em lote'
@@ -187,7 +188,7 @@ router.get('/duplicates', authenticate, authorize('super_admin', 'admin'), async
       data: duplicates
     });
   } catch (error) {
-    console.error('Error finding duplicate contacts:', error);
+    logger.error({ error }, 'Error finding duplicate contacts:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar contatos duplicados'
@@ -216,7 +217,7 @@ router.post('/merge', authenticate, authorize('super_admin', 'admin'), async (re
       data: mergedContact
     });
   } catch (error) {
-    console.error('Error merging contacts:', error);
+    logger.error({ error }, 'Error merging contacts:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao mesclar contatos'

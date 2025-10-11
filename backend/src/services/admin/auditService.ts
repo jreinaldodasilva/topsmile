@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/auditService.ts
 import { Request } from 'express';
 import { AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -22,7 +23,7 @@ class AuditService {
         try {
             await AuditLog.create(data);
         } catch (error) {
-            console.error('Error creating audit log:', error);
+            logger.error({ error }, 'Error creating audit log:');
         }
     }
 

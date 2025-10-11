@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 // backend/src/middleware/rateLimiter.ts
 import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
@@ -18,7 +19,7 @@ export const createRateLimiter = (
     legacyHeaders: false,
     keyGenerator: keyGenerator || ((req: Request) => req.ip || 'unknown'),
     handler: (req, res) => {
-      console.warn(`Rate limit exceeded: ${req.method} ${req.path} from ${req.ip}`);
+      logger.warn(`Rate limit exceeded: ${req.method} ${req.path} from ${req.ip}`);
       res.status(CONSTANTS.HTTP_STATUS.TOO_MANY_REQUESTS).json({
         success: false,
         message,
@@ -44,7 +45,7 @@ export const createTieredRateLimiter = (limits: Record<string, number>, windowMs
     legacyHeaders: false,
     handler: (req, res) => {
       const authReq = req as AuthenticatedRequest;
-      console.warn(`Rate limit exceeded for user ${authReq.user?.id || req.ip}`);
+      logger.warn(`Rate limit exceeded for user ${authReq.user?.id || req.ip}`);
       res.status(CONSTANTS.HTTP_STATUS.TOO_MANY_REQUESTS).json({
         success: false,
         message: CONSTANTS.ERRORS.RATE_LIMIT_EXCEEDED,

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/tokenBlacklistService.ts
 import Redis from 'ioredis';
 import dotenv from "dotenv";
@@ -13,7 +14,7 @@ class TokenBlacklistService {
     if (process.env.REDIS_URL) {
       this.initializeRedis();
     } else {
-      console.warn('⚠️  REDIS_URL not set, using in-memory token blacklist (not suitable for production)');
+      logger.warn('⚠️  REDIS_URL not set, using in-memory token blacklist (not suitable for production)');
     }
   }
 
@@ -28,18 +29,18 @@ class TokenBlacklistService {
       });
 
       this.redis.on('error', (err) => {
-        console.error('Redis error:', err.message);
+        logger.error({ error: err.message }, 'Redis error:');
         this.isConnected = false;
       });
 
       this.redis.on('connect', () => {
-        console.log('✅ Token blacklist connected to Redis');
+        logger.info('✅ Token blacklist connected to Redis');
         this.isConnected = true;
       });
 
       await this.redis.connect();
     } catch (error) {
-      console.warn('Redis connection failed, using in-memory blacklist');
+      logger.warn('Redis connection failed, using in-memory blacklist');
       this.isConnected = false;
     }
   }
@@ -52,7 +53,7 @@ class TokenBlacklistService {
           await this.redis.setex(`blacklist:${token}`, ttl, '1');
         }
       } catch (error) {
-        console.error('Error adding to Redis blacklist:', error);
+        logger.error({ error }, 'Error adding to Redis blacklist:');
         this.inMemoryBlacklist.add(token);
       }
     } else {
@@ -67,7 +68,7 @@ class TokenBlacklistService {
         const result = await this.redis.get(`blacklist:${token}`);
         return result === '1';
       } catch (error) {
-        console.error('Error checking Redis blacklist:', error);
+        logger.error({ error }, 'Error checking Redis blacklist:');
         return this.inMemoryBlacklist.has(token);
       }
     }

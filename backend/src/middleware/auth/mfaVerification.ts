@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/middleware/mfaVerification.ts
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
@@ -57,7 +58,7 @@ export const requireMFA = async (req: Request, res: Response, next: NextFunction
 
         next();
     } catch (error: any) {
-        console.error('MFA verification error:', error);
+        logger.error({ error }, 'MFA verification error:');
         return res.status(500).json({
             success: false,
             message: 'Erro ao verificar MFA'

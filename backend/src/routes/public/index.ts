@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/public/index.ts
 import { Router } from 'express';
 import contactRoutes from './contact';

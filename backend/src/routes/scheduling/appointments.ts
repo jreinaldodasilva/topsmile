@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/appointments.ts
 import express, { Request, Response, NextFunction } from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../../middleware/auth";
@@ -109,7 +110,7 @@ router.get("/providers/:providerId/availability", async (req: Request, res: Resp
       }
     });
   } catch (err: any) {
-    console.error('Error fetching availability:', err);
+    logger.error('Error fetching availability:', err);
     return res.status(500).json({ 
       success: false, 
       error: err.message 
@@ -240,7 +241,7 @@ router.post("/", bookingValidation, async (req: Request, res: Response) => {
       }
     });
   } catch (err: any) {
-    console.error("Appointment creation error:", err);
+    logger.error("Appointment creation error:", err);
     return res.status(400).json({ 
       success: false, 
       error: err.message 
@@ -283,7 +284,7 @@ router.post("/book", bookingValidation, async (req: Request, res: Response) => {
       }
     });
   } catch (err: any) {
-    console.error("Booking error:", err);
+    logger.error("Booking error:", err);
     return res.status(400).json({ 
       success: false, 
       error: err.message 
@@ -387,7 +388,7 @@ router.get("/", async (req: Request, res: Response) => {
       }
     });
   } catch (err: any) {
-    console.error("Error fetching appointments:", err);
+    logger.error("Error fetching appointments:", err);
     return res.status(500).json({
       success: false,
       error: err.message
@@ -456,7 +457,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       }
     });
   } catch (err: any) {
-    console.error("Error fetching appointment:", err);
+    logger.error("Error fetching appointment:", err);
     return res.status(500).json({
       success: false,
       error: err.message
@@ -578,7 +579,7 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
       }
     });
   } catch (err: any) {
-    console.error("Error updating appointment:", err);
+    logger.error("Error updating appointment:", err);
     return res.status(400).json({
       success: false,
       error: err.message
@@ -706,7 +707,7 @@ router.patch("/:id/status",
         });
       }
     } catch (err: any) {
-      console.error("Error updating appointment status:", err);
+      logger.error("Error updating appointment status:", err);
       return res.status(500).json({
         success: false,
         error: err.message
@@ -812,7 +813,7 @@ router.patch("/:id/reschedule",
         }
       });
     } catch (err: any) {
-      console.error("Error rescheduling appointment:", err);
+      logger.error("Error rescheduling appointment:", err);
       return res.status(400).json({
         success: false,
         error: err.message
@@ -850,7 +851,7 @@ router.delete("/:id",
         }
       });
     } catch (err: any) {
-      console.error("Error deleting appointment:", err);
+      logger.error("Error deleting appointment:", err);
       return res.status(500).json({
         success: false,
         error: err.message
@@ -930,7 +931,7 @@ router.get("/patient",
         }
       });
     } catch (err: any) {
-      console.error("Error fetching patient appointments:", err);
+      logger.error("Error fetching patient appointments:", err);
       return res.status(500).json({
         success: false,
         error: err.message
@@ -978,7 +979,7 @@ router.post("/patient/book",
         }
       });
     } catch (err: any) {
-      console.error("Patient booking error:", err);
+      logger.error("Patient booking error:", err);
       return res.status(400).json({
         success: false,
         error: err.message
@@ -1035,7 +1036,7 @@ router.patch("/patient/:id/cancel",
         }
       });
     } catch (err: any) {
-      console.error("Error cancelling patient appointment:", err);
+      logger.error("Error cancelling patient appointment:", err);
       return res.status(400).json({
         success: false,
         error: err.message

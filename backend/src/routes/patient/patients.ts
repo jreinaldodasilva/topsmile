@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/patients.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -367,7 +368,7 @@ router.post('/', createPatientValidation, async (req: Request, res: Response) =>
             }
         });
     } catch (error: any) {
-        console.error('Error creating patient:', error);
+        logger.error({ error }, 'Error creating patient:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar paciente'
@@ -504,7 +505,7 @@ router.get('/', searchValidation, async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error searching patients:', error);
+        logger.error({ error }, 'Error searching patients:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar pacientes'
@@ -572,7 +573,7 @@ router.get('/stats', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting patient stats:', error);
+        logger.error({ error }, 'Error getting patient stats:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar estatísticas de pacientes'
@@ -643,7 +644,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting patient:', error);
+        logger.error({ error }, 'Error getting patient:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar paciente'
@@ -736,7 +737,7 @@ router.patch('/:id', updatePatientValidation, async (req: Request, res: Response
             }
         });
     } catch (error: any) {
-        console.error('Error updating patient:', error);
+        logger.error({ error }, 'Error updating patient:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar paciente'
@@ -850,7 +851,7 @@ router.patch('/:id/medical-history',
                 }
             });
         } catch (error: any) {
-            console.error('Error updating medical history:', error);
+            logger.error({ error }, 'Error updating medical history:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar histórico médico'
@@ -923,7 +924,7 @@ router.patch('/:id/reactivate', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error reactivating patient:', error);
+        logger.error({ error }, 'Error reactivating patient:');
         if (isAppError(error)) {
             return res.status(error.statusCode).json({
                 success: false,
@@ -1000,7 +1001,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error deleting patient:', error);
+        logger.error({ error }, 'Error deleting patient:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao excluir paciente'

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/medicalHistory.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -50,7 +51,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: record
         });
     } catch (error: any) {
-        console.error('Error creating medical history:', error);
+        logger.error({ error }, 'Error creating medical history:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar histórico médico'
@@ -89,7 +90,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: records
         });
     } catch (error: any) {
-        console.error('Error fetching medical history:', error);
+        logger.error({ error }, 'Error fetching medical history:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar histórico médico'
@@ -124,7 +125,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: record
         });
     } catch (error: any) {
-        console.error('Error fetching medical history:', error);
+        logger.error({ error }, 'Error fetching medical history:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar registro'
@@ -170,7 +171,7 @@ router.get('/patient/:patientId/latest', param('patientId').isMongoId(), async (
             data: record
         });
     } catch (error: any) {
-        console.error('Error fetching latest medical history:', error);
+        logger.error({ error }, 'Error fetching latest medical history:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar histórico'

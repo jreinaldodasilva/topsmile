@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/booking.ts
 import express, { Request, Response } from 'express';
 import { body, query, validationResult } from 'express-validator';

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/smsService.ts
 import twilio from 'twilio';
 import crypto from 'crypto';
@@ -18,7 +19,7 @@ class SMSService {
         if (accountSid && authToken && accountSid.startsWith('AC')) {
             this.client = twilio(accountSid, authToken);
         } else if (accountSid && !accountSid.startsWith('AC')) {
-            console.warn('Invalid Twilio Account SID format. SMS service disabled.');
+            logger.warn('Invalid Twilio Account SID format. SMS service disabled.');
         }
     }
 
@@ -28,7 +29,7 @@ class SMSService {
 
     async sendVerificationSMS(phone: string, code: string): Promise<boolean> {
         if (!this.client) {
-            console.warn('Twilio not configured, logging code instead:', code);
+            logger.warn({ code }, 'Twilio not configured, logging code instead:');
             return true;
         }
 
@@ -47,7 +48,7 @@ class SMSService {
 
             return true;
         } catch (error) {
-            console.error('Error sending SMS:', error);
+            logger.error({ error }, 'Error sending SMS:');
             return false;
         }
     }

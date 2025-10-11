@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 // backend/src/config/env.ts
 import dotenv from 'dotenv';
 
@@ -172,14 +173,14 @@ export const validateEnv = (): void => {
   }
 
   if (errors.length > 0) {
-    console.error('❌ Environment Configuration Errors:');
-    errors.forEach(error => console.error(`  - ${error}`));
+    logger.error('❌ Environment Configuration Errors:');
+    errors.forEach(error => logger.error(`  - ${error}`));
     throw new Error('Invalid environment configuration');
   }
 
   if (warnings.length > 0) {
-    console.warn('⚠️  Environment Configuration Warnings:');
-    warnings.forEach(warning => console.warn(`  - ${warning}`));
+    logger.warn('⚠️  Environment Configuration Warnings:');
+    warnings.forEach(warning => logger.warn(`  - ${warning}`));
   }
 };
 

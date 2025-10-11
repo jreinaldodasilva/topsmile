@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/insurance.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -45,7 +46,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: insurance
         });
     } catch (error: any) {
-        console.error('Error creating insurance:', error);
+        logger.error({ error }, 'Error creating insurance:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar seguro'
@@ -68,7 +69,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: insurances
         });
     } catch (error: any) {
-        console.error('Error fetching insurance:', error);
+        logger.error({ error }, 'Error fetching insurance:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar seguros'
@@ -99,7 +100,7 @@ router.put('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: insurance
         });
     } catch (error: any) {
-        console.error('Error updating insurance:', error);
+        logger.error({ error }, 'Error updating insurance:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar seguro'
@@ -129,7 +130,7 @@ router.delete('/:id', param('id').isMongoId(), async (req: Request, res: Respons
             message: 'Seguro desativado com sucesso'
         });
     } catch (error: any) {
-        console.error('Error deleting insurance:', error);
+        logger.error({ error }, 'Error deleting insurance:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao desativar seguro'

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/providers.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -422,7 +423,7 @@ router.post('/',
                 }
             });
         } catch (error: any) {
-            console.error('Error creating provider:', error);
+            logger.error({ error }, 'Error creating provider:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao criar profissional'
@@ -578,7 +579,7 @@ router.get('/', searchValidation, async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error searching providers:', error);
+        logger.error({ error }, 'Error searching providers:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar profissionais'
@@ -647,7 +648,7 @@ router.get('/stats',
                 }
             });
         } catch (error: any) {
-            console.error('Error getting provider stats:', error);
+            logger.error({ error }, 'Error getting provider stats:');
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Erro ao buscar estatísticas de profissionais'
@@ -720,7 +721,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting provider:', error);
+        logger.error({ error }, 'Error getting provider:');
         return res.status(500).json({
             success: false,
             message: error.message || 'Erro ao buscar profissional'
@@ -819,7 +820,7 @@ router.patch('/:id',
                 }
             });
         } catch (error: any) {
-            console.error('Error updating provider:', error);
+            logger.error({ error }, 'Error updating provider:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar profissional'
@@ -983,7 +984,7 @@ router.patch('/:id/working-hours',
                 }
             });
         } catch (error: any) {
-            console.error('Error updating working hours:', error);
+            logger.error({ error }, 'Error updating working hours:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar horários de trabalho'
@@ -1089,7 +1090,7 @@ router.patch('/:id/appointment-types',
                 }
             });
         } catch (error: any) {
-            console.error('Error updating appointment types:', error);
+            logger.error({ error }, 'Error updating appointment types:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao atualizar tipos de agendamento'
@@ -1171,7 +1172,7 @@ router.patch('/:id/reactivate',
                 }
             });
         } catch (error: any) {
-            console.error('Error reactivating provider:', error);
+            logger.error({ error }, 'Error reactivating provider:');
             return res.status(400).json({
                 success: false,
                 message: error.message || 'Erro ao reativar profissional'
@@ -1246,7 +1247,7 @@ router.delete('/:id',
                 }
             });
         } catch (error: any) {
-            console.error('Error deleting provider:', error);
+            logger.error({ error }, 'Error deleting provider:');
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Erro ao excluir profissional'

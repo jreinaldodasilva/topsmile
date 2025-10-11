@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import redisClient from '../../config/database/redis';
 
 class CacheService {
@@ -10,7 +11,7 @@ class CacheService {
       const data = await redisClient.get(key);
       return data ? JSON.parse(data) : null;
     } catch (error) {
-      console.error(`Cache get error for key ${key}:`, error);
+      logger.error({ error }, `Cache get error for key ${key}:`);
       return null;
     }
   }
@@ -20,7 +21,7 @@ class CacheService {
       await redisClient.setex(key, ttl, JSON.stringify(value));
       return true;
     } catch (error) {
-      console.error(`Cache set error for key ${key}:`, error);
+      logger.error({ error }, `Cache set error for key ${key}:`);
       return false;
     }
   }
@@ -30,7 +31,7 @@ class CacheService {
       await redisClient.del(key);
       return true;
     } catch (error) {
-      console.error(`Cache delete error for key ${key}:`, error);
+      logger.error({ error }, `Cache delete error for key ${key}:`);
       return false;
     }
   }
@@ -41,7 +42,7 @@ class CacheService {
       if (keys.length === 0) return 0;
       return await redisClient.del(...keys);
     } catch (error) {
-      console.error(`Cache delete pattern error for ${pattern}:`, error);
+      logger.error({ error }, `Cache delete pattern error for ${pattern}:`);
       return 0;
     }
   }

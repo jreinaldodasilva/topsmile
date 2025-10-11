@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/mfaService.ts
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';

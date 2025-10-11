@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/middleware/roleBasedAccess.ts
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
@@ -102,7 +103,7 @@ export function hasPermission(
 ): boolean {
     const permissions = RESOURCE_PERMISSIONS[resource];
     if (!permissions) {
-        console.warn(`No permissions defined for resource: ${resource}`);
+        logger.warn(`No permissions defined for resource: ${resource}`);
         return false;
     }
 

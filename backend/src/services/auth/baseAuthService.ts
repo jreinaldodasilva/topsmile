@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/auth/baseAuthService.ts
 import jwt, { SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
@@ -102,7 +103,7 @@ export abstract class BaseAuthService<TUser extends Document, TRefreshToken exte
                 );
             }
         } catch (error) {
-            console.error('Error cleaning up old refresh tokens:', error);
+            logger.error({ error }, 'Error cleaning up old refresh tokens:');
         }
     }
 
@@ -178,7 +179,7 @@ export abstract class BaseAuthService<TUser extends Document, TRefreshToken exte
                 { isRevoked: true }
             );
         } catch (error) {
-            console.error('Error during logout:', error);
+            logger.error({ error }, 'Error during logout:');
         }
     }
 
@@ -194,7 +195,7 @@ export abstract class BaseAuthService<TUser extends Document, TRefreshToken exte
                 { isRevoked: true }
             );
         } catch (error) {
-            console.error('Error during logout all devices:', error);
+            logger.error({ error }, 'Error during logout all devices:');
             throw new AppError('Erro ao fazer logout de todos os dispositivos', 500);
         }
     }
@@ -219,7 +220,7 @@ export abstract class BaseAuthService<TUser extends Document, TRefreshToken exte
             if (error instanceof AppError) {
                 throw error;
             }
-            console.error('Error changing password:', error);
+            logger.error({ error }, 'Error changing password:');
             throw new AppError('Erro ao alterar senha', 500);
         }
     }

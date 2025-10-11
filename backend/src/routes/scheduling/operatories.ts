@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/operatories.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';

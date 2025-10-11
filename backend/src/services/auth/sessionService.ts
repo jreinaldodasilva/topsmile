@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/sessionService.ts
 import UAParser from 'ua-parser-js';
 import type { Session as ISession } from '@topsmile/types';

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/roleManagement.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -79,7 +80,7 @@ router.post('/assign',
             }
         });
     } catch (error: any) {
-        console.error('Error assigning role:', error);
+        logger.error({ error }, 'Error assigning role:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atribuir role'
@@ -113,7 +114,7 @@ router.get('/users/:role', param('role').isString(), async (req: Request, res: R
             data: users
         });
     } catch (error: any) {
-        console.error('Error fetching users by role:', error);
+        logger.error({ error }, 'Error fetching users by role:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar usuários'
@@ -162,7 +163,7 @@ router.get('/user/:userId/permissions', param('userId').isMongoId(), async (req:
             }
         });
     } catch (error: any) {
-        console.error('Error fetching user permissions:', error);
+        logger.error({ error }, 'Error fetching user permissions:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar permissões'
@@ -205,7 +206,7 @@ router.get('/stats', async (req: Request, res: Response) => {
             data: stats
         });
     } catch (error: any) {
-        console.error('Error fetching role stats:', error);
+        logger.error({ error }, 'Error fetching role stats:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar estatísticas'

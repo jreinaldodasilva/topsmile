@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/authService.ts - FIXED VERSION
 import dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
@@ -163,7 +164,7 @@ class AuthService {
                 });
             }
         } catch (error) {
-            console.error('Error cleaning up old refresh tokens:', error);
+            logger.error({ error }, 'Error cleaning up old refresh tokens:');
             // Don't throw - this is a maintenance operation
         }
     }
@@ -212,7 +213,7 @@ class AuthService {
                 throw new UnauthorizedError('Token inválido');
             }
 
-            console.error('Token verification error:', error as Error);
+            logger.error({ error }, 'Token verification error:');
             throw new UnauthorizedError('Falha na verificação do token');
         }
     }
@@ -279,7 +280,7 @@ class AuthService {
                 { isRevoked: true }
             );
         } catch (error) {
-            console.error('Error during logout:', error);
+            logger.error({ error }, 'Error during logout:');
             // Don't throw - logout should be graceful
         }
     }
@@ -296,7 +297,7 @@ class AuthService {
             // Add to blacklist
             await tokenBlacklistService.addToBlacklist(accessToken, expiresAt);
         } catch (error) {
-            console.error('Error during access token logout:', error);
+            logger.error({ error }, 'Error during access token logout:');
             // Don't throw - logout should be graceful
         }
     }
@@ -313,7 +314,7 @@ class AuthService {
                 { isRevoked: true }
             );
         } catch (error) {
-            console.error('Error during logout all devices:', error as Error);
+            logger.error({ error }, 'Error during logout all devices:');
             throw new AppError('Erro ao fazer logout de todos os dispositivos', 500);
         }
     }
@@ -417,7 +418,7 @@ class AuthService {
                 throw new ConflictError('E-mail já está em uso');
             }
 
-            console.error('Unexpected registration error:', error);
+            logger.error({ error }, 'Unexpected registration error:');
             throw new AppError('Erro interno ao registrar usuário', 500);
         }
     }
@@ -494,7 +495,7 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Unexpected login error:', error);
+            logger.error({ error }, 'Unexpected login error:');
             throw new AppError('Erro interno ao fazer login', 500);
         }
     }
@@ -517,7 +518,7 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Error fetching user by ID:', error);
+            logger.error({ error }, 'Error fetching user by ID:');
             throw new AppError('Erro ao buscar usuário', 500);
         }
     }
@@ -559,7 +560,7 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Error changing password:', error);
+            logger.error({ error }, 'Error changing password:');
             throw new AppError('Erro ao alterar senha', 500);
         }
     }
@@ -574,7 +575,7 @@ class AuthService {
             const user = await User.findOne({ email: email.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
             if (!user) {
                 // To prevent user enumeration, we don't reveal that the user doesn't exist.
-                console.log(`Password reset attempt for non-existent user: ${email}`);
+                logger.info(`Password reset attempt for non-existent user: ${email}`);
                 return ''; // Return a non-committal response
             }
 
@@ -597,7 +598,7 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Error in forgotPassword:', error);
+            logger.error({ error }, 'Error in forgotPassword:');
             throw new AppError('Erro ao processar a solicitação de redefinição de senha', 500);
         }
     }
@@ -640,14 +641,14 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Error in resetPasswordWithToken:', error);
+            logger.error({ error }, 'Error in resetPasswordWithToken:');
             throw new AppError('Erro ao redefinir a senha', 500);
         }
     }
 
     // DEPRECATED: Legacy method for backward compatibility - will be removed
     async refreshToken(oldToken: string): Promise<string> {
-        console.warn('refreshToken method is deprecated. Use refreshAccessToken instead.');
+        logger.warn('refreshToken method is deprecated. Use refreshAccessToken instead.');
         try {
             const decoded = await this.verifyAccessToken(oldToken);
             const user = await this.getUserById(decoded.userId);
@@ -669,7 +670,7 @@ class AuthService {
                 throw error;
             }
 
-            console.error('Error refreshing token:', error);
+            logger.error({ error }, 'Error refreshing token:');
             throw new AppError('Erro ao renovar token', 500);
         }
     }

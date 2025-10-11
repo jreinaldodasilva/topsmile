@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/mfa.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -51,7 +52,7 @@ router.post('/setup', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error setting up MFA:', error);
+        logger.error({ error }, 'Error setting up MFA:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao configurar MFA'
@@ -111,7 +112,7 @@ router.post('/verify', body('token').isLength({ min: 6, max: 6 }), async (req: R
             }
         });
     } catch (error: any) {
-        console.error('Error verifying MFA:', error);
+        logger.error({ error }, 'Error verifying MFA:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao verificar MFA'
@@ -157,7 +158,7 @@ router.post('/disable', body('password').notEmpty(), async (req: Request, res: R
             message: 'MFA desativado com sucesso'
         });
     } catch (error: any) {
-        console.error('Error disabling MFA:', error);
+        logger.error({ error }, 'Error disabling MFA:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao desativar MFA'
@@ -207,7 +208,7 @@ router.post('/backup-codes', body('password').notEmpty(), async (req: Request, r
             }
         });
     } catch (error: any) {
-        console.error('Error regenerating backup codes:', error);
+        logger.error({ error }, 'Error regenerating backup codes:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao regenerar códigos'

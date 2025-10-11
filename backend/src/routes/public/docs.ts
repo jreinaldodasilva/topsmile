@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import express, { Request, Response } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from '../../config/swagger';

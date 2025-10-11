@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/consentForms.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -42,7 +43,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: form
         });
     } catch (error: any) {
-        console.error('Error creating consent form:', error);
+        logger.error({ error }, 'Error creating consent form:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar formulário'
@@ -66,7 +67,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: forms
         });
     } catch (error: any) {
-        console.error('Error fetching consent forms:', error);
+        logger.error({ error }, 'Error fetching consent forms:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar formulários'
@@ -95,7 +96,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: form
         });
     } catch (error: any) {
-        console.error('Error fetching consent form:', error);
+        logger.error({ error }, 'Error fetching consent form:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar formulário'
@@ -133,7 +134,7 @@ router.patch('/:id/sign', param('id').isMongoId(), body('signatureUrl').notEmpty
             data: form
         });
     } catch (error: any) {
-        console.error('Error signing consent form:', error);
+        logger.error({ error }, 'Error signing consent form:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao assinar formulário'
@@ -164,7 +165,7 @@ router.patch('/:id/decline', param('id').isMongoId(), async (req: Request, res: 
             data: form
         });
     } catch (error: any) {
-        console.error('Error declining consent form:', error);
+        logger.error({ error }, 'Error declining consent form:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao recusar formulário'

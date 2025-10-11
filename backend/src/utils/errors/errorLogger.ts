@@ -1,4 +1,5 @@
 // backend/src/utils/errorLogger.ts
+import logger from '../logger';
 import { AppError } from './errors';
 
 export class ErrorLogger {
@@ -21,9 +22,9 @@ export class ErrorLogger {
         };
 
         if (isOperational) {
-            console.warn('Operational Error:', JSON.stringify(errorLog, null, 2));
+            logger.warn(errorLog, 'Operational Error');
         } else {
-            console.error('Programming Error:', JSON.stringify(errorLog, null, 2));
+            logger.error(errorLog, 'Programming Error');
         }
 
         // TODO: Send to external logging service (Sentry, DataDog, etc.)

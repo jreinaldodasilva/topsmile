@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/forms.ts
 import express, { Request, Response, NextFunction } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -256,7 +257,7 @@ router.get('/templates', async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching form templates:', error);
+    logger.error({ error }, 'Error fetching form templates:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar templates de formulário'
@@ -321,7 +322,7 @@ router.get('/templates/:id', async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching form template:', error);
+    logger.error({ error }, 'Error fetching form template:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar template de formulário'
@@ -399,7 +400,7 @@ router.post('/templates',
         }
       });
     } catch (error: any) {
-      console.error('Error creating form template:', error);
+      logger.error({ error }, 'Error creating form template:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao criar template de formulário'
@@ -492,7 +493,7 @@ router.patch('/templates/:id',
         }
       });
     } catch (error: any) {
-      console.error('Error updating form template:', error);
+      logger.error({ error }, 'Error updating form template:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao atualizar template de formulário'
@@ -560,7 +561,7 @@ router.delete('/templates/:id',
         }
       });
     } catch (error: any) {
-      console.error('Error deleting form template:', error);
+      logger.error({ error }, 'Error deleting form template:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao excluir template de formulário'
@@ -657,7 +658,7 @@ router.get('/responses', async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching form responses:', error);
+    logger.error({ error }, 'Error fetching form responses:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar respostas de formulário'
@@ -719,7 +720,7 @@ router.get('/responses/:id', async (req: Request, res: Response) => {
       }
     });
   } catch (error: any) {
-    console.error('Error fetching form response:', error);
+    logger.error({ error }, 'Error fetching form response:');
     return res.status(500).json({
       success: false,
       message: 'Erro ao buscar resposta de formulário'
@@ -804,7 +805,7 @@ router.post('/responses',
         }
       });
     } catch (error: any) {
-      console.error('Error creating form response:', error);
+      logger.error({ error }, 'Error creating form response:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao salvar resposta de formulário'
@@ -896,7 +897,7 @@ router.patch('/responses/:id',
         }
       });
     } catch (error: any) {
-      console.error('Error updating form response:', error);
+      logger.error({ error }, 'Error updating form response:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao atualizar resposta de formulário'
@@ -963,7 +964,7 @@ router.delete('/responses/:id',
         }
       });
     } catch (error: any) {
-      console.error('Error deleting form response:', error);
+      logger.error({ error }, 'Error deleting form response:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao excluir resposta de formulário'
@@ -1046,7 +1047,7 @@ router.get('/stats',
         }
       });
     } catch (error: any) {
-      console.error('Error fetching form stats:', error);
+      logger.error({ error }, 'Error fetching form stats:');
       return res.status(500).json({
         success: false,
         message: 'Erro ao buscar estatísticas de formulários'

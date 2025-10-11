@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/patient/documents.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -52,7 +53,7 @@ router.post('/upload',
                 }
             });
         } catch (error: any) {
-            console.error('Error uploading document:', error);
+            logger.error({ error }, 'Error uploading document:');
             return res.status(500).json({
                 success: false,
                 message: error.message || 'Erro ao enviar documento'

@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/prescriptions.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -46,7 +47,7 @@ router.post('/', authorize('admin', 'dentist', 'manager'), createValidation, asy
             data: prescription
         });
     } catch (error: any) {
-        console.error('Error creating prescription:', error);
+        logger.error({ error }, 'Error creating prescription:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao criar receita'
@@ -71,7 +72,7 @@ router.get('/patient/:patientId', param('patientId').isMongoId(), async (req: Re
             data: prescriptions
         });
     } catch (error: any) {
-        console.error('Error fetching prescriptions:', error);
+        logger.error({ error }, 'Error fetching prescriptions:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar receitas'
@@ -102,7 +103,7 @@ router.get('/:id', param('id').isMongoId(), async (req: Request, res: Response) 
             data: prescription
         });
     } catch (error: any) {
-        console.error('Error fetching prescription:', error);
+        logger.error({ error }, 'Error fetching prescription:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar receita'
@@ -133,7 +134,7 @@ router.patch('/:id/status', param('id').isMongoId(), body('status').isIn(['draft
             data: prescription
         });
     } catch (error: any) {
-        console.error('Error updating prescription status:', error);
+        logger.error({ error }, 'Error updating prescription status:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao atualizar status'

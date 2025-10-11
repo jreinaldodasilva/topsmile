@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 import { Request, Response, NextFunction } from 'express';
 import { cacheService } from '../services/cache/cacheService';
 import { AuthenticatedRequest } from './auth';
@@ -39,7 +40,7 @@ export const cacheMiddleware = (ttl: number = 300) => {
       res.json = (body: any) => {
         if (res.statusCode === 200 && body.success !== false) {
           cacheService.set(cacheKey, body, ttl).catch(err => {
-            console.error('Cache set error:', err);
+            logger.error('Cache set error:', err);
           });
         }
         return originalJson(body);
@@ -47,7 +48,7 @@ export const cacheMiddleware = (ttl: number = 300) => {
 
       next();
     } catch (error) {
-      console.error('Cache middleware error:', error);
+      logger.error({ error }, 'Cache middleware error:');
       next();
     }
   };
@@ -66,7 +67,7 @@ export const invalidateCache = (pattern: string) => {
       if (res.statusCode >= 200 && res.statusCode < 300) {
         const fullPattern = cacheService.buildKey(pattern, authReq.user!.clinicId || '', '*');
         cacheService.delPattern(fullPattern).catch(err => {
-          console.error('Cache invalidation error:', err);
+          logger.error('Cache invalidation error:', err);
         });
       }
       return originalJson(body);

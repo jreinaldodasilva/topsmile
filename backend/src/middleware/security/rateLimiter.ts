@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/middleware/rateLimiter.ts
 import rateLimit from 'express-rate-limit';
 import { Request, Response } from 'express';
@@ -16,7 +17,7 @@ export const createRateLimiter = (
         legacyHeaders: false,
         keyGenerator,
         handler: (req: Request, res: Response) => {
-            console.warn(`Rate limit exceeded: ${req.method} ${req.path} from ${req.ip}`);
+            logger.warn(`Rate limit exceeded: ${req.method} ${req.path} from ${req.ip}`);
             res.status(429).json({ success: false, message });
         }
     });

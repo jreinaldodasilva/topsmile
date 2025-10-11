@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 //backend/src/routes/auth.ts
 import express from 'express';
 import { body, validationResult } from 'express-validator';
@@ -611,7 +612,7 @@ router.post('/logout', authenticate, async (req: Request, res: Response, next: N
     });
 
     // Log for development
-    console.log(`User ${authReq.user!.email} logged out at ${new Date().toISOString()}`);
+    logger.info(`User ${authReq.user!.email} logged out at ${new Date().toISOString()}`);
 
     return res.json({
       success: true,
@@ -728,7 +729,7 @@ router.post('/forgot-password', forgotPasswordLimiter, [
 
     // In a real application, you would send an email here.
     // For now, we'll just log the token and send a generic success message.
-    console.log(`Password reset token for ${email}: ${resetToken}`);
+    logger.info(`Password reset token for ${email}: ${resetToken}`);
 
     return res.json({
       success: true,

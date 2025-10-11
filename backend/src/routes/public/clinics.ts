@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/public/clinics.ts
 import express, { Request, Response } from 'express';
 import { Clinic } from '../../models/Clinic';
@@ -28,7 +29,7 @@ router.get('/', async (req: Request, res: Response) => {
             data: clinics
         });
     } catch (error: any) {
-        console.error('Error fetching clinics:', error);
+        logger.error({ error }, 'Error fetching clinics:');
         return res.status(500).json({
             success: false,
             message: 'Erro ao buscar clínicas'

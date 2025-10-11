@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/passwordPolicy.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -66,7 +67,7 @@ router.post('/change',
             message: 'Senha alterada com sucesso'
         });
     } catch (error: any) {
-        console.error('Error changing password:', error);
+        logger.error({ error }, 'Error changing password:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao alterar senha'
@@ -109,7 +110,7 @@ router.get('/status', async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Error getting password status:', error);
+        logger.error({ error }, 'Error getting password status:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao verificar status'

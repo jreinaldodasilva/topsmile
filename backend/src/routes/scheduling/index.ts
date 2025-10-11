@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/scheduling/index.ts
 import { Router } from 'express';
 import appointmentsRoutes from './appointments';

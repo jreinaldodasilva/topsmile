@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import express, { Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import { body, validationResult } from 'express-validator';
@@ -110,7 +111,7 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
       specialty,
       phone
     }).catch(error => {
-      console.error('Failed to send contact emails:', error);
+      logger.error({ error }, 'Failed to send contact emails:');
     });
 
     return res.status(200).json({
@@ -128,7 +129,7 @@ router.post('/', contactLimiter, contactValidation, async (req: Request, res: Re
     });
 
   } catch (error) {
-    console.error('Contact form error:', error);
+    logger.error({ error }, 'Contact form error:');
 
     const isDevelopment = process.env.NODE_ENV !== 'production';
     const errorMessage = isDevelopment && error instanceof Error ? error.message : 'Erro interno do servidor';

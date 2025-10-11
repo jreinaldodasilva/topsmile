@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import { Contact as IContact, ContactFilters, ContactListResponse } from '@topsmile/types';
 import { Contact as ContactModel } from '../../models/Contact';
 import { FilterQuery } from 'mongoose';
@@ -64,7 +65,7 @@ class ContactService {
 
       return updatedContact as IContact;
     } catch (error) {
-      console.error('Error creating contact:', error);
+      logger.error({ error }, 'Error creating contact:');
       throw error;
     }
   }
@@ -114,7 +115,7 @@ class ContactService {
         message: isNew ? 'Contato criado com sucesso' : 'Contato atualizado com sucesso'
       };
     } catch (error) {
-      console.error('Error creating contact safely:', error);
+      logger.error({ error }, 'Error creating contact safely:');
       throw error;
     }
   }
@@ -165,7 +166,7 @@ class ContactService {
       }
       return contact;
     } catch (error) {
-      console.error('Error fetching contact:', error);
+      logger.error({ error }, 'Error fetching contact:');
       throw error;
     }
   }
@@ -182,7 +183,7 @@ class ContactService {
       return await ContactModel.findOne({ email: email.toLowerCase().trim() })
         .populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
-      console.error('Error fetching contact by email:', error);
+      logger.error({ error }, 'Error fetching contact by email:');
       throw error;
     }
   }
@@ -250,7 +251,7 @@ class ContactService {
         limit
       };
     } catch (error) {
-      console.error('Error fetching contacts:', error);
+      logger.error({ error }, 'Error fetching contacts:');
       throw error;
     }
   }
@@ -273,7 +274,7 @@ class ContactService {
         }
       ).populate('assignedTo', 'name email') as IContact | null;
     } catch (error) {
-      console.error('Error updating contact:', error);
+      logger.error({ error }, 'Error updating contact:');
       throw error;
     }
   }
@@ -304,7 +305,7 @@ class ContactService {
         matchedCount: result.matchedCount
       };
     } catch (error) {
-      console.error('Error updating contact status:', error);
+      logger.error({ error }, 'Error updating contact status:');
       throw error;
     }
   }
@@ -314,7 +315,7 @@ class ContactService {
       const result = await ContactModel.findByIdAndDelete(id);
       return !!result;
     } catch (error) {
-      console.error('Error deleting contact:', error);
+      logger.error({ error }, 'Error deleting contact:');
       throw error;
     }
   }
@@ -336,7 +337,7 @@ class ContactService {
         { new: true, runValidators: true }
       ) as IContact | null;
     } catch (error) {
-      console.error('Error soft deleting contact:', error);
+      logger.error({ error }, 'Error soft deleting contact:');
       throw error;
     }
   }
@@ -427,7 +428,7 @@ class ContactService {
         monthlyTrend
       };
     } catch (error) {
-      console.error('Error fetching contact stats:', error);
+      logger.error({ error }, 'Error fetching contact stats:');
       throw error;
     }
   }
@@ -474,7 +475,7 @@ class ContactService {
         count: d.count
       }));
     } catch (error) {
-      console.error('Error finding duplicate contacts:', error);
+      logger.error({ error }, 'Error finding duplicate contacts:');
       throw error;
     }
   }
@@ -541,7 +542,7 @@ class ContactService {
 
       return updatedContact as IContact;
     } catch (error) {
-      console.error('Error merging duplicate contacts:', error);
+      logger.error({ error }, 'Error merging duplicate contacts:');
       throw error;
     }
   }

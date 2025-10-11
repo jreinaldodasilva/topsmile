@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/auditLogs.ts
 import express, { Request, Response } from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -72,7 +73,7 @@ router.get('/',
             }
         });
     } catch (error: any) {
-        console.error('Error fetching audit logs:', error);
+        logger.error({ error }, 'Error fetching audit logs:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar logs'
@@ -103,7 +104,7 @@ router.get('/user/:userId',
             data: logs
         });
     } catch (error: any) {
-        console.error('Error fetching user audit logs:', error);
+        logger.error({ error }, 'Error fetching user audit logs:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar logs'
@@ -137,7 +138,7 @@ router.get('/resource/:resource/:resourceId',
             data: logs
         });
     } catch (error: any) {
-        console.error('Error fetching resource audit logs:', error);
+        logger.error({ error }, 'Error fetching resource audit logs:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao buscar logs'

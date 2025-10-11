@@ -1,4 +1,5 @@
 // backend/src/services/schedulingService.ts - FIXED VERSION with Transactions
+import logger from '../../utils/logger';
 import { Appointment as IAppointment, Provider as IProvider, AppointmentType as IAppointmentType } from '@topsmile/types';
 import { startOfDay, endOfDay, addMinutes, format, parseISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
@@ -100,7 +101,7 @@ class SchedulingService {
             return slots.sort((a, b) => a.start.getTime() - b.start.getTime());
             
         } catch (error) {
-            console.error('Error getting available slots:', error);
+            logger.error({ error }, 'Error getting available slots:');
             throw error;
         }
     }
@@ -192,7 +193,7 @@ class SchedulingService {
                 startTime = this.parseTimeToDate(date, startStr, (provider.timeZone as any));
                 endTime = this.parseTimeToDate(date, endStr, (provider.timeZone as any));
             } catch (error) {
-                console.error(`Error parsing working hours for provider ${provider._id}:`, error);
+                logger.error({ error }, `Error parsing working hours for provider ${provider._id}:`);
                 return [];
             }
 
@@ -252,7 +253,7 @@ class SchedulingService {
             return slots;
             
         } catch (error) {
-            console.error(`Error getting slots for provider ${provider._id}:`, error);
+            logger.error({ error }, `Error getting slots for provider ${provider._id}:`);
             return [];
         }
     }
@@ -360,7 +361,7 @@ class SchedulingService {
             if (!isTestEnv && session) {
                 await session.abortTransaction();
             }
-            console.error('Error creating appointment:', error);
+            logger.error({ error }, 'Error creating appointment:');
 
             return {
                 success: false,
@@ -472,7 +473,7 @@ class SchedulingService {
             if (!isTestEnv && session) {
                 await session.abortTransaction();
             }
-            console.error('Error rescheduling appointment:', error);
+            logger.error({ error }, 'Error rescheduling appointment:');
 
             return {
                 success: false,
@@ -535,7 +536,7 @@ class SchedulingService {
             if (!isTestEnv && session) {
                 await session.abortTransaction();
             }
-            console.error('Error cancelling appointment:', error);
+            logger.error({ error }, 'Error cancelling appointment:');
 
             return {
                 success: false,
@@ -626,7 +627,7 @@ class SchedulingService {
             return { available: true };
             
         } catch (error) {
-            console.error('Error checking availability:', error);
+            logger.error({ error }, 'Error checking availability:');
             return { available: false, reason: 'Erro ao verificar disponibilidade' };
         }
     }
@@ -696,7 +697,7 @@ class SchedulingService {
                 .populate('appointmentType', 'name duration color category')
                 .populate('createdBy', 'name email');
         } catch (error) {
-            console.error('Error fetching appointment:', error);
+            logger.error({ error }, 'Error fetching appointment:');
             return null;
         }
     }
@@ -716,7 +717,7 @@ class SchedulingService {
 
             return await appointment.save();
         } catch (error) {
-            console.error('Error updating appointment:', error);
+            logger.error({ error }, 'Error updating appointment:');
             return null;
         }
     }
@@ -756,7 +757,7 @@ class SchedulingService {
                 .lean(); // Use lean for better performance
                 
         } catch (error) {
-            console.error('Error fetching appointments:', error);
+            logger.error({ error }, 'Error fetching appointments:');
             throw new Error('Erro ao buscar agendamentos');
         }
     }
@@ -803,7 +804,7 @@ class SchedulingService {
             
         } catch (error) {
             await session.abortTransaction();
-            console.error('Error in batch update:', error);
+            logger.error({ error }, 'Error in batch update:');
             
             return {
                 success: false,
@@ -860,7 +861,7 @@ class SchedulingService {
             };
             
         } catch (error) {
-            console.error('Error checking conflicts:', error);
+            logger.error({ error }, 'Error checking conflicts:');
             return {
                 hasConflict: true,
                 reason: 'Erro ao verificar conflitos'
@@ -936,7 +937,7 @@ class SchedulingService {
             };
             
         } catch (error) {
-            console.error('Error calculating utilization:', error);
+            logger.error({ error }, 'Error calculating utilization');
             throw new Error('Erro ao calcular utilização do profissional');
         }
     }

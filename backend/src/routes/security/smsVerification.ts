@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/smsVerification.ts
 import express, { Request, Response } from 'express';
 import { authenticate, AuthenticatedRequest } from '../../middleware/auth/auth';
@@ -46,7 +47,7 @@ router.post('/send', body('phone').isMobilePhone('pt-BR'), async (req: Request, 
             message: 'Código de verificação enviado'
         });
     } catch (error: any) {
-        console.error('Error sending verification SMS:', error);
+        logger.error({ error }, 'Error sending verification SMS:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao enviar código'
@@ -103,7 +104,7 @@ router.post('/verify',
             message: 'Telefone verificado com sucesso'
         });
     } catch (error: any) {
-        console.error('Error verifying SMS code:', error);
+        logger.error({ error }, 'Error verifying SMS code:');
         return res.status(400).json({
             success: false,
             message: error.message || 'Erro ao verificar código'

@@ -128,8 +128,8 @@ const validateEnv = () => {
     }
 
     if (errors.length > 0) {
-      console.error("Environment Configuration Errors:");
-      errors.forEach((error) => console.error(`- ${error}`));
+      logger.error("Environment Configuration Errors:");
+      errors.forEach((error) => logger.error(`- ${error}`));
       process.exit(1);
     }
 
@@ -138,8 +138,8 @@ const validateEnv = () => {
       (name) => !process.env[name]
     );
     if (missingRecommended.length > 0) {
-      console.warn("Missing recommended environment variables:");
-      missingRecommended.forEach((name) => console.warn(`- ${name}`));
+      logger.warn("Missing recommended environment variables:");
+      missingRecommended.forEach((name) => logger.warn(`- ${name}`));
     }
   } else {
     // Development environment - require critical variables
@@ -164,8 +164,8 @@ const validateEnv = () => {
     }
 
     if (errors.length > 0) {
-      console.error("Development Environment Errors:");
-      errors.forEach((error) => console.error(`- ${error}`));
+      logger.error("Development Environment Errors:");
+      errors.forEach((error) => logger.error(`- ${error}`));
       process.exit(1);
     }
 
@@ -175,8 +175,8 @@ const validateEnv = () => {
     }
 
     if (warnings.length > 0) {
-      console.warn("Development Environment Warnings:");
-      warnings.forEach((warning) => console.warn(`- ${warning}`));
+      logger.warn("Development Environment Warnings:");
+      warnings.forEach((warning) => logger.warn(`- ${warning}`));
     }
   }
 };
@@ -211,7 +211,7 @@ const configureProxy = () => {
     process.env.AWS_REGION
   ) {
     app.set("trust proxy", 1);
-    console.log("✅ Proxy trust enabled for production environment");
+    logger.info("✅ Proxy trust enabled for production environment");
   }
 };
 
@@ -279,7 +279,7 @@ const configureSecurityMiddleware = () => {
         if (isAllowed) {
           callback(null, true);
         } else {
-          console.warn(`CORS blocked origin: ${origin}`);
+          logger.warn(`CORS blocked origin: ${origin}`);
           callback(new Error("Not allowed by CORS"));
         }
       },
@@ -317,7 +317,7 @@ const createRateLimit = (windowMs: number, max: number, message: string) =>
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req, res) => {
-      console.warn(
+      logger.warn(
         `Rate limit exceeded for IP ${req.ip}: ${req.method} ${req.path}`
       );
       res.status(429).json({ success: false, message });
@@ -347,7 +347,7 @@ const authLimiter = rateLimit({
     return email ? `auth_${email}` : `auth_ip_${req.ip}`;
   },
   handler: (req, res) => {
-    console.warn(`Auth rate limit exceeded for ${req.body?.email || req.ip}`);
+    logger.warn(`Auth rate limit exceeded for ${req.body?.email || req.ip}`);
     res.status(429).json({
       success: false,
       message:
@@ -373,7 +373,7 @@ const passwordResetLimiter = rateLimit({
   },
   handler: (req, res) => {
     const authReq = req as AuthenticatedRequest;
-    console.warn(
+    logger.warn(
       `Rate limit exceeded for password reset for user/IP ${
         authReq.user?.id || req.ip
       }`
@@ -624,7 +624,7 @@ app.get("/api/health/database", async (req: Request, res: Response) => {
       });
     }
   } catch (error) {
-    console.error("Database health check failed:", error);
+    logger.error({ error }, 'Database health check failed');
     return res.status(503).json({
       success: false,
       message: "Database health check failed",
@@ -691,7 +691,7 @@ app.use(errorHandler);
 
 // IMPROVED: 404 handler with request logging
 app.use("*", (req, res) => {
-  console.warn(
+  logger.warn(
     `404 Not Found: ${req.method} ${req.originalUrl} from ${req.ip}`
   );
 
@@ -704,56 +704,56 @@ app.use("*", (req, res) => {
 
 // IMPROVED: Global process handlers with better error management
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  logger.error({ reason, promise }, 'Unhandled Rejection');
   // In production, you might want to log this to an external service
 });
 
 process.on("uncaughtException", (err) => {
-  console.error("Uncaught Exception:", err);
+  logger.error({ err }, 'Uncaught Exception');
   // Log to external service in production
 
   // Graceful shutdown
   if (process.env.NODE_ENV === "production") {
-    console.log("Shutting down due to uncaught exception");
+    logger.info("Shutting down due to uncaught exception");
     process.exit(1);
   }
 });
 
 // IMPROVED: Graceful shutdown handling
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received. Shutting down gracefully...");
+  logger.info("SIGTERM received. Shutting down gracefully...");
   process.exit(0);
 });
 
 process.on("SIGINT", () => {
-  console.log("SIGINT received. Shutting down gracefully...");
+  logger.info("SIGINT received. Shutting down gracefully...");
   process.exit(0);
 });
 
 // Start server with improved logging
 app.listen(PORT, () => {
-  console.log("🚀 ===================================");
-  console.log(`🚀 TopSmile API running on port ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(
+  logger.info("🚀 ===================================");
+  logger.info(`🚀 TopSmile API running on port ${PORT}`);
+  logger.info(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+  logger.info(
     `🔗 Frontend URL: ${process.env.FRONTEND_URL || "http://localhost:3000"}`
   );
-  console.log(
+  logger.info(
     `🔐 JWT Secret: ${
       process.env.JWT_SECRET ? "Configured ✅" : "Using default ⚠️"
     }`
   );
-  console.log(
+  logger.info(
     `📧 Email Service: ${
       process.env.SENDGRID_API_KEY ? "SendGrid ✅" : "Ethereal/Console ⚠️"
     }`
   );
-  console.log(
+  logger.info(
     `🗄️  Database: ${
       mongoose.connection.readyState === 1 ? "Connected ✅" : "Connecting... ⏳"
     }`
   );
-  console.log("🚀 ===================================");
+  logger.info("🚀 ===================================");
 });
 
 export default app;

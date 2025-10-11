@@ -1,5 +1,6 @@
 // backend/src/utils/cache.ts
 import Redis from 'ioredis';
+import logger from '../logger';
 
 class CacheService {
     private client: Redis | null = null;
@@ -26,7 +27,7 @@ class CacheService {
             });
 
             this.client.on('error', (err) => {
-                console.error('Redis error:', err);
+                logger.error({ err }, 'Redis error');
                 this.isEnabled = false;
             });
 
@@ -34,7 +35,7 @@ class CacheService {
                 this.isEnabled = true;
             });
         } catch (error) {
-            console.error('Failed to initialize Redis:', error);
+            logger.error({ error }, 'Failed to initialize Redis');
             this.isEnabled = false;
         }
     }
@@ -46,7 +47,7 @@ class CacheService {
             const data = await this.client.get(key);
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            console.error('Cache get error:', error);
+            logger.error({ error, key }, 'Cache get error');
             return null;
         }
     }
@@ -58,7 +59,7 @@ class CacheService {
             await this.client.setex(key, ttlSeconds, JSON.stringify(value));
             return true;
         } catch (error) {
-            console.error('Cache set error:', error);
+            logger.error({ error, key }, 'Cache set error');
             return false;
         }
     }
@@ -70,7 +71,7 @@ class CacheService {
             await this.client.del(key);
             return true;
         } catch (error) {
-            console.error('Cache delete error:', error);
+            logger.error({ error, key }, 'Cache delete error');
             return false;
         }
     }
@@ -85,7 +86,7 @@ class CacheService {
             }
             return true;
         } catch (error) {
-            console.error('Cache delete pattern error:', error);
+            logger.error({ error, pattern }, 'Cache delete pattern error');
             return false;
         }
     }
@@ -97,7 +98,7 @@ class CacheService {
             const result = await this.client.exists(key);
             return result === 1;
         } catch (error) {
-            console.error('Cache exists error:', error);
+            logger.error({ error, key }, 'Cache exists error');
             return false;
         }
     }
@@ -108,7 +109,7 @@ class CacheService {
         try {
             return await this.client.ttl(key);
         } catch (error) {
-            console.error('Cache ttl error:', error);
+            logger.error({ error, key }, 'Cache ttl error');
             return -1;
         }
     }
@@ -120,7 +121,7 @@ class CacheService {
             await this.client.flushdb();
             return true;
         } catch (error) {
-            console.error('Cache flush error:', error);
+            logger.error({ error }, 'Cache flush error');
             return false;
         }
     }

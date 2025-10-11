@@ -1,3 +1,4 @@
+import logger from '../utils/logger';
 // backend/src/middleware/cacheMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import { cacheService } from '../utils/cache';
@@ -37,7 +38,7 @@ export const cacheMiddleware = (options: CacheOptions = {}) => {
                 // Only cache successful responses
                 if (res.statusCode >= 200 && res.statusCode < 300) {
                     cacheService.set(cacheKey, data, ttl).catch(err => 
-                        console.error('Failed to cache response:', err)
+                        logger.error('Failed to cache response:', err)
                     );
                 }
                 return originalJson(data);
@@ -45,7 +46,7 @@ export const cacheMiddleware = (options: CacheOptions = {}) => {
 
             next();
         } catch (error) {
-            console.error('Cache middleware error:', error);
+            logger.error({ error }, 'Cache middleware error:');
             next();
         }
     };

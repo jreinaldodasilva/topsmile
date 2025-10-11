@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/routes/security/index.ts
 import { Router } from 'express';
 import mfaRoutes from './mfa';

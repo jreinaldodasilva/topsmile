@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import nodemailer from 'nodemailer';
 import SMTPTransport from "nodemailer/lib/smtp-transport";
 import { AppError } from '../../utils/errors/errors';
@@ -191,10 +192,10 @@ class EmailService {
     try {
       const transporter = this.createTransporter();
       await transporter.sendMail(task.mailOptions);
-      console.log(`Email sent successfully to ${task.mailOptions.to}`);
+      logger.info(`Email sent successfully to ${task.mailOptions.to}`);
       return true;
     } catch (error) {
-      console.error(`Failed to send email to ${task.mailOptions.to} (attempt ${task.retries + 1}):`, error);
+      logger.error({ error }, `Failed to send email to ${task.mailOptions.to} (attempt ${task.retries + 1}):`);
       return false;
     }
   }
@@ -224,7 +225,7 @@ class EmailService {
         task.retries++;
         task.lastAttempt = Date.now();
         if (task.retries >= this.MAX_EMAIL_RETRIES) {
-          console.error(`Email to ${task.mailOptions.to} failed after ${this.MAX_EMAIL_RETRIES} retries. Removing from queue.`);
+          logger.error(`Email to ${task.mailOptions.to} failed after ${this.MAX_EMAIL_RETRIES} retries. Removing from queue.`);
           this.emailQueue.shift(); // Remove permanently
         } else {
           // Re-add to the end of the queue for retry

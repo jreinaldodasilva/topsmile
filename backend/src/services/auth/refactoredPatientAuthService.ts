@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 // backend/src/services/auth/refactoredPatientAuthService.ts
 import crypto from 'crypto';
 import { PatientUser, IPatientUser } from '../../models/PatientUser';
@@ -52,13 +53,13 @@ class RefactoredPatientAuthService extends BaseAuthService<IPatientUser, any> {
     const secret = process.env.PATIENT_JWT_SECRET;
     if (!secret || secret === 'your-secret-key') {
       if (process.env.NODE_ENV === 'production') {
-        console.error('FATAL: PATIENT_JWT_SECRET must be set in production');
+        logger.error('FATAL: PATIENT_JWT_SECRET must be set in production');
         process.exit(1);
       }
       return process.env.PATIENT_JWT_SECRET || crypto.randomBytes(32).toString('hex');
     }
     if (process.env.NODE_ENV === 'production' && secret === process.env.JWT_SECRET) {
-      console.error('FATAL: PATIENT_JWT_SECRET must be different from JWT_SECRET');
+      logger.error('FATAL: PATIENT_JWT_SECRET must be different from JWT_SECRET');
       process.exit(1);
     }
     return secret;
@@ -169,7 +170,7 @@ class RefactoredPatientAuthService extends BaseAuthService<IPatientUser, any> {
     const accessToken = this.generateAccessToken(savedPatientUser);
     const refreshToken = await this.createRefreshToken((savedPatientUser._id as any).toString(), deviceInfo);
 
-    console.log(`Email verification token for ${email}: ${verificationToken}`);
+    logger.info(`Email verification token for ${email}: ${verificationToken}`);
 
     return {
       success: true,
@@ -274,7 +275,7 @@ class RefactoredPatientAuthService extends BaseAuthService<IPatientUser, any> {
   async resendVerificationEmail(email: string): Promise<void> {
     const patientUser = await PatientUser.findOne({ email: email.toLowerCase() });
     if (!patientUser) {
-      console.log(`Verification email resend attempt for non-existent user: ${email}`);
+      logger.info(`Verification email resend attempt for non-existent user: ${email}`);
       return;
     }
 
@@ -286,7 +287,7 @@ class RefactoredPatientAuthService extends BaseAuthService<IPatientUser, any> {
     patientUser.verificationToken = verificationToken;
     await patientUser.save();
 
-    console.log(`New email verification token for ${email}: ${verificationToken}`);
+    logger.info(`New email verification token for ${email}: ${verificationToken}`);
   }
 
   async deleteAccount(patientUserId: string, password: string): Promise<void> {

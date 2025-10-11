@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import Redis from 'ioredis';
 import dotenv from 'dotenv';
 
@@ -10,13 +11,13 @@ const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379',
 
 redisClient.on('connect', () => {
   if (process.env.NODE_ENV !== 'test') {
-    console.log('Connected to Redis');
+    logger.info('Connected to Redis');
   }
 });
 
 redisClient.on('error', (err) => {
   if (process.env.NODE_ENV !== 'test') {
-    console.error('Redis connection error:', err);
+    logger.error({ err }, 'Redis connection error');
   }
 });
 

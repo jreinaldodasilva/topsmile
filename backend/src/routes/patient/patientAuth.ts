@@ -1,3 +1,4 @@
+import logger from '../../utils/logger';
 import express, { Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import { patientAuthService, PatientRegistrationData, DeviceInfo } from '../../services/auth/patientAuthService';
@@ -123,7 +124,7 @@ router.post('/register',
             }, 'Conta criada com sucesso', req));
 
         } catch (error: any) {
-            console.error('Patient registration error:', error);
+            logger.error({ error }, 'Patient registration error:');
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -190,7 +191,7 @@ router.post('/login',
             }, 'Login realizado com sucesso', req));
 
         } catch (error: any) {
-            console.error('Patient login error:', error);
+            logger.error({ error }, 'Patient login error:');
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -229,7 +230,7 @@ router.post('/refresh', async (req: express.Request, res: Response) => {
         return res.json(standardResponse({ expiresIn }, 'Token atualizado com sucesso', req));
 
     } catch (error: any) {
-        console.error('Patient refresh token error:', error);
+        logger.error({ error }, 'Patient refresh token error:');
         if (isAppError(error)) {
             return res.status(error.statusCode).json({ success: false, message: error.message });
         }
@@ -259,7 +260,7 @@ router.post('/logout', authenticatePatient, async (req: PatientAuthenticatedRequ
         return res.json(standardResponse(null, 'Logout realizado com sucesso', req));
 
     } catch (error: any) {
-        console.error('Patient logout error:', error);
+        logger.error({ error }, 'Patient logout error:');
         if (isAppError(error)) {
             return res.status(error.statusCode).json({ success: false, message: error.message });
         }
@@ -291,7 +292,7 @@ router.patch('/profile',
 
             return res.json(standardResponse(updatedPatient, 'Perfil atualizado com sucesso', req));
         } catch (error: any) {
-            console.error('Patient profile update error:', error);
+            logger.error({ error }, 'Patient profile update error:');
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -333,7 +334,7 @@ router.patch('/change-password',
 
             return res.json(standardResponse(null, 'Senha alterada com sucesso', req));
         } catch (error: any) {
-            console.error('Patient change password error:', error);
+            logger.error({ error }, 'Patient change password error:');
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -368,7 +369,7 @@ router.post('/resend-verification',
 
             return res.json(standardResponse(null, 'Se o e-mail estiver registrado, um novo link de verificação foi enviado.', req));
         } catch (error: any) {
-            console.error('Resend verification email error:', error);
+            logger.error({ error }, 'Resend verification email error:');
             
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -404,7 +405,7 @@ router.delete('/account',
 
             return res.json(standardResponse(null, 'Conta deletada com sucesso', req));
         } catch (error: any) {
-            console.error('Patient account deletion error:', error);
+            logger.error({ error }, 'Patient account deletion error:');
 
             if (isAppError(error)) {
                 return res.status(error.statusCode).json({
@@ -428,7 +429,7 @@ router.get('/me', authenticatePatient, async (req: PatientAuthenticatedRequest, 
             patientUser: req.patientUser
         }, 'Perfil obtido com sucesso', req));
     } catch (error: any) {
-        console.error('Patient get me error:', error);
+        logger.error({ error }, 'Patient get me error:');
 
         if (isAppError(error)) {
             return res.status(error.statusCode).json({
